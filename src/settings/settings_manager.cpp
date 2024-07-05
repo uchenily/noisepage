@@ -75,7 +75,7 @@ void SettingsManager::ValidateSetting(Param                                  par
 }
 
 #define DEFINE_SETTINGS_MANAGER_GET(Name, CppType)                                                                     \
-    CppType SettingsManager::Get##Name(Param param) {                                                                  \
+    auto SettingsManager::Get##Name(Param param) -> CppType {                                                          \
         common::SharedLatch::ScopedSharedLatch guard(&latch_);                                                         \
         return GetValue(param).Peek<CppType>();                                                                        \
     }
@@ -87,7 +87,7 @@ DEFINE_SETTINGS_MANAGER_GET(Double, double)
 
 #undef DEFINE_SETTINGS_MANAGER_GET
 
-std::string SettingsManager::GetString(Param param) {
+auto SettingsManager::GetString(Param param) -> std::string {
     common::SharedLatch::ScopedSharedLatch guard(&latch_);
     const auto                            &value = GetValue(param);
     return std::string(value.Peek<std::string_view>());
@@ -151,6 +151,8 @@ DEFINE_SETTINGS_MANAGER_SET(Int, int32_t, execution::sql::SqlTypeId::Integer, ex
 DEFINE_SETTINGS_MANAGER_SET(Int64, int64_t, execution::sql::SqlTypeId::BigInt, execution::sql::Integer, true);
 DEFINE_SETTINGS_MANAGER_SET(Double, double, execution::sql::SqlTypeId::Double, execution::sql::Real, true);
 
+#undef DEFINE_SETTINGS_MANAGER_SET
+
 void SettingsManager::SetString(Param                                 param,
                                 const std::string_view               &value,
                                 common::ManagedPointer<ActionContext> action_context,
@@ -194,24 +196,25 @@ void SettingsManager::SetString(Param                                 param,
     setter_callback(action_context);
 }
 
-parser::ConstantValueExpression &SettingsManager::GetValue(Param param) {
+auto SettingsManager::GetValue(Param param) -> parser::ConstantValueExpression & {
     auto &param_info = param_map_.find(param)->second;
     return param_info.value_;
 }
 
-bool SettingsManager::SetValue(Param param, parser::ConstantValueExpression value) {
+auto SettingsManager::SetValue(Param param, parser::ConstantValueExpression value) -> bool {
     auto &param_info = param_map_.find(param)->second;
 
-    if (!param_info.is_mutable_)
+    if (!param_info.is_mutable_) {
         return false;
+    }
 
     param_info.value_ = std::move(value);
     return true;
 }
 
-bool SettingsManager::ValidateValue(const parser::ConstantValueExpression &value,
+auto SettingsManager::ValidateValue(const parser::ConstantValueExpression &value,
                                     const parser::ConstantValueExpression &min_value,
-                                    const parser::ConstantValueExpression &max_value) {
+                                    const parser::ConstantValueExpression &max_value) -> bool {
     switch (value.GetReturnValueType()) {
     case execution::sql::SqlTypeId::Integer:
         return value.Peek<int32_t>() >= min_value.Peek<int32_t>() && value.Peek<int32_t>() <= max_value.Peek<int32_t>();
@@ -224,10 +227,11 @@ bool SettingsManager::ValidateValue(const parser::ConstantValueExpression &value
     }
 }
 
-common::ActionState SettingsManager::InvokeCallback(Param                                         param,
-                                                    void                                         *old_value,
-                                                    void                                         *new_value,
-                                                    common::ManagedPointer<common::ActionContext> action_context) {
+auto SettingsManager::InvokeCallback(Param                                         param,
+                                     void                                         *old_value,
+                                     void                                         *new_value,
+                                     common::ManagedPointer<common::ActionContext> action_context)
+    -> common::ActionState {
     callback_fn callback = param_map_.find(param)->second.callback_;
     (callback)(old_value, new_value, db_main_.Get(), action_context);
     ActionState action_state = action_context->GetState();
@@ -255,7 +259,7 @@ void SettingsManager::ConstructParamMap(                                        
 #undef __SETTING_POPULATE__            // NOLINT
 } // clang-format on
 
-Param SettingsManager::GetParam(const std::string &name) const {
+auto SettingsManager::GetParam(const std::string &name) const -> Param {
     // Search for the parameter.
     auto search = param_name_map_.find(name);
     if (search == param_name_map_.end()) {
@@ -266,7 +270,7 @@ Param SettingsManager::GetParam(const std::string &name) const {
     return param;
 }
 
-const settings::ParamInfo &SettingsManager::GetParamInfo(const Param &param) const {
+auto SettingsManager::GetParamInfo(const Param &param) const -> const settings::ParamInfo & {
     // Search for the parameter's information.
     auto search = param_map_.find(param);
     NOISEPAGE_ASSERT(search != param_map_.end(), "Mismatch between param_name_map_ and param_map_ keys.");
@@ -274,7 +278,7 @@ const settings::ParamInfo &SettingsManager::GetParamInfo(const Param &param) con
     return info;
 }
 
-const parser::ConstantValueExpression &SettingsManager::GetDefault(const std::string &name) {
+auto SettingsManager::GetDefault(const std::string &name) -> const parser::ConstantValueExpression & {
     return GetParamInfo(GetParam(name)).default_value_;
 }
 

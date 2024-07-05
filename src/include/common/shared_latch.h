@@ -1,5 +1,6 @@
 #pragma once
 
+#include <mutex>
 #include <shared_mutex>
 
 #include "common/macros.h"
@@ -89,7 +90,7 @@ public:
      * Try to acquire exclusive lock on mutex.
      * @return true if lock acquired, false otherwise.
      */
-    bool TryExclusiveLock() {
+    auto TryExclusiveLock() -> bool {
         return latch_.try_lock();
     }
 
@@ -97,7 +98,7 @@ public:
      * Try to acquire shared lock on mutex.
      * @return true if lock acquired, false otherwise.
      */
-    bool TryLockShared() {
+    auto TryLockShared() -> bool {
         return latch_.try_lock_shared();
     }
 
@@ -134,7 +135,11 @@ public:
         ~ScopedSharedLatch() {
             rw_latch_->UnlockShared();
         }
-        DISALLOW_COPY_AND_MOVE(ScopedSharedLatch)
+        ScopedSharedLatch(const ScopedSharedLatch &) = delete;
+        auto operator=(const ScopedSharedLatch &) = delete;
+
+        ScopedSharedLatch(ScopedSharedLatch &&) = delete;
+        auto operator=(ScopedSharedLatch &&) = delete;
 
     private:
         SharedLatch *const rw_latch_;
@@ -159,7 +164,12 @@ public:
         ~ScopedExclusiveLatch() {
             rw_latch_->UnlockExclusive();
         }
-        DISALLOW_COPY_AND_MOVE(ScopedExclusiveLatch)
+        ScopedExclusiveLatch(const ScopedExclusiveLatch &) = delete;
+        auto operator=(const ScopedExclusiveLatch &) = delete;
+
+        ScopedExclusiveLatch(ScopedExclusiveLatch &&) = delete;
+        auto operator=(ScopedExclusiveLatch &&) = delete;
+
     private:
         SharedLatch *const rw_latch_;
     };
@@ -183,7 +193,7 @@ public:
         : unique_lock_(*rw_latch) {}
 
 private:
-    std::unique_lock<SharedLatch> unique_lock_;
+    std::unique_lock<SharedLatch> unique_lock_{};
 };
 
 /**
