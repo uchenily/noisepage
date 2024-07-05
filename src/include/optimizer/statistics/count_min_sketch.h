@@ -18,7 +18,8 @@
 #include "common/posix_io_wrappers.h"
 #include "execution/sql/value.h"
 #include "loggers/optimizer_logger.h"
-#include "madoka/madoka.h"
+// #include "madoka/madoka.h"
+#include "lib/madoka.h"
 
 namespace noisepage::optimizer {
 

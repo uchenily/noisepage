@@ -7,7 +7,7 @@
 #include "common/future.h"
 #include "execution/execution_util.h"
 #include "loggers/common_logger.h"
-#include "optimizer/cost_model/trivial_cost_model.h"
+// #include "optimizer/cost_model/trivial_cost_model.h"
 #include "storage/recovery/replication_log_provider.h"
 #include "task/task.h"
 
@@ -68,10 +68,10 @@ void DBMain::Run() {
     // Currently, DBMS startup is detected by scraping the DBMS's stdout for a startup message.
     // This startup message cannot be printed with the logging subsystem because logging can be disabled.
     // This is the only permitted use of cout in the system -- please use logging instead for any other uses.
-    std::cout << fmt::format("NoisePage - Self-Driving Database Management System [port={}] [PID={}]", // NOLINT
+    std::cout << fmt::format("NoisePage - Self-Driving Database Management System [port={}] [PID={}]\n",
                              network_layer_->GetServer()->GetPort(),
                              ::getpid())
-              << std::endl;
+              << std::flush; // NOLINT
     {
         std::unique_lock<std::mutex> lock(server->RunningMutex());
         server->RunningCV().wait(lock, [=] {

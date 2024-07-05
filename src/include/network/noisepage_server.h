@@ -36,22 +36,22 @@ public:
     void StopServer();
 
     /** @return True if the server is still running. Use as a predicate when waiting on RunningCV. */
-    bool Running() const {
+    auto Running() const -> bool {
         return running_;
     }
 
     /** @return Mutex for waiting on RunningCV. */
-    std::mutex &RunningMutex() {
+    auto RunningMutex() -> std::mutex & {
         return running_mutex_;
     }
 
     /** @return Condvar for a thread to wait on while the server is running. Currently only useful in DBMain. */
-    std::condition_variable &RunningCV() {
+    auto RunningCV() -> std::condition_variable & {
         return running_cv_;
     }
 
     /** @return The network port that the server is listening on. */
-    uint16_t GetPort() const {
+    auto GetPort() const -> uint16_t {
         return port_;
     }
 
@@ -59,7 +59,7 @@ private:
     // TODO(Matt): somewhere there's probably a stronger assertion to be made about the state of the server and if
     // threads can be safely taken away, but I don't understand the networking stuff well enough to say for sure what
     // that assertion is
-    bool OnThreadRemoval(common::ManagedPointer<common::DedicatedThreadTask> task) override {
+    auto OnThreadRemoval(common::ManagedPointer<common::DedicatedThreadTask> /*task*/) -> bool override {
         return true;
     }
     enum SocketType { UNIX_DOMAIN_SOCKET, NETWORKED_SOCKET };
