@@ -1,10 +1,5 @@
 #pragma once
 
-#include <memory>
-#include <string>
-#include <unordered_map>
-#include <utility>
-
 #include "catalog/catalog.h"
 #include "common/action_context.h"
 #include "common/dedicated_thread_registry.h"
@@ -32,6 +27,11 @@
 #include "transaction/transaction_manager.h"
 #include "util/query_exec_util.h"
 
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <utility>
+
 namespace noisepage {
 
 namespace settings {
@@ -41,7 +41,7 @@ namespace settings {
 
 namespace trafficcop {
     class TrafficCopTests;
-}
+} // namespace trafficcop
 
 /**
  * The DBMain Class holds all the singleton pointers. It is mostly useful for coordinating dependencies between
@@ -120,21 +120,21 @@ public:
         /**
          * @return ManagedPointer to the component
          */
-        common::ManagedPointer<transaction::TimestampManager> GetTimestampManager() const {
+        auto GetTimestampManager() const -> common::ManagedPointer<transaction::TimestampManager> {
             return common::ManagedPointer(timestamp_manager_);
         }
 
         /**
          * @return ManagedPointer to the component
          */
-        common::ManagedPointer<transaction::DeferredActionManager> GetDeferredActionManager() const {
+        auto GetDeferredActionManager() const -> common::ManagedPointer<transaction::DeferredActionManager> {
             return common::ManagedPointer(deferred_action_manager_);
         }
 
         /**
          * @return ManagedPointer to the component
          */
-        common::ManagedPointer<transaction::TransactionManager> GetTransactionManager() const {
+        auto GetTransactionManager() const -> common::ManagedPointer<transaction::TransactionManager> {
             return common::ManagedPointer(txn_manager_);
         }
 
@@ -168,11 +168,12 @@ public:
             : empty_buffer_queue_(std::move(empty_buffer_queue))
             , deferred_action_manager_(txn_layer->GetDeferredActionManager())
             , log_manager_(log_manager) {
-            if (use_gc)
+            if (use_gc) {
                 garbage_collector_ = std::make_unique<storage::GarbageCollector>(txn_layer->GetTimestampManager(),
                                                                                  txn_layer->GetDeferredActionManager(),
                                                                                  txn_layer->GetTransactionManager(),
                                                                                  DISABLED);
+            }
 
             block_store_ = std::make_unique<storage::BlockStore>(block_store_size_limit, block_store_reuse_limit);
         }
@@ -191,14 +192,14 @@ public:
         /**
          * @return ManagedPointer to the component, can be nullptr if disabled
          */
-        common::ManagedPointer<storage::GarbageCollector> GetGarbageCollector() const {
+        auto GetGarbageCollector() const -> common::ManagedPointer<storage::GarbageCollector> {
             return common::ManagedPointer(garbage_collector_);
         }
 
         /**
          * @return ManagedPointer to the component
          */
-        common::ManagedPointer<storage::BlockStore> GetBlockStore() const {
+        auto GetBlockStore() const -> common::ManagedPointer<storage::BlockStore> {
             return common::ManagedPointer(block_store_);
         }
 
@@ -206,7 +207,8 @@ public:
          * @return A pointer to the empty buffer queue that is shared by separate components of the system.
          *         Currently, the buffers are shared by LogSerializerTask and ReplicationManager.
          */
-        common::ManagedPointer<common::ConcurrentBlockingQueue<storage::BufferedLogWriter *>> GetEmptyBufferQueue() {
+        auto GetEmptyBufferQueue()
+            -> common::ManagedPointer<common::ConcurrentBlockingQueue<storage::BufferedLogWriter *>> {
             return common::ManagedPointer(empty_buffer_queue_);
         }
 
@@ -294,7 +296,7 @@ public:
         /**
          * @return ManagedPointer to the component
          */
-        common::ManagedPointer<catalog::Catalog> GetCatalog() const {
+        auto GetCatalog() const -> common::ManagedPointer<catalog::Catalog> {
             return common::ManagedPointer(catalog_);
         }
 
@@ -340,7 +342,7 @@ public:
         /**
          * @return ManagedPointer to the component
          */
-        common::ManagedPointer<network::TerrierServer> GetServer() const {
+        auto GetServer() const -> common::ManagedPointer<network::TerrierServer> {
             return common::ManagedPointer(server_);
         }
 
@@ -384,7 +386,7 @@ public:
         ~MessengerLayer() = default;
 
         /** @return The Messenger. */
-        common::ManagedPointer<messenger::Messenger> GetMessenger() const {
+        auto GetMessenger() const -> common::ManagedPointer<messenger::Messenger> {
             return messenger_manager_->GetMessenger();
         }
 
@@ -401,7 +403,7 @@ public:
          * Validate configuration and construct requested DBMain.
          * @return DBMain that you get to own. YES, YOU! We're just giving away DBMains over here!
          */
-        std::unique_ptr<DBMain> Build() {
+        auto Build() -> std::unique_ptr<DBMain> {
             // Order matters through the Build() function and reflects the dependency ordering. It should match the
             // member ordering so things get destructed in the right order.
             auto db_main = std::make_unique<DBMain>();
@@ -410,8 +412,9 @@ public:
                 = use_settings_manager_ ? BootstrapSettingsManager(common::ManagedPointer(db_main)) : DISABLED;
 
             std::unique_ptr<metrics::MetricsManager> metrics_manager = DISABLED;
-            if (use_metrics_)
+            if (use_metrics_) {
                 metrics_manager = BootstrapMetricsManager();
+            }
 
             std::unique_ptr<optimizer::StatsStorage> stats_storage = DISABLED;
             if (use_stats_storage_) {
@@ -419,9 +422,10 @@ public:
             }
 
             std::unique_ptr<common::DedicatedThreadRegistry> thread_registry = DISABLED;
-            if (use_thread_registry_ || use_logging_ || use_network_)
+            if (use_thread_registry_ || use_logging_ || use_network_) {
                 thread_registry
                     = std::make_unique<common::DedicatedThreadRegistry>(common::ManagedPointer(metrics_manager));
+            }
 
             auto buffer_segment_pool = std::make_unique<storage::RecordBufferSegmentPool>(record_buffer_segment_size_,
                                                                                           record_buffer_segment_reuse_);
@@ -681,7 +685,7 @@ public:
          * @param value LogManager argument
          * @return self reference for chaining
          */
-        Builder &SetWalFilePath(const std::string &value) {
+        auto SetWalFilePath(const std::string &value) -> Builder & {
             wal_file_path_ = value;
             return *this;
         }
@@ -690,7 +694,8 @@ public:
          * @param param_map SettingsManager argument
          * @return self reference for chaining
          */
-        Builder &SetSettingsParameterMap(std::unordered_map<settings::Param, settings::ParamInfo> &&param_map) {
+        auto SetSettingsParameterMap(std::unordered_map<settings::Param, settings::ParamInfo> &&param_map)
+            -> Builder & {
             param_map_ = std::move(param_map);
             return *this;
         }
@@ -699,7 +704,7 @@ public:
          * @param value use component
          * @return self reference for chaining
          */
-        Builder &SetUseThreadRegistry(const bool value) {
+        auto SetUseThreadRegistry(const bool value) -> Builder & {
             use_thread_registry_ = value;
             return *this;
         }
@@ -708,7 +713,7 @@ public:
          * @param value use component
          * @return self reference for chaining
          */
-        Builder &SetUseSettingsManager(const bool value) {
+        auto SetUseSettingsManager(const bool value) -> Builder & {
             use_settings_manager_ = value;
             return *this;
         }
@@ -717,7 +722,7 @@ public:
          * @param value use component
          * @return self reference for chaining
          */
-        Builder &SetUseMetrics(const bool value) {
+        auto SetUseMetrics(const bool value) -> Builder & {
             use_metrics_ = value;
             return *this;
         }
@@ -726,7 +731,7 @@ public:
          * @param value use component
          * @return self reference for chaining
          */
-        Builder &SetUseMetricsThread(const bool value) {
+        auto SetUseMetricsThread(const bool value) -> Builder & {
             use_metrics_thread_ = value;
             return *this;
         }
@@ -735,7 +740,7 @@ public:
          * @param value use component
          * @return self reference for chaining
          */
-        Builder &SetUseLogging(const bool value) {
+        auto SetUseLogging(const bool value) -> Builder & {
             use_logging_ = value;
             return *this;
         }
@@ -744,7 +749,7 @@ public:
          * @param value TransactionManager argument
          * @return self reference for chaining
          */
-        Builder &SetWalAsyncCommit(const bool value) {
+        auto SetWalAsyncCommit(const bool value) -> Builder & {
             wal_async_commit_enable_ = value;
             return *this;
         }
@@ -753,7 +758,7 @@ public:
          * @param value LogManager argument
          * @return self reference for chaining
          */
-        Builder &SetWalNumBuffers(const uint64_t value) {
+        auto SetWalNumBuffers(const uint64_t value) -> Builder & {
             wal_num_buffers_ = value;
             return *this;
         }
@@ -762,7 +767,7 @@ public:
          * @param value LogManager argument
          * @return self reference for chaining
          */
-        Builder &SetWalSerializationInterval(const uint64_t value) {
+        auto SetWalSerializationInterval(const uint64_t value) -> Builder & {
             wal_serialization_interval_ = value;
             return *this;
         }
@@ -771,7 +776,7 @@ public:
          * @param value LogManager argument
          * @return self reference for chaining
          */
-        Builder &SetWalPersistInterval(const uint64_t value) {
+        auto SetWalPersistInterval(const uint64_t value) -> Builder & {
             wal_persist_interval_ = value;
             return *this;
         }
@@ -780,7 +785,7 @@ public:
          * @param value LogManager argument
          * @return self reference for chaining
          */
-        Builder &SetWalPersistThreshold(const uint64_t value) {
+        auto SetWalPersistThreshold(const uint64_t value) -> Builder & {
             wal_persist_threshold_ = value;
             return *this;
         }
@@ -789,7 +794,7 @@ public:
          * @param value use component
          * @return self reference for chaining
          */
-        Builder &SetUseGC(const bool value) {
+        auto SetUseGC(const bool value) -> Builder & {
             use_gc_ = value;
             return *this;
         }
@@ -798,7 +803,7 @@ public:
          * @param value use component
          * @return self reference for chaining
          */
-        Builder &SetUseCatalog(const bool value) {
+        auto SetUseCatalog(const bool value) -> Builder & {
             use_catalog_ = value;
             return *this;
         }
@@ -807,7 +812,7 @@ public:
          * @param value whether CatalogLayer should create default database (set to false if recovering)
          * @return self reference for chaining
          */
-        Builder &SetCreateDefaultDatabase(const bool value) {
+        auto SetCreateDefaultDatabase(const bool value) -> Builder & {
             create_default_database_ = value;
             return *this;
         }
@@ -816,7 +821,7 @@ public:
          * @param value use component
          * @return self reference for chaining
          */
-        Builder &SetUseGCThread(const bool value) {
+        auto SetUseGCThread(const bool value) -> Builder & {
             use_gc_thread_ = value;
             return *this;
         }
@@ -825,7 +830,7 @@ public:
          * @param value use component
          * @return self reference for chaining
          */
-        Builder &SetUseTrafficCop(const bool value) {
+        auto SetUseTrafficCop(const bool value) -> Builder & {
             use_traffic_cop_ = value;
             return *this;
         }
@@ -834,7 +839,7 @@ public:
          * @param value use component
          * @return self reference for chaining
          */
-        Builder &SetUseStatsStorage(const bool value) {
+        auto SetUseStatsStorage(const bool value) -> Builder & {
             use_stats_storage_ = value;
             return *this;
         }
@@ -843,7 +848,7 @@ public:
          * @param value use component
          * @return self reference for chaining
          */
-        Builder &SetUseNetwork(const bool value) {
+        auto SetUseNetwork(const bool value) -> Builder & {
             use_network_ = value;
             return *this;
         }
@@ -852,7 +857,7 @@ public:
          * @param value use component
          * @return self reference for chaining
          */
-        Builder &SetUseMessenger(const bool value) {
+        auto SetUseMessenger(const bool value) -> Builder & {
             use_messenger_ = value;
             return *this;
         }
@@ -861,7 +866,7 @@ public:
          * @param identity Network identity. Must be unique across all replicas.
          * @return self reference for chaining
          */
-        Builder &SetNetworkIdentity(const std::string &identity) {
+        auto SetNetworkIdentity(const std::string &identity) -> Builder & {
             network_identity_ = identity;
             return *this;
         }
@@ -870,7 +875,7 @@ public:
          * @param port Network port
          * @return self reference for chaining
          */
-        Builder &SetNetworkPort(const uint16_t port) {
+        auto SetNetworkPort(const uint16_t port) -> Builder & {
             network_port_ = port;
             return *this;
         }
@@ -879,7 +884,7 @@ public:
          * @param port Messenger port
          * @return self reference for chaining
          */
-        Builder &SetMessengerPort(const uint16_t port) {
+        auto SetMessengerPort(const uint16_t port) -> Builder & {
             messenger_port_ = port;
             return *this;
         }
@@ -888,7 +893,7 @@ public:
          * @param value RecordBufferSegmentPool argument
          * @return self reference for chaining
          */
-        Builder &SetRecordBufferSegmentSize(const uint64_t value) {
+        auto SetRecordBufferSegmentSize(const uint64_t value) -> Builder & {
             record_buffer_segment_size_ = value;
             return *this;
         }
@@ -897,7 +902,7 @@ public:
          * @param value RecordBufferSegmentPool argument
          * @return self reference for chaining
          */
-        Builder &SetRecordBufferSegmentReuse(const uint64_t value) {
+        auto SetRecordBufferSegmentReuse(const uint64_t value) -> Builder & {
             record_buffer_segment_reuse_ = value;
             return *this;
         }
@@ -906,7 +911,7 @@ public:
          * @param value BlockStore argument
          * @return self reference for chaining
          */
-        Builder &SetBlockStoreSize(const uint64_t value) {
+        auto SetBlockStoreSize(const uint64_t value) -> Builder & {
             block_store_size_ = value;
             return *this;
         }
@@ -915,7 +920,7 @@ public:
          * @param value BlockStore argument
          * @return self reference for chaining
          */
-        Builder &SetBlockStoreReuse(const uint64_t value) {
+        auto SetBlockStoreReuse(const uint64_t value) -> Builder & {
             block_store_reuse_ = value;
             return *this;
         }
@@ -924,7 +929,7 @@ public:
          * @param value TrafficCop argument
          * @return self reference for chaining
          */
-        Builder &SetOptimizerTimeout(const uint64_t value) {
+        auto SetOptimizerTimeout(const uint64_t value) -> Builder & {
             optimizer_timeout_ = value;
             return *this;
         }
@@ -933,7 +938,7 @@ public:
          * @param value use component
          * @return self reference for chaining
          */
-        Builder &SetUseQueryCache(const bool value) {
+        auto SetUseQueryCache(const bool value) -> Builder & {
             use_query_cache_ = value;
             return *this;
         }
@@ -942,7 +947,7 @@ public:
          * @param value use component
          * @return self reference for chaining
          */
-        Builder &SetUseExecution(const bool value) {
+        auto SetUseExecution(const bool value) -> Builder & {
             use_execution_ = value;
             return *this;
         }
@@ -951,7 +956,7 @@ public:
          * @param value use component
          * @return self reference for chaining
          */
-        Builder &SetExecutionMode(const execution::vm::ExecutionMode value) {
+        auto SetExecutionMode(const execution::vm::ExecutionMode value) -> Builder & {
             execution_mode_ = value;
             return *this;
         }
@@ -960,7 +965,7 @@ public:
          * @param value with ModelServer enable
          * @return self reference for chaining
          */
-        Builder &SetUseModelServer(const bool value) {
+        auto SetUseModelServer(const bool value) -> Builder & {
             use_model_server_ = value;
             return *this;
         }
@@ -969,7 +974,7 @@ public:
          * @param value model_server_path
          * @return self reference for chaining
          */
-        Builder &SetModelServerPath(const std::string &value) {
+        auto SetModelServerPath(const std::string &value) -> Builder & {
             model_server_path_ = value;
             return *this;
         }
@@ -978,7 +983,7 @@ public:
          * @param value enable_python_coverage for ModelServer
          * @return self reference for chaining
          */
-        Builder &SetModelServerEnablePythonCoverage(const bool value) {
+        auto SetModelServerEnablePythonCoverage(const bool value) -> Builder & {
             model_server_enable_python_coverage_ = value;
             return *this;
         }
@@ -987,7 +992,7 @@ public:
          * @param value the new path to the bytecode handler bitcode file
          * @return self reference for chaining
          */
-        Builder &SetBytecodeHandlersPath(const std::string &value) {
+        auto SetBytecodeHandlersPath(const std::string &value) -> Builder & {
             bytecode_handlers_path_ = value;
             return *this;
         }
@@ -1081,8 +1086,8 @@ public:
          * Instantiates the SettingsManager and reads all of the settings to override the Builder's settings.
          * @return
          */
-        std::unique_ptr<settings::SettingsManager>
-        BootstrapSettingsManager(const common::ManagedPointer<DBMain> db_main) {
+        auto BootstrapSettingsManager(const common::ManagedPointer<DBMain> db_main)
+            -> std::unique_ptr<settings::SettingsManager> {
             std::unique_ptr<settings::SettingsManager> settings_manager;
             NOISEPAGE_ASSERT(!param_map_.empty(), "Settings parameter map was never set.");
             settings_manager = std::make_unique<settings::SettingsManager>(db_main, std::move(param_map_));
@@ -1167,30 +1172,37 @@ public:
          * Instantiate the MetricsManager and enable metrics for components arrocding to the Builder's settings.
          * @return
          */
-        std::unique_ptr<metrics::MetricsManager> BootstrapMetricsManager() {
+        auto BootstrapMetricsManager() -> std::unique_ptr<metrics::MetricsManager> {
             std::unique_ptr<metrics::MetricsManager> metrics_manager = std::make_unique<metrics::MetricsManager>();
             metrics_manager->SetMetricSampleRate(metrics::MetricsComponent::EXECUTION_PIPELINE,
                                                  pipeline_metrics_sample_rate_);
             metrics_manager->SetMetricSampleRate(metrics::MetricsComponent::LOGGING, logging_metrics_sample_rate_);
 
-            if (query_trace_metrics_)
+            if (query_trace_metrics_) {
                 metrics_manager->EnableMetric(metrics::MetricsComponent::QUERY_TRACE);
+            }
             metrics::QueryTraceMetricRawData::query_param_sample = forecast_sample_limit_;
             metrics::QueryTraceMetricRawData::query_segment_interval = workload_forecast_interval_;
             metrics_manager->SetMetricOutput(metrics::MetricsComponent::QUERY_TRACE, query_trace_metrics_output_);
 
-            if (pipeline_metrics_)
+            if (pipeline_metrics_) {
                 metrics_manager->EnableMetric(metrics::MetricsComponent::EXECUTION_PIPELINE);
-            if (transaction_metrics_)
+            }
+            if (transaction_metrics_) {
                 metrics_manager->EnableMetric(metrics::MetricsComponent::TRANSACTION);
-            if (logging_metrics_)
+            }
+            if (logging_metrics_) {
                 metrics_manager->EnableMetric(metrics::MetricsComponent::LOGGING);
-            if (gc_metrics_)
+            }
+            if (gc_metrics_) {
                 metrics_manager->EnableMetric(metrics::MetricsComponent::GARBAGECOLLECTION);
-            if (bind_command_metrics_)
+            }
+            if (bind_command_metrics_) {
                 metrics_manager->EnableMetric(metrics::MetricsComponent::BIND_COMMAND);
-            if (execute_command_metrics_)
+            }
+            if (execute_command_metrics_) {
                 metrics_manager->EnableMetric(metrics::MetricsComponent::EXECUTE_COMMAND);
+            }
 
             return metrics_manager;
         }
@@ -1199,139 +1211,139 @@ public:
     /**
      * @return ManagedPointer to the component, can be nullptr if disabled
      */
-    common::ManagedPointer<settings::SettingsManager> GetSettingsManager() const {
+    auto GetSettingsManager() const -> common::ManagedPointer<settings::SettingsManager> {
         return common::ManagedPointer(settings_manager_);
     }
 
     /**
      * @return ManagedPointer to the component, can be nullptr if disabled
      */
-    common::ManagedPointer<metrics::MetricsManager> GetMetricsManager() const {
+    auto GetMetricsManager() const -> common::ManagedPointer<metrics::MetricsManager> {
         return common::ManagedPointer(metrics_manager_);
     }
 
     /**
      * @return ManagedPointer to the component, can be nullptr if disabled
      */
-    common::ManagedPointer<metrics::MetricsThread> GetMetricsThread() const {
+    auto GetMetricsThread() const -> common::ManagedPointer<metrics::MetricsThread> {
         return common::ManagedPointer(metrics_thread_);
     }
 
     /**
      * @return ManagedPointer to the component, can be nullptr if disabled
      */
-    common::ManagedPointer<common::DedicatedThreadRegistry> GetThreadRegistry() const {
+    auto GetThreadRegistry() const -> common::ManagedPointer<common::DedicatedThreadRegistry> {
         return common::ManagedPointer(thread_registry_);
     }
 
     /**
      * @return ManagedPointer to the component
      */
-    common::ManagedPointer<storage::RecordBufferSegmentPool> GetBufferSegmentPool() const {
+    auto GetBufferSegmentPool() const -> common::ManagedPointer<storage::RecordBufferSegmentPool> {
         return common::ManagedPointer(buffer_segment_pool_);
     }
 
     /**
      * @return ManagedPointer to the component, can be nullptr if disabled
      */
-    common::ManagedPointer<storage::LogManager> GetLogManager() const {
+    auto GetLogManager() const -> common::ManagedPointer<storage::LogManager> {
         return common::ManagedPointer(log_manager_);
     }
 
     /**
      * @return ManagedPointer to the component
      */
-    common::ManagedPointer<TransactionLayer> GetTransactionLayer() const {
+    auto GetTransactionLayer() const -> common::ManagedPointer<TransactionLayer> {
         return common::ManagedPointer(txn_layer_);
     }
 
     /**
      * @return ManagedPointer to the component
      */
-    common::ManagedPointer<StorageLayer> GetStorageLayer() const {
+    auto GetStorageLayer() const -> common::ManagedPointer<StorageLayer> {
         return common::ManagedPointer(storage_layer_);
     }
 
     /**
      * @return ManagedPointer to the component, can be nullptr if disabled
      */
-    common::ManagedPointer<CatalogLayer> GetCatalogLayer() const {
+    auto GetCatalogLayer() const -> common::ManagedPointer<CatalogLayer> {
         return common::ManagedPointer(catalog_layer_);
     }
 
     /**
      * @return ManagedPointer to the component, can be nullptr if disabled
      */
-    common::ManagedPointer<storage::GarbageCollectorThread> GetGarbageCollectorThread() const {
+    auto GetGarbageCollectorThread() const -> common::ManagedPointer<storage::GarbageCollectorThread> {
         return common::ManagedPointer(gc_thread_);
     }
 
     /**
      * @return ManagedPointer to the component, can be nullptr if disabled
      */
-    common::ManagedPointer<replication::ReplicationManager> GetReplicationManager() const {
+    auto GetReplicationManager() const -> common::ManagedPointer<replication::ReplicationManager> {
         return common::ManagedPointer(replication_manager_);
     }
 
     /**
      * @return ManagedPointer to the component, can be nullptr if disabled
      */
-    common::ManagedPointer<selfdriving::pilot::Pilot> GetPilot() const {
+    auto GetPilot() const -> common::ManagedPointer<selfdriving::pilot::Pilot> {
         return common::ManagedPointer(pilot_);
     }
 
     /**
      * @return ManagedPointer to the component, can be nullptr if disabled
      */
-    common::ManagedPointer<selfdriving::pilot::PilotThread> GetPilotThread() const {
+    auto GetPilotThread() const -> common::ManagedPointer<selfdriving::pilot::PilotThread> {
         return common::ManagedPointer(pilot_thread_);
     }
 
     /**
      * @return ManagedPointer to the component, can be nullptr if disabled
      */
-    common::ManagedPointer<trafficcop::TrafficCop> GetTrafficCop() const {
+    auto GetTrafficCop() const -> common::ManagedPointer<trafficcop::TrafficCop> {
         return common::ManagedPointer(traffic_cop_);
     }
 
     /**
      * @return ManagedPointer to the component, can be nullptr if disabled
      */
-    common::ManagedPointer<optimizer::StatsStorage> GetStatsStorage() const {
+    auto GetStatsStorage() const -> common::ManagedPointer<optimizer::StatsStorage> {
         return common::ManagedPointer(stats_storage_);
     }
 
     /**
      * @return ManagedPointer to the component, can be nullptr if disabled
      */
-    common::ManagedPointer<NetworkLayer> GetNetworkLayer() const {
+    auto GetNetworkLayer() const -> common::ManagedPointer<NetworkLayer> {
         return common::ManagedPointer(network_layer_);
     }
 
     /**
      * @return ManagedPointer to the component, can be nullptr if disabled
      */
-    common::ManagedPointer<ExecutionLayer> GetExecutionLayer() const {
+    auto GetExecutionLayer() const -> common::ManagedPointer<ExecutionLayer> {
         return common::ManagedPointer(execution_layer_);
     }
 
     /** @return ManagedPointer to the MessengerLayer, can be nullptr if disabled. */
-    common::ManagedPointer<MessengerLayer> GetMessengerLayer() const {
+    auto GetMessengerLayer() const -> common::ManagedPointer<MessengerLayer> {
         return common::ManagedPointer(messenger_layer_);
     }
 
     /** @return ManagedPointer to the ModelServerManager, can be nullptr if disabled. */
-    common::ManagedPointer<modelserver::ModelServerManager> GetModelServerManager() const {
+    auto GetModelServerManager() const -> common::ManagedPointer<modelserver::ModelServerManager> {
         return common::ManagedPointer(model_server_manager_);
     }
 
     /** @return Standard QueryExecUtil from which other utils can be derived from */
-    common::ManagedPointer<util::QueryExecUtil> GetQueryExecUtil() const {
+    auto GetQueryExecUtil() const -> common::ManagedPointer<util::QueryExecUtil> {
         return common::ManagedPointer(query_exec_util_);
     }
 
     /** @return ManagedPointer to task manager */
-    common::ManagedPointer<task::TaskManager> GetTaskManager() const {
+    auto GetTaskManager() const -> common::ManagedPointer<task::TaskManager> {
         return common::ManagedPointer(task_manager_);
     }
 

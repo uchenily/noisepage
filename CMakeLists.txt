@@ -100,6 +100,10 @@ project(
 # Create a compile_commands.json file that can be easily parsed by build tools, clang-tidy, etc.
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# Use ccache
+set(CMAKE_CXX_COMPILER_LAUNCHER ccache)
+set(CMAKE_C_COMPILER_LAUNCHER ccache)
+
 #######################################################################################################################
 # HEADER Safety checks.
 #######################################################################################################################
