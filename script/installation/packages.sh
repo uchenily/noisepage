@@ -58,7 +58,7 @@ PYTHON_TEST_PACKAGES=(\
   "pyarrow" \
   "pyzmq" \
   "requests" \
-  "sklearn" \
+  "scikit-learn" \
   "torch" \
   "tqdm" \
   "coverage" \
@@ -147,6 +147,7 @@ install_pip() {
   curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
   python get-pip.py
   rm get-pip.py
+  python3 -m pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
 }
 
 install_linux() {
@@ -161,6 +162,7 @@ install_linux() {
     apt-get -y install $( IFS=$' '; echo "${LINUX_TEST_PACKAGES[*]}" )
   fi
 
+  python3 -m pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
   if [ "$INSTALL_TYPE" == "build" ] || [ "$INSTALL_TYPE" = "all" ]; then
     for pkg in "${PYTHON_BUILD_PACKAGES[@]}"; do
       python3 -m pip show $pkg || python3 -m pip install $pkg
