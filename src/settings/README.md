@@ -2,7 +2,7 @@
 
 ## Overview
 
-> What motivates this to be implemented? What will this component achieve? 
+> What motivates this to be implemented? What will this component achieve?
 
 The Settings Manager is a place for all configurations of the system. It offers programmatic interfaces for defining, accessing and modifying configuration parameters for all parts of the system. Although there is a `pg_settings` table in the catalog that does similar things, the internal parts don't want to access its configurations with troublesome SQL statements. Therefore, we provide `set` and `get` methods to them. The access and modify methods are designed to be able to detect wrong parameter names at compilation time. It is responsible for loading the configurations from the default values, `gflags`, and the config file. It also supports callback triggers: you can define a callback function for each configurable parameter. When the parameter is changed, the Settings Manager will call that function for you. For example, when someone scales down the number of GC threads from 8 to 6, the Settings Manager will tell the Garbage Collector to shut down 2 threads via the callback tied to that parameter. Besides, the Settings Manager supports action context, which records information relevant to the setting value deployment. The caller of `set` methods can pass in a callback function to analyze the action context.
 
@@ -15,7 +15,7 @@ Having a Settings Manager in the system eliminates all hardcoding stuff and its 
 The Settings Manager relies on the following parts:
 
 - The main database object `DBMain`. The callbacks should be defined in the main database object because only the main object has all the pointers to the different parts of the system. The Settings Manager will invoke them when the corresponding parameter is changed. Only settings manager have access to the main database object.
-- The catalog and the Transaction Manager. Currently, we are maintaining a physical `pg_settings` table in the catalog. Therefore, in order to keep consistent, we have to update `pg_settings` every time a parameter is changed, and updating the catalog needs to be done in a transaction. 
+- The catalog and the Transaction Manager. Currently, we are maintaining a physical `pg_settings` table in the catalog. Therefore, in order to keep consistent, we have to update `pg_settings` every time a parameter is changed, and updating the catalog needs to be done in a transaction.
 
 ## Glossary (Optional)
 
@@ -39,17 +39,17 @@ For callbacks, when a parameter is changed, the Settings Manager will invoke its
 
 ### Compilation Time Check
 
- In order to enforce compilation time check, we include all the parameter names in `settings.h` into an `enum` called `Param`. In this way, users can only access the parameters in the `enum`. 
+ In order to enforce compilation time check, we include all the parameter names in `settings.h` into an `enum` called `Param`. In this way, users can only access the parameters in the `enum`.
 
 We don't use reflections because it is very troublesome in C++ and it is not compilation time check. A wrong parameter name will not be discovered until run time.
 
-Writing the `enum` is made much easier thanks to the macro based design of the Settings Manager, which is explained below. 
+Writing the `enum` is made much easier thanks to the macro based design of the Settings Manager, which is explained below.
 
 ### Macro based Parameter Definition
 
 We provide some macros for the developers to define their parameters. They include `SETTING_int`, `SETTING_bool`, `SETTING_double` and `SETTING_string`. The definition of the macros is in `settings_macro.h`.
 
-Although macros are confusing and not straightforward, it offers more benefits than disadvantages in the Settings Manager. The biggest benefit is that the users can now specify each parameter only once. Without macros, when a user wants to define a new parameter, he must do it for three times: append it in the `Params` `enum`, register it in `gflags`, and initialize it in the Settings Manager. It is clear that this exposes too many internal details of the Settings Manager to the users. 
+Although macros are confusing and not straightforward, it offers more benefits than disadvantages in the Settings Manager. The biggest benefit is that the users can now specify each parameter only once. Without macros, when a user wants to define a new parameter, he must do it for three times: append it in the `Params` `enum`, register it in `gflags`, and initialize it in the Settings Manager. It is clear that this exposes too many internal details of the Settings Manager to the users.
 
 In the current design, users only need to define his parameter in `settings.h` only once, and the Settings Manager will do the `enum`, `gflags` and initialization stuff for them by simply `#include settings.h` and interpret `SETTING_xxx` in different ways.
 
@@ -58,7 +58,7 @@ In the current design, users only need to define his parameter in `settings.h` o
 Although there is a physical `pg_settings` table in the catalogs where we can find all the information about a parameter, we finally decided that there should be a map that contains the values of parameters. Why? Because:
 
 - The most important reason is that accessing the catalog needs to be done in a transaction. This can cause infinite loops. A typical situation is, on system bootstrapping, the Settings Manager needs to open a transaction to append the values into the `pg_settings` table. However, as long as there is a configuration needed by the Transaction Manager (a very likely one can be the default isolation level), it will call `get` to ask for that parameter, and the Settings Manager will open a new transaction to read the parameter from the catalog, which results in an infinite loop. In order to reduce the interaction with other parts of the system, we decided to maintain a map inside the Settings Manager. In this way, it can serve all requests without consulting anyone else.
-- It is much easier to operate on a map than the catalog. 
+- It is much easier to operate on a map than the catalog.
 - Since the number of parameters is low, an extra map won't introduce much overhead.
 
 - Although this essentially turned the Settings Manager as a cache layer for the `pg_settings` table, its consistency is easy to maintain (just update the catalog in `set` methods).

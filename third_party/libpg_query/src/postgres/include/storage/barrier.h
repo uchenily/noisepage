@@ -20,4 +20,4 @@
  */
 #include "port/atomics.h"
 
-#endif   /* BARRIER_H */
+#endif /* BARRIER_H */

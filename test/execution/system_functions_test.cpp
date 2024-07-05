@@ -11,22 +11,24 @@
 namespace noisepage::execution::sql::test {
 
 class SystemFunctionsTests : public TplTest {
- public:
-  SystemFunctionsTests()
-      : ctx_(catalog::db_oid_t(0), nullptr, nullptr, nullptr, nullptr, settings_, nullptr, DISABLED, DISABLED) {}
+public:
+    SystemFunctionsTests()
+        : ctx_(catalog::db_oid_t(0), nullptr, nullptr, nullptr, nullptr, settings_, nullptr, DISABLED, DISABLED) {}
 
-  exec::ExecutionContext *Ctx() { return &ctx_; }
+    exec::ExecutionContext *Ctx() {
+        return &ctx_;
+    }
 
- private:
-  exec::ExecutionSettings settings_{};
-  exec::ExecutionContext ctx_;
+private:
+    exec::ExecutionSettings settings_{};
+    exec::ExecutionContext  ctx_;
 };
 
 // NOLINTNEXTLINE
 TEST_F(SystemFunctionsTests, Version) {
-  auto result = StringVal("");
-  SystemFunctions::Version(Ctx(), &result);
-  EXPECT_TRUE(StringVal(common::NOISEPAGE_VERSION_STR.data()) == result);
+    auto result = StringVal("");
+    SystemFunctions::Version(Ctx(), &result);
+    EXPECT_TRUE(StringVal(common::NOISEPAGE_VERSION_STR.data()) == result);
 }
 
-}  // namespace noisepage::execution::sql::test
+} // namespace noisepage::execution::sql::test

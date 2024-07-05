@@ -28,13 +28,13 @@ export LIBRARY_PATH=$LIBRARY_PATH:/usr/lib:/usr/local/opt/libpqxx/lib/
 
 The fix is analogous if you encounter a similar error when building from within CLion.
 
-**Issue:** When attempting to build the project from within CLion, the build fails at the first attempt to link any of the targets or sub-targets with the error: 
+**Issue:** When attempting to build the project from within CLion, the build fails at the first attempt to link any of the targets or sub-targets with the error:
 
 ```
 Undefined symbols for architecture x86_64:
 ```
 
-**Fix:** There a number of issues that may result in an undefined symbol error. One potential cause is attempting to specify the C and C++ compiler that you want CLion to use with a custom toolchain. 
+**Fix:** There a number of issues that may result in an undefined symbol error. One potential cause is attempting to specify the C and C++ compiler that you want CLion to use with a custom toolchain.
 
 You might be attempting to force CLion to use the compilers from LLVM instead of the default system compiler by specifying a toolchain other than the default and selecting the `clang` and `clang++` binaries from the `/usr/local/Cellar/llvm@8/8.0.1_3/bin/` directory. However, in certain circumstances CLion will automatically resolve both of these paths to `clang-8`, a binary in the same directory that provides only a C frontend (where we require C++). Thus, as soon as the linker is invoked from the context of `clang-8` during a build, it will choke on the mangled C++ symbols.
 

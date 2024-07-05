@@ -34,36 +34,35 @@ extern bool pg_set_block(pgsocket sock);
 
 /* Portable path handling for Unix/Win32 (in path.c) */
 
-extern bool has_drive_prefix(const char *filename);
-extern char *first_dir_separator(const char *filename);
-extern char *last_dir_separator(const char *filename);
-extern char *first_path_var_separator(const char *pathlist);
-extern void join_path_components(char *ret_path,
-					 const char *head, const char *tail);
-extern void canonicalize_path(char *path);
-extern void make_native_path(char *path);
-extern bool path_contains_parent_reference(const char *path);
-extern bool path_is_relative_and_below_cwd(const char *path);
-extern bool path_is_prefix_of_path(const char *path1, const char *path2);
-extern char *make_absolute_path(const char *path);
+extern bool        has_drive_prefix(const char *filename);
+extern char       *first_dir_separator(const char *filename);
+extern char       *last_dir_separator(const char *filename);
+extern char       *first_path_var_separator(const char *pathlist);
+extern void        join_path_components(char *ret_path, const char *head, const char *tail);
+extern void        canonicalize_path(char *path);
+extern void        make_native_path(char *path);
+extern bool        path_contains_parent_reference(const char *path);
+extern bool        path_is_relative_and_below_cwd(const char *path);
+extern bool        path_is_prefix_of_path(const char *path1, const char *path2);
+extern char       *make_absolute_path(const char *path);
 extern const char *get_progname(const char *argv0);
-extern void get_share_path(const char *my_exec_path, char *ret_path);
-extern void get_etc_path(const char *my_exec_path, char *ret_path);
-extern void get_include_path(const char *my_exec_path, char *ret_path);
-extern void get_pkginclude_path(const char *my_exec_path, char *ret_path);
-extern void get_includeserver_path(const char *my_exec_path, char *ret_path);
-extern void get_lib_path(const char *my_exec_path, char *ret_path);
-extern void get_pkglib_path(const char *my_exec_path, char *ret_path);
-extern void get_locale_path(const char *my_exec_path, char *ret_path);
-extern void get_doc_path(const char *my_exec_path, char *ret_path);
-extern void get_html_path(const char *my_exec_path, char *ret_path);
-extern void get_man_path(const char *my_exec_path, char *ret_path);
-extern bool get_home_path(char *ret_path);
-extern void get_parent_directory(char *path);
+extern void        get_share_path(const char *my_exec_path, char *ret_path);
+extern void        get_etc_path(const char *my_exec_path, char *ret_path);
+extern void        get_include_path(const char *my_exec_path, char *ret_path);
+extern void        get_pkginclude_path(const char *my_exec_path, char *ret_path);
+extern void        get_includeserver_path(const char *my_exec_path, char *ret_path);
+extern void        get_lib_path(const char *my_exec_path, char *ret_path);
+extern void        get_pkglib_path(const char *my_exec_path, char *ret_path);
+extern void        get_locale_path(const char *my_exec_path, char *ret_path);
+extern void        get_doc_path(const char *my_exec_path, char *ret_path);
+extern void        get_html_path(const char *my_exec_path, char *ret_path);
+extern void        get_man_path(const char *my_exec_path, char *ret_path);
+extern bool        get_home_path(char *ret_path);
+extern void        get_parent_directory(char *path);
 
 /* common/pgfnames.c */
 extern char **pgfnames(const char *path);
-extern void pgfnames_cleanup(char **filenames);
+extern void   pgfnames_cleanup(char **filenames);
 
 /*
  *	is_absolute_path
@@ -71,37 +70,29 @@ extern void pgfnames_cleanup(char **filenames);
  *	By making this a macro we avoid needing to include path.c in libpq.
  */
 #ifndef WIN32
-#define IS_DIR_SEP(ch)	((ch) == '/')
+#define IS_DIR_SEP(ch) ((ch) == '/')
 
-#define is_absolute_path(filename) \
-( \
-	IS_DIR_SEP((filename)[0]) \
-)
+#define is_absolute_path(filename) (IS_DIR_SEP((filename)[0]))
 #else
-#define IS_DIR_SEP(ch)	((ch) == '/' || (ch) == '\\')
+#define IS_DIR_SEP(ch) ((ch) == '/' || (ch) == '\\')
 
 /* See path_is_relative_and_below_cwd() for how we handle 'E:abc'. */
-#define is_absolute_path(filename) \
-( \
-	IS_DIR_SEP((filename)[0]) || \
-	(isalpha((unsigned char) ((filename)[0])) && (filename)[1] == ':' && \
-	 IS_DIR_SEP((filename)[2])) \
-)
+#define is_absolute_path(filename)                                                                                     \
+    (IS_DIR_SEP((filename)[0])                                                                                         \
+     || (isalpha((unsigned char) ((filename)[0])) && (filename)[1] == ':' && IS_DIR_SEP((filename)[2])))
 #endif
 
 /* Portable locale initialization (in exec.c) */
 extern void set_pglocale_pgservice(const char *argv0, const char *app);
 
 /* Portable way to find binaries (in exec.c) */
-extern int	find_my_exec(const char *argv0, char *retpath);
-extern int find_other_exec(const char *argv0, const char *target,
-				const char *versionstr, char *retpath);
+extern int find_my_exec(const char *argv0, char *retpath);
+extern int find_other_exec(const char *argv0, const char *target, const char *versionstr, char *retpath);
 
 /* Windows security token manipulation (in exec.c) */
 #ifdef WIN32
 extern BOOL AddUserToTokenDacl(HANDLE hToken);
 #endif
-
 
 #if defined(WIN32) || defined(__CYGWIN__)
 #define EXE ".exe"
@@ -119,8 +110,8 @@ extern BOOL AddUserToTokenDacl(HANDLE hToken);
 extern void pg_usleep(long microsec);
 
 /* Portable SQL-like case-independent comparisons and conversions */
-extern int	pg_strcasecmp(const char *s1, const char *s2);
-extern int	pg_strncasecmp(const char *s1, const char *s2, size_t n);
+extern int           pg_strcasecmp(const char *s1, const char *s2);
+extern int           pg_strncasecmp(const char *s1, const char *s2, size_t n);
 extern unsigned char pg_toupper(unsigned char ch);
 extern unsigned char pg_tolower(unsigned char ch);
 extern unsigned char pg_ascii_toupper(unsigned char ch);
@@ -152,12 +143,12 @@ extern unsigned char pg_ascii_tolower(unsigned char ch);
 #undef printf
 #endif
 
-extern int	pg_vsnprintf(char *str, size_t count, const char *fmt, va_list args);
-extern int	pg_snprintf(char *str, size_t count, const char *fmt,...) pg_attribute_printf(3, 4);
-extern int	pg_sprintf(char *str, const char *fmt,...) pg_attribute_printf(2, 3);
-extern int	pg_vfprintf(FILE *stream, const char *fmt, va_list args);
-extern int	pg_fprintf(FILE *stream, const char *fmt,...) pg_attribute_printf(2, 3);
-extern int	pg_printf(const char *fmt,...) pg_attribute_printf(1, 2);
+extern int pg_vsnprintf(char *str, size_t count, const char *fmt, va_list args);
+extern int pg_snprintf(char *str, size_t count, const char *fmt, ...) pg_attribute_printf(3, 4);
+extern int pg_sprintf(char *str, const char *fmt, ...) pg_attribute_printf(2, 3);
+extern int pg_vfprintf(FILE *stream, const char *fmt, va_list args);
+extern int pg_fprintf(FILE *stream, const char *fmt, ...) pg_attribute_printf(2, 3);
+extern int pg_printf(const char *fmt, ...) pg_attribute_printf(1, 2);
 
 /*
  *	The GCC-specific code below prevents the pg_attribute_printf above from
@@ -165,21 +156,21 @@ extern int	pg_printf(const char *fmt,...) pg_attribute_printf(1, 2);
  *	about pg_printf.
  */
 #ifdef __GNUC__
-#define vsnprintf(...)	pg_vsnprintf(__VA_ARGS__)
-#define snprintf(...)	pg_snprintf(__VA_ARGS__)
-#define sprintf(...)	pg_sprintf(__VA_ARGS__)
-#define vfprintf(...)	pg_vfprintf(__VA_ARGS__)
-#define fprintf(...)	pg_fprintf(__VA_ARGS__)
-#define printf(...)		pg_printf(__VA_ARGS__)
+#define vsnprintf(...) pg_vsnprintf(__VA_ARGS__)
+#define snprintf(...) pg_snprintf(__VA_ARGS__)
+#define sprintf(...) pg_sprintf(__VA_ARGS__)
+#define vfprintf(...) pg_vfprintf(__VA_ARGS__)
+#define fprintf(...) pg_fprintf(__VA_ARGS__)
+#define printf(...) pg_printf(__VA_ARGS__)
 #else
-#define vsnprintf		pg_vsnprintf
-#define snprintf		pg_snprintf
-#define sprintf			pg_sprintf
-#define vfprintf		pg_vfprintf
-#define fprintf			pg_fprintf
-#define printf			pg_printf
+#define vsnprintf pg_vsnprintf
+#define snprintf pg_snprintf
+#define sprintf pg_sprintf
+#define vfprintf pg_vfprintf
+#define fprintf pg_fprintf
+#define printf pg_printf
 #endif
-#endif   /* USE_REPL_SNPRINTF */
+#endif /* USE_REPL_SNPRINTF */
 
 #if defined(WIN32)
 /*
@@ -198,19 +189,19 @@ extern int	pg_printf(const char *fmt,...) pg_attribute_printf(1, 2);
  */
 extern char *pgwin32_setlocale(int category, const char *locale);
 
-#define setlocale(a,b) pgwin32_setlocale(a,b)
-#endif   /* WIN32 */
+#define setlocale(a, b) pgwin32_setlocale(a, b)
+#endif /* WIN32 */
 
 /* Portable prompt handling */
 extern char *simple_prompt(const char *prompt, int maxlen, bool echo);
 
 #ifdef WIN32
 #define PG_SIGNAL_COUNT 32
-#define kill(pid,sig)	pgkill(pid,sig)
-extern int	pgkill(int pid, int sig);
+#define kill(pid, sig) pgkill(pid, sig)
+extern int pgkill(int pid, int sig);
 #endif
 
-extern int	pclose_check(FILE *stream);
+extern int pclose_check(FILE *stream);
 
 /* Global variable holding time zone information. */
 #ifndef __CYGWIN__
@@ -225,17 +216,17 @@ extern int	pclose_check(FILE *stream);
 /*
  *	Win32 doesn't have reliable rename/unlink during concurrent access.
  */
-extern int	pgrename(const char *from, const char *to);
-extern int	pgunlink(const char *path);
+extern int pgrename(const char *from, const char *to);
+extern int pgunlink(const char *path);
 
 /* Include this first so later includes don't see these defines */
 #ifdef WIN32_ONLY_COMPILER
 #include <io.h>
 #endif
 
-#define rename(from, to)		pgrename(from, to)
-#define unlink(path)			pgunlink(path)
-#endif   /* defined(WIN32) || defined(__CYGWIN__) */
+#define rename(from, to) pgrename(from, to)
+#define unlink(path) pgunlink(path)
+#endif /* defined(WIN32) || defined(__CYGWIN__) */
 
 /*
  *	Win32 also doesn't have symlinks, but we can emulate them with
@@ -247,12 +238,12 @@ extern int	pgunlink(const char *path);
  *		Note: Some CYGWIN includes might #define WIN32.
  */
 #if defined(WIN32) && !defined(__CYGWIN__)
-extern int	pgsymlink(const char *oldpath, const char *newpath);
-extern int	pgreadlink(const char *path, char *buf, size_t size);
+extern int  pgsymlink(const char *oldpath, const char *newpath);
+extern int  pgreadlink(const char *path, char *buf, size_t size);
 extern bool pgwin32_is_junction(char *path);
 
-#define symlink(oldpath, newpath)	pgsymlink(oldpath, newpath)
-#define readlink(path, buf, size)	pgreadlink(path, buf, size)
+#define symlink(oldpath, newpath) pgsymlink(oldpath, newpath)
+#define readlink(path, buf, size) pgreadlink(path, buf, size)
 #endif
 
 extern bool rmtree(const char *path, bool rmtopdir);
@@ -269,9 +260,9 @@ extern bool rmtree(const char *path, bool rmtopdir);
  */
 #if defined(WIN32) && !defined(__CYGWIN__) && !defined(UNSAFE_STAT_OK)
 #include <sys/stat.h>
-extern int	pgwin32_safestat(const char *path, struct stat * buf);
+extern int pgwin32_safestat(const char *path, struct stat *buf);
 
-#define stat(a,b) pgwin32_safestat(a,b)
+#define stat(a, b) pgwin32_safestat(a, b)
 #endif
 
 #if defined(WIN32) && !defined(__CYGWIN__)
@@ -280,13 +271,13 @@ extern int	pgwin32_safestat(const char *path, struct stat * buf);
  * open() and fopen() replacements to allow deletion of open files and
  * passing of other special options.
  */
-#define		O_DIRECT	0x80000000
-extern int	pgwin32_open(const char *, int,...);
+#define O_DIRECT 0x80000000
+extern int   pgwin32_open(const char *, int, ...);
 extern FILE *pgwin32_fopen(const char *, const char *);
 
 #ifndef FRONTEND
-#define		open(a,b,c) pgwin32_open(a,b,c)
-#define		fopen(a,b) pgwin32_fopen(a,b)
+#define open(a, b, c) pgwin32_open(a, b, c)
+#define fopen(a, b) pgwin32_fopen(a, b)
 #endif
 
 /*
@@ -305,26 +296,26 @@ extern FILE *pgwin32_fopen(const char *, const char *);
  * system() and popen() replacements to enclose the command in an extra
  * pair of quotes.
  */
-extern int	pgwin32_system(const char *command);
+extern int   pgwin32_system(const char *command);
 extern FILE *pgwin32_popen(const char *command, const char *type);
 
 #define system(a) pgwin32_system(a)
-#define popen(a,b) pgwin32_popen(a,b)
+#define popen(a, b) pgwin32_popen(a, b)
 #define pclose(a) _pclose(a)
 
 /* New versions of MingW have gettimeofday, old mingw and msvc don't */
 #ifndef HAVE_GETTIMEOFDAY
 /* Last parameter not used */
-extern int	gettimeofday(struct timeval * tp, struct timezone * tzp);
+extern int gettimeofday(struct timeval *tp, struct timezone *tzp);
 #endif
-#else							/* !WIN32 */
+#else /* !WIN32 */
 
 /*
  *	Win32 requires a special close for sockets and pipes, while on Unix
  *	close() does them all.
  */
 #define closesocket close
-#endif   /* WIN32 */
+#endif /* WIN32 */
 
 /*
  * On Windows, setvbuf() does not support _IOLBF mode, and interprets that
@@ -335,9 +326,9 @@ extern int	gettimeofday(struct timeval * tp, struct timezone * tzp);
  * directly in order to implement this behavior.
  */
 #ifndef WIN32
-#define PG_IOLBF	_IOLBF
+#define PG_IOLBF _IOLBF
 #else
-#define PG_IOLBF	_IONBF
+#define PG_IOLBF _IONBF
 #endif
 
 /*
@@ -352,30 +343,30 @@ extern char *crypt(const char *key, const char *setting);
 #ifndef WIN32
 #define pgoff_t off_t
 #ifdef __NetBSD__
-extern int	fseeko(FILE *stream, off_t offset, int whence);
+extern int   fseeko(FILE *stream, off_t offset, int whence);
 extern off_t ftello(FILE *stream);
 #endif
 #endif
 
 extern double pg_erand48(unsigned short xseed[3]);
-extern long pg_lrand48(void);
-extern void pg_srand48(long seed);
+extern long   pg_lrand48(void);
+extern void   pg_srand48(long seed);
 
 #ifndef HAVE_FLS
-extern int	fls(int mask);
+extern int fls(int mask);
 #endif
 
 #ifndef HAVE_FSEEKO
 #define fseeko(a, b, c) fseek(a, b, c)
-#define ftello(a)		ftell(a)
+#define ftello(a) ftell(a)
 #endif
 
 #if !defined(HAVE_GETPEEREID) && !defined(WIN32)
-extern int	getpeereid(int sock, uid_t *uid, gid_t *gid);
+extern int getpeereid(int sock, uid_t *uid, gid_t *gid);
 #endif
 
 #ifndef HAVE_ISINF
-extern int	isinf(double x);
+extern int isinf(double x);
 #endif
 
 #ifndef HAVE_MKDTEMP
@@ -387,9 +378,9 @@ extern double rint(double x);
 #endif
 
 #ifndef HAVE_INET_ATON
-#include <netinet/in.h>
 #include <arpa/inet.h>
-extern int	inet_aton(const char *cp, struct in_addr * addr);
+#include <netinet/in.h>
+extern int inet_aton(const char *cp, struct in_addr *addr);
 #endif
 
 #if !HAVE_DECL_STRLCAT
@@ -420,46 +411,43 @@ extern void srandom(unsigned int seed);
 extern char *pqStrerror(int errnum, char *strerrbuf, size_t buflen);
 
 #ifndef WIN32
-extern int pqGetpwuid(uid_t uid, struct passwd * resultbuf, char *buffer,
-		   size_t buflen, struct passwd ** result);
+extern int pqGetpwuid(uid_t uid, struct passwd *resultbuf, char *buffer, size_t buflen, struct passwd **result);
 #endif
 
-extern int pqGethostbyname(const char *name,
-				struct hostent * resultbuf,
-				char *buffer, size_t buflen,
-				struct hostent ** result,
-				int *herrno);
+extern int pqGethostbyname(const char      *name,
+                           struct hostent  *resultbuf,
+                           char            *buffer,
+                           size_t           buflen,
+                           struct hostent **result,
+                           int             *herrno);
 
-extern void pg_qsort(void *base, size_t nel, size_t elsize,
-		 int (*cmp) (const void *, const void *));
-extern int	pg_qsort_strcmp(const void *a, const void *b);
+extern void pg_qsort(void *base, size_t nel, size_t elsize, int (*cmp)(const void *, const void *));
+extern int  pg_qsort_strcmp(const void *a, const void *b);
 
-#define qsort(a,b,c,d) pg_qsort(a,b,c,d)
+#define qsort(a, b, c, d) pg_qsort(a, b, c, d)
 
-typedef int (*qsort_arg_comparator) (const void *a, const void *b, void *arg);
+typedef int (*qsort_arg_comparator)(const void *a, const void *b, void *arg);
 
-extern void qsort_arg(void *base, size_t nel, size_t elsize,
-		  qsort_arg_comparator cmp, void *arg);
+extern void qsort_arg(void *base, size_t nel, size_t elsize, qsort_arg_comparator cmp, void *arg);
 
 /* port/chklocale.c */
-extern int	pg_get_encoding_from_locale(const char *ctype, bool write_message);
+extern int pg_get_encoding_from_locale(const char *ctype, bool write_message);
 
 #if defined(WIN32) && !defined(FRONTEND)
-extern int	pg_codepage_to_encoding(UINT cp);
+extern int pg_codepage_to_encoding(UINT cp);
 #endif
 
 /* port/inet_net_ntop.c */
-extern char *inet_net_ntop(int af, const void *src, int bits,
-			  char *dst, size_t size);
+extern char *inet_net_ntop(int af, const void *src, int bits, char *dst, size_t size);
 
 /* port/pgcheckdir.c */
-extern int	pg_check_dir(const char *dir);
+extern int pg_check_dir(const char *dir);
 
 /* port/pgmkdirp.c */
-extern int	pg_mkdir_p(char *path, int omode);
+extern int pg_mkdir_p(char *path, int omode);
 
 /* port/pqsignal.c */
-typedef void (*pqsigfunc) (int signo);
+typedef void (*pqsigfunc)(int signo);
 extern pqsigfunc pqsignal(int signo, pqsigfunc func);
 
 /* port/quotes.c */
@@ -468,4 +456,4 @@ extern char *escape_single_quotes_ascii(const char *src);
 /* port/wait_error.c */
 extern char *wait_result_to_str(int exit_status);
 
-#endif   /* PG_PORT_H */
+#endif /* PG_PORT_H */

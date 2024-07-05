@@ -139,15 +139,15 @@ fun main(execCtx: *ExecutionContext) -> int {
 
     initState(execCtx, &state)
 
-    // ---- Pipeline 1 Begin ---- // 
-    
+    // ---- Pipeline 1 Begin ---- //
+
     var tls = @execCtxGetTLS(execCtx)
     @tlsReset(tls, @sizeOf(ThreadState_1), p1_worker_initThreadState, p1_worker_tearDownThreadState, execCtx)
 
     // Parallel Scan
     @iterateTableParallel("test_1", &state, tls, 0, p1_worker)
 
-    // ---- Pipeline 1 End ---- // 
+    // ---- Pipeline 1 End ---- //
 
     // Move thread-local states
     var aht_off: uint32 = 0

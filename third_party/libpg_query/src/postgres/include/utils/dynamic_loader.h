@@ -16,10 +16,9 @@
 
 #include "fmgr.h"
 
-
-extern void *pg_dlopen(char *filename);
+extern void      *pg_dlopen(char *filename);
 extern PGFunction pg_dlsym(void *handle, char *funcname);
-extern void pg_dlclose(void *handle);
-extern char *pg_dlerror(void);
+extern void       pg_dlclose(void *handle);
+extern char      *pg_dlerror(void);
 
-#endif   /* DYNAMIC_LOADER_H */
+#endif /* DYNAMIC_LOADER_H */

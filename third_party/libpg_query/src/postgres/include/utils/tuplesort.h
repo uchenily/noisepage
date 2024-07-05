@@ -25,7 +25,6 @@
 #include "fmgr.h"
 #include "utils/relcache.h"
 
-
 /* Tuplesortstate is an opaque type whose details are not known outside
  * tuplesort.c.
  */
@@ -58,60 +57,49 @@ typedef struct Tuplesortstate Tuplesortstate;
  * actually sorted by their hash codes not the raw data.
  */
 
-extern Tuplesortstate *tuplesort_begin_heap(TupleDesc tupDesc,
-					 int nkeys, AttrNumber *attNums,
-					 Oid *sortOperators, Oid *sortCollations,
-					 bool *nullsFirstFlags,
-					 int workMem, bool randomAccess);
-extern Tuplesortstate *tuplesort_begin_cluster(TupleDesc tupDesc,
-						Relation indexRel,
-						int workMem, bool randomAccess);
-extern Tuplesortstate *tuplesort_begin_index_btree(Relation heapRel,
-							Relation indexRel,
-							bool enforceUnique,
-							int workMem, bool randomAccess);
-extern Tuplesortstate *tuplesort_begin_index_hash(Relation heapRel,
-						   Relation indexRel,
-						   uint32 hash_mask,
-						   int workMem, bool randomAccess);
-extern Tuplesortstate *tuplesort_begin_datum(Oid datumType,
-					  Oid sortOperator, Oid sortCollation,
-					  bool nullsFirstFlag,
-					  int workMem, bool randomAccess);
+extern Tuplesortstate *tuplesort_begin_heap(TupleDesc   tupDesc,
+                                            int         nkeys,
+                                            AttrNumber *attNums,
+                                            Oid        *sortOperators,
+                                            Oid        *sortCollations,
+                                            bool       *nullsFirstFlags,
+                                            int         workMem,
+                                            bool        randomAccess);
+extern Tuplesortstate *tuplesort_begin_cluster(TupleDesc tupDesc, Relation indexRel, int workMem, bool randomAccess);
+extern Tuplesortstate *
+tuplesort_begin_index_btree(Relation heapRel, Relation indexRel, bool enforceUnique, int workMem, bool randomAccess);
+extern Tuplesortstate *
+tuplesort_begin_index_hash(Relation heapRel, Relation indexRel, uint32 hash_mask, int workMem, bool randomAccess);
+extern Tuplesortstate *tuplesort_begin_datum(Oid  datumType,
+                                             Oid  sortOperator,
+                                             Oid  sortCollation,
+                                             bool nullsFirstFlag,
+                                             int  workMem,
+                                             bool randomAccess);
 
 extern void tuplesort_set_bound(Tuplesortstate *state, int64 bound);
 
-extern void tuplesort_puttupleslot(Tuplesortstate *state,
-					   TupleTableSlot *slot);
+extern void tuplesort_puttupleslot(Tuplesortstate *state, TupleTableSlot *slot);
 extern void tuplesort_putheaptuple(Tuplesortstate *state, HeapTuple tup);
-extern void tuplesort_putindextuplevalues(Tuplesortstate *state,
-							  Relation rel, ItemPointer self,
-							  Datum *values, bool *isnull);
-extern void tuplesort_putdatum(Tuplesortstate *state, Datum val,
-				   bool isNull);
+extern void
+tuplesort_putindextuplevalues(Tuplesortstate *state, Relation rel, ItemPointer self, Datum *values, bool *isnull);
+extern void tuplesort_putdatum(Tuplesortstate *state, Datum val, bool isNull);
 
 extern void tuplesort_performsort(Tuplesortstate *state);
 
-extern bool tuplesort_gettupleslot(Tuplesortstate *state, bool forward,
-					   TupleTableSlot *slot);
-extern HeapTuple tuplesort_getheaptuple(Tuplesortstate *state, bool forward,
-					   bool *should_free);
-extern IndexTuple tuplesort_getindextuple(Tuplesortstate *state, bool forward,
-						bool *should_free);
-extern bool tuplesort_getdatum(Tuplesortstate *state, bool forward,
-				   Datum *val, bool *isNull);
+extern bool       tuplesort_gettupleslot(Tuplesortstate *state, bool forward, TupleTableSlot *slot);
+extern HeapTuple  tuplesort_getheaptuple(Tuplesortstate *state, bool forward, bool *should_free);
+extern IndexTuple tuplesort_getindextuple(Tuplesortstate *state, bool forward, bool *should_free);
+extern bool       tuplesort_getdatum(Tuplesortstate *state, bool forward, Datum *val, bool *isNull);
 
-extern bool tuplesort_skiptuples(Tuplesortstate *state, int64 ntuples,
-					 bool forward);
+extern bool tuplesort_skiptuples(Tuplesortstate *state, int64 ntuples, bool forward);
 
 extern void tuplesort_end(Tuplesortstate *state);
 
-extern void tuplesort_get_stats(Tuplesortstate *state,
-					const char **sortMethod,
-					const char **spaceType,
-					long *spaceUsed);
+extern void
+tuplesort_get_stats(Tuplesortstate *state, const char **sortMethod, const char **spaceType, long *spaceUsed);
 
-extern int	tuplesort_merge_order(int64 allowedMem);
+extern int tuplesort_merge_order(int64 allowedMem);
 
 /*
  * These routines may only be called if randomAccess was specified 'true'.
@@ -123,4 +111,4 @@ extern void tuplesort_rescan(Tuplesortstate *state);
 extern void tuplesort_markpos(Tuplesortstate *state);
 extern void tuplesort_restorepos(Tuplesortstate *state);
 
-#endif   /* TUPLESORT_H */
+#endif /* TUPLESORT_H */

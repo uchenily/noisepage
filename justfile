@@ -9,3 +9,6 @@ image:
 
 container:
     podman run --privileged -it -d --name "dev-noisepage" -v /path/to/noisepage/:/repo/ localhost/noisepage:latest /bin/bash
+
+pre-commit:
+    pre-commit run -a

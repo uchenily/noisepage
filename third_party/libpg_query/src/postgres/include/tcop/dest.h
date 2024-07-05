@@ -69,10 +69,8 @@
 
 #include "executor/tuptable.h"
 
-
 /* buffer size to use for command completion tags */
-#define COMPLETION_TAG_BUFSIZE	64
-
+#define COMPLETION_TAG_BUFSIZE 64
 
 /* ----------------
  *		CommandDest is a simplistic means of identifying the desired
@@ -83,18 +81,17 @@
  * as the destination for individual commands.
  * ----------------
  */
-typedef enum
-{
-	DestNone,					/* results are discarded */
-	DestDebug,					/* results go to debugging output */
-	DestRemote,					/* results sent to frontend process */
-	DestRemoteExecute,			/* sent to frontend, in Execute command */
-	DestSPI,					/* results sent to SPI manager */
-	DestTuplestore,				/* results sent to Tuplestore */
-	DestIntoRel,				/* results sent to relation (SELECT INTO) */
-	DestCopyOut,				/* results sent to COPY TO code */
-	DestSQLFunction,			/* results sent to SQL-language func mgr */
-	DestTransientRel			/* results sent to transient relation */
+typedef enum {
+    DestNone,          /* results are discarded */
+    DestDebug,         /* results go to debugging output */
+    DestRemote,        /* results sent to frontend process */
+    DestRemoteExecute, /* sent to frontend, in Execute command */
+    DestSPI,           /* results sent to SPI manager */
+    DestTuplestore,    /* results sent to Tuplestore */
+    DestIntoRel,       /* results sent to relation (SELECT INTO) */
+    DestCopyOut,       /* results sent to COPY TO code */
+    DestSQLFunction,   /* results sent to SQL-language func mgr */
+    DestTransientRel   /* results sent to transient relation */
 } CommandDest;
 
 /* ----------------
@@ -108,34 +105,30 @@ typedef enum
  */
 typedef struct _DestReceiver DestReceiver;
 
-struct _DestReceiver
-{
-	/* Called for each tuple to be output: */
-	void		(*receiveSlot) (TupleTableSlot *slot,
-											DestReceiver *self);
-	/* Per-executor-run initialization and shutdown: */
-	void		(*rStartup) (DestReceiver *self,
-										 int operation,
-										 TupleDesc typeinfo);
-	void		(*rShutdown) (DestReceiver *self);
-	/* Destroy the receiver object itself (if dynamically allocated) */
-	void		(*rDestroy) (DestReceiver *self);
-	/* CommandDest code for this receiver */
-	CommandDest mydest;
-	/* Private fields might appear beyond this point... */
+struct _DestReceiver {
+    /* Called for each tuple to be output: */
+    void (*receiveSlot)(TupleTableSlot *slot, DestReceiver *self);
+    /* Per-executor-run initialization and shutdown: */
+    void (*rStartup)(DestReceiver *self, int operation, TupleDesc typeinfo);
+    void (*rShutdown)(DestReceiver *self);
+    /* Destroy the receiver object itself (if dynamically allocated) */
+    void (*rDestroy)(DestReceiver *self);
+    /* CommandDest code for this receiver */
+    CommandDest mydest;
+    /* Private fields might appear beyond this point... */
 };
 
-extern DestReceiver *None_Receiver;		/* permanent receiver for DestNone */
+extern DestReceiver *None_Receiver; /* permanent receiver for DestNone */
 
 /* The primary destination management functions */
 
-extern void BeginCommand(const char *commandTag, CommandDest dest);
+extern void          BeginCommand(const char *commandTag, CommandDest dest);
 extern DestReceiver *CreateDestReceiver(CommandDest dest);
-extern void EndCommand(const char *commandTag, CommandDest dest);
+extern void          EndCommand(const char *commandTag, CommandDest dest);
 
 /* Additional functions that go with destination management, more or less. */
 
 extern void NullCommand(CommandDest dest);
 extern void ReadyForQuery(CommandDest dest);
 
-#endif   /* DEST_H */
+#endif /* DEST_H */

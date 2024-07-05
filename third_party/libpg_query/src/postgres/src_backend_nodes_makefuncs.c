@@ -38,41 +38,34 @@
 #include "nodes/nodeFuncs.h"
 #include "utils/lsyscache.h"
 
-
 /*
  * makeA_Expr -
  *		makes an A_Expr node
  */
-A_Expr *
-makeA_Expr(A_Expr_Kind kind, List *name,
-		   Node *lexpr, Node *rexpr, int location)
-{
-	A_Expr	   *a = makeNode(A_Expr);
+A_Expr *makeA_Expr(A_Expr_Kind kind, List *name, Node *lexpr, Node *rexpr, int location) {
+    A_Expr *a = makeNode(A_Expr);
 
-	a->kind = kind;
-	a->name = name;
-	a->lexpr = lexpr;
-	a->rexpr = rexpr;
-	a->location = location;
-	return a;
+    a->kind = kind;
+    a->name = name;
+    a->lexpr = lexpr;
+    a->rexpr = rexpr;
+    a->location = location;
+    return a;
 }
 
 /*
  * makeSimpleA_Expr -
  *		As above, given a simple (unqualified) operator name
  */
-A_Expr *
-makeSimpleA_Expr(A_Expr_Kind kind, char *name,
-				 Node *lexpr, Node *rexpr, int location)
-{
-	A_Expr	   *a = makeNode(A_Expr);
+A_Expr *makeSimpleA_Expr(A_Expr_Kind kind, char *name, Node *lexpr, Node *rexpr, int location) {
+    A_Expr *a = makeNode(A_Expr);
 
-	a->kind = kind;
-	a->name = list_make1(makeString((char *) name));
-	a->lexpr = lexpr;
-	a->rexpr = rexpr;
-	a->location = location;
-	return a;
+    a->kind = kind;
+    a->name = list_make1(makeString((char *) name));
+    a->lexpr = lexpr;
+    a->rexpr = rexpr;
+    a->location = location;
+    return a;
 }
 
 /*
@@ -80,13 +73,11 @@ makeSimpleA_Expr(A_Expr_Kind kind, char *name,
  *	  creates a Var node
  */
 
-
 /*
  * makeVarFromTargetEntry -
  *		convenience function to create a same-level Var node from a
  *		TargetEntry
  */
-
 
 /*
  * makeWholeRowVar -
@@ -105,12 +96,10 @@ makeSimpleA_Expr(A_Expr_Kind kind, char *name,
  * value that the whole-row notation might otherwise suggest.
  */
 
-
 /*
  * makeTargetEntry -
  *	  creates a TargetEntry node
  */
-
 
 /*
  * flatCopyTargetEntry -
@@ -120,18 +109,15 @@ makeSimpleA_Expr(A_Expr_Kind kind, char *name,
  * a new expression.
  */
 
-
 /*
  * makeFromExpr -
  *	  creates a FromExpr node
  */
 
-
 /*
  * makeConst -
  *	  creates a Const node
  */
-
 
 /*
  * makeNullConst -
@@ -141,27 +127,23 @@ makeSimpleA_Expr(A_Expr_Kind kind, char *name,
  * storage properties.
  */
 
-
 /*
  * makeBoolConst -
  *	  creates a Const node representing a boolean value (can be NULL too)
  */
 
-
 /*
  * makeBoolExpr -
  *	  creates a BoolExpr node
  */
-Expr *
-makeBoolExpr(BoolExprType boolop, List *args, int location)
-{
-	BoolExpr   *b = makeNode(BoolExpr);
+Expr *makeBoolExpr(BoolExprType boolop, List *args, int location) {
+    BoolExpr *b = makeNode(BoolExpr);
 
-	b->boolop = boolop;
-	b->args = args;
-	b->location = location;
+    b->boolop = boolop;
+    b->args = args;
+    b->location = location;
 
-	return (Expr *) b;
+    return (Expr *) b;
 }
 
 /*
@@ -170,15 +152,13 @@ makeBoolExpr(BoolExprType boolop, List *args, int location)
  *
  * NOTE: the given name is copied, but the colnames list (if any) isn't.
  */
-Alias *
-makeAlias(const char *aliasname, List *colnames)
-{
-	Alias	   *a = makeNode(Alias);
+Alias *makeAlias(const char *aliasname, List *colnames) {
+    Alias *a = makeNode(Alias);
 
-	a->aliasname = pstrdup(aliasname);
-	a->colnames = colnames;
+    a->aliasname = pstrdup(aliasname);
+    a->colnames = colnames;
 
-	return a;
+    return a;
 }
 
 /*
@@ -186,25 +166,22 @@ makeAlias(const char *aliasname, List *colnames)
  *	  creates a RelabelType node
  */
 
-
 /*
  * makeRangeVar -
  *	  creates a RangeVar node (rather oversimplified case)
  */
-RangeVar *
-makeRangeVar(char *schemaname, char *relname, int location)
-{
-	RangeVar   *r = makeNode(RangeVar);
+RangeVar *makeRangeVar(char *schemaname, char *relname, int location) {
+    RangeVar *r = makeNode(RangeVar);
 
-	r->catalogname = NULL;
-	r->schemaname = schemaname;
-	r->relname = relname;
-	r->inhOpt = INH_DEFAULT;
-	r->relpersistence = RELPERSISTENCE_PERMANENT;
-	r->alias = NULL;
-	r->location = location;
+    r->catalogname = NULL;
+    r->schemaname = schemaname;
+    r->relname = relname;
+    r->inhOpt = INH_DEFAULT;
+    r->relpersistence = RELPERSISTENCE_PERMANENT;
+    r->alias = NULL;
+    r->location = location;
 
-	return r;
+    return r;
 }
 
 /*
@@ -213,10 +190,8 @@ makeRangeVar(char *schemaname, char *relname, int location)
  *
  * typmod is defaulted, but can be changed later by caller.
  */
-TypeName *
-makeTypeName(char *typnam)
-{
-	return makeTypeNameFromNameList(list_make1(makeString(typnam)));
+TypeName *makeTypeName(char *typnam) {
+    return makeTypeNameFromNameList(list_make1(makeString(typnam)));
 }
 
 /*
@@ -225,23 +200,20 @@ makeTypeName(char *typnam)
  *
  * typmod is defaulted, but can be changed later by caller.
  */
-TypeName *
-makeTypeNameFromNameList(List *names)
-{
-	TypeName   *n = makeNode(TypeName);
+TypeName *makeTypeNameFromNameList(List *names) {
+    TypeName *n = makeNode(TypeName);
 
-	n->names = names;
-	n->typmods = NIL;
-	n->typemod = -1;
-	n->location = -1;
-	return n;
+    n->names = names;
+    n->typmods = NIL;
+    n->typemod = -1;
+    n->location = -1;
+    return n;
 }
 
 /*
  * makeTypeNameFromOid -
  *	build a TypeName node to represent a type already known by OID/typmod.
  */
-
 
 /*
  * makeFuncExpr -
@@ -250,7 +222,6 @@ makeTypeNameFromNameList(List *names)
  * The argument expressions must have been transformed already.
  */
 
-
 /*
  * makeDefElem -
  *	build a DefElem node
@@ -258,37 +229,32 @@ makeTypeNameFromNameList(List *names)
  * This is sufficient for the "typical" case with an unqualified option name
  * and no special action.
  */
-DefElem *
-makeDefElem(char *name, Node *arg)
-{
-	DefElem    *res = makeNode(DefElem);
+DefElem *makeDefElem(char *name, Node *arg) {
+    DefElem *res = makeNode(DefElem);
 
-	res->defnamespace = NULL;
-	res->defname = name;
-	res->arg = arg;
-	res->defaction = DEFELEM_UNSPEC;
-	res->location = -1;
+    res->defnamespace = NULL;
+    res->defname = name;
+    res->arg = arg;
+    res->defaction = DEFELEM_UNSPEC;
+    res->location = -1;
 
-	return res;
+    return res;
 }
 
 /*
  * makeDefElemExtended -
  *	build a DefElem node with all fields available to be specified
  */
-DefElem *
-makeDefElemExtended(char *nameSpace, char *name, Node *arg,
-					DefElemAction defaction, int location)
-{
-	DefElem    *res = makeNode(DefElem);
+DefElem *makeDefElemExtended(char *nameSpace, char *name, Node *arg, DefElemAction defaction, int location) {
+    DefElem *res = makeNode(DefElem);
 
-	res->defnamespace = nameSpace;
-	res->defname = name;
-	res->arg = arg;
-	res->defaction = defaction;
-	res->location = location;
+    res->defnamespace = nameSpace;
+    res->defname = name;
+    res->arg = arg;
+    res->defaction = defaction;
+    res->location = location;
 
-	return res;
+    return res;
 }
 
 /*
@@ -297,35 +263,31 @@ makeDefElemExtended(char *nameSpace, char *name, Node *arg,
  * Initialize a FuncCall struct with the information every caller must
  * supply.  Any non-default parameters have to be inserted by the caller.
  */
-FuncCall *
-makeFuncCall(List *name, List *args, int location)
-{
-	FuncCall   *n = makeNode(FuncCall);
+FuncCall *makeFuncCall(List *name, List *args, int location) {
+    FuncCall *n = makeNode(FuncCall);
 
-	n->funcname = name;
-	n->args = args;
-	n->agg_order = NIL;
-	n->agg_filter = NULL;
-	n->agg_within_group = false;
-	n->agg_star = false;
-	n->agg_distinct = false;
-	n->func_variadic = false;
-	n->over = NULL;
-	n->location = location;
-	return n;
+    n->funcname = name;
+    n->args = args;
+    n->agg_order = NIL;
+    n->agg_filter = NULL;
+    n->agg_within_group = false;
+    n->agg_star = false;
+    n->agg_distinct = false;
+    n->func_variadic = false;
+    n->over = NULL;
+    n->location = location;
+    return n;
 }
 
 /*
  * makeGroupingSet
  *
  */
-GroupingSet *
-makeGroupingSet(GroupingSetKind kind, List *content, int location)
-{
-	GroupingSet *n = makeNode(GroupingSet);
+GroupingSet *makeGroupingSet(GroupingSetKind kind, List *content, int location) {
+    GroupingSet *n = makeNode(GroupingSet);
 
-	n->kind = kind;
-	n->content = content;
-	n->location = location;
-	return n;
+    n->kind = kind;
+    n->content = content;
+    n->location = location;
+    return n;
 }

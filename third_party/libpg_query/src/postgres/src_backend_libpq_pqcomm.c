@@ -74,16 +74,16 @@
  */
 #include "postgres.h"
 
-#include <signal.h>
 #include <fcntl.h>
 #include <grp.h>
-#include <unistd.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <signal.h>
 #include <sys/file.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/time.h>
-#include <netdb.h>
-#include <netinet/in.h>
+#include <unistd.h>
 #ifdef HAVE_NETINET_TCP_H
 #include <netinet/tcp.h>
 #endif
@@ -91,7 +91,7 @@
 #ifdef HAVE_UTIME_H
 #include <utime.h>
 #endif
-#ifdef WIN32_ONLY_COMPILER		/* mstcpip.h is missing on mingw */
+#ifdef WIN32_ONLY_COMPILER /* mstcpip.h is missing on mingw */
 #include <mstcpip.h>
 #endif
 
@@ -106,10 +106,7 @@
  * Configuration options
  */
 
-
-
 /* Where the Unix socket files are (list of palloc'd strings) */
-
 
 /*
  * Buffers for low-level I/O.
@@ -121,22 +118,19 @@
 #define PQ_SEND_BUFFER_SIZE 8192
 #define PQ_RECV_BUFFER_SIZE 8192
 
+/* Size send buffer */
+/* Next index to store a byte in PqSendBuffer */
+/* Next index to send a byte in PqSendBuffer */
 
-	/* Size send buffer */
-		/* Next index to store a byte in PqSendBuffer */
-		/* Next index to send a byte in PqSendBuffer */
-
-
-		/* Next index to read a byte from PqRecvBuffer */
-		/* End of data available in PqRecvBuffer */
+/* Next index to read a byte from PqRecvBuffer */
+/* End of data available in PqRecvBuffer */
 
 /*
  * Message status
  */
-			/* busy sending data to the client */
-	/* in the middle of reading a message */
-		/* in old-protocol COPY OUT processing */
-
+/* busy sending data to the client */
+/* in the middle of reading a message */
+/* in old-protocol COPY OUT processing */
 
 /* Internal functions */
 /*static void socket_comm_reset(void);
@@ -158,12 +152,7 @@ static int	Lock_AF_UNIX(char *unixSocketDir, char *unixSocketPath);
 static int	Setup_AF_UNIX(char *sock_path);
 #endif   *//* HAVE_UNIX_SOCKETS */
 
-
-
 PQcommMethods *PqCommMethods = NULL;
-
-
-
 
 /* --------------------------------
  *		pq_init - initialize libpq at backend startup
@@ -181,7 +170,6 @@ PQcommMethods *PqCommMethods = NULL;
  * --------------------------------
  */
 
-
 /* --------------------------------
  *		socket_close - shutdown libpq at backend exit
  *
@@ -192,10 +180,8 @@ PQcommMethods *PqCommMethods = NULL;
  */
 #if defined(ENABLE_GSS) || defined(ENABLE_SSPI)
 #ifdef ENABLE_GSS
-#endif   /* ENABLE_GSS */
-#endif   /* ENABLE_GSS || ENABLE_SSPI */
-
-
+#endif /* ENABLE_GSS */
+#endif /* ENABLE_GSS || ENABLE_SSPI */
 
 /*
  * Streams -- wrapper around Unix socket system calls
@@ -203,7 +189,6 @@ PQcommMethods *PqCommMethods = NULL;
  *
  *		Stream functions are used for vanilla TCP connection protocol.
  */
-
 
 /*
  * StreamServerPort -- open a "listening" port to accept connections.
@@ -224,7 +209,7 @@ PQcommMethods *PqCommMethods = NULL;
 #if !defined(WIN32) || defined(IPV6_V6ONLY)
 #endif
 #ifdef HAVE_UNIX_SOCKETS
-#endif   /* HAVE_UNIX_SOCKETS */
+#endif /* HAVE_UNIX_SOCKETS */
 #ifdef HAVE_IPV6
 #endif
 #ifdef HAVE_UNIX_SOCKETS
@@ -236,14 +221,11 @@ PQcommMethods *PqCommMethods = NULL;
 #ifdef HAVE_UNIX_SOCKETS
 #endif
 
-
 #ifdef HAVE_UNIX_SOCKETS
 
 /*
  * Lock_AF_UNIX -- configure unix socket file path
  */
-
-
 
 /*
  * Setup_AF_UNIX -- configure unix socket permissions
@@ -251,8 +233,7 @@ PQcommMethods *PqCommMethods = NULL;
 #ifdef WIN32
 #else
 #endif
-#endif   /* HAVE_UNIX_SOCKETS */
-
+#endif /* HAVE_UNIX_SOCKETS */
 
 /*
  * StreamConnection -- create a new connection with client using
@@ -266,7 +247,7 @@ PQcommMethods *PqCommMethods = NULL;
  */
 #ifdef SCO_ACCEPT_BUG
 #endif
-#ifdef	TCP_NODELAY
+#ifdef TCP_NODELAY
 #endif
 #ifdef WIN32
 #endif
@@ -282,7 +263,6 @@ PQcommMethods *PqCommMethods = NULL;
  * we do NOT want to send anything to the far end.
  */
 
-
 /*
  * TouchSocketFiles -- mark socket files as recently accessed
  *
@@ -293,16 +273,14 @@ PQcommMethods *PqCommMethods = NULL;
  * never have put the socket file in /tmp...)
  */
 #ifdef HAVE_UTIME
-#else							/* !HAVE_UTIME */
+#else /* !HAVE_UTIME */
 #ifdef HAVE_UTIMES
-#endif   /* HAVE_UTIMES */
-#endif   /* HAVE_UTIME */
+#endif /* HAVE_UTIMES */
+#endif /* HAVE_UTIME */
 
 /*
  * RemoveSocketFiles -- unlink socket files at postmaster shutdown
  */
-
-
 
 /* --------------------------------
  * Low-level I/O routines begin here.
@@ -320,7 +298,6 @@ PQcommMethods *PqCommMethods = NULL;
  * --------------------------------
  */
 
-
 /* --------------------------------
  *		pq_recvbuf - load some bytes into the input buffer
  *
@@ -328,12 +305,10 @@ PQcommMethods *PqCommMethods = NULL;
  * --------------------------------
  */
 
-
 /* --------------------------------
  *		pq_getbyte	- get a single byte from connection, or return EOF
  * --------------------------------
  */
-
 
 /* --------------------------------
  *		pq_peekbyte		- peek at next byte from connection
@@ -341,7 +316,6 @@ PQcommMethods *PqCommMethods = NULL;
  *	 Same as pq_getbyte() except we don't advance the pointer.
  * --------------------------------
  */
-
 
 /* --------------------------------
  *		pq_getbyte_if_available - get a single byte from connection,
@@ -352,14 +326,12 @@ PQcommMethods *PqCommMethods = NULL;
  * --------------------------------
  */
 
-
 /* --------------------------------
  *		pq_getbytes		- get a known number of bytes from connection
  *
  *		returns 0 if OK, EOF if trouble
  * --------------------------------
  */
-
 
 /* --------------------------------
  *		pq_discardbytes		- throw away a known number of bytes
@@ -370,7 +342,6 @@ PQcommMethods *PqCommMethods = NULL;
  *		returns 0 if OK, EOF if trouble
  * --------------------------------
  */
-
 
 /* --------------------------------
  *		pq_getstring	- get a null terminated string from connection
@@ -388,16 +359,12 @@ PQcommMethods *PqCommMethods = NULL;
  * --------------------------------
  */
 
-
-
 /* --------------------------------
  *		pq_startmsgread - begin reading a message from the client.
  *
  *		This must be called before any of the pq_get* functions.
  * --------------------------------
  */
-
-
 
 /* --------------------------------
  *		pq_endmsgread	- finish reading message.
@@ -408,7 +375,6 @@ PQcommMethods *PqCommMethods = NULL;
  * --------------------------------
  */
 
-
 /* --------------------------------
  *		pq_is_reading_msg - are we currently reading a message?
  *
@@ -417,7 +383,6 @@ PQcommMethods *PqCommMethods = NULL;
  * will check for that too, but it's nicer to detect it earlier.
  * --------------------------------
  */
-
 
 /* --------------------------------
  *		pq_getmessage	- get a message with length word from connection
@@ -436,8 +401,6 @@ PQcommMethods *PqCommMethods = NULL;
  * --------------------------------
  */
 
-
-
 /* --------------------------------
  *		pq_putbytes		- send bytes to connection (not flushed until pq_flush)
  *
@@ -445,16 +408,12 @@ PQcommMethods *PqCommMethods = NULL;
  * --------------------------------
  */
 
-
-
-
 /* --------------------------------
  *		socket_flush		- flush pending output
  *
  *		returns 0 if OK, EOF if trouble
  * --------------------------------
  */
-
 
 /* --------------------------------
  *		internal_flush - flush pending output
@@ -464,7 +423,6 @@ PQcommMethods *PqCommMethods = NULL;
  * --------------------------------
  */
 
-
 /* --------------------------------
  *		pq_flush_if_writable - flush pending output if writable without blocking
  *
@@ -472,12 +430,10 @@ PQcommMethods *PqCommMethods = NULL;
  * --------------------------------
  */
 
-
 /* --------------------------------
  *	socket_is_send_pending	- is there any pending data in the output buffer?
  * --------------------------------
  */
-
 
 /* --------------------------------
  * Message-level I/O routines begin here.
@@ -485,7 +441,6 @@ PQcommMethods *PqCommMethods = NULL;
  * These routines understand about the old-style COPY OUT protocol.
  * --------------------------------
  */
-
 
 /* --------------------------------
  *		socket_putmessage - send a normal message (suppressed in COPY OUT mode)
@@ -513,7 +468,6 @@ PQcommMethods *PqCommMethods = NULL;
  * --------------------------------
  */
 
-
 /* --------------------------------
  *		pq_putmessage_noblock	- like pq_putmessage, but never blocks
  *
@@ -521,14 +475,11 @@ PQcommMethods *PqCommMethods = NULL;
  *		is enlarged.
  */
 
-
-
 /* --------------------------------
  *		socket_startcopyout - inform libpq that an old-style COPY OUT transfer
  *			is beginning
  * --------------------------------
  */
-
 
 /* --------------------------------
  *		socket_endcopyout	- end an old-style COPY OUT transfer
@@ -541,7 +492,6 @@ PQcommMethods *PqCommMethods = NULL;
  * --------------------------------
  */
 
-
 /*
  * Support for TCP Keepalive parameters
  */
@@ -553,41 +503,28 @@ PQcommMethods *PqCommMethods = NULL;
  * the out-of-the-box default instead.
  */
 #if defined(WIN32) && defined(SIO_KEEPALIVE_VALS)
-static int
-pq_setkeepaliveswin32(Port *port, int idle, int interval)
-{
-	struct tcp_keepalive ka;
-	DWORD		retsize;
+static int pq_setkeepaliveswin32(Port *port, int idle, int interval) {
+    struct tcp_keepalive ka;
+    DWORD                retsize;
 
-	if (idle <= 0)
-		idle = 2 * 60 * 60;		/* default = 2 hours */
-	if (interval <= 0)
-		interval = 1;			/* default = 1 second */
+    if (idle <= 0)
+        idle = 2 * 60 * 60; /* default = 2 hours */
+    if (interval <= 0)
+        interval = 1; /* default = 1 second */
 
-	ka.onoff = 1;
-	ka.keepalivetime = idle * 1000;
-	ka.keepaliveinterval = interval * 1000;
+    ka.onoff = 1;
+    ka.keepalivetime = idle * 1000;
+    ka.keepaliveinterval = interval * 1000;
 
-	if (WSAIoctl(port->sock,
-				 SIO_KEEPALIVE_VALS,
-				 (LPVOID) &ka,
-				 sizeof(ka),
-				 NULL,
-				 0,
-				 &retsize,
-				 NULL,
-				 NULL)
-		!= 0)
-	{
-		elog(LOG, "WSAIoctl(SIO_KEEPALIVE_VALS) failed: %ui",
-			 WSAGetLastError());
-		return STATUS_ERROR;
-	}
-	if (port->keepalives_idle != idle)
-		port->keepalives_idle = idle;
-	if (port->keepalives_interval != interval)
-		port->keepalives_interval = interval;
-	return STATUS_OK;
+    if (WSAIoctl(port->sock, SIO_KEEPALIVE_VALS, (LPVOID) &ka, sizeof(ka), NULL, 0, &retsize, NULL, NULL) != 0) {
+        elog(LOG, "WSAIoctl(SIO_KEEPALIVE_VALS) failed: %ui", WSAGetLastError());
+        return STATUS_ERROR;
+    }
+    if (port->keepalives_idle != idle)
+        port->keepalives_idle = idle;
+    if (port->keepalives_interval != interval)
+        port->keepalives_interval = interval;
+    return STATUS_OK;
 }
 #endif
 
@@ -595,9 +532,9 @@ pq_setkeepaliveswin32(Port *port, int idle, int interval)
 #ifndef WIN32
 #ifdef TCP_KEEPIDLE
 #else
-#endif   /* TCP_KEEPIDLE */
-#else							/* WIN32 */
-#endif   /* WIN32 */
+#endif /* TCP_KEEPIDLE */
+#else  /* WIN32 */
+#endif /* WIN32 */
 #else
 #endif
 
@@ -606,21 +543,21 @@ pq_setkeepaliveswin32(Port *port, int idle, int interval)
 #ifdef TCP_KEEPIDLE
 #else
 #endif
-#else							/* WIN32 */
+#else /* WIN32 */
 #endif
-#else							/* TCP_KEEPIDLE || SIO_KEEPALIVE_VALS */
+#else /* TCP_KEEPIDLE || SIO_KEEPALIVE_VALS */
 #endif
 
 #if defined(TCP_KEEPINTVL) || defined(SIO_KEEPALIVE_VALS)
 #ifndef WIN32
 #else
-#endif   /* WIN32 */
+#endif /* WIN32 */
 #else
 #endif
 
-#if defined(TCP_KEEPINTVL) || defined (SIO_KEEPALIVE_VALS)
+#if defined(TCP_KEEPINTVL) || defined(SIO_KEEPALIVE_VALS)
 #ifndef WIN32
-#else							/* WIN32 */
+#else /* WIN32 */
 #endif
 #else
 #endif

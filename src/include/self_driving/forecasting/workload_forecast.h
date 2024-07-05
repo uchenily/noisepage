@@ -14,7 +14,7 @@
 
 namespace noisepage::selfdriving {
 namespace pilot {
-class PilotUtil;
+    class PilotUtil;
 }
 
 /**
@@ -31,19 +31,19 @@ using WorkloadForecastPrediction = std::unordered_map<uint64_t, std::unordered_m
  * The utility class describes the data associated with a given workload interval.
  */
 class WorkloadMetadata {
- public:
-  /** Map from query id to database id */
-  std::unordered_map<execution::query_id_t, catalog::db_oid_t> query_id_to_dboid_;
+public:
+    /** Map from query id to database id */
+    std::unordered_map<execution::query_id_t, catalog::db_oid_t> query_id_to_dboid_;
 
-  /** Map from query id to query text */
-  std::unordered_map<execution::query_id_t, std::string> query_id_to_text_;
+    /** Map from query id to query text */
+    std::unordered_map<execution::query_id_t, std::string> query_id_to_text_;
 
-  /** Map from query id to sample query parameters */
-  std::unordered_map<execution::query_id_t, std::vector<std::vector<parser::ConstantValueExpression>>>
-      query_id_to_params_;
+    /** Map from query id to sample query parameters */
+    std::unordered_map<execution::query_id_t, std::vector<std::vector<parser::ConstantValueExpression>>>
+        query_id_to_params_;
 
-  /** Map from query id to query parameter types */
-  std::unordered_map<execution::query_id_t, std::vector<execution::sql::SqlTypeId>> query_id_to_param_types_;
+    /** Map from query id to query parameter types */
+    std::unordered_map<execution::query_id_t, std::vector<execution::sql::SqlTypeId>> query_id_to_param_types_;
 };
 
 /**
@@ -51,98 +51,107 @@ class WorkloadMetadata {
  * Executing each query while extracting pipeline features
  */
 class WorkloadForecast {
- public:
-  /**
-   * Constructor for WorkloadForecast from disk file
-   * @param forecast_interval Interval used to partition the queries into segments
-   * @param num_sample Number of samples for query parameters
-   */
-  explicit WorkloadForecast(uint64_t forecast_interval, uint64_t num_sample);
+public:
+    /**
+     * Constructor for WorkloadForecast from disk file
+     * @param forecast_interval Interval used to partition the queries into segments
+     * @param num_sample Number of samples for query parameters
+     */
+    explicit WorkloadForecast(uint64_t forecast_interval, uint64_t num_sample);
 
-  /**
-   * Constructor for WorkloadForecast from internal table inference results
-   * @param inference Workload inference
-   * @param metadata Workload metadata information
-   */
-  explicit WorkloadForecast(const WorkloadForecastPrediction &inference, WorkloadMetadata &&metadata);
+    /**
+     * Constructor for WorkloadForecast from internal table inference results
+     * @param inference Workload inference
+     * @param metadata Workload metadata information
+     */
+    explicit WorkloadForecast(const WorkloadForecastPrediction &inference, WorkloadMetadata &&metadata);
 
-  /**
-   * Constructor for WorkloadForecast from on-disk inference results
-   * @param inference Workload inference
-   * @param forecast_interval Interval used to partition the queries into segments
-   * @param num_sample Number of samples for query parameters
-   */
-  explicit WorkloadForecast(const WorkloadForecastPrediction &inference, uint64_t forecast_interval,
-                            uint64_t num_sample);
+    /**
+     * Constructor for WorkloadForecast from on-disk inference results
+     * @param inference Workload inference
+     * @param forecast_interval Interval used to partition the queries into segments
+     * @param num_sample Number of samples for query parameters
+     */
+    explicit WorkloadForecast(const WorkloadForecastPrediction &inference,
+                              uint64_t                          forecast_interval,
+                              uint64_t                          num_sample);
 
-  /**
-   * Get number of forecasted segments
-   * @return number of forecasted segments
-   */
-  uint64_t GetNumberOfSegments() const { return num_forecast_segment_; }
+    /**
+     * Get number of forecasted segments
+     * @return number of forecasted segments
+     */
+    uint64_t GetNumberOfSegments() const {
+        return num_forecast_segment_;
+    }
 
-  /** @brief Get the set of unique db oids that the forecasted workload has queries with */
-  std::set<catalog::db_oid_t> GetDBOidSet() {
-    std::set<catalog::db_oid_t> db_oid_set;
-    for (auto &[qid, db_oid] : workload_metadata_.query_id_to_dboid_) db_oid_set.insert(db_oid);
-    return db_oid_set;
-  }
+    /** @brief Get the set of unique db oids that the forecasted workload has queries with */
+    std::set<catalog::db_oid_t> GetDBOidSet() {
+        std::set<catalog::db_oid_t> db_oid_set;
+        for (auto &[qid, db_oid] : workload_metadata_.query_id_to_dboid_)
+            db_oid_set.insert(db_oid);
+        return db_oid_set;
+    }
 
-  /** @brief Get workload forecast interval in us */
-  uint64_t GetForecastInterval() const { return forecast_interval_; }
+    /** @brief Get workload forecast interval in us */
+    uint64_t GetForecastInterval() const {
+        return forecast_interval_;
+    }
 
- private:
-  friend class pilot::PilotUtil;
+private:
+    friend class pilot::PilotUtil;
 
-  const WorkloadForecastSegment &GetSegmentByIndex(uint64_t segment_index) const {
-    NOISEPAGE_ASSERT(segment_index < num_forecast_segment_, "invalid index");
-    return forecast_segments_[segment_index];
-  }
+    const WorkloadForecastSegment &GetSegmentByIndex(uint64_t segment_index) const {
+        NOISEPAGE_ASSERT(segment_index < num_forecast_segment_, "invalid index");
+        return forecast_segments_[segment_index];
+    }
 
-  std::string GetQuerytextByQid(execution::query_id_t qid) const {
-    NOISEPAGE_ASSERT(workload_metadata_.query_id_to_text_.find(qid) != workload_metadata_.query_id_to_text_.end(),
-                     "invalid qid");
-    return workload_metadata_.query_id_to_text_.at(qid);
-  }
+    std::string GetQuerytextByQid(execution::query_id_t qid) const {
+        NOISEPAGE_ASSERT(workload_metadata_.query_id_to_text_.find(qid) != workload_metadata_.query_id_to_text_.end(),
+                         "invalid qid");
+        return workload_metadata_.query_id_to_text_.at(qid);
+    }
 
-  std::vector<std::vector<parser::ConstantValueExpression>> *GetQueryparamsByQid(execution::query_id_t qid) {
-    NOISEPAGE_ASSERT(workload_metadata_.query_id_to_params_.find(qid) != workload_metadata_.query_id_to_params_.end(),
-                     "invalid qid");
-    return &(workload_metadata_.query_id_to_params_.at(qid));
-  }
+    std::vector<std::vector<parser::ConstantValueExpression>> *GetQueryparamsByQid(execution::query_id_t qid) {
+        NOISEPAGE_ASSERT(workload_metadata_.query_id_to_params_.find(qid)
+                             != workload_metadata_.query_id_to_params_.end(),
+                         "invalid qid");
+        return &(workload_metadata_.query_id_to_params_.at(qid));
+    }
 
-  std::vector<execution::sql::SqlTypeId> *GetParamtypesByQid(execution::query_id_t qid) {
-    NOISEPAGE_ASSERT(
-        workload_metadata_.query_id_to_param_types_.find(qid) != workload_metadata_.query_id_to_param_types_.end(),
-        "invalid qid");
-    return &(workload_metadata_.query_id_to_param_types_.at(qid));
-  }
+    std::vector<execution::sql::SqlTypeId> *GetParamtypesByQid(execution::query_id_t qid) {
+        NOISEPAGE_ASSERT(workload_metadata_.query_id_to_param_types_.find(qid)
+                             != workload_metadata_.query_id_to_param_types_.end(),
+                         "invalid qid");
+        return &(workload_metadata_.query_id_to_param_types_.at(qid));
+    }
 
-  catalog::db_oid_t GetDboidByQid(execution::query_id_t qid) const {
-    NOISEPAGE_ASSERT(workload_metadata_.query_id_to_dboid_.find(qid) != workload_metadata_.query_id_to_dboid_.end(),
-                     "invalid qid");
-    return workload_metadata_.query_id_to_dboid_.at(qid);
-  }
+    catalog::db_oid_t GetDboidByQid(execution::query_id_t qid) const {
+        NOISEPAGE_ASSERT(workload_metadata_.query_id_to_dboid_.find(qid) != workload_metadata_.query_id_to_dboid_.end(),
+                         "invalid qid");
+        return workload_metadata_.query_id_to_dboid_.at(qid);
+    }
 
-  const WorkloadMetadata &GetWorkloadMetadata() const { return workload_metadata_; }
+    const WorkloadMetadata &GetWorkloadMetadata() const {
+        return workload_metadata_;
+    }
 
-  /**
-   * Initializes segments from inference results
-   * @param inference Inference results
-   */
-  void InitFromInference(const WorkloadForecastPrediction &inference);
+    /**
+     * Initializes segments from inference results
+     * @param inference Inference results
+     */
+    void InitFromInference(const WorkloadForecastPrediction &inference);
 
-  void LoadQueryTrace();
-  void LoadQueryText();
-  void CreateSegments();
+    void LoadQueryTrace();
+    void LoadQueryText();
+    void CreateSegments();
 
-  std::multimap<uint64_t, execution::query_id_t> query_timestamp_to_id_;
-  uint64_t num_sample_;
-  WorkloadMetadata workload_metadata_;
+    std::multimap<uint64_t, execution::query_id_t> query_timestamp_to_id_;
+    uint64_t                                       num_sample_;
+    WorkloadMetadata                               workload_metadata_;
 
-  std::vector<WorkloadForecastSegment> forecast_segments_;
-  uint64_t num_forecast_segment_;
-  uint64_t forecast_interval_;
+    std::vector<WorkloadForecastSegment> forecast_segments_;
+    uint64_t                             num_forecast_segment_;
+    uint64_t                             forecast_interval_;
 };
 
-}  // namespace noisepage::selfdriving
+} // namespace noisepage::selfdriving

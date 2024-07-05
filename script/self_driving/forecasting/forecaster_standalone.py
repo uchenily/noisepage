@@ -3,7 +3,7 @@
 Script for standalone workload forecasting without relying on model server
 Example usage:
 - Generate data (runs OLTP benchmark on the built database) and perform training, and save the trained model
-    ./forecaster_standalone --generate_data 
+    ./forecaster_standalone --generate_data
 
 - Perform training and save the trained model
     ./forecaster_standalone --models=LSTM --model_save_path=model.pickle

@@ -3,10 +3,10 @@
 # tpl_bytecode_handlers_ir_compiler.py
 # Compiles bytecode_handlers_ir.cpp with clang++.
 #
-# Usage: 
+# Usage:
 #
 #   tpl_bytecode_handlers_ir_compiler.py LLVM_COMPILER CMAKE_BINARY_DIR BCH_CPP BCH_OUT
-#    
+#
 #   where
 #         LLVM_COMPILER       =   The path to clang++ on the system.
 #         CMAKE_BINARY_DIR    =   The build directory, which must contain compile_commands.json.
@@ -62,7 +62,7 @@ FLAG_BLACKLIST = [
 ]
 
 # Those flags that we want to transform in some way
-# as they are 
+# as they are
 FLAG_TRANSFORMS = {
     "-O0": "-O3",  # Always optimize
 }
@@ -94,7 +94,7 @@ def get_clang_flags() -> List[str]:
                 command = command.split(' ')[1:-4]
                 # Return the compile command.
                 return [apply_transform(c) for c in filter(lambda x: x not in FLAG_BLACKLIST, command)]
-            
+
             # Record the line for the next iteration.
             prev = line
     raise Exception("Could not find bytecode_handlers_ir.cpp in compile_commands.json.")

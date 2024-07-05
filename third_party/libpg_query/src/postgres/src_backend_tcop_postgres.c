@@ -35,14 +35,14 @@
 #include <fcntl.h>
 #include <limits.h>
 #include <signal.h>
-#include <unistd.h>
 #include <sys/socket.h>
+#include <unistd.h>
 #ifdef HAVE_SYS_SELECT_H
 #include <sys/select.h>
 #endif
 #ifdef HAVE_SYS_RESOURCE_H
-#include <sys/time.h>
 #include <sys/resource.h>
+#include <sys/time.h>
 #endif
 
 #ifndef HAVE_GETRUSAGE
@@ -58,14 +58,15 @@
 #include "libpq/libpq.h"
 #include "libpq/pqformat.h"
 #include "libpq/pqsignal.h"
+#include "mb/pg_wchar.h"
 #include "miscadmin.h"
 #include "nodes/print.h"
 #include "optimizer/planner.h"
-#include "pgstat.h"
-#include "pg_trace.h"
 #include "parser/analyze.h"
 #include "parser/parser.h"
 #include "pg_getopt.h"
+#include "pg_trace.h"
+#include "pgstat.h"
 #include "postmaster/autovacuum.h"
 #include "postmaster/postmaster.h"
 #include "replication/slot.h"
@@ -86,33 +87,23 @@
 #include "utils/snapmgr.h"
 #include "utils/timeout.h"
 #include "utils/timestamp.h"
-#include "mb/pg_wchar.h"
-
 
 /* ----------------
  *		global variables
  * ----------------
  */
 __thread const char *debug_query_string;
- /* client-supplied query string */
+/* client-supplied query string */
 
 /* Note: whereToSendOutput is initialized for the bootstrap/standalone case */
 __thread CommandDest whereToSendOutput = DestDebug;
 
-
 /* flag for logging end of session */
 
-
-
-
 /* GUC variable for maximum stack depth (measured in kilobytes) */
-__thread int			max_stack_depth = 100;
-
+__thread int max_stack_depth = 100;
 
 /* wait N seconds to allow attach from a debugger */
-
-
-
 
 /* ----------------
  *		private variables
@@ -128,14 +119,13 @@ static long max_stack_depth_bytes = 100 * 1024L;
  * it directly. Newer versions use set_stack_base(), but we want to stay
  * binary-compatible for the time being.
  */
-__thread char	   *stack_base_ptr = NULL;
-
+__thread char *stack_base_ptr = NULL;
 
 /*
  * On IA64 we also have to remember the register stack base.
  */
 #if defined(__ia64__) || defined(__ia64)
-char	   *register_stack_base_ptr = NULL;
+char *register_stack_base_ptr = NULL;
 #endif
 
 /*
@@ -144,12 +134,10 @@ char	   *register_stack_base_ptr = NULL;
  * reading in the signal handler, ey?)
  */
 
-
 /*
  * Flag to keep track of whether we have started a transaction.
  * For extended query protocol this has to be remembered across messages.
  */
-
 
 /*
  * Flag to indicate that we are doing the outer loop's read-from-client,
@@ -157,13 +145,10 @@ char	   *register_stack_base_ptr = NULL;
  * commands like COPY FROM STDIN.
  */
 
-
 /*
  * Flags to implement skip-till-Sync-after-error behavior for messages of
  * the extended query protocol.
  */
-
-
 
 /*
  * If an unnamed prepared statement exists, it's stored here.
@@ -171,51 +156,46 @@ char	   *register_stack_base_ptr = NULL;
  * in order to reduce overhead for short-lived queries.
  */
 
-
 /* assorted command-line switches */
-	/* -D switch */
+/* -D switch */
 
-	/* -E switch */
+/* -E switch */
 
 /*
  * people who want to use EOF should #define DONTUSENEWLINE in
  * tcop/tcopdebug.h
  */
 #ifndef TCOP_DONTUSENEWLINE
-		/* Use newlines query delimiters (the default) */
+/* Use newlines query delimiters (the default) */
 #else
-static int	UseNewLine = 0;		/* Use EOF as query delimiters */
-#endif   /* TCOP_DONTUSENEWLINE */
+static int UseNewLine = 0; /* Use EOF as query delimiters */
+#endif /* TCOP_DONTUSENEWLINE */
 
 /* whether or not, and why, we were canceled by conflict with recovery */
-
-
-
 
 /* ----------------------------------------------------------------
  *		decls for routines only used in this file
  * ----------------------------------------------------------------
  */
-//static int	InteractiveBackend(StringInfo inBuf);
-//static int	interactive_getc(void);
-//static int	SocketBackend(StringInfo inBuf);
-//static int	ReadCommand(StringInfo inBuf);
-//static void forbidden_in_wal_sender(char firstchar);
-//static List *pg_rewrite_query(Query *query);
-//static bool check_log_statement(List *stmt_list);
-//static int	errdetail_execute(List *raw_parsetree_list);
-//static int	errdetail_params(ParamListInfo params);
-//static int	errdetail_abort(void);
-//static int	errdetail_recovery_conflict(void);
-//static void start_xact_command(void);
-//static void finish_xact_command(void);
-//static bool IsTransactionExitStmt(Node *parsetree);
-//static bool IsTransactionExitStmtList(List *parseTrees);
-//static bool IsTransactionStmtList(List *parseTrees);
-//static void drop_unnamed_stmt(void);
-//static void SigHupHandler(SIGNAL_ARGS);
-//static void log_disconnections(int code, Datum arg);
-
+// static int	InteractiveBackend(StringInfo inBuf);
+// static int	interactive_getc(void);
+// static int	SocketBackend(StringInfo inBuf);
+// static int	ReadCommand(StringInfo inBuf);
+// static void forbidden_in_wal_sender(char firstchar);
+// static List *pg_rewrite_query(Query *query);
+// static bool check_log_statement(List *stmt_list);
+// static int	errdetail_execute(List *raw_parsetree_list);
+// static int	errdetail_params(ParamListInfo params);
+// static int	errdetail_abort(void);
+// static int	errdetail_recovery_conflict(void);
+// static void start_xact_command(void);
+// static void finish_xact_command(void);
+// static bool IsTransactionExitStmt(Node *parsetree);
+// static bool IsTransactionExitStmtList(List *parseTrees);
+// static bool IsTransactionStmtList(List *parseTrees);
+// static void drop_unnamed_stmt(void);
+// static void SigHupHandler(SIGNAL_ARGS);
+// static void log_disconnections(int code, Datum arg);
 
 /* ----------------------------------------------------------------
  *		routines to obtain user input
@@ -232,15 +212,12 @@ static int	UseNewLine = 0;		/* Use EOF as query delimiters */
  * ----------------
  */
 
-
-
 /*
  * interactive_getc -- collect one character from stdin
  *
  * Even though we are not reading from a "client" process, we still want to
  * respond to signals, particularly SIGTERM/SIGQUIT.
  */
-
 
 /* ----------------
  *	SocketBackend()		Is called for frontend-backend connections
@@ -251,7 +228,6 @@ static int	UseNewLine = 0;		/* Use EOF as query delimiters */
  * ----------------
  */
 
-
 /* ----------------
  *		ReadCommand reads a command from either the frontend or
  *		standard input, places it in inBuf, and returns the
@@ -259,7 +235,6 @@ static int	UseNewLine = 0;		/* Use EOF as query delimiters */
  *		EOF is returned if end of file.
  * ----------------
  */
-
 
 /*
  * ProcessClientReadInterrupt() - Process interrupts specific to client reads
@@ -270,7 +245,6 @@ static int	UseNewLine = 0;		/* Use EOF as query delimiters */
  * Must preserve errno!
  */
 
-
 /*
  * ProcessClientWriteInterrupt() - Process interrupts specific to client writes
  *
@@ -280,7 +254,6 @@ static int	UseNewLine = 0;		/* Use EOF as query delimiters */
  *
  * Must preserve errno!
  */
-
 
 /*
  * Do raw parsing (only).
@@ -308,13 +281,11 @@ static int	UseNewLine = 0;		/* Use EOF as query delimiters */
  * NOTE: for reasons mentioned above, this must be separate from raw parsing.
  */
 
-
 /*
  * Do parse analysis and rewriting.  This is the same as pg_analyze_and_rewrite
  * except that external-parameter resolution is determined by parser callback
  * hooks instead of a fixed list of parameter datatypes.
  */
-
 
 /*
  * Perform rewriting of a query produced by parse analysis.
@@ -324,7 +295,6 @@ static int	UseNewLine = 0;		/* Use EOF as query delimiters */
  */
 #ifdef COPY_PARSE_PLAN_TREES
 #endif
-
 
 /*
  * Generate a plan for a single already-rewritten query.
@@ -342,14 +312,11 @@ static int	UseNewLine = 0;		/* Use EOF as query delimiters */
  * list.  Utility statements are simply represented by their statement nodes.
  */
 
-
-
 /*
  * exec_simple_query
  *
  * Execute a "simple Query" protocol message.
  */
-
 
 /*
  * exec_parse_message
@@ -357,20 +324,17 @@ static int	UseNewLine = 0;		/* Use EOF as query delimiters */
  * Execute a "Parse" protocol message.
  */
 
-
 /*
  * exec_bind_message
  *
  * Process a "Bind" message to create a portal from a prepared statement
  */
 
-
 /*
  * exec_execute_message
  *
  * Process an "Execute" message for a portal
  */
-
 
 /*
  * check_log_statement
@@ -379,7 +343,6 @@ static int	UseNewLine = 0;		/* Use EOF as query delimiters */
  * stmt_list can be either raw grammar output or a list of planned
  * statements
  */
-
 
 /*
  * check_log_duration
@@ -397,7 +360,6 @@ static int	UseNewLine = 0;		/* Use EOF as query delimiters */
  * essentially prevents 2 from being returned).
  */
 
-
 /*
  * errdetail_execute
  *
@@ -405,13 +367,11 @@ static int	UseNewLine = 0;		/* Use EOF as query delimiters */
  * The argument is the raw parsetree list.
  */
 
-
 /*
  * errdetail_params
  *
  * Add an errdetail() line showing bind-parameter data, if available.
  */
-
 
 /*
  * errdetail_abort
@@ -419,13 +379,11 @@ static int	UseNewLine = 0;		/* Use EOF as query delimiters */
  * Add an errdetail() line showing abort reason, if any.
  */
 
-
 /*
  * errdetail_recovery_conflict
  *
  * Add an errdetail() line showing conflict source.
  */
-
 
 /*
  * exec_describe_statement_message
@@ -433,25 +391,20 @@ static int	UseNewLine = 0;		/* Use EOF as query delimiters */
  * Process a "Describe" message for a prepared statement
  */
 
-
 /*
  * exec_describe_portal_message
  *
  * Process a "Describe" message for a portal
  */
 
-
-
 /*
  * Convenience routines for starting/committing a single command.
  */
-
 
 #ifdef MEMORY_CONTEXT_CHECKING
 #endif
 #ifdef SHOW_MEMORY_STATS
 #endif
-
 
 /*
  * Convenience routines for checking whether a statement is one of the
@@ -460,16 +413,11 @@ static int	UseNewLine = 0;		/* Use EOF as query delimiters */
 
 /* Test a bare parsetree */
 
-
 /* Test a list that might contain Query nodes or bare parsetrees */
 
-
 /* Test a list that might contain Query nodes or bare parsetrees */
-
 
 /* Release any existing unnamed prepared statement */
-
-
 
 /* --------------------------------
  *		signal handler routines used in PostgresMain()
@@ -483,24 +431,19 @@ static int	UseNewLine = 0;		/* Use EOF as query delimiters */
  * so we need to stop what we're doing and exit.
  */
 
-
 /*
  * Shutdown signal from postmaster: abort transaction and exit
  * at soonest convenient time
  */
-
 
 /*
  * Query-cancel signal from postmaster: abort current transaction
  * at soonest convenient time
  */
 
-
 /* signal handler for floating point exception */
 
-
 /* SIGHUP: set flag to re-read config file at next convenient time */
-
 
 /*
  * RecoveryConflictInterrupt: out-of-line portion of recovery conflict
@@ -508,7 +451,6 @@ static int	UseNewLine = 0;		/* Use EOF as query delimiters */
  * and StatementCancelHandler(). Called only by a normal user backend
  * that begins a transaction during recovery.
  */
-
 
 /*
  * ProcessInterrupts: out-of-line portion of CHECK_FOR_INTERRUPTS() macro
@@ -518,8 +460,6 @@ static int	UseNewLine = 0;		/* Use EOF as query delimiters */
  * InterruptPending is true.
  */
 void ProcessInterrupts(void) {}
-
-
 
 /*
  * IA64-specific code to fetch the AR.BSP register for stack depth checks.
@@ -537,25 +477,21 @@ void ProcessInterrupts(void) {}
 #include <asm/ia64regs.h>
 #endif
 
-static __inline__ char *
-ia64_get_bsp(void)
-{
-	char	   *ret;
+static __inline__ char *ia64_get_bsp(void) {
+    char *ret;
 
 #ifndef __INTEL_COMPILER
-	/* the ;; is a "stop", seems to be required before fetching BSP */
-	__asm__		__volatile__(
-										 ";;\n"
-										 "	mov	%0=ar.bsp	\n"
-							 :			 "=r"(ret));
+    /* the ;; is a "stop", seems to be required before fetching BSP */
+    __asm__ __volatile__(";;\n"
+                         "	mov	%0=ar.bsp	\n"
+                         : "=r"(ret));
 #else
-	ret = (char *) __getReg(_IA64_REG_AR_BSP);
+    ret = (char *) __getReg(_IA64_REG_AR_BSP);
 #endif
-	return ret;
+    return ret;
 }
 #endif
-#endif   /* IA64 */
-
+#endif /* IA64 */
 
 /*
  * set_stack_base: set up reference point for stack depth checking
@@ -592,74 +528,64 @@ ia64_get_bsp(void)
  * check_stack_depth() just throws an error summarily.  stack_is_too_deep()
  * can be used by code that wants to handle the error condition itself.
  */
-void
-check_stack_depth(void)
-{
-	if (stack_is_too_deep())
-	{
-		ereport(ERROR,
-				(errcode(ERRCODE_STATEMENT_TOO_COMPLEX),
-				 errmsg("stack depth limit exceeded"),
-				 errhint("Increase the configuration parameter \"max_stack_depth\" (currently %dkB), "
-			  "after ensuring the platform's stack depth limit is adequate.",
-						 max_stack_depth)));
-	}
+void check_stack_depth(void) {
+    if (stack_is_too_deep()) {
+        ereport(ERROR,
+                (errcode(ERRCODE_STATEMENT_TOO_COMPLEX),
+                 errmsg("stack depth limit exceeded"),
+                 errhint("Increase the configuration parameter \"max_stack_depth\" (currently %dkB), "
+                         "after ensuring the platform's stack depth limit is adequate.",
+                         max_stack_depth)));
+    }
 }
 
-bool
-stack_is_too_deep(void)
-{
-	char		stack_top_loc;
-	long		stack_depth;
+bool stack_is_too_deep(void) {
+    char stack_top_loc;
+    long stack_depth;
 
-	/*
-	 * Compute distance from reference point to my local variables
-	 */
-	stack_depth = (long) (stack_base_ptr - &stack_top_loc);
+    /*
+     * Compute distance from reference point to my local variables
+     */
+    stack_depth = (long) (stack_base_ptr - &stack_top_loc);
 
-	/*
-	 * Take abs value, since stacks grow up on some machines, down on others
-	 */
-	if (stack_depth < 0)
-		stack_depth = -stack_depth;
+    /*
+     * Take abs value, since stacks grow up on some machines, down on others
+     */
+    if (stack_depth < 0)
+        stack_depth = -stack_depth;
 
-	/*
-	 * Trouble?
-	 *
-	 * The test on stack_base_ptr prevents us from erroring out if called
-	 * during process setup or in a non-backend process.  Logically it should
-	 * be done first, but putting it here avoids wasting cycles during normal
-	 * cases.
-	 */
-	if (stack_depth > max_stack_depth_bytes &&
-		stack_base_ptr != NULL)
-		return true;
+    /*
+     * Trouble?
+     *
+     * The test on stack_base_ptr prevents us from erroring out if called
+     * during process setup or in a non-backend process.  Logically it should
+     * be done first, but putting it here avoids wasting cycles during normal
+     * cases.
+     */
+    if (stack_depth > max_stack_depth_bytes && stack_base_ptr != NULL)
+        return true;
 
-	/*
-	 * On IA64 there is a separate "register" stack that requires its own
-	 * independent check.  For this, we have to measure the change in the
-	 * "BSP" pointer from PostgresMain to here.  Logic is just as above,
-	 * except that we know IA64's register stack grows up.
-	 *
-	 * Note we assume that the same max_stack_depth applies to both stacks.
-	 */
+        /*
+         * On IA64 there is a separate "register" stack that requires its own
+         * independent check.  For this, we have to measure the change in the
+         * "BSP" pointer from PostgresMain to here.  Logic is just as above,
+         * except that we know IA64's register stack grows up.
+         *
+         * Note we assume that the same max_stack_depth applies to both stacks.
+         */
 #if defined(__ia64__) || defined(__ia64)
-	stack_depth = (long) (ia64_get_bsp() - register_stack_base_ptr);
+    stack_depth = (long) (ia64_get_bsp() - register_stack_base_ptr);
 
-	if (stack_depth > max_stack_depth_bytes &&
-		register_stack_base_ptr != NULL)
-		return true;
-#endif   /* IA64 */
+    if (stack_depth > max_stack_depth_bytes && register_stack_base_ptr != NULL)
+        return true;
+#endif /* IA64 */
 
-	return false;
+    return false;
 }
 
 /* GUC check hook for max_stack_depth */
 
-
 /* GUC assign hook for max_stack_depth */
-
-
 
 /*
  * set_debug_options --- apply "-d N" command line option
@@ -667,14 +593,6 @@ stack_is_too_deep(void)
  * -d is not quite the same as setting log_min_messages because it enables
  * other output options.
  */
-
-
-
-
-
-
-
-
 
 /* ----------------------------------------------------------------
  * process_postgres_switches
@@ -700,7 +618,6 @@ stack_is_too_deep(void)
 #ifdef HAVE_INT_OPTRESET
 #endif
 
-
 /* ----------------------------------------------------------------
  * PostgresMain
  *	   postgres main loop -- all backends, interactive or otherwise start here
@@ -724,30 +641,21 @@ stack_is_too_deep(void)
  * message was received, and is used to construct the error message.
  */
 
-
-
 /*
  * Obtain platform stack depth limit (in bytes)
  *
  * Return -1 if unknown
  */
 #if defined(HAVE_GETRLIMIT) && defined(RLIMIT_STACK)
-#else							/* no getrlimit */
+#else /* no getrlimit */
 #if defined(WIN32) || defined(__CYGWIN__)
-#else							/* not windows ... give up */
+#else /* not windows ... give up */
 #endif
 #endif
-
-
-
-
-
-
 
 #if defined(HAVE_GETRUSAGE)
-#endif   /* HAVE_GETRUSAGE */
+#endif /* HAVE_GETRUSAGE */
 
 /*
  * on_proc_exit handler to log end of session
  */
-

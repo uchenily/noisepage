@@ -14,50 +14,50 @@ namespace noisepage::execution::sql {
  * query execution.
  */
 enum class TypeId : uint8_t {
-  Boolean,    // bool
-  TinyInt,    // int8_t
-  SmallInt,   // int16_t
-  Integer,    // int32_t
-  BigInt,     // int64_t
-  Hash,       // hash_t
-  Pointer,    // uintptr_t
-  Float,      // float
-  Double,     // double
-  Date,       // Date objects
-  Timestamp,  // Timestamp objects
-  Varchar,    // char*, representing a null-terminated UTF-8 string
-  Varbinary   // blobs representing arbitrary bytes
+    Boolean,   // bool
+    TinyInt,   // int8_t
+    SmallInt,  // int16_t
+    Integer,   // int32_t
+    BigInt,    // int64_t
+    Hash,      // hash_t
+    Pointer,   // uintptr_t
+    Float,     // float
+    Double,    // double
+    Date,      // Date objects
+    Timestamp, // Timestamp objects
+    Varchar,   // char*, representing a null-terminated UTF-8 string
+    Varbinary  // blobs representing arbitrary bytes
 };
 
 /**
  * Supported SQL data types. //TODO(Matt): merge with network::PostgresValueType to reduce translation?
  */
 enum class SqlTypeId : int8_t {
-  Invalid = -1,  // TODO(Matt): this is a hack, mostly used to transport un-typed NULLs after parsing
-  Boolean,
-  TinyInt,    // 1-byte integer
-  SmallInt,   // 2-byte integer
-  Integer,    // 4-byte integer
-  BigInt,     // 8-byte integer
-  Real,       // 4-byte float //TODO(Matt): front-end doesn't support this, just changes REAL to DOUBLE
-  Double,     // 8-byte float
-  Decimal,    // Arbitrary-precision numeric //TODO(Matt): back-end doesn't support this. See #1434
-  Date,       // Dates
-  Timestamp,  // Timestamps
-  Char,       // Fixed-length string //TODO(Matt): front-end doesn't support this
-  Varchar,    // Variable-length string
-  Varbinary   // TODO(Matt): front-end doesn't support this. See #788
+    Invalid = -1, // TODO(Matt): this is a hack, mostly used to transport un-typed NULLs after parsing
+    Boolean,
+    TinyInt,   // 1-byte integer
+    SmallInt,  // 2-byte integer
+    Integer,   // 4-byte integer
+    BigInt,    // 8-byte integer
+    Real,      // 4-byte float //TODO(Matt): front-end doesn't support this, just changes REAL to DOUBLE
+    Double,    // 8-byte float
+    Decimal,   // Arbitrary-precision numeric //TODO(Matt): back-end doesn't support this. See #1434
+    Date,      // Dates
+    Timestamp, // Timestamps
+    Char,      // Fixed-length string //TODO(Matt): front-end doesn't support this
+    Varchar,   // Variable-length string
+    Varbinary  // TODO(Matt): front-end doesn't support this. See #788
 };
 
 /**
  * The possible column compression/encodings.
  */
 enum class ColumnEncoding : uint8_t {
-  None,
-  Rle,
-  Delta,
-  IntegerDict,
-  StringDict,
+    None,
+    Rle,
+    Delta,
+    IntegerDict,
+    StringDict,
 };
 
 /**
@@ -80,38 +80,38 @@ TypeId GetTypeId(SqlTypeId frontend_type);
  */
 template <class T>
 constexpr inline TypeId GetTypeId() {
-  if constexpr (std::is_same<T, bool>()) {
-    return TypeId::Boolean;
-  } else if constexpr (std::is_same<std::remove_const_t<T>, int8_t>()) {  // NOLINT
-    return TypeId::TinyInt;
-  } else if constexpr (std::is_same<std::remove_const_t<T>, int16_t>()) {  // NOLINT
-    return TypeId::SmallInt;
-  } else if constexpr (std::is_same<std::remove_const_t<T>, int32_t>()) {  // NOLINT
-    return TypeId::Integer;
-  } else if constexpr (std::is_same<std::remove_const_t<T>, int64_t>()) {  // NOLINT
-    return TypeId::BigInt;
-  } else if constexpr (std::is_same<std::remove_const_t<T>, hash_t>()) {  // NOLINT
-    return TypeId::Hash;
-  } else if constexpr (std::is_same<std::remove_const_t<T>, uintptr_t>()) {  // NOLINT
-    return TypeId::Pointer;
-  } else if constexpr (std::is_same<std::remove_const_t<T>, float>()) {  // NOLINT
-    return TypeId::Float;
-  } else if constexpr (std::is_same<std::remove_const_t<T>, double>()) {  // NOLINT
-    return TypeId::Double;
-  } else if constexpr (std::is_same<std::remove_const_t<T>, Date>()) {  // NOLINT
-    return TypeId::Date;
-  } else if constexpr (std::is_same<std::remove_const_t<T>, Timestamp>()) {  // NOLINT
-    return TypeId::Timestamp;
-  } else if constexpr (std::is_same<std::remove_const_t<T>, char *>() ||  // NOLINT
-                       std::is_same<std::remove_const_t<T>, const char *>() ||
-                       std::is_same<std::remove_const_t<T>, std::string>() ||
-                       std::is_same<std::remove_const_t<T>, std::string_view>() ||
-                       std::is_same<std::remove_const_t<T>, storage::VarlenEntry>()) {
-    return TypeId::Varchar;
-  } else if constexpr (std::is_same<std::remove_const_t<T>, Blob>()) {  // NOLINT
-    return TypeId::Varbinary;
-  }
-  static_assert("Not a valid primitive type");
+    if constexpr (std::is_same<T, bool>()) {
+        return TypeId::Boolean;
+    } else if constexpr (std::is_same<std::remove_const_t<T>, int8_t>()) { // NOLINT
+        return TypeId::TinyInt;
+    } else if constexpr (std::is_same<std::remove_const_t<T>, int16_t>()) { // NOLINT
+        return TypeId::SmallInt;
+    } else if constexpr (std::is_same<std::remove_const_t<T>, int32_t>()) { // NOLINT
+        return TypeId::Integer;
+    } else if constexpr (std::is_same<std::remove_const_t<T>, int64_t>()) { // NOLINT
+        return TypeId::BigInt;
+    } else if constexpr (std::is_same<std::remove_const_t<T>, hash_t>()) { // NOLINT
+        return TypeId::Hash;
+    } else if constexpr (std::is_same<std::remove_const_t<T>, uintptr_t>()) { // NOLINT
+        return TypeId::Pointer;
+    } else if constexpr (std::is_same<std::remove_const_t<T>, float>()) { // NOLINT
+        return TypeId::Float;
+    } else if constexpr (std::is_same<std::remove_const_t<T>, double>()) { // NOLINT
+        return TypeId::Double;
+    } else if constexpr (std::is_same<std::remove_const_t<T>, Date>()) { // NOLINT
+        return TypeId::Date;
+    } else if constexpr (std::is_same<std::remove_const_t<T>, Timestamp>()) { // NOLINT
+        return TypeId::Timestamp;
+    } else if constexpr (std::is_same<std::remove_const_t<T>, char *>() || // NOLINT
+                         std::is_same<std::remove_const_t<T>, const char *>()
+                         || std::is_same<std::remove_const_t<T>, std::string>()
+                         || std::is_same<std::remove_const_t<T>, std::string_view>()
+                         || std::is_same<std::remove_const_t<T>, storage::VarlenEntry>()) {
+        return TypeId::Varchar;
+    } else if constexpr (std::is_same<std::remove_const_t<T>, Blob>()) { // NOLINT
+        return TypeId::Varbinary;
+    }
+    static_assert("Not a valid primitive type");
 }
 
 /**
@@ -158,4 +158,4 @@ bool IsTypeNumeric(TypeId type);
  */
 std::string TypeIdToString(TypeId type);
 
-}  // namespace noisepage::execution::sql
+} // namespace noisepage::execution::sql

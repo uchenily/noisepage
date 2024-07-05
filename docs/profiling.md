@@ -17,19 +17,19 @@ TODO(WAN): write me. OLTPBench is possible to setup with sufficient ant proxy ma
   - Up storage to 60 GB
   - Keep General Purpose SSD
 - Name one instance Terrier and name one instance OLTPBench
-- Update the security group on the Terrier instance 
+- Update the security group on the Terrier instance
   - Add inbound rule allowing for custom TCP protocol on port 15721
 
 ### OLTPBench Machine Setup:
 - Update the box and install packages
   - ```bash
     sudo apt update
-    sudo apt-get install ant 
+    sudo apt-get install ant
     sudo apt-get install postgresql-client-common
     sudo apt-get install postgresql-client-12
     ```
 - Clone Matt's fork of oltpbench:
-   - ```bash 
+   - ```bash
       git clone https://github.com/mbutrovich/oltpbench.git
       ```
 - Checkout the noisepage branch:
@@ -45,7 +45,7 @@ TODO(WAN): write me. OLTPBench is possible to setup with sufficient ant proxy ma
 - Update the noisepage TPCC config file:
    - ```bash
      vim config/noisepage_tpcc_config.xml
-     ``` 
+     ```
    - Change `localhost` to IP address of Terrier machine in `DBUrl`
    - Choose `scalefactor`, `loaderThreads`, and `terminals`
    - Add `<warmup>10</warmup>` in `work` to start caching
@@ -64,11 +64,11 @@ TODO(WAN): write me. OLTPBench is possible to setup with sufficient ant proxy ma
     sudo bash script/installation/packages.sh
     ```
 - Choose query mode between `Interpret` and `Compiled`
-  - If you want Compiled mode change change the line  
-    ```exec_query->Run(common::ManagedPointer(exec_ctx), execution::vm::ExecutionMode::Interpret);```   
-    to  
-    ```exec_query->Run(common::ManagedPointer(exec_ctx), execution::vm::ExecutionMode::Compiled);```  
-    in  
+  - If you want Compiled mode change change the line
+    ```exec_query->Run(common::ManagedPointer(exec_ctx), execution::vm::ExecutionMode::Interpret);```
+    to
+    ```exec_query->Run(common::ManagedPointer(exec_ctx), execution::vm::ExecutionMode::Compiled);```
+    in
     `src/traffic_cop/traffic_cop.cpp`
 - Build Terrier in `Release` mode with `Debug` symbols
   - ```bash
@@ -80,7 +80,7 @@ TODO(WAN): write me. OLTPBench is possible to setup with sufficient ant proxy ma
 - If you wish to log to ramdisk, set up `ramdisk` for WAL file storage
   - ```bash
     sudo mkdir /mnt/ramdisk
-    sudo mount -t tmpfs -o rw,size=32G tmpfs /mnt/ramdisk 
+    sudo mount -t tmpfs -o rw,size=32G tmpfs /mnt/ramdisk
     ```
 - If you wish to use [`bcc` profiling tools](https://github.com/iovisor/bcc/blob/master/INSTALL.md#ubuntu---binary) follow the installation steps described at the link
 
@@ -88,9 +88,9 @@ TODO(WAN): write me. OLTPBench is possible to setup with sufficient ant proxy ma
 
 **Terrier Machine:**
 - Note: you may want to use a tmux session in case you get disconnected from the instance
-- Startup Terrier (if you do not want to log to Ramdisk, remove the log_file_path flag below)  
+- Startup Terrier (if you do not want to log to Ramdisk, remove the log_file_path flag below)
    - ```bash
-     sudo rm /mnt/ramdisk/wal.log 
+     sudo rm /mnt/ramdisk/wal.log
      ./terrier -connection_thread_count=200 -wal_file_path=/mnt/ramdisk/wal.log
      ```
 - Get debug symbols from used packages in Terrier using the RUNNING_PID_OF_TERRIER
@@ -154,6 +154,6 @@ Choose a path based on the tool used
   - ```bash
     sudo rm -rf /mnt/ramdisk
     sudo mkdir /mnt/ramdisk
-    sudo mount -t tmpfs -o rw,size=32G tmpfs /mnt/ramdisk 
+    sudo mount -t tmpfs -o rw,size=32G tmpfs /mnt/ramdisk
     ```
 - Make sure to at least stop your instances after you are done profiling to avoid wasting credits

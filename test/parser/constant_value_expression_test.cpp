@@ -10,9 +10,9 @@
 namespace noisepage::parser {
 
 class CVETests : public TerrierTest {
- public:
-  std::default_random_engine generator_;
-  const uint32_t num_iterations_ = 10000;
+public:
+    std::default_random_engine generator_;
+    const uint32_t             num_iterations_ = 10000;
 };
 
 /**
@@ -29,440 +29,444 @@ class CVETests : public TerrierTest {
 
 // NOLINTNEXTLINE
 TEST_F(CVETests, BooleanTest) {
-  for (uint32_t i = 0; i < num_iterations_; i++) {
-    auto data = static_cast<bool>(std::uniform_int_distribution<uint8_t>(0, 1)(generator_));
+    for (uint32_t i = 0; i < num_iterations_; i++) {
+        auto data = static_cast<bool>(std::uniform_int_distribution<uint8_t>(0, 1)(generator_));
 
-    ConstantValueExpression value(execution::sql::SqlTypeId::Boolean, execution::sql::BoolVal(data));
-    EXPECT_FALSE(value.IsNull());
-    EXPECT_EQ(data, value.Peek<bool>());
+        ConstantValueExpression value(execution::sql::SqlTypeId::Boolean, execution::sql::BoolVal(data));
+        EXPECT_FALSE(value.IsNull());
+        EXPECT_EQ(data, value.Peek<bool>());
 
-    auto copy_constructed_value(value);
-    EXPECT_EQ(value, copy_constructed_value);
-    EXPECT_EQ(value.Hash(), copy_constructed_value.Hash());
-    ConstantValueExpression copy_assigned_value(execution::sql::SqlTypeId::Boolean, execution::sql::BoolVal(!data));
-    EXPECT_NE(value, copy_assigned_value);
-    EXPECT_NE(value.Hash(), copy_assigned_value.Hash());
-    copy_assigned_value = value;
-    EXPECT_EQ(value, copy_assigned_value);
-    EXPECT_EQ(value.Hash(), copy_assigned_value.Hash());
+        auto copy_constructed_value(value);
+        EXPECT_EQ(value, copy_constructed_value);
+        EXPECT_EQ(value.Hash(), copy_constructed_value.Hash());
+        ConstantValueExpression copy_assigned_value(execution::sql::SqlTypeId::Boolean, execution::sql::BoolVal(!data));
+        EXPECT_NE(value, copy_assigned_value);
+        EXPECT_NE(value.Hash(), copy_assigned_value.Hash());
+        copy_assigned_value = value;
+        EXPECT_EQ(value, copy_assigned_value);
+        EXPECT_EQ(value.Hash(), copy_assigned_value.Hash());
 
-    auto move_constructed_value(std::move(value));
-    EXPECT_EQ(copy_assigned_value, move_constructed_value);
-    EXPECT_EQ(copy_assigned_value.Hash(), move_constructed_value.Hash());
-    ConstantValueExpression move_assigned_value(execution::sql::SqlTypeId::Boolean, execution::sql::BoolVal(!data));
-    EXPECT_NE(copy_assigned_value, move_assigned_value);
-    EXPECT_NE(copy_assigned_value.Hash(), move_assigned_value.Hash());
-    move_assigned_value = std::move(copy_assigned_value);
-    EXPECT_EQ(copy_constructed_value, move_assigned_value);
-    EXPECT_EQ(copy_constructed_value.Hash(), move_assigned_value.Hash());
-  }
+        auto move_constructed_value(std::move(value));
+        EXPECT_EQ(copy_assigned_value, move_constructed_value);
+        EXPECT_EQ(copy_assigned_value.Hash(), move_constructed_value.Hash());
+        ConstantValueExpression move_assigned_value(execution::sql::SqlTypeId::Boolean, execution::sql::BoolVal(!data));
+        EXPECT_NE(copy_assigned_value, move_assigned_value);
+        EXPECT_NE(copy_assigned_value.Hash(), move_assigned_value.Hash());
+        move_assigned_value = std::move(copy_assigned_value);
+        EXPECT_EQ(copy_constructed_value, move_assigned_value);
+        EXPECT_EQ(copy_constructed_value.Hash(), move_assigned_value.Hash());
+    }
 }
 
 // NOLINTNEXTLINE
 TEST_F(CVETests, TinyIntTest) {
-  for (uint32_t i = 0; i < num_iterations_; i++) {
-    auto data = static_cast<int8_t>(std::uniform_int_distribution<int8_t>(INT8_MIN, INT8_MAX)(generator_));
+    for (uint32_t i = 0; i < num_iterations_; i++) {
+        auto data = static_cast<int8_t>(std::uniform_int_distribution<int8_t>(INT8_MIN, INT8_MAX)(generator_));
 
-    ConstantValueExpression value(execution::sql::SqlTypeId::TinyInt, execution::sql::Integer(data));
-    EXPECT_FALSE(value.IsNull());
-    EXPECT_EQ(data, value.Peek<int8_t>());
+        ConstantValueExpression value(execution::sql::SqlTypeId::TinyInt, execution::sql::Integer(data));
+        EXPECT_FALSE(value.IsNull());
+        EXPECT_EQ(data, value.Peek<int8_t>());
 
-    auto copy_constructed_value(value);
-    EXPECT_EQ(value, copy_constructed_value);
-    EXPECT_EQ(value.Hash(), copy_constructed_value.Hash());
-    ConstantValueExpression copy_assigned_value(execution::sql::SqlTypeId::Boolean);
-    EXPECT_NE(value, copy_assigned_value);
-    EXPECT_NE(value.Hash(), copy_assigned_value.Hash());
-    copy_assigned_value = value;
-    EXPECT_EQ(value, copy_assigned_value);
-    EXPECT_EQ(value.Hash(), copy_assigned_value.Hash());
+        auto copy_constructed_value(value);
+        EXPECT_EQ(value, copy_constructed_value);
+        EXPECT_EQ(value.Hash(), copy_constructed_value.Hash());
+        ConstantValueExpression copy_assigned_value(execution::sql::SqlTypeId::Boolean);
+        EXPECT_NE(value, copy_assigned_value);
+        EXPECT_NE(value.Hash(), copy_assigned_value.Hash());
+        copy_assigned_value = value;
+        EXPECT_EQ(value, copy_assigned_value);
+        EXPECT_EQ(value.Hash(), copy_assigned_value.Hash());
 
-    auto move_constructed_value(std::move(value));
-    EXPECT_EQ(copy_assigned_value, move_constructed_value);
-    EXPECT_EQ(copy_assigned_value.Hash(), move_constructed_value.Hash());
-    ConstantValueExpression move_assigned_value(execution::sql::SqlTypeId::Boolean);
-    EXPECT_NE(copy_assigned_value, move_assigned_value);
-    EXPECT_NE(copy_assigned_value.Hash(), move_assigned_value.Hash());
-    move_assigned_value = std::move(copy_assigned_value);
-    EXPECT_EQ(copy_constructed_value, move_assigned_value);
-    EXPECT_EQ(copy_constructed_value.Hash(), move_assigned_value.Hash());
-  }
+        auto move_constructed_value(std::move(value));
+        EXPECT_EQ(copy_assigned_value, move_constructed_value);
+        EXPECT_EQ(copy_assigned_value.Hash(), move_constructed_value.Hash());
+        ConstantValueExpression move_assigned_value(execution::sql::SqlTypeId::Boolean);
+        EXPECT_NE(copy_assigned_value, move_assigned_value);
+        EXPECT_NE(copy_assigned_value.Hash(), move_assigned_value.Hash());
+        move_assigned_value = std::move(copy_assigned_value);
+        EXPECT_EQ(copy_constructed_value, move_assigned_value);
+        EXPECT_EQ(copy_constructed_value.Hash(), move_assigned_value.Hash());
+    }
 }
 
 // NOLINTNEXTLINE
 TEST_F(CVETests, SmallIntTest) {
-  for (uint32_t i = 0; i < num_iterations_; i++) {
-    auto data = static_cast<int16_t>(std::uniform_int_distribution<int16_t>(INT16_MIN, INT16_MAX)(generator_));
+    for (uint32_t i = 0; i < num_iterations_; i++) {
+        auto data = static_cast<int16_t>(std::uniform_int_distribution<int16_t>(INT16_MIN, INT16_MAX)(generator_));
 
-    ConstantValueExpression value(execution::sql::SqlTypeId::SmallInt, execution::sql::Integer(data));
-    EXPECT_FALSE(value.IsNull());
-    EXPECT_EQ(data, value.Peek<int16_t>());
+        ConstantValueExpression value(execution::sql::SqlTypeId::SmallInt, execution::sql::Integer(data));
+        EXPECT_FALSE(value.IsNull());
+        EXPECT_EQ(data, value.Peek<int16_t>());
 
-    auto copy_constructed_value(value);
-    EXPECT_EQ(value, copy_constructed_value);
-    EXPECT_EQ(value.Hash(), copy_constructed_value.Hash());
-    ConstantValueExpression copy_assigned_value(execution::sql::SqlTypeId::Boolean);
-    EXPECT_NE(value, copy_assigned_value);
-    EXPECT_NE(value.Hash(), copy_assigned_value.Hash());
-    copy_assigned_value = value;
-    EXPECT_EQ(value, copy_assigned_value);
-    EXPECT_EQ(value.Hash(), copy_assigned_value.Hash());
+        auto copy_constructed_value(value);
+        EXPECT_EQ(value, copy_constructed_value);
+        EXPECT_EQ(value.Hash(), copy_constructed_value.Hash());
+        ConstantValueExpression copy_assigned_value(execution::sql::SqlTypeId::Boolean);
+        EXPECT_NE(value, copy_assigned_value);
+        EXPECT_NE(value.Hash(), copy_assigned_value.Hash());
+        copy_assigned_value = value;
+        EXPECT_EQ(value, copy_assigned_value);
+        EXPECT_EQ(value.Hash(), copy_assigned_value.Hash());
 
-    auto move_constructed_value(std::move(value));
-    EXPECT_EQ(copy_assigned_value, move_constructed_value);
-    EXPECT_EQ(copy_assigned_value.Hash(), move_constructed_value.Hash());
-    ConstantValueExpression move_assigned_value(execution::sql::SqlTypeId::Boolean);
-    EXPECT_NE(copy_assigned_value, move_assigned_value);
-    EXPECT_NE(copy_assigned_value.Hash(), move_assigned_value.Hash());
-    move_assigned_value = std::move(copy_assigned_value);
-    EXPECT_EQ(copy_constructed_value, move_assigned_value);
-    EXPECT_EQ(copy_constructed_value.Hash(), move_assigned_value.Hash());
-  }
+        auto move_constructed_value(std::move(value));
+        EXPECT_EQ(copy_assigned_value, move_constructed_value);
+        EXPECT_EQ(copy_assigned_value.Hash(), move_constructed_value.Hash());
+        ConstantValueExpression move_assigned_value(execution::sql::SqlTypeId::Boolean);
+        EXPECT_NE(copy_assigned_value, move_assigned_value);
+        EXPECT_NE(copy_assigned_value.Hash(), move_assigned_value.Hash());
+        move_assigned_value = std::move(copy_assigned_value);
+        EXPECT_EQ(copy_constructed_value, move_assigned_value);
+        EXPECT_EQ(copy_constructed_value.Hash(), move_assigned_value.Hash());
+    }
 }
 
 // NOLINTNEXTLINE
 TEST_F(CVETests, IntegerTest) {
-  for (uint32_t i = 0; i < num_iterations_; i++) {
-    auto data = static_cast<int32_t>(std::uniform_int_distribution<int32_t>(INT32_MIN, INT32_MAX)(generator_));
+    for (uint32_t i = 0; i < num_iterations_; i++) {
+        auto data = static_cast<int32_t>(std::uniform_int_distribution<int32_t>(INT32_MIN, INT32_MAX)(generator_));
 
-    ConstantValueExpression value(execution::sql::SqlTypeId::Integer, execution::sql::Integer(data));
-    EXPECT_FALSE(value.IsNull());
-    EXPECT_EQ(data, value.Peek<int32_t>());
+        ConstantValueExpression value(execution::sql::SqlTypeId::Integer, execution::sql::Integer(data));
+        EXPECT_FALSE(value.IsNull());
+        EXPECT_EQ(data, value.Peek<int32_t>());
 
-    auto copy_constructed_value(value);
-    EXPECT_EQ(value, copy_constructed_value);
-    EXPECT_EQ(value.Hash(), copy_constructed_value.Hash());
-    ConstantValueExpression copy_assigned_value(execution::sql::SqlTypeId::Boolean);
-    EXPECT_NE(value, copy_assigned_value);
-    EXPECT_NE(value.Hash(), copy_assigned_value.Hash());
-    copy_assigned_value = value;
-    EXPECT_EQ(value, copy_assigned_value);
-    EXPECT_EQ(value.Hash(), copy_assigned_value.Hash());
+        auto copy_constructed_value(value);
+        EXPECT_EQ(value, copy_constructed_value);
+        EXPECT_EQ(value.Hash(), copy_constructed_value.Hash());
+        ConstantValueExpression copy_assigned_value(execution::sql::SqlTypeId::Boolean);
+        EXPECT_NE(value, copy_assigned_value);
+        EXPECT_NE(value.Hash(), copy_assigned_value.Hash());
+        copy_assigned_value = value;
+        EXPECT_EQ(value, copy_assigned_value);
+        EXPECT_EQ(value.Hash(), copy_assigned_value.Hash());
 
-    auto move_constructed_value(std::move(value));
-    EXPECT_EQ(copy_assigned_value, move_constructed_value);
-    EXPECT_EQ(copy_assigned_value.Hash(), move_constructed_value.Hash());
-    ConstantValueExpression move_assigned_value(execution::sql::SqlTypeId::Boolean);
-    EXPECT_NE(copy_assigned_value, move_assigned_value);
-    EXPECT_NE(copy_assigned_value.Hash(), move_assigned_value.Hash());
-    move_assigned_value = std::move(copy_assigned_value);
-    EXPECT_EQ(copy_constructed_value, move_assigned_value);
-    EXPECT_EQ(copy_constructed_value.Hash(), move_assigned_value.Hash());
-  }
+        auto move_constructed_value(std::move(value));
+        EXPECT_EQ(copy_assigned_value, move_constructed_value);
+        EXPECT_EQ(copy_assigned_value.Hash(), move_constructed_value.Hash());
+        ConstantValueExpression move_assigned_value(execution::sql::SqlTypeId::Boolean);
+        EXPECT_NE(copy_assigned_value, move_assigned_value);
+        EXPECT_NE(copy_assigned_value.Hash(), move_assigned_value.Hash());
+        move_assigned_value = std::move(copy_assigned_value);
+        EXPECT_EQ(copy_constructed_value, move_assigned_value);
+        EXPECT_EQ(copy_constructed_value.Hash(), move_assigned_value.Hash());
+    }
 }
 
 // NOLINTNEXTLINE
 TEST_F(CVETests, BigIntTest) {
-  for (uint32_t i = 0; i < num_iterations_; i++) {
-    auto data = static_cast<int64_t>(std::uniform_int_distribution<int64_t>(INT64_MIN, INT64_MAX)(generator_));
+    for (uint32_t i = 0; i < num_iterations_; i++) {
+        auto data = static_cast<int64_t>(std::uniform_int_distribution<int64_t>(INT64_MIN, INT64_MAX)(generator_));
 
-    ConstantValueExpression value(execution::sql::SqlTypeId::BigInt, execution::sql::Integer(data));
-    EXPECT_FALSE(value.IsNull());
-    EXPECT_EQ(data, value.Peek<int64_t>());
+        ConstantValueExpression value(execution::sql::SqlTypeId::BigInt, execution::sql::Integer(data));
+        EXPECT_FALSE(value.IsNull());
+        EXPECT_EQ(data, value.Peek<int64_t>());
 
-    auto copy_constructed_value(value);
-    EXPECT_EQ(value, copy_constructed_value);
-    EXPECT_EQ(value.Hash(), copy_constructed_value.Hash());
-    ConstantValueExpression copy_assigned_value(execution::sql::SqlTypeId::Boolean);
-    EXPECT_NE(value, copy_assigned_value);
-    EXPECT_NE(value.Hash(), copy_assigned_value.Hash());
-    copy_assigned_value = value;
-    EXPECT_EQ(value, copy_assigned_value);
-    EXPECT_EQ(value.Hash(), copy_assigned_value.Hash());
+        auto copy_constructed_value(value);
+        EXPECT_EQ(value, copy_constructed_value);
+        EXPECT_EQ(value.Hash(), copy_constructed_value.Hash());
+        ConstantValueExpression copy_assigned_value(execution::sql::SqlTypeId::Boolean);
+        EXPECT_NE(value, copy_assigned_value);
+        EXPECT_NE(value.Hash(), copy_assigned_value.Hash());
+        copy_assigned_value = value;
+        EXPECT_EQ(value, copy_assigned_value);
+        EXPECT_EQ(value.Hash(), copy_assigned_value.Hash());
 
-    auto move_constructed_value(std::move(value));
-    EXPECT_EQ(copy_assigned_value, move_constructed_value);
-    EXPECT_EQ(copy_assigned_value.Hash(), move_constructed_value.Hash());
-    ConstantValueExpression move_assigned_value(execution::sql::SqlTypeId::Boolean);
-    EXPECT_NE(copy_assigned_value, move_assigned_value);
-    EXPECT_NE(copy_assigned_value.Hash(), move_assigned_value.Hash());
-    move_assigned_value = std::move(copy_assigned_value);
-    EXPECT_EQ(copy_constructed_value, move_assigned_value);
-    EXPECT_EQ(copy_constructed_value.Hash(), move_assigned_value.Hash());
-  }
+        auto move_constructed_value(std::move(value));
+        EXPECT_EQ(copy_assigned_value, move_constructed_value);
+        EXPECT_EQ(copy_assigned_value.Hash(), move_constructed_value.Hash());
+        ConstantValueExpression move_assigned_value(execution::sql::SqlTypeId::Boolean);
+        EXPECT_NE(copy_assigned_value, move_assigned_value);
+        EXPECT_NE(copy_assigned_value.Hash(), move_assigned_value.Hash());
+        move_assigned_value = std::move(copy_assigned_value);
+        EXPECT_EQ(copy_constructed_value, move_assigned_value);
+        EXPECT_EQ(copy_constructed_value.Hash(), move_assigned_value.Hash());
+    }
 }
 
 // NOLINTNEXTLINE
 TEST_F(CVETests, DecimalTest) {
-  for (uint32_t i = 0; i < num_iterations_; i++) {
-    auto data = std::uniform_real_distribution<double>(DBL_MIN, DBL_MAX)(generator_);
+    for (uint32_t i = 0; i < num_iterations_; i++) {
+        auto data = std::uniform_real_distribution<double>(DBL_MIN, DBL_MAX)(generator_);
 
-    ConstantValueExpression value(execution::sql::SqlTypeId::Double, execution::sql::Real(data));
-    EXPECT_FALSE(value.IsNull());
-    EXPECT_EQ(data, value.Peek<double>());
+        ConstantValueExpression value(execution::sql::SqlTypeId::Double, execution::sql::Real(data));
+        EXPECT_FALSE(value.IsNull());
+        EXPECT_EQ(data, value.Peek<double>());
 
-    auto copy_constructed_value(value);
-    EXPECT_EQ(value, copy_constructed_value);
-    EXPECT_EQ(value.Hash(), copy_constructed_value.Hash());
-    ConstantValueExpression copy_assigned_value(execution::sql::SqlTypeId::Boolean);
-    EXPECT_NE(value, copy_assigned_value);
-    EXPECT_NE(value.Hash(), copy_assigned_value.Hash());
-    copy_assigned_value = value;
-    EXPECT_EQ(value, copy_assigned_value);
-    EXPECT_EQ(value.Hash(), copy_assigned_value.Hash());
+        auto copy_constructed_value(value);
+        EXPECT_EQ(value, copy_constructed_value);
+        EXPECT_EQ(value.Hash(), copy_constructed_value.Hash());
+        ConstantValueExpression copy_assigned_value(execution::sql::SqlTypeId::Boolean);
+        EXPECT_NE(value, copy_assigned_value);
+        EXPECT_NE(value.Hash(), copy_assigned_value.Hash());
+        copy_assigned_value = value;
+        EXPECT_EQ(value, copy_assigned_value);
+        EXPECT_EQ(value.Hash(), copy_assigned_value.Hash());
 
-    auto move_constructed_value(std::move(value));
-    EXPECT_EQ(copy_assigned_value, move_constructed_value);
-    EXPECT_EQ(copy_assigned_value.Hash(), move_constructed_value.Hash());
-    ConstantValueExpression move_assigned_value(execution::sql::SqlTypeId::Boolean);
-    EXPECT_NE(copy_assigned_value, move_assigned_value);
-    EXPECT_NE(copy_assigned_value.Hash(), move_assigned_value.Hash());
-    move_assigned_value = std::move(copy_assigned_value);
-    EXPECT_EQ(copy_constructed_value, move_assigned_value);
-    EXPECT_EQ(copy_constructed_value.Hash(), move_assigned_value.Hash());
-  }
+        auto move_constructed_value(std::move(value));
+        EXPECT_EQ(copy_assigned_value, move_constructed_value);
+        EXPECT_EQ(copy_assigned_value.Hash(), move_constructed_value.Hash());
+        ConstantValueExpression move_assigned_value(execution::sql::SqlTypeId::Boolean);
+        EXPECT_NE(copy_assigned_value, move_assigned_value);
+        EXPECT_NE(copy_assigned_value.Hash(), move_assigned_value.Hash());
+        move_assigned_value = std::move(copy_assigned_value);
+        EXPECT_EQ(copy_constructed_value, move_assigned_value);
+        EXPECT_EQ(copy_constructed_value.Hash(), move_assigned_value.Hash());
+    }
 }
 
 // NOLINTNEXTLINE
 TEST_F(CVETests, TimestampTest) {
-  for (uint32_t i = 0; i < num_iterations_; i++) {
-    auto data = static_cast<uint64_t>(std::uniform_int_distribution<uint64_t>(0, UINT64_MAX)(generator_));
+    for (uint32_t i = 0; i < num_iterations_; i++) {
+        auto data = static_cast<uint64_t>(std::uniform_int_distribution<uint64_t>(0, UINT64_MAX)(generator_));
 
-    ConstantValueExpression value(execution::sql::SqlTypeId::Timestamp, execution::sql::TimestampVal(data));
-    EXPECT_FALSE(value.IsNull());
-    EXPECT_EQ(data, value.Peek<execution::sql::Timestamp>().ToNative());
+        ConstantValueExpression value(execution::sql::SqlTypeId::Timestamp, execution::sql::TimestampVal(data));
+        EXPECT_FALSE(value.IsNull());
+        EXPECT_EQ(data, value.Peek<execution::sql::Timestamp>().ToNative());
 
-    auto copy_constructed_value(value);
-    EXPECT_EQ(value, copy_constructed_value);
-    EXPECT_EQ(value.Hash(), copy_constructed_value.Hash());
-    ConstantValueExpression copy_assigned_value(execution::sql::SqlTypeId::Boolean);
-    EXPECT_NE(value, copy_assigned_value);
-    EXPECT_NE(value.Hash(), copy_assigned_value.Hash());
-    copy_assigned_value = value;
-    EXPECT_EQ(value, copy_assigned_value);
-    EXPECT_EQ(value.Hash(), copy_assigned_value.Hash());
+        auto copy_constructed_value(value);
+        EXPECT_EQ(value, copy_constructed_value);
+        EXPECT_EQ(value.Hash(), copy_constructed_value.Hash());
+        ConstantValueExpression copy_assigned_value(execution::sql::SqlTypeId::Boolean);
+        EXPECT_NE(value, copy_assigned_value);
+        EXPECT_NE(value.Hash(), copy_assigned_value.Hash());
+        copy_assigned_value = value;
+        EXPECT_EQ(value, copy_assigned_value);
+        EXPECT_EQ(value.Hash(), copy_assigned_value.Hash());
 
-    auto move_constructed_value(std::move(value));
-    EXPECT_EQ(copy_assigned_value, move_constructed_value);
-    EXPECT_EQ(copy_assigned_value.Hash(), move_constructed_value.Hash());
-    ConstantValueExpression move_assigned_value(execution::sql::SqlTypeId::Boolean);
-    EXPECT_NE(copy_assigned_value, move_assigned_value);
-    EXPECT_NE(copy_assigned_value.Hash(), move_assigned_value.Hash());
-    move_assigned_value = std::move(copy_assigned_value);
-    EXPECT_EQ(copy_constructed_value, move_assigned_value);
-    EXPECT_EQ(copy_constructed_value.Hash(), move_assigned_value.Hash());
-  }
+        auto move_constructed_value(std::move(value));
+        EXPECT_EQ(copy_assigned_value, move_constructed_value);
+        EXPECT_EQ(copy_assigned_value.Hash(), move_constructed_value.Hash());
+        ConstantValueExpression move_assigned_value(execution::sql::SqlTypeId::Boolean);
+        EXPECT_NE(copy_assigned_value, move_assigned_value);
+        EXPECT_NE(copy_assigned_value.Hash(), move_assigned_value.Hash());
+        move_assigned_value = std::move(copy_assigned_value);
+        EXPECT_EQ(copy_constructed_value, move_assigned_value);
+        EXPECT_EQ(copy_constructed_value.Hash(), move_assigned_value.Hash());
+    }
 }
 
 // NOLINTNEXTLINE
 TEST_F(CVETests, DateTest) {
-  for (uint32_t i = 0; i < num_iterations_; i++) {
-    auto data = static_cast<uint32_t>(std::uniform_int_distribution<uint32_t>(0, UINT32_MAX)(generator_));
+    for (uint32_t i = 0; i < num_iterations_; i++) {
+        auto data = static_cast<uint32_t>(std::uniform_int_distribution<uint32_t>(0, UINT32_MAX)(generator_));
 
-    ConstantValueExpression value(execution::sql::SqlTypeId::Date, execution::sql::DateVal(data));
-    EXPECT_FALSE(value.IsNull());
-    EXPECT_EQ(data, value.Peek<execution::sql::Date>().ToNative());
+        ConstantValueExpression value(execution::sql::SqlTypeId::Date, execution::sql::DateVal(data));
+        EXPECT_FALSE(value.IsNull());
+        EXPECT_EQ(data, value.Peek<execution::sql::Date>().ToNative());
 
-    auto copy_constructed_value(value);
-    EXPECT_EQ(value, copy_constructed_value);
-    EXPECT_EQ(value.Hash(), copy_constructed_value.Hash());
-    ConstantValueExpression copy_assigned_value(execution::sql::SqlTypeId::Boolean);
-    EXPECT_NE(value, copy_assigned_value);
-    EXPECT_NE(value.Hash(), copy_assigned_value.Hash());
-    copy_assigned_value = value;
-    EXPECT_EQ(value, copy_assigned_value);
-    EXPECT_EQ(value.Hash(), copy_assigned_value.Hash());
+        auto copy_constructed_value(value);
+        EXPECT_EQ(value, copy_constructed_value);
+        EXPECT_EQ(value.Hash(), copy_constructed_value.Hash());
+        ConstantValueExpression copy_assigned_value(execution::sql::SqlTypeId::Boolean);
+        EXPECT_NE(value, copy_assigned_value);
+        EXPECT_NE(value.Hash(), copy_assigned_value.Hash());
+        copy_assigned_value = value;
+        EXPECT_EQ(value, copy_assigned_value);
+        EXPECT_EQ(value.Hash(), copy_assigned_value.Hash());
 
-    auto move_constructed_value(std::move(value));
-    EXPECT_EQ(copy_assigned_value, move_constructed_value);
-    EXPECT_EQ(copy_assigned_value.Hash(), move_constructed_value.Hash());
-    ConstantValueExpression move_assigned_value(execution::sql::SqlTypeId::Boolean);
-    EXPECT_NE(copy_assigned_value, move_assigned_value);
-    EXPECT_NE(copy_assigned_value.Hash(), move_assigned_value.Hash());
-    move_assigned_value = std::move(copy_assigned_value);
-    EXPECT_EQ(copy_constructed_value, move_assigned_value);
-    EXPECT_EQ(copy_constructed_value.Hash(), move_assigned_value.Hash());
-  }
+        auto move_constructed_value(std::move(value));
+        EXPECT_EQ(copy_assigned_value, move_constructed_value);
+        EXPECT_EQ(copy_assigned_value.Hash(), move_constructed_value.Hash());
+        ConstantValueExpression move_assigned_value(execution::sql::SqlTypeId::Boolean);
+        EXPECT_NE(copy_assigned_value, move_assigned_value);
+        EXPECT_NE(copy_assigned_value.Hash(), move_assigned_value.Hash());
+        move_assigned_value = std::move(copy_assigned_value);
+        EXPECT_EQ(copy_constructed_value, move_assigned_value);
+        EXPECT_EQ(copy_constructed_value.Hash(), move_assigned_value.Hash());
+    }
 }
 
 // NOLINTNEXTLINE
 TEST_F(CVETests, VarCharTest) {
-  for (uint32_t i = 0; i < num_iterations_; i++) {
-    auto length = std::uniform_int_distribution<uint32_t>(1, UINT8_MAX)(generator_);
-    auto *const data = new char[length];
-    for (uint32_t j = 0; j < length; j++) {
-      data[j] = std::uniform_int_distribution<char>('A', 'z')(generator_);
+    for (uint32_t i = 0; i < num_iterations_; i++) {
+        auto        length = std::uniform_int_distribution<uint32_t>(1, UINT8_MAX)(generator_);
+        auto *const data = new char[length];
+        for (uint32_t j = 0; j < length; j++) {
+            data[j] = std::uniform_int_distribution<char>('A', 'z')(generator_);
+        }
+
+        auto string_val
+            = execution::sql::ValueUtil::CreateStringVal(common::ManagedPointer(reinterpret_cast<const char *>(data)),
+                                                         length);
+        ConstantValueExpression value(execution::sql::SqlTypeId::Varchar,
+                                      string_val.first,
+                                      std::move(string_val.second));
+        EXPECT_FALSE(value.IsNull());
+        const auto string_view = value.Peek<std::string_view>();
+        EXPECT_EQ(std::string_view(data, length), string_view);
+        delete[] data;
+
+        auto copy_constructed_value(value);
+        EXPECT_EQ(value, copy_constructed_value);
+        EXPECT_EQ(value.Hash(), copy_constructed_value.Hash());
+        ConstantValueExpression copy_assigned_value(execution::sql::SqlTypeId::Boolean);
+        EXPECT_NE(value, copy_assigned_value);
+        EXPECT_NE(value.Hash(), copy_assigned_value.Hash());
+        copy_assigned_value = value;
+        EXPECT_EQ(value, copy_assigned_value);
+        EXPECT_EQ(value.Hash(), copy_assigned_value.Hash());
+
+        auto move_constructed_value(std::move(value));
+        EXPECT_EQ(copy_assigned_value, move_constructed_value);
+        EXPECT_EQ(copy_assigned_value.Hash(), move_constructed_value.Hash());
+        ConstantValueExpression move_assigned_value(execution::sql::SqlTypeId::Boolean);
+        EXPECT_NE(copy_assigned_value, move_assigned_value);
+        EXPECT_NE(copy_assigned_value.Hash(), move_assigned_value.Hash());
+        move_assigned_value = std::move(copy_assigned_value);
+        EXPECT_EQ(copy_constructed_value, move_assigned_value);
+        EXPECT_EQ(copy_constructed_value.Hash(), move_assigned_value.Hash());
     }
-
-    auto string_val = execution::sql::ValueUtil::CreateStringVal(
-        common::ManagedPointer(reinterpret_cast<const char *>(data)), length);
-    ConstantValueExpression value(execution::sql::SqlTypeId::Varchar, string_val.first, std::move(string_val.second));
-    EXPECT_FALSE(value.IsNull());
-    const auto string_view = value.Peek<std::string_view>();
-    EXPECT_EQ(std::string_view(data, length), string_view);
-    delete[] data;
-
-    auto copy_constructed_value(value);
-    EXPECT_EQ(value, copy_constructed_value);
-    EXPECT_EQ(value.Hash(), copy_constructed_value.Hash());
-    ConstantValueExpression copy_assigned_value(execution::sql::SqlTypeId::Boolean);
-    EXPECT_NE(value, copy_assigned_value);
-    EXPECT_NE(value.Hash(), copy_assigned_value.Hash());
-    copy_assigned_value = value;
-    EXPECT_EQ(value, copy_assigned_value);
-    EXPECT_EQ(value.Hash(), copy_assigned_value.Hash());
-
-    auto move_constructed_value(std::move(value));
-    EXPECT_EQ(copy_assigned_value, move_constructed_value);
-    EXPECT_EQ(copy_assigned_value.Hash(), move_constructed_value.Hash());
-    ConstantValueExpression move_assigned_value(execution::sql::SqlTypeId::Boolean);
-    EXPECT_NE(copy_assigned_value, move_assigned_value);
-    EXPECT_NE(copy_assigned_value.Hash(), move_assigned_value.Hash());
-    move_assigned_value = std::move(copy_assigned_value);
-    EXPECT_EQ(copy_constructed_value, move_assigned_value);
-    EXPECT_EQ(copy_constructed_value.Hash(), move_assigned_value.Hash());
-  }
 }
 
 // NOLINTNEXTLINE
 TEST_F(CVETests, BooleanJsonTest) {
-  auto data = static_cast<bool>(std::uniform_int_distribution<uint8_t>(0, 1)(generator_));
+    auto data = static_cast<bool>(std::uniform_int_distribution<uint8_t>(0, 1)(generator_));
 
-  ConstantValueExpression value(execution::sql::SqlTypeId::Boolean, execution::sql::BoolVal(data));
-  EXPECT_FALSE(value.IsNull());
+    ConstantValueExpression value(execution::sql::SqlTypeId::Boolean, execution::sql::BoolVal(data));
+    EXPECT_FALSE(value.IsNull());
 
-  auto json = value.ToJson();
-  EXPECT_FALSE(json.is_null());
+    auto json = value.ToJson();
+    EXPECT_FALSE(json.is_null());
 
-  ConstantValueExpression deserialized_value;
-  deserialized_value.FromJson(json);
+    ConstantValueExpression deserialized_value;
+    deserialized_value.FromJson(json);
 
-  EXPECT_EQ(value, deserialized_value);
+    EXPECT_EQ(value, deserialized_value);
 }
 
 // NOLINTNEXTLINE
 TEST_F(CVETests, TinyIntJsonTest) {
-  auto data = static_cast<int8_t>(std::uniform_int_distribution<int8_t>(INT8_MIN, INT8_MAX)(generator_));
+    auto data = static_cast<int8_t>(std::uniform_int_distribution<int8_t>(INT8_MIN, INT8_MAX)(generator_));
 
-  ConstantValueExpression value(execution::sql::SqlTypeId::TinyInt, execution::sql::Integer(data));
-  EXPECT_FALSE(value.IsNull());
+    ConstantValueExpression value(execution::sql::SqlTypeId::TinyInt, execution::sql::Integer(data));
+    EXPECT_FALSE(value.IsNull());
 
-  auto json = value.ToJson();
-  EXPECT_FALSE(json.is_null());
+    auto json = value.ToJson();
+    EXPECT_FALSE(json.is_null());
 
-  ConstantValueExpression deserialized_value;
-  deserialized_value.FromJson(json);
+    ConstantValueExpression deserialized_value;
+    deserialized_value.FromJson(json);
 
-  EXPECT_EQ(value, deserialized_value);
+    EXPECT_EQ(value, deserialized_value);
 }
 
 // NOLINTNEXTLINE
 TEST_F(CVETests, SmallIntJsonTest) {
-  auto data = static_cast<int16_t>(std::uniform_int_distribution<int16_t>(INT16_MIN, INT16_MAX)(generator_));
+    auto data = static_cast<int16_t>(std::uniform_int_distribution<int16_t>(INT16_MIN, INT16_MAX)(generator_));
 
-  ConstantValueExpression value(execution::sql::SqlTypeId::SmallInt, execution::sql::Integer(data));
-  EXPECT_FALSE(value.IsNull());
+    ConstantValueExpression value(execution::sql::SqlTypeId::SmallInt, execution::sql::Integer(data));
+    EXPECT_FALSE(value.IsNull());
 
-  auto json = value.ToJson();
-  EXPECT_FALSE(json.is_null());
+    auto json = value.ToJson();
+    EXPECT_FALSE(json.is_null());
 
-  ConstantValueExpression deserialized_value;
-  deserialized_value.FromJson(json);
+    ConstantValueExpression deserialized_value;
+    deserialized_value.FromJson(json);
 
-  EXPECT_EQ(value, deserialized_value);
+    EXPECT_EQ(value, deserialized_value);
 }
 
 // NOLINTNEXTLINE
 TEST_F(CVETests, IntegerJsonTest) {
-  auto data = static_cast<int32_t>(std::uniform_int_distribution<int32_t>(INT32_MIN, INT32_MAX)(generator_));
+    auto data = static_cast<int32_t>(std::uniform_int_distribution<int32_t>(INT32_MIN, INT32_MAX)(generator_));
 
-  ConstantValueExpression value(execution::sql::SqlTypeId::Integer, execution::sql::Integer(data));
-  EXPECT_FALSE(value.IsNull());
+    ConstantValueExpression value(execution::sql::SqlTypeId::Integer, execution::sql::Integer(data));
+    EXPECT_FALSE(value.IsNull());
 
-  auto json = value.ToJson();
-  EXPECT_FALSE(json.is_null());
+    auto json = value.ToJson();
+    EXPECT_FALSE(json.is_null());
 
-  ConstantValueExpression deserialized_value;
-  deserialized_value.FromJson(json);
+    ConstantValueExpression deserialized_value;
+    deserialized_value.FromJson(json);
 
-  EXPECT_EQ(value, deserialized_value);
+    EXPECT_EQ(value, deserialized_value);
 }
 
 // NOLINTNEXTLINE
 TEST_F(CVETests, BigIntJsonTest) {
-  auto data = static_cast<int64_t>(std::uniform_int_distribution<int64_t>(INT64_MIN, INT64_MAX)(generator_));
+    auto data = static_cast<int64_t>(std::uniform_int_distribution<int64_t>(INT64_MIN, INT64_MAX)(generator_));
 
-  ConstantValueExpression value(execution::sql::SqlTypeId::BigInt, execution::sql::Integer(data));
-  EXPECT_FALSE(value.IsNull());
+    ConstantValueExpression value(execution::sql::SqlTypeId::BigInt, execution::sql::Integer(data));
+    EXPECT_FALSE(value.IsNull());
 
-  auto json = value.ToJson();
-  EXPECT_FALSE(json.is_null());
+    auto json = value.ToJson();
+    EXPECT_FALSE(json.is_null());
 
-  ConstantValueExpression deserialized_value;
-  deserialized_value.FromJson(json);
+    ConstantValueExpression deserialized_value;
+    deserialized_value.FromJson(json);
 
-  EXPECT_EQ(value, deserialized_value);
+    EXPECT_EQ(value, deserialized_value);
 }
 
 // NOLINTNEXTLINE
 TEST_F(CVETests, DecimalJsonTest) {
-  auto data = std::uniform_real_distribution<double>(DBL_MIN, DBL_MAX)(generator_);
+    auto data = std::uniform_real_distribution<double>(DBL_MIN, DBL_MAX)(generator_);
 
-  ConstantValueExpression value(execution::sql::SqlTypeId::Double, execution::sql::Real(data));
-  EXPECT_FALSE(value.IsNull());
+    ConstantValueExpression value(execution::sql::SqlTypeId::Double, execution::sql::Real(data));
+    EXPECT_FALSE(value.IsNull());
 
-  auto json = value.ToJson();
-  EXPECT_FALSE(json.is_null());
+    auto json = value.ToJson();
+    EXPECT_FALSE(json.is_null());
 
-  ConstantValueExpression deserialized_value;
-  deserialized_value.FromJson(json);
+    ConstantValueExpression deserialized_value;
+    deserialized_value.FromJson(json);
 
-  EXPECT_EQ(value, deserialized_value);
+    EXPECT_EQ(value, deserialized_value);
 }
 
 // NOLINTNEXTLINE
 TEST_F(CVETests, TimestampJsonTest) {
-  auto data = static_cast<uint64_t>(std::uniform_int_distribution<uint64_t>(0, UINT64_MAX)(generator_));
+    auto data = static_cast<uint64_t>(std::uniform_int_distribution<uint64_t>(0, UINT64_MAX)(generator_));
 
-  ConstantValueExpression value(execution::sql::SqlTypeId::Timestamp, execution::sql::TimestampVal(data));
-  EXPECT_FALSE(value.IsNull());
+    ConstantValueExpression value(execution::sql::SqlTypeId::Timestamp, execution::sql::TimestampVal(data));
+    EXPECT_FALSE(value.IsNull());
 
-  auto json = value.ToJson();
-  EXPECT_FALSE(json.is_null());
+    auto json = value.ToJson();
+    EXPECT_FALSE(json.is_null());
 
-  ConstantValueExpression deserialized_value;
-  deserialized_value.FromJson(json);
+    ConstantValueExpression deserialized_value;
+    deserialized_value.FromJson(json);
 
-  EXPECT_EQ(value, deserialized_value);
+    EXPECT_EQ(value, deserialized_value);
 }
 
 // NOLINTNEXTLINE
 TEST_F(CVETests, DateJsonTest) {
-  auto data = static_cast<uint32_t>(std::uniform_int_distribution<uint32_t>(0, UINT32_MAX)(generator_));
+    auto data = static_cast<uint32_t>(std::uniform_int_distribution<uint32_t>(0, UINT32_MAX)(generator_));
 
-  ConstantValueExpression value(execution::sql::SqlTypeId::Date, execution::sql::DateVal(data));
-  EXPECT_FALSE(value.IsNull());
+    ConstantValueExpression value(execution::sql::SqlTypeId::Date, execution::sql::DateVal(data));
+    EXPECT_FALSE(value.IsNull());
 
-  auto json = value.ToJson();
-  EXPECT_FALSE(json.is_null());
+    auto json = value.ToJson();
+    EXPECT_FALSE(json.is_null());
 
-  ConstantValueExpression deserialized_value;
-  deserialized_value.FromJson(json);
+    ConstantValueExpression deserialized_value;
+    deserialized_value.FromJson(json);
 
-  EXPECT_EQ(value, deserialized_value);
+    EXPECT_EQ(value, deserialized_value);
 }
 
 // NOLINTNEXTLINE
 TEST_F(CVETests, VarCharJsonTest) {
-  auto length = std::uniform_int_distribution<uint32_t>(1, UINT8_MAX)(generator_);
-  auto *const data = new char[length];
-  for (uint32_t j = 0; j < length; j++) {
-    data[j] = std::uniform_int_distribution<char>('A', 'z')(generator_);
-  }
+    auto        length = std::uniform_int_distribution<uint32_t>(1, UINT8_MAX)(generator_);
+    auto *const data = new char[length];
+    for (uint32_t j = 0; j < length; j++) {
+        data[j] = std::uniform_int_distribution<char>('A', 'z')(generator_);
+    }
 
-  auto string_val =
-      execution::sql::ValueUtil::CreateStringVal(common::ManagedPointer(reinterpret_cast<const char *>(data)), length);
-  ConstantValueExpression value(execution::sql::SqlTypeId::Varchar, string_val.first, std::move(string_val.second));
-  EXPECT_FALSE(value.IsNull());
+    auto string_val
+        = execution::sql::ValueUtil::CreateStringVal(common::ManagedPointer(reinterpret_cast<const char *>(data)),
+                                                     length);
+    ConstantValueExpression value(execution::sql::SqlTypeId::Varchar, string_val.first, std::move(string_val.second));
+    EXPECT_FALSE(value.IsNull());
 
-  auto json = value.ToJson();
-  EXPECT_FALSE(json.is_null());
+    auto json = value.ToJson();
+    EXPECT_FALSE(json.is_null());
 
-  ConstantValueExpression deserialized_value;
-  deserialized_value.FromJson(json);
+    ConstantValueExpression deserialized_value;
+    deserialized_value.FromJson(json);
 
-  EXPECT_EQ(value, deserialized_value);
-  delete[] data;
+    EXPECT_EQ(value, deserialized_value);
+    delete[] data;
 }
 
-}  // namespace noisepage::parser
+} // namespace noisepage::parser

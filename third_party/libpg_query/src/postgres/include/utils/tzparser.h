@@ -20,20 +20,18 @@
  * these structs, in order by abbrev.  We export this because datetime.c
  * needs it.
  */
-typedef struct tzEntry
-{
-	/* the actual data */
-	char	   *abbrev;			/* TZ abbreviation (downcased) */
-	char	   *zone;			/* zone name if dynamic abbrev, else NULL */
-	/* for a dynamic abbreviation, offset/is_dst are not used */
-	int			offset;			/* offset in seconds from UTC */
-	bool		is_dst;			/* true if a DST abbreviation */
-	/* source information (for error messages) */
-	int			lineno;
-	const char *filename;
+typedef struct tzEntry {
+    /* the actual data */
+    char *abbrev; /* TZ abbreviation (downcased) */
+    char *zone;   /* zone name if dynamic abbrev, else NULL */
+    /* for a dynamic abbreviation, offset/is_dst are not used */
+    int  offset; /* offset in seconds from UTC */
+    bool is_dst; /* true if a DST abbreviation */
+    /* source information (for error messages) */
+    int         lineno;
+    const char *filename;
 } tzEntry;
-
 
 extern TimeZoneAbbrevTable *load_tzoffsets(const char *filename);
 
-#endif   /* TZPARSER_H */
+#endif /* TZPARSER_H */

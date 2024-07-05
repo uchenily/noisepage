@@ -11,9 +11,9 @@ The following files should be automatically generated:
     /src/postgres/backend/parser/gram.c
     /src/postgres/backend/replication/repl_gram.c
     /src/postgres/backend/replication/repl_scanner.c
-    /src/postgres/backend/utils/fmgrtab.c 
-    /src/postgres/backend/utils/misc/guc-file.c 
-    /src/postgres/backend/utils/sort/qsort_tuple.c 
+    /src/postgres/backend/utils/fmgrtab.c
+    /src/postgres/backend/utils/misc/guc-file.c
+    /src/postgres/backend/utils/sort/qsort_tuple.c
     /tools/pg_psql/sql_help.c
     /tools/pg_psql/psql_scan.c
 
@@ -22,7 +22,7 @@ The following files should be automatically generated:
 In order to port Postgres to C++, we made the following changes:
 
 1. Avoid keyword conflict
-  
+
   All variables that have conflicts with C++ keyword are appned "___". Details of the cases
   are as follows:
 
@@ -54,7 +54,7 @@ In order to port Postgres to C++, we made the following changes:
 4. Resolve error for implicitly deleted default constructor
 
     `union`'s default constructor is implictly deleted if one of its member has
-    non-trivial constructor. The work around is to define the constructor mannually. 
+    non-trivial constructor. The work around is to define the constructor mannually.
     Details of the cases are as follows:
 
     * `SharedInvalidationMessage` ar `include/storage/sinval.h`
@@ -66,15 +66,15 @@ In order to port Postgres to C++, we made the following changes:
     the occurrances of `forkNum++` to `forkNum = forkNum + 1`
 
 6. Resolve error for missing namespace for inner enum
-    
-    Member enums have to be resolved by specifying class name. Details of the 
+
+    Member enums have to be resolved by specifying class name. Details of the
     cases are as follows:
 
     * `JsonbValue`
 
 7. Avoid redefinition for static array
 
-    Forward declaration for static array would be recognized as redefinition in C++. 
+    Forward declaration for static array would be recognized as redefinition in C++.
     The work around is to add an anonymous namespace for them. The details of the
     the cases are as follows:
 
@@ -91,10 +91,10 @@ In order to port Postgres to C++, we made the following changes:
     * `archive_mode_options` at `backend/access/transam/xlog.cpp`
 
 9. Resolve the differece of function pointer in C and C++
-    
+
     In C, it is possible to declare a function that takes arbitray number of argument.
     But it is not the case in C++. The work around is to explicitly define funciton
-    pointer types for different number of arguments. The datails of the cases are 
+    pointer types for different number of arguments. The datails of the cases are
     as follows:
 
     * `func_ptr0` at `backend/utils/fmgr/fmgr.c`

@@ -14,20 +14,15 @@
 #ifndef REWRITEHANDLER_H
 #define REWRITEHANDLER_H
 
-#include "utils/relcache.h"
 #include "nodes/parsenodes.h"
+#include "utils/relcache.h"
 
 extern List *QueryRewrite(Query *parsetree);
-extern void AcquireRewriteLocks(Query *parsetree,
-					bool forExecute,
-					bool forUpdatePushedDown);
+extern void  AcquireRewriteLocks(Query *parsetree, bool forExecute, bool forUpdatePushedDown);
 
-extern Node *build_column_default(Relation rel, int attrno);
-extern Query *get_view_query(Relation view);
-extern const char *view_query_is_auto_updatable(Query *viewquery,
-							 bool check_cols);
-extern int relation_is_updatable(Oid reloid,
-					  bool include_triggers,
-					  Bitmapset *include_cols);
+extern Node       *build_column_default(Relation rel, int attrno);
+extern Query      *get_view_query(Relation view);
+extern const char *view_query_is_auto_updatable(Query *viewquery, bool check_cols);
+extern int         relation_is_updatable(Oid reloid, bool include_triggers, Bitmapset *include_cols);
 
-#endif   /* REWRITEHANDLER_H */
+#endif /* REWRITEHANDLER_H */

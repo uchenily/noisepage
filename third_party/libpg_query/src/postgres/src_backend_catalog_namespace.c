@@ -64,7 +64,6 @@
 #include "utils/memutils.h"
 #include "utils/syscache.h"
 
-
 /*
  * The namespace search path is a possibly-empty list of namespace OIDs.
  * In addition to the explicit list, implicitly-searched namespaces
@@ -136,37 +135,21 @@
 
 /* These variables define the actually active state: */
 
-
-
 /* default place to create stuff; if InvalidOid, no default */
-
 
 /* if TRUE, activeCreationNamespace is wrong, it should be temp namespace */
 
-
 /* These variables are the values last derived from namespace_search_path: */
-
-
-
-
-
-
-
-
 
 /* The above four values are valid only if baseSearchPathValid */
 
-
 /* Override requests are remembered in a stack of OverrideStackEntry structs */
 
-typedef struct
-{
-	List	   *searchPath;		/* the desired search path */
-	Oid			creationNamespace;		/* the desired creation namespace */
-	int			nestLevel;		/* subtransaction nesting level */
+typedef struct {
+    List *searchPath;        /* the desired search path */
+    Oid   creationNamespace; /* the desired creation namespace */
+    int   nestLevel;         /* subtransaction nesting level */
 } OverrideStackEntry;
-
-
 
 /*
  * myTempNamespace is InvalidOid until and unless a TEMP namespace is set up
@@ -184,43 +167,35 @@ typedef struct
  * committed its creation, depending on whether myTempNamespace is valid.
  */
 
-
-
-
-
-
 /*
  * This is the user's textual search path specification --- it's the value
  * of the GUC variable 'search_path'.
  */
 
-
-
 /* Local functions */
-//static void recomputeNamespacePath(void);
-//static void InitTempTableNamespace(void);
-//static void RemoveTempRelations(Oid tempNamespaceId);
-//static void RemoveTempRelationsCallback(int code, Datum arg);
-//static void NamespaceCallback(Datum arg, int cacheid, uint32 hashvalue);
-//static bool MatchNamedCall(HeapTuple proctup, int nargs, List *argnames,
+// static void recomputeNamespacePath(void);
+// static void InitTempTableNamespace(void);
+// static void RemoveTempRelations(Oid tempNamespaceId);
+// static void RemoveTempRelationsCallback(int code, Datum arg);
+// static void NamespaceCallback(Datum arg, int cacheid, uint32 hashvalue);
+// static bool MatchNamedCall(HeapTuple proctup, int nargs, List *argnames,
 //			   int **argnumbers);
 
 /* These don't really need to appear in any header file */
-Datum		pg_table_is_visible(PG_FUNCTION_ARGS);
-Datum		pg_type_is_visible(PG_FUNCTION_ARGS);
-Datum		pg_function_is_visible(PG_FUNCTION_ARGS);
-Datum		pg_operator_is_visible(PG_FUNCTION_ARGS);
-Datum		pg_opclass_is_visible(PG_FUNCTION_ARGS);
-Datum		pg_opfamily_is_visible(PG_FUNCTION_ARGS);
-Datum		pg_collation_is_visible(PG_FUNCTION_ARGS);
-Datum		pg_conversion_is_visible(PG_FUNCTION_ARGS);
-Datum		pg_ts_parser_is_visible(PG_FUNCTION_ARGS);
-Datum		pg_ts_dict_is_visible(PG_FUNCTION_ARGS);
-Datum		pg_ts_template_is_visible(PG_FUNCTION_ARGS);
-Datum		pg_ts_config_is_visible(PG_FUNCTION_ARGS);
-Datum		pg_my_temp_schema(PG_FUNCTION_ARGS);
-Datum		pg_is_other_temp_schema(PG_FUNCTION_ARGS);
-
+Datum pg_table_is_visible(PG_FUNCTION_ARGS);
+Datum pg_type_is_visible(PG_FUNCTION_ARGS);
+Datum pg_function_is_visible(PG_FUNCTION_ARGS);
+Datum pg_operator_is_visible(PG_FUNCTION_ARGS);
+Datum pg_opclass_is_visible(PG_FUNCTION_ARGS);
+Datum pg_opfamily_is_visible(PG_FUNCTION_ARGS);
+Datum pg_collation_is_visible(PG_FUNCTION_ARGS);
+Datum pg_conversion_is_visible(PG_FUNCTION_ARGS);
+Datum pg_ts_parser_is_visible(PG_FUNCTION_ARGS);
+Datum pg_ts_dict_is_visible(PG_FUNCTION_ARGS);
+Datum pg_ts_template_is_visible(PG_FUNCTION_ARGS);
+Datum pg_ts_config_is_visible(PG_FUNCTION_ARGS);
+Datum pg_my_temp_schema(PG_FUNCTION_ARGS);
+Datum pg_is_other_temp_schema(PG_FUNCTION_ARGS);
 
 /*
  * RangeVarGetRelid
@@ -236,7 +211,6 @@ Datum		pg_is_other_temp_schema(PG_FUNCTION_ARGS);
  * prior to grabbing the relation lock.
  */
 
-
 /*
  * RangeVarGetCreationNamespace
  *		Given a RangeVar describing a to-be-created relation,
@@ -246,7 +220,6 @@ Datum		pg_is_other_temp_schema(PG_FUNCTION_ARGS);
  * That will happen on the first request for a temp table in any particular
  * backend run; we will need to either create or clean out the temp schema.
  */
-
 
 /*
  * RangeVarGetAndCheckCreationNamespace
@@ -275,12 +248,10 @@ Datum		pg_is_other_temp_schema(PG_FUNCTION_ARGS);
  * we mark the RangeVar as RELPERSISTENCE_TEMP.
  */
 
-
 /*
  * Adjust the relpersistence for an about-to-be-created relation based on the
  * creation namespace, and throw an error for invalid combinations.
  */
-
 
 /*
  * RelnameGetRelid
@@ -288,16 +259,12 @@ Datum		pg_is_other_temp_schema(PG_FUNCTION_ARGS);
  *		Returns OID if relation found in search path, else InvalidOid.
  */
 
-
-
 /*
  * RelationIsVisible
  *		Determine whether a relation (identified by OID) is visible in the
  *		current search path.  Visible means "would be found by searching
  *		for the unqualified relation name".
  */
-
-
 
 /*
  * TypenameGetTypid
@@ -307,15 +274,12 @@ Datum		pg_is_other_temp_schema(PG_FUNCTION_ARGS);
  * This is essentially the same as RelnameGetRelid.
  */
 
-
 /*
  * TypeIsVisible
  *		Determine whether a type (identified by OID) is visible in the
  *		current search path.  Visible means "would be found by searching
  *		for the unqualified type name".
  */
-
-
 
 /*
  * FuncnameGetCandidates
@@ -383,7 +347,6 @@ Datum		pg_is_other_temp_schema(PG_FUNCTION_ARGS);
  * candidate is found for other reasons.
  */
 
-
 /*
  * MatchNamedCall
  *		Given a pg_proc heap tuple and a call's list of argument names,
@@ -402,15 +365,12 @@ Datum		pg_is_other_temp_schema(PG_FUNCTION_ARGS);
  * after the last supplied argument.
  */
 
-
 /*
  * FunctionIsVisible
  *		Determine whether a function (identified by OID) is visible in the
  *		current search path.  Visible means "would be found by searching
  *		for the unqualified function name with exact argument matches".
  */
-
-
 
 /*
  * OpernameGetOprid
@@ -424,7 +384,6 @@ Datum		pg_is_other_temp_schema(PG_FUNCTION_ARGS);
  * namespace search path.  If the name is schema-qualified and the given
  * schema does not exist, InvalidOid is returned.
  */
-
 
 /*
  * OpernameGetCandidates
@@ -443,8 +402,7 @@ Datum		pg_is_other_temp_schema(PG_FUNCTION_ARGS);
  * The returned items always have two args[] entries --- one or the other
  * will be InvalidOid for a prefix or postfix oprkind.  nargs is 2, too.
  */
-#define SPACE_PER_OP MAXALIGN(offsetof(struct _FuncCandidateList, args) + \
-							  2 * sizeof(Oid))
+#define SPACE_PER_OP MAXALIGN(offsetof(struct _FuncCandidateList, args) + 2 * sizeof(Oid))
 
 /*
  * OperatorIsVisible
@@ -452,8 +410,6 @@ Datum		pg_is_other_temp_schema(PG_FUNCTION_ARGS);
  *		current search path.  Visible means "would be found by searching
  *		for the unqualified operator name with exact argument matches".
  */
-
-
 
 /*
  * OpclassnameGetOpcid
@@ -464,14 +420,12 @@ Datum		pg_is_other_temp_schema(PG_FUNCTION_ARGS);
  * an extra argument for the index AM OID.
  */
 
-
 /*
  * OpclassIsVisible
  *		Determine whether an opclass (identified by OID) is visible in the
  *		current search path.  Visible means "would be found by searching
  *		for the unqualified opclass name".
  */
-
 
 /*
  * OpfamilynameGetOpfid
@@ -482,7 +436,6 @@ Datum		pg_is_other_temp_schema(PG_FUNCTION_ARGS);
  * an extra argument for the index AM OID.
  */
 
-
 /*
  * OpfamilyIsVisible
  *		Determine whether an opfamily (identified by OID) is visible in the
@@ -490,13 +443,11 @@ Datum		pg_is_other_temp_schema(PG_FUNCTION_ARGS);
  *		for the unqualified opfamily name".
  */
 
-
 /*
  * CollationGetCollid
  *		Try to resolve an unqualified collation name.
  *		Returns OID if collation found in search path, else InvalidOid.
  */
-
 
 /*
  * CollationIsVisible
@@ -504,8 +455,6 @@ Datum		pg_is_other_temp_schema(PG_FUNCTION_ARGS);
  *		current search path.  Visible means "would be found by searching
  *		for the unqualified collation name".
  */
-
-
 
 /*
  * ConversionGetConid
@@ -515,7 +464,6 @@ Datum		pg_is_other_temp_schema(PG_FUNCTION_ARGS);
  * This is essentially the same as RelnameGetRelid.
  */
 
-
 /*
  * ConversionIsVisible
  *		Determine whether a conversion (identified by OID) is visible in the
@@ -523,13 +471,11 @@ Datum		pg_is_other_temp_schema(PG_FUNCTION_ARGS);
  *		for the unqualified conversion name".
  */
 
-
 /*
  * get_ts_parser_oid - find a TS parser by possibly qualified name
  *
  * If not found, returns InvalidOid if missing_ok, else throws error
  */
-
 
 /*
  * TSParserIsVisible
@@ -538,13 +484,11 @@ Datum		pg_is_other_temp_schema(PG_FUNCTION_ARGS);
  *		for the unqualified parser name".
  */
 
-
 /*
  * get_ts_dict_oid - find a TS dictionary by possibly qualified name
  *
  * If not found, returns InvalidOid if failOK, else throws error
  */
-
 
 /*
  * TSDictionaryIsVisible
@@ -553,13 +497,11 @@ Datum		pg_is_other_temp_schema(PG_FUNCTION_ARGS);
  *		for the unqualified dictionary name".
  */
 
-
 /*
  * get_ts_template_oid - find a TS template by possibly qualified name
  *
  * If not found, returns InvalidOid if missing_ok, else throws error
  */
-
 
 /*
  * TSTemplateIsVisible
@@ -568,13 +510,11 @@ Datum		pg_is_other_temp_schema(PG_FUNCTION_ARGS);
  *		for the unqualified template name".
  */
 
-
 /*
  * get_ts_config_oid - find a TS config by possibly qualified name
  *
  * If not found, returns InvalidOid if missing_ok, else throws error
  */
-
 
 /*
  * TSConfigIsVisible
@@ -583,8 +523,6 @@ Datum		pg_is_other_temp_schema(PG_FUNCTION_ARGS);
  *		by searching for the unqualified text search configuration name".
  */
 
-
-
 /*
  * DeconstructQualifiedName
  *		Given a possibly-qualified name expressed as a list of String nodes,
@@ -592,7 +530,6 @@ Datum		pg_is_other_temp_schema(PG_FUNCTION_ARGS);
  *
  * *nspname_p is set to NULL if there is no explicit schema name.
  */
-
 
 /*
  * LookupNamespaceNoError
@@ -605,7 +542,6 @@ Datum		pg_is_other_temp_schema(PG_FUNCTION_ARGS);
  * In the majority of cases LookupExplicitNamespace is preferable.
  */
 
-
 /*
  * LookupExplicitNamespace
  *		Process an explicitly-specified schema name: look up the schema
@@ -613,7 +549,6 @@ Datum		pg_is_other_temp_schema(PG_FUNCTION_ARGS);
  *
  * Returns the namespace OID
  */
-
 
 /*
  * LookupCreationNamespace
@@ -626,7 +561,6 @@ Datum		pg_is_other_temp_schema(PG_FUNCTION_ARGS);
  * if we have to create or clean out the temp namespace.
  */
 
-
 /*
  * Common checks on switching namespaces.
  *
@@ -634,7 +568,6 @@ Datum		pg_is_other_temp_schema(PG_FUNCTION_ARGS);
  * old or new namespaces is a temporary schema (or temporary toast schema), or
  * (3) either the old or new namespaces is the TOAST schema.
  */
-
 
 /*
  * QualifiedNameGetCreationNamespace
@@ -649,7 +582,6 @@ Datum		pg_is_other_temp_schema(PG_FUNCTION_ARGS);
  * if we have to create or clean out the temp namespace.
  */
 
-
 /*
  * get_namespace_oid - given a namespace name, look up the OID
  *
@@ -657,12 +589,10 @@ Datum		pg_is_other_temp_schema(PG_FUNCTION_ARGS);
  * true, just return InvalidOid.
  */
 
-
 /*
  * makeRangeVarFromNameList
  *		Utility routine to convert a qualified-name list into RangeVar form.
  */
-
 
 /*
  * NameListToString
@@ -674,31 +604,27 @@ Datum		pg_is_other_temp_schema(PG_FUNCTION_ARGS);
  * In most scenarios the list elements should always be Value strings,
  * but we also allow A_Star for the convenience of ColumnRef processing.
  */
-char *
-NameListToString(List *names)
-{
-	StringInfoData string;
-	ListCell   *l;
+char *NameListToString(List *names) {
+    StringInfoData string;
+    ListCell      *l;
 
-	initStringInfo(&string);
+    initStringInfo(&string);
 
-	foreach(l, names)
-	{
-		Node	   *name = (Node *) lfirst(l);
+    foreach (l, names) {
+        Node *name = (Node *) lfirst(l);
 
-		if (l != list_head(names))
-			appendStringInfoChar(&string, '.');
+        if (l != list_head(names))
+            appendStringInfoChar(&string, '.');
 
-		if (IsA(name, String))
-			appendStringInfoString(&string, strVal(name));
-		else if (IsA(name, A_Star))
-			appendStringInfoChar(&string, '*');
-		else
-			elog(ERROR, "unexpected node type in name list: %d",
-				 (int) nodeTag(name));
-	}
+        if (IsA(name, String))
+            appendStringInfoString(&string, strVal(name));
+        else if (IsA(name, A_Star))
+            appendStringInfoChar(&string, '*');
+        else
+            elog(ERROR, "unexpected node type in name list: %d", (int) nodeTag(name));
+    }
 
-	return string.data;
+    return string.data;
 }
 
 /*
@@ -709,30 +635,25 @@ NameListToString(List *names)
  * so the string could be re-parsed (eg, by textToQualifiedNameList).
  */
 
-
 /*
  * isTempNamespace - is the given namespace my temporary-table namespace?
  */
-
 
 /*
  * isTempToastNamespace - is the given namespace my temporary-toast-table
  *		namespace?
  */
 
-
 /*
  * isTempOrTempToastNamespace - is the given namespace my temporary-table
  *		namespace or my temporary-toast-table namespace?
  */
-
 
 /*
  * isAnyTempNamespace - is the given namespace a temporary-table namespace
  * (either my own, or another backend's)?  Temporary-toast-table namespaces
  * are included, too.
  */
-
 
 /*
  * isOtherTempNamespace - is the given namespace some other backend's
@@ -742,7 +663,6 @@ NameListToString(List *names)
  * RELATION_IS_OTHER_TEMP() instead to detect non-local temp relations.
  */
 
-
 /*
  * GetTempNamespaceBackendId - if the given namespace is a temporary-table
  * namespace (either my own, or another backend's), return the BackendId
@@ -750,14 +670,11 @@ NameListToString(List *names)
  * If it isn't a temp namespace, return InvalidBackendId.
  */
 
-
 /*
  * GetTempToastNamespace - get the OID of my temporary-toast-table namespace,
  * which must already be assigned.  (This is only used when creating a toast
  * table for a temp table, so we must have already done InitTempTableNamespace)
  */
-
-
 
 /*
  * GetOverrideSearchPath - fetch current search path definition in form
@@ -768,18 +685,15 @@ NameListToString(List *names)
  * junk created by revalidation calculations will be in CurrentMemoryContext.
  */
 
-
 /*
  * CopyOverrideSearchPath - copy the specified OverrideSearchPath.
  *
  * The result structure is allocated in CurrentMemoryContext.
  */
 
-
 /*
  * OverrideSearchPathMatchesCurrent - does path match current setting?
  */
-
 
 /*
  * PushOverrideSearchPath - temporarily override the search path
@@ -799,7 +713,6 @@ NameListToString(List *names)
  * no existing namespace will simply not produce any hits during searches.
  */
 
-
 /*
  * PopOverrideSearchPath - undo a previous PushOverrideSearchPath
  *
@@ -807,39 +720,33 @@ NameListToString(List *names)
  * But it's caller error if a push isn't popped in normal control flow.
  */
 
-
-
 /*
  * get_collation_oid - find a collation by possibly qualified name
  */
-Oid get_collation_oid(List *name, bool missing_ok) { return -1; }
-
+Oid get_collation_oid(List *name, bool missing_ok) {
+    return -1;
+}
 
 /*
  * get_conversion_oid - find a conversion by possibly qualified name
  */
 
-
 /*
  * FindDefaultConversionProc - find default encoding conversion proc
  */
 
-
 /*
  * recomputeNamespacePath - recompute path derived variables if needed.
  */
-
 
 /*
  * InitTempTableNamespace
  *		Initialize temp table namespace on first use in a particular backend
  */
 
-
 /*
  * End-of-transaction cleanup for namespaces.
  */
-
 
 /*
  * AtEOSubXact_Namespace
@@ -850,7 +757,6 @@ Oid get_collation_oid(List *name, bool missing_ok) { return -1; }
  * At subtransaction abort, forget the flag if we set it up.
  */
 
-
 /*
  * Remove all relations in the specified temp namespace.
  *
@@ -860,17 +766,13 @@ Oid get_collation_oid(List *name, bool missing_ok) { return -1; }
  * a crashed backend.
  */
 
-
 /*
  * Callback to remove temp relations at backend exit.
  */
 
-
 /*
  * Remove all temp tables from the temporary namespace.
  */
-
-
 
 /*
  * Routines for handling the GUC variable 'search_path'.
@@ -878,9 +780,7 @@ Oid get_collation_oid(List *name, bool missing_ok) { return -1; }
 
 /* check_hook: validate new search_path value */
 
-
 /* assign_hook: do extra actions as needed */
-
 
 /*
  * InitializeSearchPath: initialize module during InitPostgres.
@@ -888,12 +788,10 @@ Oid get_collation_oid(List *name, bool missing_ok) { return -1; }
  * This is called after we are up enough to be able to do catalog lookups.
  */
 
-
 /*
  * NamespaceCallback
  *		Syscache inval callback function
  */
-
 
 /*
  * Fetch the active search path. The return value is a palloc'ed list
@@ -907,7 +805,6 @@ Oid get_collation_oid(List *name, bool missing_ok) { return -1; }
  * if we have to create or clean out the temp namespace.
  */
 
-
 /*
  * Fetch the active search path into a caller-allocated array of OIDs.
  * Returns the number of path entries.  (If this is more than sarray_len,
@@ -918,8 +815,6 @@ Oid get_collation_oid(List *name, bool missing_ok) { return -1; }
  * users, which would want to ignore the temp namespace anyway.)  This
  * definition allows us to not worry about initializing the temp namespace.
  */
-
-
 
 /*
  * Export the FooIsVisible functions as SQL-callable functions.
@@ -933,31 +828,3 @@ Oid get_collation_oid(List *name, bool missing_ok) { return -1; }
  * condition in the current coding because we don't accept sinval messages
  * between the SearchSysCacheExists test and the subsequent lookup.)
  */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

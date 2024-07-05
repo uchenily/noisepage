@@ -19,108 +19,108 @@ namespace noisepage::optimizer {
  *  Unnest Mark Join to Inner Join
  */
 class UnnestMarkJoinToInnerJoin : public Rule {
- public:
-  /**
-   * Constructor
-   */
-  UnnestMarkJoinToInnerJoin();
+public:
+    /**
+     * Constructor
+     */
+    UnnestMarkJoinToInnerJoin();
 
-  /**
-   * Gets the rule's promise to apply against a GroupExpression
-   * @param group_expr GroupExpression to compute promise from
-   * @returns The promise value of applying the rule for ordering
-   */
-  RulePromise Promise(GroupExpression *group_expr) const override;
+    /**
+     * Gets the rule's promise to apply against a GroupExpression
+     * @param group_expr GroupExpression to compute promise from
+     * @returns The promise value of applying the rule for ordering
+     */
+    RulePromise Promise(GroupExpression *group_expr) const override;
 
-  /**
-   * Checks whether the given rule can be applied
-   * @param plan AbstractOptimizerNode to check
-   * @param context Current OptimizationContext executing under
-   * @returns Whether the input AbstractOptimizerNode passes the check
-   */
-  bool Check(common::ManagedPointer<AbstractOptimizerNode> plan, OptimizationContext *context) const override;
+    /**
+     * Checks whether the given rule can be applied
+     * @param plan AbstractOptimizerNode to check
+     * @param context Current OptimizationContext executing under
+     * @returns Whether the input AbstractOptimizerNode passes the check
+     */
+    bool Check(common::ManagedPointer<AbstractOptimizerNode> plan, OptimizationContext *context) const override;
 
-  /**
-   * Transforms the input expression using the given rule
-   * @param input Input AbstractOptimizerNode to transform
-   * @param transformed Vector of transformed AbstractOptimizerNodes
-   * @param context Current OptimizationContext executing under
-   */
-  void Transform(common::ManagedPointer<AbstractOptimizerNode> input,
-                 std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-                 OptimizationContext *context) const override;
+    /**
+     * Transforms the input expression using the given rule
+     * @param input Input AbstractOptimizerNode to transform
+     * @param transformed Vector of transformed AbstractOptimizerNodes
+     * @param context Current OptimizationContext executing under
+     */
+    void Transform(common::ManagedPointer<AbstractOptimizerNode>        input,
+                   std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
+                   OptimizationContext                                 *context) const override;
 };
 
 /**
  * Unnest Single Join to Inner Join
  */
 class UnnestSingleJoinToInnerJoin : public Rule {
- public:
-  /**
-   * Constructor
-   */
-  UnnestSingleJoinToInnerJoin();
+public:
+    /**
+     * Constructor
+     */
+    UnnestSingleJoinToInnerJoin();
 
-  /**
-   * Gets the rule's promise to apply against a GroupExpression
-   * @param group_expr GroupExpression to compute promise from
-   * @returns The promise value of applying the rule for ordering
-   */
-  RulePromise Promise(GroupExpression *group_expr) const override;
+    /**
+     * Gets the rule's promise to apply against a GroupExpression
+     * @param group_expr GroupExpression to compute promise from
+     * @returns The promise value of applying the rule for ordering
+     */
+    RulePromise Promise(GroupExpression *group_expr) const override;
 
-  /**
-   * Checks whether the given rule can be applied
-   * @param plan OperatorNode to check
-   * @param context Current OptimizationContext executing under
-   * @returns Whether the input OperatorNode passes the check
-   */
-  bool Check(common::ManagedPointer<AbstractOptimizerNode> plan, OptimizationContext *context) const override;
+    /**
+     * Checks whether the given rule can be applied
+     * @param plan OperatorNode to check
+     * @param context Current OptimizationContext executing under
+     * @returns Whether the input OperatorNode passes the check
+     */
+    bool Check(common::ManagedPointer<AbstractOptimizerNode> plan, OptimizationContext *context) const override;
 
-  /**
-   * Transforms the input expression using the given rule
-   * @param input Input OperatorNode to transform
-   * @param transformed Vector of transformed OperatorNodes
-   * @param context Current OptimizationContext executing under
-   */
-  void Transform(common::ManagedPointer<AbstractOptimizerNode> input,
-                 std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-                 OptimizationContext *context) const override;
+    /**
+     * Transforms the input expression using the given rule
+     * @param input Input OperatorNode to transform
+     * @param transformed Vector of transformed OperatorNodes
+     * @param context Current OptimizationContext executing under
+     */
+    void Transform(common::ManagedPointer<AbstractOptimizerNode>        input,
+                   std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
+                   OptimizationContext                                 *context) const override;
 };
 
 /**
  * Transform Dependent Single Join to Inner Join
  */
 class DependentSingleJoinToInnerJoin : public Rule {
- public:
-  /**
-   * Constructor
-   */
-  DependentSingleJoinToInnerJoin();
+public:
+    /**
+     * Constructor
+     */
+    DependentSingleJoinToInnerJoin();
 
-  /**
-   * Gets the rule's promise to apply against a GroupExpression
-   * @param group_expr GroupExpression to compute promise from
-   * @returns The promise value of applying the rule for ordering
-   */
-  RulePromise Promise(GroupExpression *group_expr) const override;
+    /**
+     * Gets the rule's promise to apply against a GroupExpression
+     * @param group_expr GroupExpression to compute promise from
+     * @returns The promise value of applying the rule for ordering
+     */
+    RulePromise Promise(GroupExpression *group_expr) const override;
 
-  /**
-   * Checks whether the given rule can be applied
-   * @param plan AbstractOptimizerNode to check
-   * @param context Current OptimizationContext executing under
-   * @returns Whether the input AbstractOptimizerNode passes the check
-   */
-  bool Check(common::ManagedPointer<AbstractOptimizerNode> plan, OptimizationContext *context) const override;
+    /**
+     * Checks whether the given rule can be applied
+     * @param plan AbstractOptimizerNode to check
+     * @param context Current OptimizationContext executing under
+     * @returns Whether the input AbstractOptimizerNode passes the check
+     */
+    bool Check(common::ManagedPointer<AbstractOptimizerNode> plan, OptimizationContext *context) const override;
 
-  /**
-   * Transforms the input expression using the given rule
-   * @param input Input AbstractOptimizerNode to transform
-   * @param transformed Vector of transformed AbstractOptimizerNodes
-   * @param context Current OptimizationContext executing under
-   */
-  void Transform(common::ManagedPointer<AbstractOptimizerNode> input,
-                 std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-                 OptimizationContext *context) const override;
+    /**
+     * Transforms the input expression using the given rule
+     * @param input Input AbstractOptimizerNode to transform
+     * @param transformed Vector of transformed AbstractOptimizerNodes
+     * @param context Current OptimizationContext executing under
+     */
+    void Transform(common::ManagedPointer<AbstractOptimizerNode>        input,
+                   std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
+                   OptimizationContext                                 *context) const override;
 };
 
 /**
@@ -134,9 +134,10 @@ class DependentSingleJoinToInnerJoin : public Rule {
  * will be used as group by columns in the nested aggregate
  */
 void ExtractCorrelatedPredicatesWithAggregate(
-    const std::vector<AnnotatedExpression> &predicates,
-    const std::unordered_set<parser::AliasType> &child_group_aliases_set,
-    std::vector<AnnotatedExpression> *correlated_predicates, std::vector<AnnotatedExpression> *normal_predicates,
+    const std::vector<AnnotatedExpression>                          &predicates,
+    const std::unordered_set<parser::AliasType>                     &child_group_aliases_set,
+    std::vector<AnnotatedExpression>                                *correlated_predicates,
+    std::vector<AnnotatedExpression>                                *normal_predicates,
     std::vector<common::ManagedPointer<parser::AbstractExpression>> *new_groupby_cols);
 
-};  // namespace noisepage::optimizer
+}; // namespace noisepage::optimizer

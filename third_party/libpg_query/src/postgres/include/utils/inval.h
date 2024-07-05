@@ -18,10 +18,8 @@
 #include "storage/relfilenode.h"
 #include "utils/relcache.h"
 
-
-typedef void (*SyscacheCallbackFunction) (Datum arg, int cacheid, uint32 hashvalue);
-typedef void (*RelcacheCallbackFunction) (Datum arg, Oid relid);
-
+typedef void (*SyscacheCallbackFunction)(Datum arg, int cacheid, uint32 hashvalue);
+typedef void (*RelcacheCallbackFunction)(Datum arg, Oid relid);
 
 extern void AcceptInvalidationMessages(void);
 
@@ -35,9 +33,7 @@ extern void PostPrepare_Inval(void);
 
 extern void CommandEndInvalidationMessages(void);
 
-extern void CacheInvalidateHeapTuple(Relation relation,
-						 HeapTuple tuple,
-						 HeapTuple newtuple);
+extern void CacheInvalidateHeapTuple(Relation relation, HeapTuple tuple, HeapTuple newtuple);
 
 extern void CacheInvalidateCatalog(Oid catalogId);
 
@@ -51,14 +47,11 @@ extern void CacheInvalidateSmgr(RelFileNodeBackend rnode);
 
 extern void CacheInvalidateRelmap(Oid databaseId);
 
-extern void CacheRegisterSyscacheCallback(int cacheid,
-							  SyscacheCallbackFunction func,
-							  Datum arg);
+extern void CacheRegisterSyscacheCallback(int cacheid, SyscacheCallbackFunction func, Datum arg);
 
-extern void CacheRegisterRelcacheCallback(RelcacheCallbackFunction func,
-							  Datum arg);
+extern void CacheRegisterRelcacheCallback(RelcacheCallbackFunction func, Datum arg);
 
 extern void CallSyscacheCallbacks(int cacheid, uint32 hashvalue);
 
 extern void InvalidateSystemCaches(void);
-#endif   /* INVAL_H */
+#endif /* INVAL_H */

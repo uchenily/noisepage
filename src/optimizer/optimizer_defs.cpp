@@ -9,4 +9,4 @@ namespace noisepage::optimizer {
  */
 STRONG_TYPEDEF_BODY(group_id_t, int32_t);
 
-}  // namespace noisepage::optimizer
+} // namespace noisepage::optimizer

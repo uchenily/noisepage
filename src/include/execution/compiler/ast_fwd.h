@@ -16,4 +16,4 @@ class Stmt;
 class StructDecl;
 class VariableDecl;
 
-}  // namespace noisepage::execution::ast
+} // namespace noisepage::execution::ast

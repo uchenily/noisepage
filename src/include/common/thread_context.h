@@ -6,7 +6,7 @@
 namespace noisepage::metrics {
 class MetricsStore;
 class MetricsManager;
-}  // namespace noisepage::metrics
+} // namespace noisepage::metrics
 
 namespace noisepage::common {
 
@@ -16,22 +16,22 @@ namespace noisepage::common {
  * thread's MetricsStore.
  */
 struct ThreadContext {
-  ~ThreadContext();
+    ~ThreadContext();
 
-  /**
-   * nullptr if not registered with MetricsManager
-   */
-  common::ManagedPointer<metrics::MetricsStore> metrics_store_ = nullptr;
+    /**
+     * nullptr if not registered with MetricsManager
+     */
+    common::ManagedPointer<metrics::MetricsStore> metrics_store_ = nullptr;
 
-  /**
-   * nullptr if not registered with MetricsManager
-   */
-  ResourceTracker resource_tracker_;
+    /**
+     * nullptr if not registered with MetricsManager
+     */
+    ResourceTracker resource_tracker_;
 
-  /**
-   * To account for nested pipelines
-   */
-  uint32_t nesting_depth_ = 0;
+    /**
+     * To account for nested pipelines
+     */
+    uint32_t nesting_depth_ = 0;
 };
 
 /**
@@ -39,4 +39,4 @@ struct ThreadContext {
  */
 extern thread_local common::ThreadContext thread_context;
 
-}  // namespace noisepage::common
+} // namespace noisepage::common

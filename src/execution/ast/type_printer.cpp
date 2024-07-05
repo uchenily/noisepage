@@ -10,92 +10,101 @@ namespace noisepage::execution::ast {
 
 namespace {
 
-/**
- * Visitor class that walks a type hierarchy tree with the purpose of
- * pretty-printing to an injected output stream.
- */
-class TypePrinter : public TypeVisitor<TypePrinter> {
- public:
-  explicit TypePrinter(llvm::raw_ostream &out) : out_(out) {}
+    /**
+     * Visitor class that walks a type hierarchy tree with the purpose of
+     * pretty-printing to an injected output stream.
+     */
+    class TypePrinter : public TypeVisitor<TypePrinter> {
+    public:
+        explicit TypePrinter(llvm::raw_ostream &out)
+            : out_(out) {}
 
 #define DECLARE_VISIT_TYPE(Type) void Visit##Type(const Type *type);
-  TYPE_LIST(DECLARE_VISIT_TYPE)
+        TYPE_LIST(DECLARE_VISIT_TYPE)
 #undef DECLARE_VISIT_TYPE
 
-  void Print(const Type *type) { Visit(type); }
+        void Print(const Type *type) {
+            Visit(type);
+        }
 
- private:
-  llvm::raw_ostream &Os() { return out_; }
+    private:
+        llvm::raw_ostream &Os() {
+            return out_;
+        }
 
- private:
-  llvm::raw_ostream &out_;
-};
+    private:
+        llvm::raw_ostream &out_;
+    };
 
-void execution::ast::TypePrinter::VisitBuiltinType(const BuiltinType *type) { Os() << type->GetTplName(); }
-
-void TypePrinter::VisitFunctionType(const FunctionType *type) {
-  Os() << "(";
-  bool first = true;
-  for (const auto &param : type->GetParams()) {
-    if (!first) {
-      Os() << ",";
+    void execution::ast::TypePrinter::VisitBuiltinType(const BuiltinType *type) {
+        Os() << type->GetTplName();
     }
-    first = false;
-    Visit(param.type_);
-  }
-  Os() << ")->";
-  Visit(type->GetReturnType());
-}
 
-void TypePrinter::VisitStringType(const StringType *type) { Os() << "string"; }
-
-void TypePrinter::VisitPointerType(const PointerType *type) {
-  Os() << "*";
-  Visit(type->GetBase());
-}
-
-void TypePrinter::VisitStructType(const StructType *type) {
-  Os() << "struct{";
-  bool first = true;
-  for (const auto &field : type->GetAllFields()) {
-    if (!first) {
-      Os() << ",";
+    void TypePrinter::VisitFunctionType(const FunctionType *type) {
+        Os() << "(";
+        bool first = true;
+        for (const auto &param : type->GetParams()) {
+            if (!first) {
+                Os() << ",";
+            }
+            first = false;
+            Visit(param.type_);
+        }
+        Os() << ")->";
+        Visit(type->GetReturnType());
     }
-    first = false;
-    Visit(field.type_);
-  }
-  Os() << "}";
-}
 
-void TypePrinter::VisitArrayType(const ArrayType *type) {
-  Os() << "[";
-  if (type->HasUnknownLength()) {
-    Os() << "*";
-  } else {
-    Os() << type->GetLength();
-  }
-  Os() << "]";
-  Visit(type->GetElementType());
-}
+    void TypePrinter::VisitStringType(const StringType *type) {
+        Os() << "string";
+    }
 
-void execution::ast::TypePrinter::VisitMapType(const MapType *type) {
-  Os() << "map[";
-  Visit(type->GetKeyType());
-  Os() << "]";
-  Visit(type->GetValueType());
-}
+    void TypePrinter::VisitPointerType(const PointerType *type) {
+        Os() << "*";
+        Visit(type->GetBase());
+    }
 
-}  // namespace
+    void TypePrinter::VisitStructType(const StructType *type) {
+        Os() << "struct{";
+        bool first = true;
+        for (const auto &field : type->GetAllFields()) {
+            if (!first) {
+                Os() << ",";
+            }
+            first = false;
+            Visit(field.type_);
+        }
+        Os() << "}";
+    }
+
+    void TypePrinter::VisitArrayType(const ArrayType *type) {
+        Os() << "[";
+        if (type->HasUnknownLength()) {
+            Os() << "*";
+        } else {
+            Os() << type->GetLength();
+        }
+        Os() << "]";
+        Visit(type->GetElementType());
+    }
+
+    void execution::ast::TypePrinter::VisitMapType(const MapType *type) {
+        Os() << "map[";
+        Visit(type->GetKeyType());
+        Os() << "]";
+        Visit(type->GetValueType());
+    }
+
+} // namespace
 
 // static
 std::string Type::ToString(const Type *type) {
-  llvm::SmallString<256> buffer;
-  llvm::raw_svector_ostream stream(buffer);
+    llvm::SmallString<256>    buffer;
+    llvm::raw_svector_ostream stream(buffer);
 
-  TypePrinter printer(stream);
-  printer.Print(type);
+    TypePrinter printer(stream);
+    printer.Print(type);
 
-  return buffer.str();
+    return buffer.str();
 }
 
-}  // namespace noisepage::execution::ast
+} // namespace noisepage::execution::ast

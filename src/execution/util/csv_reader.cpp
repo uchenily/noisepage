@@ -118,24 +118,24 @@ CSVReader::ParseResult CSVReader::TryParse() {
   // The running pointer into the buffer
   const char *ptr = buf_;
 
-#define RETURN_IF_AT_END()            \
-  if (ptr >= buf_end_) {              \
-    return ParseResult::NeedMoreData; \
-  }
+#define RETURN_IF_AT_END()                                                                                             \
+    if (ptr >= buf_end_) {                                                                                             \
+        return ParseResult::NeedMoreData;                                                                              \
+    }
 
-#define FINISH_CELL()      \
-  cell->ptr_ = cell_start; \
-  cell->len_ = ptr - cell_start;
+#define FINISH_CELL()                                                                                                  \
+    cell->ptr_ = cell_start;                                                                                           \
+    cell->len_ = ptr - cell_start;
 
-#define FINISH_QUOTED_CELL() \
-  cell->ptr_ = cell_start;   \
-  cell->len_ = ptr - cell_start - 1;
+#define FINISH_QUOTED_CELL()                                                                                           \
+    cell->ptr_ = cell_start;                                                                                           \
+    cell->len_ = ptr - cell_start - 1;
 
-#define NEXT_CELL()                          \
-  cell++;                                    \
-  if (++row_.count_ == row_.cells_.size()) { \
-    return ParseResult::NeedMoreCells;       \
-  }
+#define NEXT_CELL()                                                                                                    \
+    cell++;                                                                                                            \
+    if (++row_.count_ == row_.cells_.size()) {                                                                         \
+        return ParseResult::NeedMoreCells;                                                                             \
+    }
 
 cell_start:
   const char *cell_start = ptr;

@@ -20,7 +20,6 @@
 #include "nodes/parsenodes.h"
 #include "storage/block.h"
 
-
 /*
  * Relids
  *		Set of relation identifiers (indexes into the rangetable).
@@ -31,19 +30,15 @@ typedef Bitmapset *Relids;
  * When looking for a "cheapest path", this enum specifies whether we want
  * cheapest startup cost or cheapest total cost.
  */
-typedef enum CostSelector
-{
-	STARTUP_COST, TOTAL_COST
-} CostSelector;
+typedef enum CostSelector { STARTUP_COST, TOTAL_COST } CostSelector;
 
 /*
  * The cost estimate produced by cost_qual_eval() includes both a one-time
  * (startup) cost, and a per-tuple cost.
  */
-typedef struct QualCost
-{
-	Cost		startup;		/* one-time cost */
-	Cost		per_tuple;		/* per-evaluation cost */
+typedef struct QualCost {
+    Cost startup;   /* one-time cost */
+    Cost per_tuple; /* per-evaluation cost */
 } QualCost;
 
 /*
@@ -52,15 +47,13 @@ typedef struct QualCost
  * include the execution costs of the aggregates' argument expressions as
  * well as the aggregate functions themselves.
  */
-typedef struct AggClauseCosts
-{
-	int			numAggs;		/* total number of aggregate functions */
-	int			numOrderedAggs; /* number w/ DISTINCT/ORDER BY/WITHIN GROUP */
-	QualCost	transCost;		/* total per-input-row execution costs */
-	Cost		finalCost;		/* total per-aggregated-row costs */
-	Size		transitionSpace;	/* space for pass-by-ref transition data */
+typedef struct AggClauseCosts {
+    int      numAggs;         /* total number of aggregate functions */
+    int      numOrderedAggs;  /* number w/ DISTINCT/ORDER BY/WITHIN GROUP */
+    QualCost transCost;       /* total per-input-row execution costs */
+    Cost     finalCost;       /* total per-aggregated-row costs */
+    Size     transitionSpace; /* space for pass-by-ref transition data */
 } AggClauseCosts;
-
 
 /*----------
  * PlannerGlobal
@@ -71,43 +64,40 @@ typedef struct AggClauseCosts
  * planned.
  *----------
  */
-typedef struct PlannerGlobal
-{
-	NodeTag		type;
+typedef struct PlannerGlobal {
+    NodeTag type;
 
-	ParamListInfo boundParams;	/* Param values provided to planner() */
+    ParamListInfo boundParams; /* Param values provided to planner() */
 
-	List	   *subplans;		/* Plans for SubPlan nodes */
+    List *subplans; /* Plans for SubPlan nodes */
 
-	List	   *subroots;		/* PlannerInfos for SubPlan nodes */
+    List *subroots; /* PlannerInfos for SubPlan nodes */
 
-	Bitmapset  *rewindPlanIDs;	/* indices of subplans that require REWIND */
+    Bitmapset *rewindPlanIDs; /* indices of subplans that require REWIND */
 
-	List	   *finalrtable;	/* "flat" rangetable for executor */
+    List *finalrtable; /* "flat" rangetable for executor */
 
-	List	   *finalrowmarks;	/* "flat" list of PlanRowMarks */
+    List *finalrowmarks; /* "flat" list of PlanRowMarks */
 
-	List	   *resultRelations;	/* "flat" list of integer RT indexes */
+    List *resultRelations; /* "flat" list of integer RT indexes */
 
-	List	   *relationOids;	/* OIDs of relations the plan depends on */
+    List *relationOids; /* OIDs of relations the plan depends on */
 
-	List	   *invalItems;		/* other dependencies, as PlanInvalItems */
+    List *invalItems; /* other dependencies, as PlanInvalItems */
 
-	int			nParamExec;		/* number of PARAM_EXEC Params used */
+    int nParamExec; /* number of PARAM_EXEC Params used */
 
-	Index		lastPHId;		/* highest PlaceHolderVar ID assigned */
+    Index lastPHId; /* highest PlaceHolderVar ID assigned */
 
-	Index		lastRowMarkId;	/* highest PlanRowMark ID assigned */
+    Index lastRowMarkId; /* highest PlanRowMark ID assigned */
 
-	bool		transientPlan;	/* redo plan when TransactionXmin changes? */
+    bool transientPlan; /* redo plan when TransactionXmin changes? */
 
-	bool		hasRowSecurity; /* row security applied? */
+    bool hasRowSecurity; /* row security applied? */
 } PlannerGlobal;
 
 /* macro for fetching the Plan associated with a SubPlan node */
-#define planner_subplan_get_plan(root, subplan) \
-	((Plan *) list_nth((root)->glob->subplans, (subplan)->plan_id - 1))
-
+#define planner_subplan_get_plan(root, subplan) ((Plan *) list_nth((root)->glob->subplans, (subplan)->plan_id - 1))
 
 /*----------
  * PlannerInfo
@@ -119,160 +109,156 @@ typedef struct PlannerGlobal
  * the passed-in Query data structure; someday that should stop.
  *----------
  */
-typedef struct PlannerInfo
-{
-	NodeTag		type;
+typedef struct PlannerInfo {
+    NodeTag type;
 
-	Query	   *parse;			/* the Query being planned */
+    Query *parse; /* the Query being planned */
 
-	PlannerGlobal *glob;		/* global info for current planner run */
+    PlannerGlobal *glob; /* global info for current planner run */
 
-	Index		query_level;	/* 1 at the outermost Query */
+    Index query_level; /* 1 at the outermost Query */
 
-	struct PlannerInfo *parent_root;	/* NULL at outermost Query */
+    struct PlannerInfo *parent_root; /* NULL at outermost Query */
 
-	List	   *plan_params;	/* list of PlannerParamItems, see below */
+    List *plan_params; /* list of PlannerParamItems, see below */
 
-	/*
-	 * simple_rel_array holds pointers to "base rels" and "other rels" (see
-	 * comments for RelOptInfo for more info).  It is indexed by rangetable
-	 * index (so entry 0 is always wasted).  Entries can be NULL when an RTE
-	 * does not correspond to a base relation, such as a join RTE or an
-	 * unreferenced view RTE; or if the RelOptInfo hasn't been made yet.
-	 */
-	struct RelOptInfo **simple_rel_array;		/* All 1-rel RelOptInfos */
-	int			simple_rel_array_size;	/* allocated size of array */
+    /*
+     * simple_rel_array holds pointers to "base rels" and "other rels" (see
+     * comments for RelOptInfo for more info).  It is indexed by rangetable
+     * index (so entry 0 is always wasted).  Entries can be NULL when an RTE
+     * does not correspond to a base relation, such as a join RTE or an
+     * unreferenced view RTE; or if the RelOptInfo hasn't been made yet.
+     */
+    struct RelOptInfo **simple_rel_array;      /* All 1-rel RelOptInfos */
+    int                 simple_rel_array_size; /* allocated size of array */
 
-	/*
-	 * simple_rte_array is the same length as simple_rel_array and holds
-	 * pointers to the associated rangetable entries.  This lets us avoid
-	 * rt_fetch(), which can be a bit slow once large inheritance sets have
-	 * been expanded.
-	 */
-	RangeTblEntry **simple_rte_array;	/* rangetable as an array */
+    /*
+     * simple_rte_array is the same length as simple_rel_array and holds
+     * pointers to the associated rangetable entries.  This lets us avoid
+     * rt_fetch(), which can be a bit slow once large inheritance sets have
+     * been expanded.
+     */
+    RangeTblEntry **simple_rte_array; /* rangetable as an array */
 
-	/*
-	 * all_baserels is a Relids set of all base relids (but not "other"
-	 * relids) in the query; that is, the Relids identifier of the final join
-	 * we need to form.  This is computed in make_one_rel, just before we
-	 * start making Paths.
-	 */
-	Relids		all_baserels;
+    /*
+     * all_baserels is a Relids set of all base relids (but not "other"
+     * relids) in the query; that is, the Relids identifier of the final join
+     * we need to form.  This is computed in make_one_rel, just before we
+     * start making Paths.
+     */
+    Relids all_baserels;
 
-	/*
-	 * nullable_baserels is a Relids set of base relids that are nullable by
-	 * some outer join in the jointree; these are rels that are potentially
-	 * nullable below the WHERE clause, SELECT targetlist, etc.  This is
-	 * computed in deconstruct_jointree.
-	 */
-	Relids		nullable_baserels;
+    /*
+     * nullable_baserels is a Relids set of base relids that are nullable by
+     * some outer join in the jointree; these are rels that are potentially
+     * nullable below the WHERE clause, SELECT targetlist, etc.  This is
+     * computed in deconstruct_jointree.
+     */
+    Relids nullable_baserels;
 
-	/*
-	 * join_rel_list is a list of all join-relation RelOptInfos we have
-	 * considered in this planning run.  For small problems we just scan the
-	 * list to do lookups, but when there are many join relations we build a
-	 * hash table for faster lookups.  The hash table is present and valid
-	 * when join_rel_hash is not NULL.  Note that we still maintain the list
-	 * even when using the hash table for lookups; this simplifies life for
-	 * GEQO.
-	 */
-	List	   *join_rel_list;	/* list of join-relation RelOptInfos */
-	struct HTAB *join_rel_hash; /* optional hashtable for join relations */
+    /*
+     * join_rel_list is a list of all join-relation RelOptInfos we have
+     * considered in this planning run.  For small problems we just scan the
+     * list to do lookups, but when there are many join relations we build a
+     * hash table for faster lookups.  The hash table is present and valid
+     * when join_rel_hash is not NULL.  Note that we still maintain the list
+     * even when using the hash table for lookups; this simplifies life for
+     * GEQO.
+     */
+    List        *join_rel_list; /* list of join-relation RelOptInfos */
+    struct HTAB *join_rel_hash; /* optional hashtable for join relations */
 
-	/*
-	 * When doing a dynamic-programming-style join search, join_rel_level[k]
-	 * is a list of all join-relation RelOptInfos of level k, and
-	 * join_cur_level is the current level.  New join-relation RelOptInfos are
-	 * automatically added to the join_rel_level[join_cur_level] list.
-	 * join_rel_level is NULL if not in use.
-	 */
-	List	  **join_rel_level; /* lists of join-relation RelOptInfos */
-	int			join_cur_level; /* index of list being extended */
+    /*
+     * When doing a dynamic-programming-style join search, join_rel_level[k]
+     * is a list of all join-relation RelOptInfos of level k, and
+     * join_cur_level is the current level.  New join-relation RelOptInfos are
+     * automatically added to the join_rel_level[join_cur_level] list.
+     * join_rel_level is NULL if not in use.
+     */
+    List **join_rel_level; /* lists of join-relation RelOptInfos */
+    int    join_cur_level; /* index of list being extended */
 
-	List	   *init_plans;		/* init SubPlans for query */
+    List *init_plans; /* init SubPlans for query */
 
-	List	   *cte_plan_ids;	/* per-CTE-item list of subplan IDs */
+    List *cte_plan_ids; /* per-CTE-item list of subplan IDs */
 
-	List	   *multiexpr_params;		/* List of Lists of Params for
-										 * MULTIEXPR subquery outputs */
+    List *multiexpr_params; /* List of Lists of Params for
+                             * MULTIEXPR subquery outputs */
 
-	List	   *eq_classes;		/* list of active EquivalenceClasses */
+    List *eq_classes; /* list of active EquivalenceClasses */
 
-	List	   *canon_pathkeys; /* list of "canonical" PathKeys */
+    List *canon_pathkeys; /* list of "canonical" PathKeys */
 
-	List	   *left_join_clauses;		/* list of RestrictInfos for
-										 * mergejoinable outer join clauses
-										 * w/nonnullable var on left */
+    List *left_join_clauses; /* list of RestrictInfos for
+                              * mergejoinable outer join clauses
+                              * w/nonnullable var on left */
 
-	List	   *right_join_clauses;		/* list of RestrictInfos for
-										 * mergejoinable outer join clauses
-										 * w/nonnullable var on right */
+    List *right_join_clauses; /* list of RestrictInfos for
+                               * mergejoinable outer join clauses
+                               * w/nonnullable var on right */
 
-	List	   *full_join_clauses;		/* list of RestrictInfos for
-										 * mergejoinable full join clauses */
+    List *full_join_clauses; /* list of RestrictInfos for
+                              * mergejoinable full join clauses */
 
-	List	   *join_info_list; /* list of SpecialJoinInfos */
+    List *join_info_list; /* list of SpecialJoinInfos */
 
-	List	   *append_rel_list;	/* list of AppendRelInfos */
+    List *append_rel_list; /* list of AppendRelInfos */
 
-	List	   *rowMarks;		/* list of PlanRowMarks */
+    List *rowMarks; /* list of PlanRowMarks */
 
-	List	   *placeholder_list;		/* list of PlaceHolderInfos */
+    List *placeholder_list; /* list of PlaceHolderInfos */
 
-	List	   *query_pathkeys; /* desired pathkeys for query_planner(), and
-								 * actual pathkeys after planning */
+    List *query_pathkeys; /* desired pathkeys for query_planner(), and
+                           * actual pathkeys after planning */
 
-	List	   *group_pathkeys; /* groupClause pathkeys, if any */
-	List	   *window_pathkeys;	/* pathkeys of bottom window, if any */
-	List	   *distinct_pathkeys;		/* distinctClause pathkeys, if any */
-	List	   *sort_pathkeys;	/* sortClause pathkeys, if any */
+    List *group_pathkeys;    /* groupClause pathkeys, if any */
+    List *window_pathkeys;   /* pathkeys of bottom window, if any */
+    List *distinct_pathkeys; /* distinctClause pathkeys, if any */
+    List *sort_pathkeys;     /* sortClause pathkeys, if any */
 
-	List	   *minmax_aggs;	/* List of MinMaxAggInfos */
+    List *minmax_aggs; /* List of MinMaxAggInfos */
 
-	List	   *initial_rels;	/* RelOptInfos we are now trying to join */
+    List *initial_rels; /* RelOptInfos we are now trying to join */
 
-	MemoryContext planner_cxt;	/* context holding PlannerInfo */
+    MemoryContext planner_cxt; /* context holding PlannerInfo */
 
-	double		total_table_pages;		/* # of pages in all tables of query */
+    double total_table_pages; /* # of pages in all tables of query */
 
-	double		tuple_fraction; /* tuple_fraction passed to query_planner */
-	double		limit_tuples;	/* limit_tuples passed to query_planner */
+    double tuple_fraction; /* tuple_fraction passed to query_planner */
+    double limit_tuples;   /* limit_tuples passed to query_planner */
 
-	bool		hasInheritedTarget;		/* true if parse->resultRelation is an
-										 * inheritance child rel */
-	bool		hasJoinRTEs;	/* true if any RTEs are RTE_JOIN kind */
-	bool		hasLateralRTEs; /* true if any RTEs are marked LATERAL */
-	bool		hasDeletedRTEs; /* true if any RTE was deleted from jointree */
-	bool		hasHavingQual;	/* true if havingQual was non-null */
-	bool		hasPseudoConstantQuals; /* true if any RestrictInfo has
-										 * pseudoconstant = true */
-	bool		hasRecursion;	/* true if planning a recursive WITH item */
+    bool hasInheritedTarget;     /* true if parse->resultRelation is an
+                                  * inheritance child rel */
+    bool hasJoinRTEs;            /* true if any RTEs are RTE_JOIN kind */
+    bool hasLateralRTEs;         /* true if any RTEs are marked LATERAL */
+    bool hasDeletedRTEs;         /* true if any RTE was deleted from jointree */
+    bool hasHavingQual;          /* true if havingQual was non-null */
+    bool hasPseudoConstantQuals; /* true if any RestrictInfo has
+                                  * pseudoconstant = true */
+    bool hasRecursion;           /* true if planning a recursive WITH item */
 
-	/* These fields are used only when hasRecursion is true: */
-	int			wt_param_id;	/* PARAM_EXEC ID for the work table */
-	struct Plan *non_recursive_plan;	/* plan for non-recursive term */
+    /* These fields are used only when hasRecursion is true: */
+    int          wt_param_id;        /* PARAM_EXEC ID for the work table */
+    struct Plan *non_recursive_plan; /* plan for non-recursive term */
 
-	/* These fields are workspace for createplan.c */
-	Relids		curOuterRels;	/* outer rels above current node */
-	List	   *curOuterParams; /* not-yet-assigned NestLoopParams */
+    /* These fields are workspace for createplan.c */
+    Relids curOuterRels;   /* outer rels above current node */
+    List  *curOuterParams; /* not-yet-assigned NestLoopParams */
 
-	/* optional private data for join_search_hook, e.g., GEQO */
-	void	   *join_search_private;
+    /* optional private data for join_search_hook, e.g., GEQO */
+    void *join_search_private;
 
-	/* for GroupingFunc fixup in setrefs */
-	AttrNumber *grouping_map;
+    /* for GroupingFunc fixup in setrefs */
+    AttrNumber *grouping_map;
 } PlannerInfo;
-
 
 /*
  * In places where it's known that simple_rte_array[] must have been prepared
  * already, we just index into it to fetch RTEs.  In code that might be
  * executed before or after entering query_planner(), use this macro.
  */
-#define planner_rt_fetch(rti, root) \
-	((root)->simple_rte_array ? (root)->simple_rte_array[rti] : \
-	 rt_fetch(rti, (root)->parse->rtable))
-
+#define planner_rt_fetch(rti, root)                                                                                    \
+    ((root)->simple_rte_array ? (root)->simple_rte_array[rti] : rt_fetch(rti, (root)->parse->rtable))
 
 /*----------
  * RelOptInfo
@@ -415,77 +401,70 @@ typedef struct PlannerInfo
  * and may need it multiple times to price index scans.
  *----------
  */
-typedef enum RelOptKind
-{
-	RELOPT_BASEREL,
-	RELOPT_JOINREL,
-	RELOPT_OTHER_MEMBER_REL,
-	RELOPT_DEADREL
-} RelOptKind;
+typedef enum RelOptKind { RELOPT_BASEREL, RELOPT_JOINREL, RELOPT_OTHER_MEMBER_REL, RELOPT_DEADREL } RelOptKind;
 
-typedef struct RelOptInfo
-{
-	NodeTag		type;
+typedef struct RelOptInfo {
+    NodeTag type;
 
-	RelOptKind	reloptkind;
+    RelOptKind reloptkind;
 
-	/* all relations included in this RelOptInfo */
-	Relids		relids;			/* set of base relids (rangetable indexes) */
+    /* all relations included in this RelOptInfo */
+    Relids relids; /* set of base relids (rangetable indexes) */
 
-	/* size estimates generated by planner */
-	double		rows;			/* estimated number of result tuples */
-	int			width;			/* estimated avg width of result tuples */
+    /* size estimates generated by planner */
+    double rows;  /* estimated number of result tuples */
+    int    width; /* estimated avg width of result tuples */
 
-	/* per-relation planner control flags */
-	bool		consider_startup;		/* keep cheap-startup-cost paths? */
-	bool		consider_param_startup; /* ditto, for parameterized paths? */
+    /* per-relation planner control flags */
+    bool consider_startup;       /* keep cheap-startup-cost paths? */
+    bool consider_param_startup; /* ditto, for parameterized paths? */
 
-	/* materialization information */
-	List	   *reltargetlist;	/* Vars to be output by scan of relation */
-	List	   *pathlist;		/* Path structures */
-	List	   *ppilist;		/* ParamPathInfos used in pathlist */
-	struct Path *cheapest_startup_path;
-	struct Path *cheapest_total_path;
-	struct Path *cheapest_unique_path;
-	List	   *cheapest_parameterized_paths;
+    /* materialization information */
+    List        *reltargetlist; /* Vars to be output by scan of relation */
+    List        *pathlist;      /* Path structures */
+    List        *ppilist;       /* ParamPathInfos used in pathlist */
+    struct Path *cheapest_startup_path;
+    struct Path *cheapest_total_path;
+    struct Path *cheapest_unique_path;
+    List        *cheapest_parameterized_paths;
 
-	/* parameterization information needed for both base rels and join rels */
-	/* (see also lateral_vars and lateral_referencers) */
-	Relids		direct_lateral_relids;	/* rels directly laterally referenced */
-	Relids		lateral_relids; /* minimum parameterization of rel */
+    /* parameterization information needed for both base rels and join rels */
+    /* (see also lateral_vars and lateral_referencers) */
+    Relids direct_lateral_relids; /* rels directly laterally referenced */
+    Relids lateral_relids;        /* minimum parameterization of rel */
 
-	/* information about a base rel (not set for join rels!) */
-	Index		relid;
-	Oid			reltablespace;	/* containing tablespace */
-	RTEKind		rtekind;		/* RELATION, SUBQUERY, or FUNCTION */
-	AttrNumber	min_attr;		/* smallest attrno of rel (often <0) */
-	AttrNumber	max_attr;		/* largest attrno of rel */
-	Relids	   *attr_needed;	/* array indexed [min_attr .. max_attr] */
-	int32	   *attr_widths;	/* array indexed [min_attr .. max_attr] */
-	List	   *lateral_vars;	/* LATERAL Vars and PHVs referenced by rel */
-	Relids		lateral_referencers;	/* rels that reference me laterally */
-	List	   *indexlist;		/* list of IndexOptInfo */
-	BlockNumber pages;			/* size estimates derived from pg_class */
-	double		tuples;
-	double		allvisfrac;
-	/* use "struct Plan" to avoid including plannodes.h here */
-	struct Plan *subplan;		/* if subquery */
-	PlannerInfo *subroot;		/* if subquery */
-	List	   *subplan_params; /* if subquery */
+    /* information about a base rel (not set for join rels!) */
+    Index       relid;
+    Oid         reltablespace;       /* containing tablespace */
+    RTEKind     rtekind;             /* RELATION, SUBQUERY, or FUNCTION */
+    AttrNumber  min_attr;            /* smallest attrno of rel (often <0) */
+    AttrNumber  max_attr;            /* largest attrno of rel */
+    Relids     *attr_needed;         /* array indexed [min_attr .. max_attr] */
+    int32      *attr_widths;         /* array indexed [min_attr .. max_attr] */
+    List       *lateral_vars;        /* LATERAL Vars and PHVs referenced by rel */
+    Relids      lateral_referencers; /* rels that reference me laterally */
+    List       *indexlist;           /* list of IndexOptInfo */
+    BlockNumber pages;               /* size estimates derived from pg_class */
+    double      tuples;
+    double      allvisfrac;
+    /* use "struct Plan" to avoid including plannodes.h here */
+    struct Plan *subplan;        /* if subquery */
+    PlannerInfo *subroot;        /* if subquery */
+    List        *subplan_params; /* if subquery */
 
-	/* Information about foreign tables and foreign joins */
-	Oid			serverid;		/* identifies server for the table or join */
-	/* use "struct FdwRoutine" to avoid including fdwapi.h here */
-	struct FdwRoutine *fdwroutine;
-	void	   *fdw_private;
+    /* Information about foreign tables and foreign joins */
+    Oid serverid; /* identifies server for the table or join */
+    /* use "struct FdwRoutine" to avoid including fdwapi.h here */
+    struct FdwRoutine *fdwroutine;
+    void              *fdw_private;
 
-	/* used by various scans and joins: */
-	List	   *baserestrictinfo;		/* RestrictInfo structures (if base
-										 * rel) */
-	QualCost	baserestrictcost;		/* cost of evaluating the above */
-	List	   *joininfo;		/* RestrictInfo structures for join clauses
-								 * involving this rel */
-	bool		has_eclass_joins;		/* T means joininfo is incomplete */
+    /* used by various scans and joins: */
+    List *baserestrictinfo;    /* RestrictInfo structures (if base
+                                * rel) */
+    QualCost baserestrictcost; /* cost of evaluating the above */
+    List    *joininfo;         /* RestrictInfo structures for join clauses
+                                * involving this rel */
+    bool has_eclass_joins;     /* T means joininfo is incomplete */
 } RelOptInfo;
 
 /*
@@ -514,51 +493,49 @@ typedef struct RelOptInfo
  *		It provides an equivalent base-relation Var for each simple column,
  *		and links to the matching indexprs element for each expression column.
  */
-typedef struct IndexOptInfo
-{
-	NodeTag		type;
+typedef struct IndexOptInfo {
+    NodeTag type;
 
-	Oid			indexoid;		/* OID of the index relation */
-	Oid			reltablespace;	/* tablespace of index (not table) */
-	RelOptInfo *rel;			/* back-link to index's table */
+    Oid         indexoid;      /* OID of the index relation */
+    Oid         reltablespace; /* tablespace of index (not table) */
+    RelOptInfo *rel;           /* back-link to index's table */
 
-	/* index-size statistics (from pg_class and elsewhere) */
-	BlockNumber pages;			/* number of disk pages in index */
-	double		tuples;			/* number of index tuples in index */
-	int			tree_height;	/* index tree height, or -1 if unknown */
+    /* index-size statistics (from pg_class and elsewhere) */
+    BlockNumber pages;       /* number of disk pages in index */
+    double      tuples;      /* number of index tuples in index */
+    int         tree_height; /* index tree height, or -1 if unknown */
 
-	/* index descriptor information */
-	int			ncolumns;		/* number of columns in index */
-	int		   *indexkeys;		/* column numbers of index's keys, or 0 */
-	Oid		   *indexcollations;	/* OIDs of collations of index columns */
-	Oid		   *opfamily;		/* OIDs of operator families for columns */
-	Oid		   *opcintype;		/* OIDs of opclass declared input data types */
-	Oid		   *sortopfamily;	/* OIDs of btree opfamilies, if orderable */
-	bool	   *reverse_sort;	/* is sort order descending? */
-	bool	   *nulls_first;	/* do NULLs come first in the sort order? */
-	bool	   *canreturn;		/* which index cols can be returned in an
-								 * index-only scan? */
-	Oid			relam;			/* OID of the access method (in pg_am) */
+    /* index descriptor information */
+    int   ncolumns;        /* number of columns in index */
+    int  *indexkeys;       /* column numbers of index's keys, or 0 */
+    Oid  *indexcollations; /* OIDs of collations of index columns */
+    Oid  *opfamily;        /* OIDs of operator families for columns */
+    Oid  *opcintype;       /* OIDs of opclass declared input data types */
+    Oid  *sortopfamily;    /* OIDs of btree opfamilies, if orderable */
+    bool *reverse_sort;    /* is sort order descending? */
+    bool *nulls_first;     /* do NULLs come first in the sort order? */
+    bool *canreturn;       /* which index cols can be returned in an
+                            * index-only scan? */
+    Oid relam;             /* OID of the access method (in pg_am) */
 
-	RegProcedure amcostestimate;	/* OID of the access method's cost fcn */
+    RegProcedure amcostestimate; /* OID of the access method's cost fcn */
 
-	List	   *indexprs;		/* expressions for non-simple index columns */
-	List	   *indpred;		/* predicate if a partial index, else NIL */
+    List *indexprs; /* expressions for non-simple index columns */
+    List *indpred;  /* predicate if a partial index, else NIL */
 
-	List	   *indextlist;		/* targetlist representing index columns */
+    List *indextlist; /* targetlist representing index columns */
 
-	bool		predOK;			/* true if predicate matches query */
-	bool		unique;			/* true if a unique index */
-	bool		immediate;		/* is uniqueness enforced immediately? */
-	bool		hypothetical;	/* true if index doesn't really exist */
-	bool		amcanorderbyop; /* does AM support order by operator result? */
-	bool		amoptionalkey;	/* can query omit key for the first column? */
-	bool		amsearcharray;	/* can AM handle ScalarArrayOpExpr quals? */
-	bool		amsearchnulls;	/* can AM search for NULL/NOT NULL entries? */
-	bool		amhasgettuple;	/* does AM have amgettuple interface? */
-	bool		amhasgetbitmap; /* does AM have amgetbitmap interface? */
+    bool predOK;         /* true if predicate matches query */
+    bool unique;         /* true if a unique index */
+    bool immediate;      /* is uniqueness enforced immediately? */
+    bool hypothetical;   /* true if index doesn't really exist */
+    bool amcanorderbyop; /* does AM support order by operator result? */
+    bool amoptionalkey;  /* can query omit key for the first column? */
+    bool amsearcharray;  /* can AM handle ScalarArrayOpExpr quals? */
+    bool amsearchnulls;  /* can AM search for NULL/NOT NULL entries? */
+    bool amhasgettuple;  /* does AM have amgettuple interface? */
+    bool amhasgetbitmap; /* does AM have amgetbitmap interface? */
 } IndexOptInfo;
-
 
 /*
  * EquivalenceClasses
@@ -600,31 +577,29 @@ typedef struct IndexOptInfo
  * NB: if ec_merged isn't NULL, this class has been merged into another, and
  * should be ignored in favor of using the pointed-to class.
  */
-typedef struct EquivalenceClass
-{
-	NodeTag		type;
+typedef struct EquivalenceClass {
+    NodeTag type;
 
-	List	   *ec_opfamilies;	/* btree operator family OIDs */
-	Oid			ec_collation;	/* collation, if datatypes are collatable */
-	List	   *ec_members;		/* list of EquivalenceMembers */
-	List	   *ec_sources;		/* list of generating RestrictInfos */
-	List	   *ec_derives;		/* list of derived RestrictInfos */
-	Relids		ec_relids;		/* all relids appearing in ec_members, except
-								 * for child members (see below) */
-	bool		ec_has_const;	/* any pseudoconstants in ec_members? */
-	bool		ec_has_volatile;	/* the (sole) member is a volatile expr */
-	bool		ec_below_outer_join;	/* equivalence applies below an OJ */
-	bool		ec_broken;		/* failed to generate needed clauses? */
-	Index		ec_sortref;		/* originating sortclause label, or 0 */
-	struct EquivalenceClass *ec_merged; /* set if merged into another EC */
+    List  *ec_opfamilies;                         /* btree operator family OIDs */
+    Oid    ec_collation;                          /* collation, if datatypes are collatable */
+    List  *ec_members;                            /* list of EquivalenceMembers */
+    List  *ec_sources;                            /* list of generating RestrictInfos */
+    List  *ec_derives;                            /* list of derived RestrictInfos */
+    Relids ec_relids;                             /* all relids appearing in ec_members, except
+                                                   * for child members (see below) */
+    bool                     ec_has_const;        /* any pseudoconstants in ec_members? */
+    bool                     ec_has_volatile;     /* the (sole) member is a volatile expr */
+    bool                     ec_below_outer_join; /* equivalence applies below an OJ */
+    bool                     ec_broken;           /* failed to generate needed clauses? */
+    Index                    ec_sortref;          /* originating sortclause label, or 0 */
+    struct EquivalenceClass *ec_merged;           /* set if merged into another EC */
 } EquivalenceClass;
 
 /*
  * If an EC contains a const and isn't below-outer-join, any PathKey depending
  * on it must be redundant, since there's only one possible value of the key.
  */
-#define EC_MUST_BE_REDUNDANT(eclass)  \
-	((eclass)->ec_has_const && !(eclass)->ec_below_outer_join)
+#define EC_MUST_BE_REDUNDANT(eclass) ((eclass)->ec_has_const && !(eclass)->ec_below_outer_join)
 
 /*
  * EquivalenceMember - one member expression of an EquivalenceClass
@@ -648,16 +623,15 @@ typedef struct EquivalenceClass
  * anyarray_ops would never work without this.  Use em_datatype when
  * looking up a specific btree operator to work with this expression.
  */
-typedef struct EquivalenceMember
-{
-	NodeTag		type;
+typedef struct EquivalenceMember {
+    NodeTag type;
 
-	Expr	   *em_expr;		/* the expression represented */
-	Relids		em_relids;		/* all relids appearing in em_expr */
-	Relids		em_nullable_relids;		/* nullable by lower outer joins */
-	bool		em_is_const;	/* expression is pseudoconstant? */
-	bool		em_is_child;	/* derived version for a child relation? */
-	Oid			em_datatype;	/* the "nominal type" used by the opfamily */
+    Expr  *em_expr;            /* the expression represented */
+    Relids em_relids;          /* all relids appearing in em_expr */
+    Relids em_nullable_relids; /* nullable by lower outer joins */
+    bool   em_is_const;        /* expression is pseudoconstant? */
+    bool   em_is_child;        /* derived version for a child relation? */
+    Oid    em_datatype;        /* the "nominal type" used by the opfamily */
 } EquivalenceMember;
 
 /*
@@ -677,16 +651,14 @@ typedef struct EquivalenceMember
  * BTGreaterStrategyNumber (for DESC).  We assume that all ordering-capable
  * index types will use btree-compatible strategy numbers.
  */
-typedef struct PathKey
-{
-	NodeTag		type;
+typedef struct PathKey {
+    NodeTag type;
 
-	EquivalenceClass *pk_eclass;	/* the value that is ordered */
-	Oid			pk_opfamily;	/* btree opfamily defining the ordering */
-	int			pk_strategy;	/* sort direction (ASC or DESC) */
-	bool		pk_nulls_first; /* do NULLs come before normal values? */
+    EquivalenceClass *pk_eclass;      /* the value that is ordered */
+    Oid               pk_opfamily;    /* btree opfamily defining the ordering */
+    int               pk_strategy;    /* sort direction (ASC or DESC) */
+    bool              pk_nulls_first; /* do NULLs come before normal values? */
 } PathKey;
-
 
 /*
  * ParamPathInfo
@@ -702,15 +674,13 @@ typedef struct PathKey
  * on how the join is formed.  The relevant clauses will appear in each
  * parameterized join path's joinrestrictinfo list, instead.
  */
-typedef struct ParamPathInfo
-{
-	NodeTag		type;
+typedef struct ParamPathInfo {
+    NodeTag type;
 
-	Relids		ppi_req_outer;	/* rels supplying parameters used by path */
-	double		ppi_rows;		/* estimated number of result tuples */
-	List	   *ppi_clauses;	/* join clauses available from outer rels */
+    Relids ppi_req_outer; /* rels supplying parameters used by path */
+    double ppi_rows;      /* estimated number of result tuples */
+    List  *ppi_clauses;   /* join clauses available from outer rels */
 } ParamPathInfo;
-
 
 /*
  * Type "Path" is used as-is for sequential-scan paths, as well as some other
@@ -736,27 +706,25 @@ typedef struct ParamPathInfo
  * "pathkeys" is a List of PathKey nodes (see above), describing the sort
  * ordering of the path's output rows.
  */
-typedef struct Path
-{
-	NodeTag		type;
+typedef struct Path {
+    NodeTag type;
 
-	NodeTag		pathtype;		/* tag identifying scan/join method */
+    NodeTag pathtype; /* tag identifying scan/join method */
 
-	RelOptInfo *parent;			/* the relation this path can build */
-	ParamPathInfo *param_info;	/* parameterization info, or NULL if none */
+    RelOptInfo    *parent;     /* the relation this path can build */
+    ParamPathInfo *param_info; /* parameterization info, or NULL if none */
 
-	/* estimated size/costs for path (see costsize.c for more info) */
-	double		rows;			/* estimated number of result tuples */
-	Cost		startup_cost;	/* cost expended before fetching any tuples */
-	Cost		total_cost;		/* total cost (assuming all tuples fetched) */
+    /* estimated size/costs for path (see costsize.c for more info) */
+    double rows;         /* estimated number of result tuples */
+    Cost   startup_cost; /* cost expended before fetching any tuples */
+    Cost   total_cost;   /* total cost (assuming all tuples fetched) */
 
-	List	   *pathkeys;		/* sort ordering of path's output */
-	/* pathkeys is a List of PathKey nodes; see above */
+    List *pathkeys; /* sort ordering of path's output */
+                    /* pathkeys is a List of PathKey nodes; see above */
 } Path;
 
 /* Macro for extracting a path's parameterization relids; beware double eval */
-#define PATH_REQ_OUTER(path)  \
-	((path)->param_info ? (path)->param_info->ppi_req_outer : (Relids) NULL)
+#define PATH_REQ_OUTER(path) ((path)->param_info ? (path)->param_info->ppi_req_outer : (Relids) NULL)
 
 /*----------
  * IndexPath represents an index scan over a single index.
@@ -810,18 +778,17 @@ typedef struct Path
  * itself represent the costs of an IndexScan or IndexOnlyScan plan type.
  *----------
  */
-typedef struct IndexPath
-{
-	Path		path;
-	IndexOptInfo *indexinfo;
-	List	   *indexclauses;
-	List	   *indexquals;
-	List	   *indexqualcols;
-	List	   *indexorderbys;
-	List	   *indexorderbycols;
-	ScanDirection indexscandir;
-	Cost		indextotalcost;
-	Selectivity indexselectivity;
+typedef struct IndexPath {
+    Path          path;
+    IndexOptInfo *indexinfo;
+    List         *indexclauses;
+    List         *indexquals;
+    List         *indexqualcols;
+    List         *indexorderbys;
+    List         *indexorderbycols;
+    ScanDirection indexscandir;
+    Cost          indextotalcost;
+    Selectivity   indexselectivity;
 } IndexPath;
 
 /*
@@ -841,10 +808,9 @@ typedef struct IndexPath
  * IndexScan.  The costs of a BitmapIndexScan can be computed using the
  * IndexPath's indextotalcost and indexselectivity.
  */
-typedef struct BitmapHeapPath
-{
-	Path		path;
-	Path	   *bitmapqual;		/* IndexPath, BitmapAndPath, BitmapOrPath */
+typedef struct BitmapHeapPath {
+    Path  path;
+    Path *bitmapqual; /* IndexPath, BitmapAndPath, BitmapOrPath */
 } BitmapHeapPath;
 
 /*
@@ -853,11 +819,10 @@ typedef struct BitmapHeapPath
  * a bit more heavyweight than we really need for this, but for simplicity
  * we make it a derivative of Path anyway.
  */
-typedef struct BitmapAndPath
-{
-	Path		path;
-	List	   *bitmapquals;	/* IndexPaths and BitmapOrPaths */
-	Selectivity bitmapselectivity;
+typedef struct BitmapAndPath {
+    Path        path;
+    List       *bitmapquals; /* IndexPaths and BitmapOrPaths */
+    Selectivity bitmapselectivity;
 } BitmapAndPath;
 
 /*
@@ -866,11 +831,10 @@ typedef struct BitmapAndPath
  * a bit more heavyweight than we really need for this, but for simplicity
  * we make it a derivative of Path anyway.
  */
-typedef struct BitmapOrPath
-{
-	Path		path;
-	List	   *bitmapquals;	/* IndexPaths and BitmapAndPaths */
-	Selectivity bitmapselectivity;
+typedef struct BitmapOrPath {
+    Path        path;
+    List       *bitmapquals; /* IndexPaths and BitmapAndPaths */
+    Selectivity bitmapselectivity;
 } BitmapOrPath;
 
 /*
@@ -880,10 +844,9 @@ typedef struct BitmapOrPath
  * "CTID = pseudoconstant" or "CTID = ANY(pseudoconstant_array)".
  * Note they are bare expressions, not RestrictInfos.
  */
-typedef struct TidPath
-{
-	Path		path;
-	List	   *tidquals;		/* qual(s) involving CTID = something */
+typedef struct TidPath {
+    Path  path;
+    List *tidquals; /* qual(s) involving CTID = something */
 } TidPath;
 
 /*
@@ -895,11 +858,10 @@ typedef struct TidPath
  * nodeToString(), so that you can examine the structure during debugging
  * with tools like pprint().
  */
-typedef struct ForeignPath
-{
-	Path		path;
-	Path	   *fdw_outerpath;
-	List	   *fdw_private;
+typedef struct ForeignPath {
+    Path  path;
+    Path *fdw_outerpath;
+    List *fdw_private;
 } ForeignPath;
 
 /*
@@ -922,32 +884,29 @@ typedef struct ForeignPath
  */
 struct CustomPath;
 
-#define CUSTOMPATH_SUPPORT_BACKWARD_SCAN	0x0001
-#define CUSTOMPATH_SUPPORT_MARK_RESTORE		0x0002
+#define CUSTOMPATH_SUPPORT_BACKWARD_SCAN 0x0001
+#define CUSTOMPATH_SUPPORT_MARK_RESTORE 0x0002
 
-typedef struct CustomPathMethods
-{
-	const char *CustomName;
+typedef struct CustomPathMethods {
+    const char *CustomName;
 
-	/* Convert Path to a Plan */
-	struct Plan *(*PlanCustomPath) (PlannerInfo *root,
-												RelOptInfo *rel,
-												struct CustomPath *best_path,
-												List *tlist,
-												List *clauses,
-												List *custom_plans);
-	/* Optional: print additional fields besides "private" */
-	void		(*TextOutCustomPath) (StringInfo str,
-											  const struct CustomPath *node);
+    /* Convert Path to a Plan */
+    struct Plan *(*PlanCustomPath)(PlannerInfo       *root,
+                                   RelOptInfo        *rel,
+                                   struct CustomPath *best_path,
+                                   List              *tlist,
+                                   List              *clauses,
+                                   List              *custom_plans);
+    /* Optional: print additional fields besides "private" */
+    void (*TextOutCustomPath)(StringInfo str, const struct CustomPath *node);
 } CustomPathMethods;
 
-typedef struct CustomPath
-{
-	Path		path;
-	uint32		flags;			/* mask of CUSTOMPATH_* flags, see above */
-	List	   *custom_paths;	/* list of child Path nodes, if any */
-	List	   *custom_private;
-	const CustomPathMethods *methods;
+typedef struct CustomPath {
+    Path                     path;
+    uint32                   flags;        /* mask of CUSTOMPATH_* flags, see above */
+    List                    *custom_paths; /* list of child Path nodes, if any */
+    List                    *custom_private;
+    const CustomPathMethods *methods;
 } CustomPath;
 
 /*
@@ -959,29 +918,24 @@ typedef struct CustomPath
  * In particular, an AppendPath with no subpaths is a "dummy" path that
  * is created to represent the case that a relation is provably empty.
  */
-typedef struct AppendPath
-{
-	Path		path;
-	List	   *subpaths;		/* list of component Paths */
+typedef struct AppendPath {
+    Path  path;
+    List *subpaths; /* list of component Paths */
 } AppendPath;
 
-#define IS_DUMMY_PATH(p) \
-	(IsA((p), AppendPath) && ((AppendPath *) (p))->subpaths == NIL)
+#define IS_DUMMY_PATH(p) (IsA((p), AppendPath) && ((AppendPath *) (p))->subpaths == NIL)
 
 /* A relation that's been proven empty will have one path that is dummy */
-#define IS_DUMMY_REL(r) \
-	((r)->cheapest_total_path != NULL && \
-	 IS_DUMMY_PATH((r)->cheapest_total_path))
+#define IS_DUMMY_REL(r) ((r)->cheapest_total_path != NULL && IS_DUMMY_PATH((r)->cheapest_total_path))
 
 /*
  * MergeAppendPath represents a MergeAppend plan, ie, the merging of sorted
  * results from several member plans to produce similarly-sorted output.
  */
-typedef struct MergeAppendPath
-{
-	Path		path;
-	List	   *subpaths;		/* list of component Paths */
-	double		limit_tuples;	/* hard limit on output tuples, or -1 */
+typedef struct MergeAppendPath {
+    Path   path;
+    List  *subpaths;     /* list of component Paths */
+    double limit_tuples; /* hard limit on output tuples, or -1 */
 } MergeAppendPath;
 
 /*
@@ -991,10 +945,9 @@ typedef struct MergeAppendPath
  *
  * Note that quals is a list of bare clauses, not RestrictInfos.
  */
-typedef struct ResultPath
-{
-	Path		path;
-	List	   *quals;
+typedef struct ResultPath {
+    Path  path;
+    List *quals;
 } ResultPath;
 
 /*
@@ -1003,10 +956,9 @@ typedef struct ResultPath
  * and needs to be scanned repeatedly, or when we need mark/restore ability
  * and the subpath doesn't have it.
  */
-typedef struct MaterialPath
-{
-	Path		path;
-	Path	   *subpath;
+typedef struct MaterialPath {
+    Path  path;
+    Path *subpath;
 } MaterialPath;
 
 /*
@@ -1022,42 +974,39 @@ typedef struct MaterialPath
  * UniquePath in the path tree to signal upper-level routines that the input
  * is known distinct.)
  */
-typedef enum
-{
-	UNIQUE_PATH_NOOP,			/* input is known unique already */
-	UNIQUE_PATH_HASH,			/* use hashing */
-	UNIQUE_PATH_SORT			/* use sorting */
+typedef enum {
+    UNIQUE_PATH_NOOP, /* input is known unique already */
+    UNIQUE_PATH_HASH, /* use hashing */
+    UNIQUE_PATH_SORT  /* use sorting */
 } UniquePathMethod;
 
-typedef struct UniquePath
-{
-	Path		path;
-	Path	   *subpath;
-	UniquePathMethod umethod;
-	List	   *in_operators;	/* equality operators of the IN clause */
-	List	   *uniq_exprs;		/* expressions to be made unique */
+typedef struct UniquePath {
+    Path             path;
+    Path            *subpath;
+    UniquePathMethod umethod;
+    List            *in_operators; /* equality operators of the IN clause */
+    List            *uniq_exprs;   /* expressions to be made unique */
 } UniquePath;
 
 /*
  * All join-type paths share these fields.
  */
 
-typedef struct JoinPath
-{
-	Path		path;
+typedef struct JoinPath {
+    Path path;
 
-	JoinType	jointype;
+    JoinType jointype;
 
-	Path	   *outerjoinpath;	/* path for the outer side of the join */
-	Path	   *innerjoinpath;	/* path for the inner side of the join */
+    Path *outerjoinpath; /* path for the outer side of the join */
+    Path *innerjoinpath; /* path for the inner side of the join */
 
-	List	   *joinrestrictinfo;		/* RestrictInfos to apply to join */
+    List *joinrestrictinfo; /* RestrictInfos to apply to join */
 
-	/*
-	 * See the notes for RelOptInfo and ParamPathInfo to understand why
-	 * joinrestrictinfo is needed in JoinPath, and can't be merged into the
-	 * parent RelOptInfo.
-	 */
+    /*
+     * See the notes for RelOptInfo and ParamPathInfo to understand why
+     * joinrestrictinfo is needed in JoinPath, and can't be merged into the
+     * parent RelOptInfo.
+     */
 } JoinPath;
 
 /*
@@ -1094,13 +1043,12 @@ typedef JoinPath NestPath;
  * inner input.  This may appear with or without an inner Sort step.
  */
 
-typedef struct MergePath
-{
-	JoinPath	jpath;
-	List	   *path_mergeclauses;		/* join clauses to be used for merge */
-	List	   *outersortkeys;	/* keys for explicit sort, if any */
-	List	   *innersortkeys;	/* keys for explicit sort, if any */
-	bool		materialize_inner;		/* add Materialize to inner? */
+typedef struct MergePath {
+    JoinPath jpath;
+    List    *path_mergeclauses; /* join clauses to be used for merge */
+    List    *outersortkeys;     /* keys for explicit sort, if any */
+    List    *innersortkeys;     /* keys for explicit sort, if any */
+    bool     materialize_inner; /* add Materialize to inner? */
 } MergePath;
 
 /*
@@ -1112,11 +1060,10 @@ typedef struct MergePath
  * no need for sortkeys.
  */
 
-typedef struct HashPath
-{
-	JoinPath	jpath;
-	List	   *path_hashclauses;		/* join clauses used for hashing */
-	int			num_batches;	/* number of batches expected */
+typedef struct HashPath {
+    JoinPath jpath;
+    List    *path_hashclauses; /* join clauses used for hashing */
+    int      num_batches;      /* number of batches expected */
 } HashPath;
 
 /*
@@ -1249,69 +1196,68 @@ typedef struct HashPath
  * parent_ec in the same join are redundant.
  */
 
-typedef struct RestrictInfo
-{
-	NodeTag		type;
+typedef struct RestrictInfo {
+    NodeTag type;
 
-	Expr	   *clause;			/* the represented clause of WHERE or JOIN */
+    Expr *clause; /* the represented clause of WHERE or JOIN */
 
-	bool		is_pushed_down; /* TRUE if clause was pushed down in level */
+    bool is_pushed_down; /* TRUE if clause was pushed down in level */
 
-	bool		outerjoin_delayed;		/* TRUE if delayed by lower outer join */
+    bool outerjoin_delayed; /* TRUE if delayed by lower outer join */
 
-	bool		can_join;		/* see comment above */
+    bool can_join; /* see comment above */
 
-	bool		pseudoconstant; /* see comment above */
+    bool pseudoconstant; /* see comment above */
 
-	/* The set of relids (varnos) actually referenced in the clause: */
-	Relids		clause_relids;
+    /* The set of relids (varnos) actually referenced in the clause: */
+    Relids clause_relids;
 
-	/* The set of relids required to evaluate the clause: */
-	Relids		required_relids;
+    /* The set of relids required to evaluate the clause: */
+    Relids required_relids;
 
-	/* If an outer-join clause, the outer-side relations, else NULL: */
-	Relids		outer_relids;
+    /* If an outer-join clause, the outer-side relations, else NULL: */
+    Relids outer_relids;
 
-	/* The relids used in the clause that are nullable by lower outer joins: */
-	Relids		nullable_relids;
+    /* The relids used in the clause that are nullable by lower outer joins: */
+    Relids nullable_relids;
 
-	/* These fields are set for any binary opclause: */
-	Relids		left_relids;	/* relids in left side of clause */
-	Relids		right_relids;	/* relids in right side of clause */
+    /* These fields are set for any binary opclause: */
+    Relids left_relids;  /* relids in left side of clause */
+    Relids right_relids; /* relids in right side of clause */
 
-	/* This field is NULL unless clause is an OR clause: */
-	Expr	   *orclause;		/* modified clause with RestrictInfos */
+    /* This field is NULL unless clause is an OR clause: */
+    Expr *orclause; /* modified clause with RestrictInfos */
 
-	/* This field is NULL unless clause is potentially redundant: */
-	EquivalenceClass *parent_ec;	/* generating EquivalenceClass */
+    /* This field is NULL unless clause is potentially redundant: */
+    EquivalenceClass *parent_ec; /* generating EquivalenceClass */
 
-	/* cache space for cost and selectivity */
-	QualCost	eval_cost;		/* eval cost of clause; -1 if not yet set */
-	Selectivity norm_selec;		/* selectivity for "normal" (JOIN_INNER)
-								 * semantics; -1 if not yet set; >1 means a
-								 * redundant clause */
-	Selectivity outer_selec;	/* selectivity for outer join semantics; -1 if
-								 * not yet set */
+    /* cache space for cost and selectivity */
+    QualCost    eval_cost;   /* eval cost of clause; -1 if not yet set */
+    Selectivity norm_selec;  /* selectivity for "normal" (JOIN_INNER)
+                              * semantics; -1 if not yet set; >1 means a
+                              * redundant clause */
+    Selectivity outer_selec; /* selectivity for outer join semantics; -1 if
+                              * not yet set */
 
-	/* valid if clause is mergejoinable, else NIL */
-	List	   *mergeopfamilies;	/* opfamilies containing clause operator */
+    /* valid if clause is mergejoinable, else NIL */
+    List *mergeopfamilies; /* opfamilies containing clause operator */
 
-	/* cache space for mergeclause processing; NULL if not yet set */
-	EquivalenceClass *left_ec;	/* EquivalenceClass containing lefthand */
-	EquivalenceClass *right_ec; /* EquivalenceClass containing righthand */
-	EquivalenceMember *left_em; /* EquivalenceMember for lefthand */
-	EquivalenceMember *right_em;	/* EquivalenceMember for righthand */
-	List	   *scansel_cache;	/* list of MergeScanSelCache structs */
+    /* cache space for mergeclause processing; NULL if not yet set */
+    EquivalenceClass  *left_ec;       /* EquivalenceClass containing lefthand */
+    EquivalenceClass  *right_ec;      /* EquivalenceClass containing righthand */
+    EquivalenceMember *left_em;       /* EquivalenceMember for lefthand */
+    EquivalenceMember *right_em;      /* EquivalenceMember for righthand */
+    List              *scansel_cache; /* list of MergeScanSelCache structs */
 
-	/* transient workspace for use while considering a specific join path */
-	bool		outer_is_left;	/* T = outer var on left, F = on right */
+    /* transient workspace for use while considering a specific join path */
+    bool outer_is_left; /* T = outer var on left, F = on right */
 
-	/* valid if clause is hashjoinable, else InvalidOid: */
-	Oid			hashjoinoperator;		/* copy of clause operator */
+    /* valid if clause is hashjoinable, else InvalidOid: */
+    Oid hashjoinoperator; /* copy of clause operator */
 
-	/* cache space for hashclause processing; -1 if not yet set */
-	Selectivity left_bucketsize;	/* avg bucketsize of left side */
-	Selectivity right_bucketsize;		/* avg bucketsize of right side */
+    /* cache space for hashclause processing; -1 if not yet set */
+    Selectivity left_bucketsize;  /* avg bucketsize of left side */
+    Selectivity right_bucketsize; /* avg bucketsize of right side */
 } RestrictInfo;
 
 /*
@@ -1321,18 +1267,17 @@ typedef struct RestrictInfo
  * RestrictInfo carries a list of the specific sort orderings that have
  * been considered for use with it, and the resulting selectivities.
  */
-typedef struct MergeScanSelCache
-{
-	/* Ordering details (cache lookup key) */
-	Oid			opfamily;		/* btree opfamily defining the ordering */
-	Oid			collation;		/* collation for the ordering */
-	int			strategy;		/* sort direction (ASC or DESC) */
-	bool		nulls_first;	/* do NULLs come before normal values? */
-	/* Results */
-	Selectivity leftstartsel;	/* first-join fraction for clause left side */
-	Selectivity leftendsel;		/* last-join fraction for clause left side */
-	Selectivity rightstartsel;	/* first-join fraction for clause right side */
-	Selectivity rightendsel;	/* last-join fraction for clause right side */
+typedef struct MergeScanSelCache {
+    /* Ordering details (cache lookup key) */
+    Oid  opfamily;    /* btree opfamily defining the ordering */
+    Oid  collation;   /* collation for the ordering */
+    int  strategy;    /* sort direction (ASC or DESC) */
+    bool nulls_first; /* do NULLs come before normal values? */
+    /* Results */
+    Selectivity leftstartsel;  /* first-join fraction for clause left side */
+    Selectivity leftendsel;    /* last-join fraction for clause left side */
+    Selectivity rightstartsel; /* first-join fraction for clause right side */
+    Selectivity rightendsel;   /* last-join fraction for clause right side */
 } MergeScanSelCache;
 
 /*
@@ -1349,13 +1294,12 @@ typedef struct MergeScanSelCache
  * in primnodes.h.
  */
 
-typedef struct PlaceHolderVar
-{
-	Expr		xpr;
-	Expr	   *phexpr;			/* the represented expression */
-	Relids		phrels;			/* base relids syntactically within expr src */
-	Index		phid;			/* ID for PHV (unique within planner run) */
-	Index		phlevelsup;		/* > 0 if PHV belongs to outer query */
+typedef struct PlaceHolderVar {
+    Expr   xpr;
+    Expr  *phexpr;     /* the represented expression */
+    Relids phrels;     /* base relids syntactically within expr src */
+    Index  phid;       /* ID for PHV (unique within planner run) */
+    Index  phlevelsup; /* > 0 if PHV belongs to outer query */
 } PlaceHolderVar;
 
 /*
@@ -1416,21 +1360,20 @@ typedef struct PlaceHolderVar
  * of course the semi_xxx fields are not set meaningfully within such structs.
  */
 
-typedef struct SpecialJoinInfo
-{
-	NodeTag		type;
-	Relids		min_lefthand;	/* base relids in minimum LHS for join */
-	Relids		min_righthand;	/* base relids in minimum RHS for join */
-	Relids		syn_lefthand;	/* base relids syntactically within LHS */
-	Relids		syn_righthand;	/* base relids syntactically within RHS */
-	JoinType	jointype;		/* always INNER, LEFT, FULL, SEMI, or ANTI */
-	bool		lhs_strict;		/* joinclause is strict for some LHS rel */
-	bool		delay_upper_joins;		/* can't commute with upper RHS */
-	/* Remaining fields are set only for JOIN_SEMI jointype: */
-	bool		semi_can_btree; /* true if semi_operators are all btree */
-	bool		semi_can_hash;	/* true if semi_operators are all hash */
-	List	   *semi_operators; /* OIDs of equality join operators */
-	List	   *semi_rhs_exprs; /* righthand-side expressions of these ops */
+typedef struct SpecialJoinInfo {
+    NodeTag  type;
+    Relids   min_lefthand;      /* base relids in minimum LHS for join */
+    Relids   min_righthand;     /* base relids in minimum RHS for join */
+    Relids   syn_lefthand;      /* base relids syntactically within LHS */
+    Relids   syn_righthand;     /* base relids syntactically within RHS */
+    JoinType jointype;          /* always INNER, LEFT, FULL, SEMI, or ANTI */
+    bool     lhs_strict;        /* joinclause is strict for some LHS rel */
+    bool     delay_upper_joins; /* can't commute with upper RHS */
+    /* Remaining fields are set only for JOIN_SEMI jointype: */
+    bool  semi_can_btree; /* true if semi_operators are all btree */
+    bool  semi_can_hash;  /* true if semi_operators are all hash */
+    List *semi_operators; /* OIDs of equality join operators */
+    List *semi_rhs_exprs; /* righthand-side expressions of these ops */
 } SpecialJoinInfo;
 
 /*
@@ -1467,52 +1410,51 @@ typedef struct SpecialJoinInfo
  * point because no improvement in the plan could result.
  */
 
-typedef struct AppendRelInfo
-{
-	NodeTag		type;
+typedef struct AppendRelInfo {
+    NodeTag type;
 
-	/*
-	 * These fields uniquely identify this append relationship.  There can be
-	 * (in fact, always should be) multiple AppendRelInfos for the same
-	 * parent_relid, but never more than one per child_relid, since a given
-	 * RTE cannot be a child of more than one append parent.
-	 */
-	Index		parent_relid;	/* RT index of append parent rel */
-	Index		child_relid;	/* RT index of append child rel */
+    /*
+     * These fields uniquely identify this append relationship.  There can be
+     * (in fact, always should be) multiple AppendRelInfos for the same
+     * parent_relid, but never more than one per child_relid, since a given
+     * RTE cannot be a child of more than one append parent.
+     */
+    Index parent_relid; /* RT index of append parent rel */
+    Index child_relid;  /* RT index of append child rel */
 
-	/*
-	 * For an inheritance appendrel, the parent and child are both regular
-	 * relations, and we store their rowtype OIDs here for use in translating
-	 * whole-row Vars.  For a UNION-ALL appendrel, the parent and child are
-	 * both subqueries with no named rowtype, and we store InvalidOid here.
-	 */
-	Oid			parent_reltype; /* OID of parent's composite type */
-	Oid			child_reltype;	/* OID of child's composite type */
+    /*
+     * For an inheritance appendrel, the parent and child are both regular
+     * relations, and we store their rowtype OIDs here for use in translating
+     * whole-row Vars.  For a UNION-ALL appendrel, the parent and child are
+     * both subqueries with no named rowtype, and we store InvalidOid here.
+     */
+    Oid parent_reltype; /* OID of parent's composite type */
+    Oid child_reltype;  /* OID of child's composite type */
 
-	/*
-	 * The N'th element of this list is a Var or expression representing the
-	 * child column corresponding to the N'th column of the parent. This is
-	 * used to translate Vars referencing the parent rel into references to
-	 * the child.  A list element is NULL if it corresponds to a dropped
-	 * column of the parent (this is only possible for inheritance cases, not
-	 * UNION ALL).  The list elements are always simple Vars for inheritance
-	 * cases, but can be arbitrary expressions in UNION ALL cases.
-	 *
-	 * Notice we only store entries for user columns (attno > 0).  Whole-row
-	 * Vars are special-cased, and system columns (attno < 0) need no special
-	 * translation since their attnos are the same for all tables.
-	 *
-	 * Caution: the Vars have varlevelsup = 0.  Be careful to adjust as needed
-	 * when copying into a subquery.
-	 */
-	List	   *translated_vars;	/* Expressions in the child's Vars */
+    /*
+     * The N'th element of this list is a Var or expression representing the
+     * child column corresponding to the N'th column of the parent. This is
+     * used to translate Vars referencing the parent rel into references to
+     * the child.  A list element is NULL if it corresponds to a dropped
+     * column of the parent (this is only possible for inheritance cases, not
+     * UNION ALL).  The list elements are always simple Vars for inheritance
+     * cases, but can be arbitrary expressions in UNION ALL cases.
+     *
+     * Notice we only store entries for user columns (attno > 0).  Whole-row
+     * Vars are special-cased, and system columns (attno < 0) need no special
+     * translation since their attnos are the same for all tables.
+     *
+     * Caution: the Vars have varlevelsup = 0.  Be careful to adjust as needed
+     * when copying into a subquery.
+     */
+    List *translated_vars; /* Expressions in the child's Vars */
 
-	/*
-	 * We store the parent table's OID here for inheritance, or InvalidOid for
-	 * UNION ALL.  This is only needed to help in generating error messages if
-	 * an attempt is made to reference a dropped parent column.
-	 */
-	Oid			parent_reloid;	/* OID of parent relation */
+    /*
+     * We store the parent table's OID here for inheritance, or InvalidOid for
+     * UNION ALL.  This is only needed to help in generating error messages if
+     * an attempt is made to reference a dropped parent column.
+     */
+    Oid parent_reloid; /* OID of parent relation */
 } AppendRelInfo;
 
 /*
@@ -1541,33 +1483,31 @@ typedef struct AppendRelInfo
  * don't result in unnecessary constraints on join order.
  */
 
-typedef struct PlaceHolderInfo
-{
-	NodeTag		type;
+typedef struct PlaceHolderInfo {
+    NodeTag type;
 
-	Index		phid;			/* ID for PH (unique within planner run) */
-	PlaceHolderVar *ph_var;		/* copy of PlaceHolderVar tree */
-	Relids		ph_eval_at;		/* lowest level we can evaluate value at */
-	Relids		ph_lateral;		/* relids of contained lateral refs, if any */
-	Relids		ph_needed;		/* highest level the value is needed at */
-	int32		ph_width;		/* estimated attribute width */
+    Index           phid;       /* ID for PH (unique within planner run) */
+    PlaceHolderVar *ph_var;     /* copy of PlaceHolderVar tree */
+    Relids          ph_eval_at; /* lowest level we can evaluate value at */
+    Relids          ph_lateral; /* relids of contained lateral refs, if any */
+    Relids          ph_needed;  /* highest level the value is needed at */
+    int32           ph_width;   /* estimated attribute width */
 } PlaceHolderInfo;
 
 /*
  * For each potentially index-optimizable MIN/MAX aggregate function,
  * root->minmax_aggs stores a MinMaxAggInfo describing it.
  */
-typedef struct MinMaxAggInfo
-{
-	NodeTag		type;
+typedef struct MinMaxAggInfo {
+    NodeTag type;
 
-	Oid			aggfnoid;		/* pg_proc Oid of the aggregate */
-	Oid			aggsortop;		/* Oid of its sort operator */
-	Expr	   *target;			/* expression we are aggregating on */
-	PlannerInfo *subroot;		/* modified "root" for planning the subquery */
-	Path	   *path;			/* access path for subquery */
-	Cost		pathcost;		/* estimated cost to fetch first row */
-	Param	   *param;			/* param for subplan's output */
+    Oid          aggfnoid;  /* pg_proc Oid of the aggregate */
+    Oid          aggsortop; /* Oid of its sort operator */
+    Expr        *target;    /* expression we are aggregating on */
+    PlannerInfo *subroot;   /* modified "root" for planning the subquery */
+    Path        *path;      /* access path for subquery */
+    Cost         pathcost;  /* estimated cost to fetch first row */
+    Param       *param;     /* param for subplan's output */
 } MinMaxAggInfo;
 
 /*
@@ -1617,12 +1557,11 @@ typedef struct MinMaxAggInfo
  * Instead, we just record the assignment of the slot number by incrementing
  * root->glob->nParamExec.
  */
-typedef struct PlannerParamItem
-{
-	NodeTag		type;
+typedef struct PlannerParamItem {
+    NodeTag type;
 
-	Node	   *item;			/* the Var, PlaceHolderVar, or Aggref */
-	int			paramId;		/* its assigned PARAM_EXEC slot number */
+    Node *item;    /* the Var, PlaceHolderVar, or Aggref */
+    int   paramId; /* its assigned PARAM_EXEC slot number */
 } PlannerParamItem;
 
 /*
@@ -1641,10 +1580,9 @@ typedef struct PlannerParamItem
  * match_count is the average number of matches expected for
  *		outer tuples that have at least one match.
  */
-typedef struct SemiAntiJoinFactors
-{
-	Selectivity outer_match_frac;
-	Selectivity match_count;
+typedef struct SemiAntiJoinFactors {
+    Selectivity outer_match_frac;
+    Selectivity match_count;
 } SemiAntiJoinFactors;
 
 /*
@@ -1658,13 +1596,12 @@ typedef struct SemiAntiJoinFactors
  * semifactors is as shown above (only valid for SEMI or ANTI joins)
  * param_source_rels are OK targets for parameterization of result paths
  */
-typedef struct JoinPathExtraData
-{
-	List	   *restrictlist;
-	List	   *mergeclause_list;
-	SpecialJoinInfo *sjinfo;
-	SemiAntiJoinFactors semifactors;
-	Relids		param_source_rels;
+typedef struct JoinPathExtraData {
+    List               *restrictlist;
+    List               *mergeclause_list;
+    SpecialJoinInfo    *sjinfo;
+    SemiAntiJoinFactors semifactors;
+    Relids              param_source_rels;
 } JoinPathExtraData;
 
 /*
@@ -1679,28 +1616,27 @@ typedef struct JoinPathExtraData
  * (Ideally we'd declare this in cost.h, but it's also needed in pathnode.h,
  * so seems best to put it here.)
  */
-typedef struct JoinCostWorkspace
-{
-	/* Preliminary cost estimates --- must not be larger than final ones! */
-	Cost		startup_cost;	/* cost expended before fetching any tuples */
-	Cost		total_cost;		/* total cost (assuming all tuples fetched) */
+typedef struct JoinCostWorkspace {
+    /* Preliminary cost estimates --- must not be larger than final ones! */
+    Cost startup_cost; /* cost expended before fetching any tuples */
+    Cost total_cost;   /* total cost (assuming all tuples fetched) */
 
-	/* Fields below here should be treated as private to costsize.c */
-	Cost		run_cost;		/* non-startup cost components */
+    /* Fields below here should be treated as private to costsize.c */
+    Cost run_cost; /* non-startup cost components */
 
-	/* private for cost_nestloop code */
-	Cost		inner_run_cost; /* also used by cost_mergejoin code */
-	Cost		inner_rescan_run_cost;
+    /* private for cost_nestloop code */
+    Cost inner_run_cost; /* also used by cost_mergejoin code */
+    Cost inner_rescan_run_cost;
 
-	/* private for cost_mergejoin code */
-	double		outer_rows;
-	double		inner_rows;
-	double		outer_skip_rows;
-	double		inner_skip_rows;
+    /* private for cost_mergejoin code */
+    double outer_rows;
+    double inner_rows;
+    double outer_skip_rows;
+    double inner_skip_rows;
 
-	/* private for cost_hashjoin code */
-	int			numbuckets;
-	int			numbatches;
+    /* private for cost_hashjoin code */
+    int numbuckets;
+    int numbatches;
 } JoinCostWorkspace;
 
-#endif   /* RELATION_H */
+#endif /* RELATION_H */

@@ -284,7 +284,7 @@ def main():
 
     return_code = 0
     try:
-        # Initialize file blacklist 
+        # Initialize file blacklist
         cc = CheckConfig(apply_git_filter=False if args.full else True)
         # Spin up a bunch of tidy-launching threads.
         task_queue = queue.Queue(max_task)
@@ -315,7 +315,7 @@ def main():
 
         # Fill the queue with files.
         for i, name in enumerate(files):
-            if cc.should_skip(name): 
+            if cc.should_skip(name):
                 continue
 
             put_file = False

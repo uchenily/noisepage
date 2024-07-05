@@ -18,10 +18,10 @@
  *		-cim 8/17/90
  * ----------------
  */
-typedef int BackendId;			/* unique currently active backend identifier */
+typedef int BackendId; /* unique currently active backend identifier */
 
-#define InvalidBackendId		(-1)
+#define InvalidBackendId (-1)
 
-extern PGDLLIMPORT BackendId MyBackendId;		/* backend id of this backend */
+extern PGDLLIMPORT BackendId MyBackendId; /* backend id of this backend */
 
-#endif   /* BACKENDID_H */
+#endif /* BACKENDID_H */

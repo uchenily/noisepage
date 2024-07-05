@@ -12,7 +12,7 @@
 
 See  [Install Docker CE](https://docs.docker.com/install/linux/docker-ce/ubuntu/#set-up-the-repository). The recommended approach is to install using the repository. See section "Install Docker CE", subsection "Install using the repository" and follow the instructions for:
 
-* SET UP THE REPOSITORY followed by 
+* SET UP THE REPOSITORY followed by
 * INSTALL DOCKER CE
 
 See [Docker CE](https://www.docker.com/community-edition) if additional information is required.

@@ -16,13 +16,13 @@ namespace noisepage::common {
 
 template <class Tag, typename IntType>
 nlohmann::json StrongTypeAlias<Tag, IntType>::ToJson() const {
-  nlohmann::json j = val_;
-  return j;
+    nlohmann::json j = val_;
+    return j;
 }
 
 template <class Tag, typename IntType>
 void StrongTypeAlias<Tag, IntType>::FromJson(const nlohmann::json &j) {
-  val_ = j.get<IntType>();
+    val_ = j.get<IntType>();
 }
 
 /*
@@ -65,4 +65,4 @@ template class StrongTypeAlias<noisepage::storage::tags::col_id_t_typedef_tag, u
 template class StrongTypeAlias<noisepage::storage::tags::layout_version_t_typedef_tag, uint16_t>;
 template class StrongTypeAlias<noisepage::transaction::tags::timestamp_t_typedef_tag, uint64_t>;
 
-}  // namespace noisepage::common
+} // namespace noisepage::common

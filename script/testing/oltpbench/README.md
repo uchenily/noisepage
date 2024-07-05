@@ -115,7 +115,7 @@ Let the base directory be `noisepage/script/testing`
 
 ## File structures
 Let the base directory be `noisepage/script/testing/oltpbench`
-- `configs/`: contains the JSON config files for Jenkins to run OLTPBench tests for 
+- `configs/`: contains the JSON config files for Jenkins to run OLTPBench tests for
   - End-to-end debugging
   - End-to-end performance
   - Nightly
@@ -133,7 +133,7 @@ A config file is necessary to specify a test for OLTP Benchmark.
 In the configuration file, those information are required:
 - A list of test cases in `testcases`
 - The benchmarks and options in each test case, required by the oltpbench's workload descriptor file
-  - The `run_oltpbench` script will run all test cases in the configuration file sequentially. 
+  - The `run_oltpbench` script will run all test cases in the configuration file sequentially.
   - The `loop` key in the configuration file is used to duplicate the test case with different options.
   - The `server_args` object in the configuration specifies the command line arguments passed to the server when running the binary.
 
@@ -147,7 +147,7 @@ The following example shows a oltpbenchmark test with 4 testcases
     "type": "oltpbenchmark",
     "server_args":{
         "connection_thread_count": 32,
-        "wal_file_path": "/mnt/ramdisk/noisepage-wal.log"    
+        "wal_file_path": "/mnt/ramdisk/noisepage-wal.log"
     },
     "testcases": [
         {

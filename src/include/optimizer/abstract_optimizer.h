@@ -32,48 +32,55 @@ class OptimizeResult;
  * output expressions, and required properties.
  */
 struct QueryInfo {
-  /**
-   * Constructor for QueryInfo
-   * @param type StatementType
-   * @param exprs Output expressions of the query
-   * @param props Physical properties of the output (QueryInfo will not own)
-   */
-  QueryInfo(parser::StatementType type, std::vector<common::ManagedPointer<parser::AbstractExpression>> &&exprs,
-            PropertySet *props)
-      : stmt_type_(type), output_exprs_(exprs), physical_props_(props) {}
+    /**
+     * Constructor for QueryInfo
+     * @param type StatementType
+     * @param exprs Output expressions of the query
+     * @param props Physical properties of the output (QueryInfo will not own)
+     */
+    QueryInfo(parser::StatementType                                             type,
+              std::vector<common::ManagedPointer<parser::AbstractExpression>> &&exprs,
+              PropertySet                                                      *props)
+        : stmt_type_(type)
+        , output_exprs_(exprs)
+        , physical_props_(props) {}
 
-  /**
-   * @returns StatementType
-   */
-  parser::StatementType GetStatementType() const { return stmt_type_; }
+    /**
+     * @returns StatementType
+     */
+    parser::StatementType GetStatementType() const {
+        return stmt_type_;
+    }
 
-  /**
-   * @returns Output expressions of the query
-   */
-  const std::vector<common::ManagedPointer<parser::AbstractExpression>> &GetOutputExprs() const {
-    return output_exprs_;
-  }
+    /**
+     * @returns Output expressions of the query
+     */
+    const std::vector<common::ManagedPointer<parser::AbstractExpression>> &GetOutputExprs() const {
+        return output_exprs_;
+    }
 
-  /**
-   * @returns Physical properties of the output owned by QueryInfo
-   */
-  PropertySet *GetPhysicalProperties() const { return physical_props_; }
+    /**
+     * @returns Physical properties of the output owned by QueryInfo
+     */
+    PropertySet *GetPhysicalProperties() const {
+        return physical_props_;
+    }
 
- private:
-  /**
-   * Type of the SQL Statement being executed
-   */
-  parser::StatementType stmt_type_;
+private:
+    /**
+     * Type of the SQL Statement being executed
+     */
+    parser::StatementType stmt_type_;
 
-  /**
-   * Output Expressions of the query
-   */
-  std::vector<common::ManagedPointer<parser::AbstractExpression>> output_exprs_;
+    /**
+     * Output Expressions of the query
+     */
+    std::vector<common::ManagedPointer<parser::AbstractExpression>> output_exprs_;
 
-  /**
-   * Required physical properties of the output
-   */
-  PropertySet *physical_props_;
+    /**
+     * Required physical properties of the output
+     */
+    PropertySet *physical_props_;
 };
 
 /**
@@ -82,34 +89,38 @@ struct QueryInfo {
  * `BuildPlanTree` for constructing the optimized plan tree.
  */
 class AbstractOptimizer {
- public:
-  /**
-   * Disallow copy and move
-   */
-  DISALLOW_COPY_AND_MOVE(AbstractOptimizer);
+public:
+    /**
+     * Disallow copy and move
+     */
+    DISALLOW_COPY_AND_MOVE(AbstractOptimizer);
 
-  AbstractOptimizer() = default;
-  virtual ~AbstractOptimizer() = default;
+    AbstractOptimizer() = default;
+    virtual ~AbstractOptimizer() = default;
 
-  /**
-   * Build the plan tree for query execution
-   * @param txn TransactionContext
-   * @param accessor CatalogAccessor for catalog
-   * @param storage StatsStorage
-   * @param query_info Information about the query
-   * @param op_tree Logical operator tree for execution
-   * @param parameters parameters for the query, can be nullptr if there are no parameters
-   * @returns OptimizeResult containing both execution plan and plan meta data
-   */
-  virtual std::unique_ptr<OptimizeResult> BuildPlanTree(
-      transaction::TransactionContext *txn, catalog::CatalogAccessor *accessor, StatsStorage *storage,
-      QueryInfo query_info, std::unique_ptr<AbstractOptimizerNode> op_tree,
-      common::ManagedPointer<std::vector<parser::ConstantValueExpression>> parameters) = 0;
+    /**
+     * Build the plan tree for query execution
+     * @param txn TransactionContext
+     * @param accessor CatalogAccessor for catalog
+     * @param storage StatsStorage
+     * @param query_info Information about the query
+     * @param op_tree Logical operator tree for execution
+     * @param parameters parameters for the query, can be nullptr if there are no parameters
+     * @returns OptimizeResult containing both execution plan and plan meta data
+     */
+    virtual std::unique_ptr<OptimizeResult>
+    BuildPlanTree(transaction::TransactionContext                                     *txn,
+                  catalog::CatalogAccessor                                            *accessor,
+                  StatsStorage                                                        *storage,
+                  QueryInfo                                                            query_info,
+                  std::unique_ptr<AbstractOptimizerNode>                               op_tree,
+                  common::ManagedPointer<std::vector<parser::ConstantValueExpression>> parameters)
+        = 0;
 
-  /**
-   * Reset the optimizer's internal state
-   */
-  virtual void Reset() {}
+    /**
+     * Reset the optimizer's internal state
+     */
+    virtual void Reset() {}
 };
 
-}  // namespace noisepage::optimizer
+} // namespace noisepage::optimizer

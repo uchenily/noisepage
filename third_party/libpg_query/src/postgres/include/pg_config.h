@@ -79,7 +79,7 @@
 /* #undef GETTIMEOFDAY_1ARG */
 
 #ifdef GETTIMEOFDAY_1ARG
-# define gettimeofday(a,b) gettimeofday(a)
+#define gettimeofday(a, b) gettimeofday(a)
 #endif
 
 /* Define to 1 if you have the `append_history' function. */
@@ -181,7 +181,7 @@
 #define HAVE_GCC__ATOMIC_INT32_CAS 1
 
 /* Define to 1 if you have __atomic_compare_exchange_n(int64 *, int *, int64).
-   */
+ */
 #define HAVE_GCC__ATOMIC_INT64_CAS 1
 
 /* Define to 1 if you have __sync_lock_test_and_set(char *) and friends. */
@@ -323,7 +323,7 @@
 /* #undef HAVE_LIBZ */
 
 /* Define to 1 if constants of type 'long long int' should have the suffix LL.
-   */
+ */
 /* #undef HAVE_LL_CONSTANTS */
 
 /* Define to 1 if the system has the type `locale_t'. */
@@ -748,7 +748,8 @@
 #define PG_VERSION_NUM 90503
 
 /* A string containing the version number, platform, and C compiler */
-#define PG_VERSION_STR "PostgreSQL 9.5.3 on x86_64-apple-darwin14.5.0, compiled by Apple LLVM version 7.0.2 (clang-700.1.81), 64-bit"
+#define PG_VERSION_STR                                                                                                 \
+    "PostgreSQL 9.5.3 on x86_64-apple-darwin14.5.0, compiled by Apple LLVM version 7.0.2 (clang-700.1.81), 64-bit"
 
 /* Define to 1 to allow profiling output to be saved separately for each
    process. */
@@ -858,13 +859,13 @@
 /* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
    significant byte first (like Motorola and SPARC, unlike Intel). */
 #if defined AC_APPLE_UNIVERSAL_BUILD
-# if defined __BIG_ENDIAN__
-#  define WORDS_BIGENDIAN 1
-# endif
+#if defined __BIG_ENDIAN__
+#define WORDS_BIGENDIAN 1
+#endif
 #else
-# ifndef WORDS_BIGENDIAN
+#ifndef WORDS_BIGENDIAN
 /* #  undef WORDS_BIGENDIAN */
-# endif
+#endif
 #endif
 
 /* Size of a WAL file block. This need have no particular relation to BLCKSZ.
@@ -878,8 +879,6 @@
    and larger than XLOG_BLCKSZ (preferably, a great deal larger than
    XLOG_BLCKSZ). Changing XLOG_SEG_SIZE requires an initdb. */
 #define XLOG_SEG_SIZE (16 * 1024 * 1024)
-
-
 
 /* Number of bits in a file offset, on hosts where this is settable. */
 /* #undef _FILE_OFFSET_BITS */

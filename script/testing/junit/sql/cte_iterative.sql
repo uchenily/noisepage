@@ -1,6 +1,6 @@
 -- Input queries for iterative CTE integration tests.
 --
--- Postgres does not support iterative CTEs. Therefore, we 
+-- Postgres does not support iterative CTEs. Therefore, we
 -- must manually verify the output from this trace.
 
 CREATE TABLE tree (node INTEGER, parent INTEGER);

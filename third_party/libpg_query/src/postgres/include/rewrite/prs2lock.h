@@ -21,14 +21,13 @@
  *	  holds an info for a rewrite rule
  *
  */
-typedef struct RewriteRule
-{
-	Oid			ruleId;
-	CmdType		event;
-	Node	   *qual;
-	List	   *actions;
-	char		enabled;
-	bool		isInstead;
+typedef struct RewriteRule {
+    Oid     ruleId;
+    CmdType event;
+    Node   *qual;
+    List   *actions;
+    char    enabled;
+    bool    isInstead;
 } RewriteRule;
 
 /*
@@ -37,10 +36,9 @@ typedef struct RewriteRule
  *	  have the rewrite rule system left and these are not really "locks",
  *	  the name is kept for historical reasons.
  */
-typedef struct RuleLock
-{
-	int			numLocks;
-	RewriteRule **rules;
+typedef struct RuleLock {
+    int           numLocks;
+    RewriteRule **rules;
 } RuleLock;
 
-#endif   /* REWRITE_H */
+#endif /* REWRITE_H */

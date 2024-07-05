@@ -9,25 +9,25 @@ namespace noisepage::execution::compiler {
 
 UnaryTranslator::UnaryTranslator(const parser::OperatorExpression &expr, CompilationContext *compilation_context)
     : ExpressionTranslator(expr, compilation_context) {
-  compilation_context->Prepare(*expr.GetChild(0));
+    compilation_context->Prepare(*expr.GetChild(0));
 }
 
 ast::Expr *UnaryTranslator::DeriveValue(WorkContext *ctx, const ColumnValueProvider *provider) const {
-  auto *codegen = GetCodeGen();
-  auto input = ctx->DeriveValue(*GetExpression().GetChild(0), provider);
+    auto *codegen = GetCodeGen();
+    auto  input = ctx->DeriveValue(*GetExpression().GetChild(0), provider);
 
-  parsing::Token::Type type;
-  switch (GetExpression().GetExpressionType()) {
+    parsing::Token::Type type;
+    switch (GetExpression().GetExpressionType()) {
     case parser::ExpressionType::OPERATOR_UNARY_MINUS:
-      type = parsing::Token::Type::MINUS;
-      break;
+        type = parsing::Token::Type::MINUS;
+        break;
     case parser::ExpressionType::OPERATOR_NOT:
-      type = parsing::Token::Type::BANG;
-      break;
+        type = parsing::Token::Type::BANG;
+        break;
     default:
-      UNREACHABLE("Unsupported expression");
-  }
-  return codegen->UnaryOp(type, input);
+        UNREACHABLE("Unsupported expression");
+    }
+    return codegen->UnaryOp(type, input);
 }
 
-}  // namespace noisepage::execution::compiler
+} // namespace noisepage::execution::compiler

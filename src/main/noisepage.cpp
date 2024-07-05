@@ -22,9 +22,9 @@ noisepage::common::ManagedPointer<noisepage::DBMain> db_main_handler_ptr = nullp
  * @param sig_num portable signal number passed to the handler by the kernel
  */
 void SignalHandler(int32_t sig_num) {
-  if ((sig_num == SIGINT || sig_num == SIGTERM) && db_main_handler_ptr != nullptr) {
-    db_main_handler_ptr->ForceShutdown();
-  }
+    if ((sig_num == SIGINT || sig_num == SIGTERM) && db_main_handler_ptr != nullptr) {
+        db_main_handler_ptr->ForceShutdown();
+    }
 }
 
 /**
@@ -32,60 +32,60 @@ void SignalHandler(int32_t sig_num) {
  * @return 0 if successful, otherwise errno
  */
 int32_t RegisterSignalHandler() {
-  // Initialize a signal handler to call SignalHandler()
-  struct sigaction sa;  // NOLINT
-  sa.sa_handler = &SignalHandler;
-  sa.sa_flags = SA_RESTART;
+    // Initialize a signal handler to call SignalHandler()
+    struct sigaction sa; // NOLINT
+    sa.sa_handler = &SignalHandler;
+    sa.sa_flags = SA_RESTART;
 
-  sigfillset(&sa.sa_mask);
+    sigfillset(&sa.sa_mask);
 
-  // Terminal interrupt signal (usually from ^c, portable number is 2)
-  if (sigaction(SIGINT, &sa, nullptr) == -1) {
-    return errno;
-  }
+    // Terminal interrupt signal (usually from ^c, portable number is 2)
+    if (sigaction(SIGINT, &sa, nullptr) == -1) {
+        return errno;
+    }
 
-  // Terminate signal from administrator (portable number is 15)
-  if (sigaction(SIGTERM, &sa, nullptr) == -1) {
-    return errno;
-  }
+    // Terminate signal from administrator (portable number is 15)
+    if (sigaction(SIGTERM, &sa, nullptr) == -1) {
+        return errno;
+    }
 
-  return 0;
+    return 0;
 }
 
 int main(int argc, char *argv[]) {
-  // Register signal handler so we can kill the server once it's running
-  const auto register_result = RegisterSignalHandler();
-  if (register_result != 0) {
-    return register_result;
-  }
+    // Register signal handler so we can kill the server once it's running
+    const auto register_result = RegisterSignalHandler();
+    if (register_result != 0) {
+        return register_result;
+    }
 
-  // Parse Setting Values
-  ::gflags::SetUsageMessage("Usage Info: \n");
-  ::gflags::ParseCommandLineFlags(&argc, &argv, true);
+    // Parse Setting Values
+    ::gflags::SetUsageMessage("Usage Info: \n");
+    ::gflags::ParseCommandLineFlags(&argc, &argv, true);
 
-  // Initialize debug loggers
-  noisepage::LoggersUtil::Initialize();
+    // Initialize debug loggers
+    noisepage::LoggersUtil::Initialize();
 
-  // Generate Settings Manager map
-  std::unordered_map<noisepage::settings::Param, noisepage::settings::ParamInfo> param_map;
-  noisepage::settings::SettingsManager::ConstructParamMap(param_map);
+    // Generate Settings Manager map
+    std::unordered_map<noisepage::settings::Param, noisepage::settings::ParamInfo> param_map;
+    noisepage::settings::SettingsManager::ConstructParamMap(param_map);
 
-  auto db_main = noisepage::DBMain::Builder()
-                     .SetSettingsParameterMap(std::move(param_map))
-                     .SetUseSettingsManager(true)
-                     .SetUseGC(true)
-                     .SetUseCatalog(true)
-                     .SetUseGCThread(true)
-                     .SetUseStatsStorage(true)
-                     .SetUseExecution(true)
-                     .SetUseTrafficCop(true)
-                     .SetUseNetwork(true)
-                     .Build();
+    auto db_main = noisepage::DBMain::Builder()
+                       .SetSettingsParameterMap(std::move(param_map))
+                       .SetUseSettingsManager(true)
+                       .SetUseGC(true)
+                       .SetUseCatalog(true)
+                       .SetUseGCThread(true)
+                       .SetUseStatsStorage(true)
+                       .SetUseExecution(true)
+                       .SetUseTrafficCop(true)
+                       .SetUseNetwork(true)
+                       .Build();
 
-  db_main_handler_ptr = db_main.get();
+    db_main_handler_ptr = db_main.get();
 
-  db_main->Run();
+    db_main->Run();
 
-  noisepage::LoggersUtil::ShutDown();
-  return 0;
+    noisepage::LoggersUtil::ShutDown();
+    return 0;
 }

@@ -16,27 +16,23 @@
 #include <signal.h>
 
 #ifdef HAVE_SIGPROCMASK
-extern sigset_t UnBlockSig,
-			BlockSig,
-			StartupBlockSig;
+extern sigset_t UnBlockSig, BlockSig, StartupBlockSig;
 
-#define PG_SETMASK(mask)	sigprocmask(SIG_SETMASK, mask, NULL)
-#else							/* not HAVE_SIGPROCMASK */
-extern int	UnBlockSig,
-			BlockSig,
-			StartupBlockSig;
+#define PG_SETMASK(mask) sigprocmask(SIG_SETMASK, mask, NULL)
+#else /* not HAVE_SIGPROCMASK */
+extern int UnBlockSig, BlockSig, StartupBlockSig;
 
 #ifndef WIN32
-#define PG_SETMASK(mask)	sigsetmask(*((int*)(mask)))
+#define PG_SETMASK(mask) sigsetmask(*((int *) (mask)))
 #else
-#define PG_SETMASK(mask)		pqsigsetmask(*((int*)(mask)))
-int			pqsigsetmask(int mask);
+#define PG_SETMASK(mask) pqsigsetmask(*((int *) (mask)))
+int pqsigsetmask(int mask);
 #endif
 
-#define sigaddset(set, signum)	(*(set) |= (sigmask(signum)))
-#define sigdelset(set, signum)	(*(set) &= ~(sigmask(signum)))
-#endif   /* not HAVE_SIGPROCMASK */
+#define sigaddset(set, signum) (*(set) |= (sigmask(signum)))
+#define sigdelset(set, signum) (*(set) &= ~(sigmask(signum)))
+#endif /* not HAVE_SIGPROCMASK */
 
 extern void pqinitmask(void);
 
-#endif   /* PQSIGNAL_H */
+#endif /* PQSIGNAL_H */

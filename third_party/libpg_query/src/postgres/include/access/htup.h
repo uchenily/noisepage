@@ -26,7 +26,6 @@ typedef struct MinimalTupleData MinimalTupleData;
 
 typedef MinimalTupleData *MinimalTuple;
 
-
 /*
  * HeapTupleData is an in-memory data structure that points to a tuple.
  *
@@ -59,17 +58,16 @@ typedef MinimalTupleData *MinimalTuple;
  * a disk buffer, or if it represents a copy of a tuple on disk.  They
  * should be explicitly set invalid in manufactured tuples.
  */
-typedef struct HeapTupleData
-{
-	uint32		t_len;			/* length of *t_data */
-	ItemPointerData t_self;		/* SelfItemPointer */
-	Oid			t_tableOid;		/* table the tuple came from */
-	HeapTupleHeader t_data;		/* -> tuple header and data */
+typedef struct HeapTupleData {
+    uint32          t_len;      /* length of *t_data */
+    ItemPointerData t_self;     /* SelfItemPointer */
+    Oid             t_tableOid; /* table the tuple came from */
+    HeapTupleHeader t_data;     /* -> tuple header and data */
 } HeapTupleData;
 
 typedef HeapTupleData *HeapTuple;
 
-#define HEAPTUPLESIZE	MAXALIGN(sizeof(HeapTupleData))
+#define HEAPTUPLESIZE MAXALIGN(sizeof(HeapTupleData))
 
 /*
  * Accessor macros to be used with HeapTuple pointers.
@@ -79,10 +77,9 @@ typedef HeapTupleData *HeapTuple;
 /* HeapTupleHeader functions implemented in utils/time/combocid.c */
 extern CommandId HeapTupleHeaderGetCmin(HeapTupleHeader tup);
 extern CommandId HeapTupleHeaderGetCmax(HeapTupleHeader tup);
-extern void HeapTupleHeaderAdjustCmax(HeapTupleHeader tup,
-						  CommandId *cmax, bool *iscombo);
+extern void      HeapTupleHeaderAdjustCmax(HeapTupleHeader tup, CommandId *cmax, bool *iscombo);
 
 /* Prototype for HeapTupleHeader accessors in heapam.c */
 extern TransactionId HeapTupleGetUpdateXid(HeapTupleHeader tuple);
 
-#endif   /* HTUP_H */
+#endif /* HTUP_H */

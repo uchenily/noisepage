@@ -129,7 +129,7 @@ fun main(execCtx: *ExecutionContext) -> int64 {
   var index_count_2_after_insert = index_count_2(execCtx, value3, value1)
   var index_count_2_before_update_unchanged = index_count_2_after_insert
   var index_count_2_before_update_changed = index_count_2(execCtx, value3, value1_changed)
-  
+
 
   // Delete from table
   if(!@updaterTableDelete(&updater, &ts)) {
@@ -138,7 +138,7 @@ fun main(execCtx: *ExecutionContext) -> int64 {
     @updaterFree(&updater)
     return 0
   }
-  
+
   // Delete from index 1
   index_pr  = @updaterGetIndexPRBind(&updater, "index_2")
   @prSetSmallInt(index_pr, 0, @intToSql(value3))
@@ -156,10 +156,10 @@ fun main(execCtx: *ExecutionContext) -> int64 {
   @prSetIntNull(update_pr, 1, @intToSql(value1_changed))
   @prSetIntNull(update_pr, 2, @intToSql(value2_changed))
   @prSetSmallInt(update_pr, 3, @intToSql(value3))
-  
+
   // Insert into table
   var ts2 : TupleSlot = @updaterTableInsert(&updater)
-  
+
   // Insert into index 1
   index_pr  = @updaterGetIndexPRBind(&updater, "index_2")
   @prSetSmallInt(index_pr, 0, @intToSql(value3))
@@ -190,7 +190,7 @@ fun main(execCtx: *ExecutionContext) -> int64 {
   @inserterFree(&inserter)
   @updaterFree(&updater)
 
-  return (table_count_after_update - table_count_before_update) 
+  return (table_count_after_update - table_count_before_update)
          + (table_count_after_insert - table_count_before_insert)
          + (index_count_after_insert - index_count_before_insert)
          + (index_count_after_update - index_count_before_update)

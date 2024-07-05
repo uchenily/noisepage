@@ -12,7 +12,7 @@ Terms are arranged in alphabetical order. We considered attempting to arrange th
 
 - Code Generation (`CompilationContext::Compile()`): Code generation refers to the process of translating the physical query plan produced by the query optimizer to the highest-level internal representation that the execution engine can execute (TBC bytecode). The output of code generation is an executable query (`ExecutableQuery`).
 - Executable Query (`ExecutableQuery`): An executable query corresponds to the highest-level query abstraction within the execution engine that may feasibly be executed.
-- Execution Context (`ExecutionContext`): A context structure that is provided to the lower layer of the NoisePage execution engine at the time that execution of the query is requested. The context contains various metadata required during the execution process, such as an accessor for the database catalog, memory tracking information, etc. 
+- Execution Context (`ExecutionContext`): A context structure that is provided to the lower layer of the NoisePage execution engine at the time that execution of the query is requested. The context contains various metadata required during the execution process, such as an accessor for the database catalog, memory tracking information, etc.
 - Execution Mode (`ExecutionMode`): The NoisePage execution engine (notionally) supports three distinct execution modes: `Interpreted`, `Compiled`, and `Adaptive`. Don't conflate these execution modes with the various layers of the execution subsystem (e.g. both `Compiled` and `Adaptive` execution modes must pass through the query compilation process). The execution mode determines the execution path used within the execution engine after the executable query is produced during code generation. Generally speaking, the `Interpreted` mode does not enter the query compilation layer of the execution engine, while both the `Compiled` and `Adaptive` modes do. See the bullets below for a brief description of each of the individual execution modes.
 - Execution Mode - `Interpreted`: The `Interpreted` execution mode refers to the execution mode of the NoisePage execution engine that does not proceed past code generation into query compilation, and instead executes the bytecode representation of the query directly via an interpreter (or Virtual Machine in the parlance of the system).
 - Execution Mode - `Compiled`: The `Compiled` execution mode refers to the execution mode of the NoisePage execution engine that does proceed past code generation into query compilation and subsequent native execution.
@@ -96,7 +96,7 @@ The final thing to mention here is that during AST construction, individual tran
 
 **TPL Module Generation (AST -> TPL Module)**
 
-The entry point for compilation of the AST to a TPL module occurs at `ExecutableQueryFragmentBuilder::Compile()`. Again, it is important not to get bogged down in the terminology here. The `Compile()` member of the `ExecutableQueryFragmentBuilder` class refers to compilation of a TPL AST to a TPL module; it is totally distinct from the concept of query compilation that occurs in the lower layers of the NoisePage execution engine. 
+The entry point for compilation of the AST to a TPL module occurs at `ExecutableQueryFragmentBuilder::Compile()`. Again, it is important not to get bogged down in the terminology here. The `Compile()` member of the `ExecutableQueryFragmentBuilder` class refers to compilation of a TPL AST to a TPL module; it is totally distinct from the concept of query compilation that occurs in the lower layers of the NoisePage execution engine.
 
 TPL compilation is implemented in `Compiler::Run()`. This is one of the more comprehensible stages of the code generation process, and the source code for this function is relatively-well documented in source. At a high-level, the TPL compiler performs the following steps to compile the input AST to a TPL module:
 
@@ -115,7 +115,7 @@ The process of transforming a TPL module into an executable query is a simple on
 
 Labeling this layer of the execution engine as being responsible for both query compilation and execution is somewhat misleading because at times the query compilation path is elided altogether (more on this later). However, it doesn't make sense to partition the two into distinct layers because the interface to each execution mode supported by the execution engine is the same.
 
-The entry point to this second layer of the execution engine is the `ExecutableQuery::Run()` member function. After some setup, this function is invoked for an `ExecutableQuery` instance in the body of `TrafficCop::RunExecutableQuery()`. 
+The entry point to this second layer of the execution engine is the `ExecutableQuery::Run()` member function. After some setup, this function is invoked for an `ExecutableQuery` instance in the body of `TrafficCop::RunExecutableQuery()`.
 
 The function itself accepts two arguments: the execution context in which to execute the executable query, and the query execution mode (`ExecutionMode` enumeration). The execution context simply provides a centralized location for metadata related to query execution that is available throughout this lower layer of the execution engine. The execution mode passed to `ExecutableQuery::Run()` is one of three possible values:
 
@@ -155,7 +155,7 @@ The `VM::Interpret()` function implements the core interpreter loop of the virtu
  * values from the bytecode stream. The READ_* macros read values from the
  * bytecode stream and advance the IP whereas the PEEK_* macros do only the
  * former, leaving the IP unmodified.
- * 
+ *
  * ...
  */
 ```

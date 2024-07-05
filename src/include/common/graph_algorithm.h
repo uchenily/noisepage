@@ -4,7 +4,7 @@
 
 namespace noisepage::common {
 class Graph;
-}  // namespace noisepage::common
+} // namespace noisepage::common
 
 namespace noisepage::common::graph {
 
@@ -30,4 +30,4 @@ bool HasCycle(const Graph &graph);
  */
 std::vector<std::size_t> TopologicalSort(const Graph &graph);
 
-}  // namespace noisepage::common::graph
+} // namespace noisepage::common::graph

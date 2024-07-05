@@ -15,46 +15,53 @@ std::atomic<std::size_t> MemoryPool::mmap_threshold = 64 * common::Constants::MB
 // Minimum alignment to abide by
 static constexpr uint32_t MIN_MALLOC_ALIGNMENT = 8;
 
-MemoryPool::MemoryPool(common::ManagedPointer<sql::MemoryTracker> tracker) : tracker_(tracker) { (void)tracker_; }
+MemoryPool::MemoryPool(common::ManagedPointer<sql::MemoryTracker> tracker)
+    : tracker_(tracker) {
+    (void) tracker_;
+}
 
 void *MemoryPool::AllocateAligned(const std::size_t size, const std::size_t alignment, const bool clear) {
-  void *buf = nullptr;
+    void *buf = nullptr;
 
-  if (size >= mmap_threshold.load(std::memory_order_relaxed)) {
-    buf = util::Memory::MallocHuge(size, true);
-    NOISEPAGE_ASSERT(buf != nullptr, "Null memory pointer");
-    // No need to clear memory, guaranteed on Linux
-  } else {
-    if (alignment < MIN_MALLOC_ALIGNMENT) {
-      if (clear) {
-        buf = std::calloc(size, 1);
-      } else {
-        buf = std::malloc(size);
-      }
+    if (size >= mmap_threshold.load(std::memory_order_relaxed)) {
+        buf = util::Memory::MallocHuge(size, true);
+        NOISEPAGE_ASSERT(buf != nullptr, "Null memory pointer");
+        // No need to clear memory, guaranteed on Linux
     } else {
-      buf = util::Memory::MallocAligned(size, alignment);
-      if (clear) {
-        std::memset(buf, 0, size);
-      }
+        if (alignment < MIN_MALLOC_ALIGNMENT) {
+            if (clear) {
+                buf = std::calloc(size, 1);
+            } else {
+                buf = std::malloc(size);
+            }
+        } else {
+            buf = util::Memory::MallocAligned(size, alignment);
+            if (clear) {
+                std::memset(buf, 0, size);
+            }
+        }
     }
-  }
 
-  if (tracker_ != nullptr) tracker_->Increment(size);
+    if (tracker_ != nullptr)
+        tracker_->Increment(size);
 
-  // Done
-  return buf;
+    // Done
+    return buf;
 }
 
 void MemoryPool::Deallocate(void *ptr, std::size_t size) {
-  if (size >= mmap_threshold.load(std::memory_order_relaxed)) {
-    util::Memory::FreeHuge(ptr, size);
-  } else {
-    std::free(ptr);
-  }
+    if (size >= mmap_threshold.load(std::memory_order_relaxed)) {
+        util::Memory::FreeHuge(ptr, size);
+    } else {
+        std::free(ptr);
+    }
 
-  if (tracker_ != nullptr) tracker_->Decrement(size);
+    if (tracker_ != nullptr)
+        tracker_->Decrement(size);
 }
 
-void MemoryPool::SetMMapSizeThreshold(const std::size_t size) { mmap_threshold = size; }
+void MemoryPool::SetMMapSizeThreshold(const std::size_t size) {
+    mmap_threshold = size;
+}
 
-}  // namespace noisepage::execution::sql
+} // namespace noisepage::execution::sql

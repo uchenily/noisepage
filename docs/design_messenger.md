@@ -7,20 +7,20 @@
 The Messenger is designed to abstract around the transport protocol being used. Building off ZeroMQ, there is support
 for network ports, IPC, and inproc communication. See the design slides for more details.
 
-The Messenger was designed around the high-level API of  
-```SendMessage(destination, message, callback_to_be_invoked_on_response)```  
+The Messenger was designed around the high-level API of
+```SendMessage(destination, message, callback_to_be_invoked_on_response)```
 In other words, every message that is sent is associated with a callback that should be invoked on the response. We call
 these message-specific callbacks (MSCs).
 
 Additionally, the Messenger was designed so that different system components could spin up their own custom "server
 loop" that would handle their own message types.
 
-For example, replication is one server loop,  
-```messenger->ListenForConnection(port 15445, [](...){ replication_logic });```,    
-and the model server manager used for machine learning stuff is another server loop,  
+For example, replication is one server loop,
+```messenger->ListenForConnection(port 15445, [](...){ replication_logic });```,
+and the model server manager used for machine learning stuff is another server loop,
 ```messenger->ListenForConnection(port 15446, [](...){ model_server_manager_logic });```.
 
-You can think of a server-loop as a persistent callback, permanently attached to the new connection endpoint.  
+You can think of a server-loop as a persistent callback, permanently attached to the new connection endpoint.
 We refer to the custom server-loop functions as server-loop callbacks (SLCs). Be careful not to confuse server-loop
 callbacks with message-specific callbacks.
 
@@ -28,20 +28,20 @@ callbacks with message-specific callbacks.
 
 #### Socket ownership
 
-In ZeroMQ, a socket must be used from the same thread that **created** it.  
+In ZeroMQ, a socket must be used from the same thread that **created** it.
 This is different from the usual C++ programming model, where multithreading would be fine with just a shared
-mutex-protected queue.  
+mutex-protected queue.
 To maintain this ZeroMQ requirement, the `Messenger` is responsible for creating all of the sockets that are involved
-with the sending and receiving of messages.  
-This means that all `SendMessage` calls are actually just buffering messages to the `Messenger`.  
+with the sending and receiving of messages.
+This means that all `SendMessage` calls are actually just buffering messages to the `Messenger`.
 `SendMessage` however returns immediately since it is unreliable to use the sent state of a message in designing your
 protocols; see below on waiting until messages are sent.
 
 #### Delivery guarantees
 
-**Note that ZeroMQ has exactly one guarantee: all-or-nothing message delivery.**  
+**Note that ZeroMQ has exactly one guarantee: all-or-nothing message delivery.**
 ZeroMQ does **not** have guaranteed delivery, meaning that messages may randomly be dropped and it is up to the caller
-to retry.  
+to retry.
 To address this, all implementations of the Messenger protocol are expected to:
 
 1. Maintain a list of pending messages, until the message gets acknowledged.
@@ -53,7 +53,7 @@ below.
 
 ### Message format
 
-The message format is described in the slides, but essentially is equivalent to the following Python code:  
+The message format is described in the slides, but essentially is equivalent to the following Python code:
 ```"{}-{}-{}-{}".format(message_id, source_callback_id, dest_callback_id, message_contents)```
 
 Because every sent message is associated with a callback ID, the message itself must contain **two** callback IDs:
@@ -63,21 +63,21 @@ Because every sent message is associated with a callback ID, the message itself 
   response.
 
 If you are **sending** a message for the **first time**, i.e., you are starting the conversation, then you probably will
-end up doing    
+end up doing
 ```SendMessage(..., static_cast<uint64_t>(messenger::Messenger::BuiltinCallback::NOOP))```
 
 ### Invoking callbacks
 
-The messenger runs its own `ProcessMessage()` that invokes the MSC before invoking the custom SLC.  
+The messenger runs its own `ProcessMessage()` that invokes the MSC before invoking the custom SLC.
 This is a consequence of the current Messenger design, where the Messenger is the owner of all of the callbacks that are
 created with every `SendMessage`.
 
 ### Tracking seen messages efficiently
 
-As described above, ZeroMQ does not guarantee message delivery of any kind whatsoever.  
+As described above, ZeroMQ does not guarantee message delivery of any kind whatsoever.
 But if a message is already in-flight and the retry mechanism fires, the retry mechanism may send the same message more
-than once.    
-However, applying the same message more than once is clearly bad -- consider "UPDATE foo SET x = x + 1".  
+than once.
+However, applying the same message more than once is clearly bad -- consider "UPDATE foo SET x = x + 1".
 So before applying a message, it is important to check that the specific message ID has not been seen before.
 
 Naively, it is possible to track what messages have been seen by doing the following:
@@ -125,7 +125,7 @@ def is_first_time(current, max_seen, complement):
 ### On waiting until messages are sent
 
 I currently believe that you do not want to even expose "yes, this message has been sent" data to a user of the
-Messenger.  
+Messenger.
 Consider the following example:
 
 1. Primary -> Replica: "here's a bunch of records".

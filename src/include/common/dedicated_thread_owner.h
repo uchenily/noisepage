@@ -1,6 +1,6 @@
 #pragma once
 #include <memory>
-#include <thread>  // NOLINT
+#include <thread> // NOLINT
 
 #include "common/dedicated_thread_task.h"
 #include "common/managed_pointer.h"
@@ -40,73 +40,77 @@ class DedicatedThreadRegistry;
  * TODO(tianyu): also add some statistics of thread utilization for tuning
  */
 class DedicatedThreadOwner {
- public:
-  virtual ~DedicatedThreadOwner() = default;
-  /**
-   * @return the number of threads owned by this owner
-   */
-  size_t GetThreadCount() {
-    common::SpinLatch::ScopedSpinLatch guard(&thread_count_latch_);
-    return thread_count_;
-  }
+public:
+    virtual ~DedicatedThreadOwner() = default;
+    /**
+     * @return the number of threads owned by this owner
+     */
+    size_t GetThreadCount() {
+        common::SpinLatch::ScopedSpinLatch guard(&thread_count_latch_);
+        return thread_count_;
+    }
 
- protected:
-  /**
-   * @param thread_registry dependency injection for owners to use thread registry, needed to get rid of singleton
-   * pattern that used to infest the DedicatedThreadRegistry
-   */
-  explicit DedicatedThreadOwner(common::ManagedPointer<DedicatedThreadRegistry> thread_registry)
-      : thread_registry_(thread_registry) {}
+protected:
+    /**
+     * @param thread_registry dependency injection for owners to use thread registry, needed to get rid of singleton
+     * pattern that used to infest the DedicatedThreadRegistry
+     */
+    explicit DedicatedThreadOwner(common::ManagedPointer<DedicatedThreadRegistry> thread_registry)
+        : thread_registry_(thread_registry) {}
 
-  /**
-   * pointer to the ThreadRegistry which is probably owned by DBMain or an injector
-   */
-  const common::ManagedPointer<DedicatedThreadRegistry> thread_registry_;
+    /**
+     * pointer to the ThreadRegistry which is probably owned by DBMain or an injector
+     */
+    const common::ManagedPointer<DedicatedThreadRegistry> thread_registry_;
 
- private:
-  /**
-   * Only the DedicatedThreadRegistry should be allowed to call these methods on an owner
-   */
-  friend class DedicatedThreadRegistry;
+private:
+    /**
+     * Only the DedicatedThreadRegistry should be allowed to call these methods on an owner
+     */
+    friend class DedicatedThreadRegistry;
 
-  /**
-   * Notifies the owner that a new thread has been given to it
-   */
-  void AddThread() {
-    common::SpinLatch::ScopedSpinLatch guard(&thread_count_latch_);
-    thread_count_++;
-  }
+    /**
+     * Notifies the owner that a new thread has been given to it
+     */
+    void AddThread() {
+        common::SpinLatch::ScopedSpinLatch guard(&thread_count_latch_);
+        thread_count_++;
+    }
 
-  /**
-   * Notifies the owner that a new thread has removed from them
-   */
-  void RemoveThread() {
-    common::SpinLatch::ScopedSpinLatch guard(&thread_count_latch_);
-    thread_count_--;
-  }
+    /**
+     * Notifies the owner that a new thread has removed from them
+     */
+    void RemoveThread() {
+        common::SpinLatch::ScopedSpinLatch guard(&thread_count_latch_);
+        thread_count_--;
+    }
 
-  /**
-   * Custom code to be run by each owner when offered a thread by the registry. The owner has the option to decline the
-   * new thread if it does not need it. If the owner accepts, its up to the owner to call RegisterDedicatedThread to
-   * register their task
-   * @return true if owner accepts thread, false if it declines it
-   */
-  virtual bool OnThreadOffered() { return false; }
+    /**
+     * Custom code to be run by each owner when offered a thread by the registry. The owner has the option to decline
+     * the new thread if it does not need it. If the owner accepts, its up to the owner to call RegisterDedicatedThread
+     * to register their task
+     * @return true if owner accepts thread, false if it declines it
+     */
+    virtual bool OnThreadOffered() {
+        return false;
+    }
 
-  /**
-   * Custom code to be run by each owner when the registry would like to remove its thread running the specific task. It
-   * is expected that this function blocks until the thread can be dropped safely and accepts the request, or the owner
-   * rejects the request to drop its thread.
-   * @param task task running on thread that is to be removed
-   * @warning After this method returns, the registry is free to delete the task. It is the owner's responsability to
-   * properly clean up the task beforehand.
-   * @return true if owner allows registry to remove thread, false otherwise
-   */
-  virtual bool OnThreadRemoval(common::ManagedPointer<DedicatedThreadTask> task) { return true; }
+    /**
+     * Custom code to be run by each owner when the registry would like to remove its thread running the specific task.
+     * It is expected that this function blocks until the thread can be dropped safely and accepts the request, or the
+     * owner rejects the request to drop its thread.
+     * @param task task running on thread that is to be removed
+     * @warning After this method returns, the registry is free to delete the task. It is the owner's responsability to
+     * properly clean up the task beforehand.
+     * @return true if owner allows registry to remove thread, false otherwise
+     */
+    virtual bool OnThreadRemoval(common::ManagedPointer<DedicatedThreadTask> task) {
+        return true;
+    }
 
-  // Latch to protect thread count
-  common::SpinLatch thread_count_latch_;
-  // Number of threads this owner has been granted
-  size_t thread_count_ = 0;
+    // Latch to protect thread count
+    common::SpinLatch thread_count_latch_;
+    // Number of threads this owner has been granted
+    size_t thread_count_ = 0;
 };
-}  // namespace noisepage::common
+} // namespace noisepage::common

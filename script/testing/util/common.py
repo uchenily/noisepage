@@ -382,7 +382,7 @@ def run_collect_mem_info(pid):
         If an error occurs, MemoryInfo(None, None) is returned.
     """
 
-    """ 
+    """
     Fork a subprocess with sudo privilege to collect the memory info for the
     given pid.
     """

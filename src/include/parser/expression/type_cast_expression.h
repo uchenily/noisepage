@@ -21,33 +21,33 @@ namespace noisepage::parser {
  * Then the casting must be done at execution time. As of 2020/11/14, non-constant expressions are not supported.
  */
 class TypeCastExpression : public AbstractExpression {
-  // TODO(Ling):  Do we need a separate class for operator_cast? We can put it in operatorExpression
-  // Wan: can you elaborate? How do you envision this being used?
- public:
-  /** Instantiates a new type cast expression. */
-  TypeCastExpression(execution::sql::SqlTypeId type, std::vector<std::unique_ptr<AbstractExpression>> &&children)
-      : AbstractExpression(ExpressionType::OPERATOR_CAST, type, std::move(children)) {}
+    // TODO(Ling):  Do we need a separate class for operator_cast? We can put it in operatorExpression
+    // Wan: can you elaborate? How do you envision this being used?
+public:
+    /** Instantiates a new type cast expression. */
+    TypeCastExpression(execution::sql::SqlTypeId type, std::vector<std::unique_ptr<AbstractExpression>> &&children)
+        : AbstractExpression(ExpressionType::OPERATOR_CAST, type, std::move(children)) {}
 
-  /** Default constructor for JSON deserialization. */
-  TypeCastExpression() = default;
+    /** Default constructor for JSON deserialization. */
+    TypeCastExpression() = default;
 
-  /**
-   * Copies this TypeCastExpression
-   * @returns copy of this
-   */
-  std::unique_ptr<AbstractExpression> Copy() const override;
-  /**
-   * Creates a copy of the current AbstractExpression with new children implanted.
-   * The children should not be owned by any other AbstractExpression.
-   * @param children New children to be owned by the copy
-   * @returns copy of this with new children
-   */
-  std::unique_ptr<AbstractExpression> CopyWithChildren(
-      std::vector<std::unique_ptr<AbstractExpression>> &&children) const override;
+    /**
+     * Copies this TypeCastExpression
+     * @returns copy of this
+     */
+    std::unique_ptr<AbstractExpression> Copy() const override;
+    /**
+     * Creates a copy of the current AbstractExpression with new children implanted.
+     * The children should not be owned by any other AbstractExpression.
+     * @param children New children to be owned by the copy
+     * @returns copy of this with new children
+     */
+    std::unique_ptr<AbstractExpression>
+    CopyWithChildren(std::vector<std::unique_ptr<AbstractExpression>> &&children) const override;
 
-  void Accept(common::ManagedPointer<binder::SqlNodeVisitor> v) override;
+    void Accept(common::ManagedPointer<binder::SqlNodeVisitor> v) override;
 };
 
 DEFINE_JSON_HEADER_DECLARATIONS(TypeCastExpression);
 
-}  // namespace noisepage::parser
+} // namespace noisepage::parser

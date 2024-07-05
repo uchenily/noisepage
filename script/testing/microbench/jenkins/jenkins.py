@@ -15,7 +15,7 @@ class Jenkins:
             branch (str): The Jenkins branch for the job
             min_build (int): The lowest build number to return results from. If
                              none is specified it will search all builds
-            status_filter (str): Specify a filter if you only want to return 
+            status_filter (str): Specify a filter if you only want to return
                                  results that completed with a certain status
         Return:
             artifacts (arr[dict]): The list complete list of artifacts for all

@@ -29,29 +29,24 @@ typedef struct shm_toc shm_toc;
 
 extern shm_toc *shm_toc_create(uint64 magic, void *address, Size nbytes);
 extern shm_toc *shm_toc_attach(uint64 magic, void *address);
-extern void *shm_toc_allocate(shm_toc *toc, Size nbytes);
-extern Size shm_toc_freespace(shm_toc *toc);
-extern void shm_toc_insert(shm_toc *toc, uint64 key, void *address);
-extern void *shm_toc_lookup(shm_toc *toc, uint64 key);
+extern void    *shm_toc_allocate(shm_toc *toc, Size nbytes);
+extern Size     shm_toc_freespace(shm_toc *toc);
+extern void     shm_toc_insert(shm_toc *toc, uint64 key, void *address);
+extern void    *shm_toc_lookup(shm_toc *toc, uint64 key);
 
 /*
  * Tools for estimating how large a chunk of shared memory will be needed
  * to store a TOC and its dependent objects.
  */
-typedef struct
-{
-	Size		space_for_chunks;
-	Size		number_of_keys;
+typedef struct {
+    Size space_for_chunks;
+    Size number_of_keys;
 } shm_toc_estimator;
 
-#define shm_toc_initialize_estimator(e) \
-	((e)->space_for_chunks = 0, (e)->number_of_keys = 0)
-#define shm_toc_estimate_chunk(e, sz) \
-	((e)->space_for_chunks = add_size((e)->space_for_chunks, \
-		BUFFERALIGN((sz))))
-#define shm_toc_estimate_keys(e, cnt) \
-	((e)->number_of_keys = add_size((e)->number_of_keys, (cnt)))
+#define shm_toc_initialize_estimator(e) ((e)->space_for_chunks = 0, (e)->number_of_keys = 0)
+#define shm_toc_estimate_chunk(e, sz) ((e)->space_for_chunks = add_size((e)->space_for_chunks, BUFFERALIGN((sz))))
+#define shm_toc_estimate_keys(e, cnt) ((e)->number_of_keys = add_size((e)->number_of_keys, (cnt)))
 
 extern Size shm_toc_estimate(shm_toc_estimator *);
 
-#endif   /* SHM_TOC_H */
+#endif /* SHM_TOC_H */

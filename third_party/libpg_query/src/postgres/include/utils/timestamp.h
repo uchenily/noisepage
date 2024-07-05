@@ -17,7 +17,6 @@
 #include "fmgr.h"
 #include "pgtime.h"
 
-
 /*
  * Macros for fmgr-callable functions.
  *
@@ -27,9 +26,9 @@
  */
 #ifdef HAVE_INT64_TIMESTAMP
 
-#define DatumGetTimestamp(X)  ((Timestamp) DatumGetInt64(X))
-#define DatumGetTimestampTz(X)	((TimestampTz) DatumGetInt64(X))
-#define DatumGetIntervalP(X)  ((Interval *) DatumGetPointer(X))
+#define DatumGetTimestamp(X) ((Timestamp) DatumGetInt64(X))
+#define DatumGetTimestampTz(X) ((TimestampTz) DatumGetInt64(X))
+#define DatumGetIntervalP(X) ((Interval *) DatumGetPointer(X))
 
 #define TimestampGetDatum(X) Int64GetDatum(X)
 #define TimestampTzGetDatum(X) Int64GetDatum(X)
@@ -42,11 +41,11 @@
 #define PG_RETURN_TIMESTAMP(x) return TimestampGetDatum(x)
 #define PG_RETURN_TIMESTAMPTZ(x) return TimestampTzGetDatum(x)
 #define PG_RETURN_INTERVAL_P(x) return IntervalPGetDatum(x)
-#else							/* !HAVE_INT64_TIMESTAMP */
+#else /* !HAVE_INT64_TIMESTAMP */
 
-#define DatumGetTimestamp(X)  ((Timestamp) DatumGetFloat8(X))
-#define DatumGetTimestampTz(X)	((TimestampTz) DatumGetFloat8(X))
-#define DatumGetIntervalP(X)  ((Interval *) DatumGetPointer(X))
+#define DatumGetTimestamp(X) ((Timestamp) DatumGetFloat8(X))
+#define DatumGetTimestampTz(X) ((TimestampTz) DatumGetFloat8(X))
+#define DatumGetIntervalP(X) ((Interval *) DatumGetPointer(X))
 
 #define TimestampGetDatum(X) Float8GetDatum(X)
 #define TimestampTzGetDatum(X) Float8GetDatum(X)
@@ -59,8 +58,7 @@
 #define PG_RETURN_TIMESTAMP(x) return TimestampGetDatum(x)
 #define PG_RETURN_TIMESTAMPTZ(x) return TimestampTzGetDatum(x)
 #define PG_RETURN_INTERVAL_P(x) return IntervalPGetDatum(x)
-#endif   /* HAVE_INT64_TIMESTAMP */
-
+#endif /* HAVE_INT64_TIMESTAMP */
 
 #define TIMESTAMP_MASK(b) (1 << (b))
 #define INTERVAL_MASK(b) (1 << (b))
@@ -70,23 +68,21 @@
 #define INTERVAL_RANGE_MASK (0x7FFF)
 #define INTERVAL_FULL_PRECISION (0xFFFF)
 #define INTERVAL_PRECISION_MASK (0xFFFF)
-#define INTERVAL_TYPMOD(p,r) ((((r) & INTERVAL_RANGE_MASK) << 16) | ((p) & INTERVAL_PRECISION_MASK))
+#define INTERVAL_TYPMOD(p, r) ((((r) & INTERVAL_RANGE_MASK) << 16) | ((p) & INTERVAL_PRECISION_MASK))
 #define INTERVAL_PRECISION(t) ((t) & INTERVAL_PRECISION_MASK)
 #define INTERVAL_RANGE(t) (((t) >> 16) & INTERVAL_RANGE_MASK)
 
 #ifdef HAVE_INT64_TIMESTAMP
-#define TimestampTzPlusMilliseconds(tz,ms) ((tz) + ((ms) * (int64) 1000))
+#define TimestampTzPlusMilliseconds(tz, ms) ((tz) + ((ms) * (int64) 1000))
 #else
-#define TimestampTzPlusMilliseconds(tz,ms) ((tz) + ((ms) / 1000.0))
+#define TimestampTzPlusMilliseconds(tz, ms) ((tz) + ((ms) / 1000.0))
 #endif
-
 
 /* Set at postmaster start */
 extern TimestampTz PgStartTime;
 
 /* Set at configuration reload */
 extern TimestampTz PgReloadTime;
-
 
 /*
  * timestamp.c prototypes
@@ -214,50 +210,46 @@ extern Datum generate_series_timestamptz(PG_FUNCTION_ARGS);
 /* Internal routines (not fmgr-callable) */
 
 extern TimestampTz GetCurrentTimestamp(void);
-extern void TimestampDifference(TimestampTz start_time, TimestampTz stop_time,
-					long *secs, int *microsecs);
-extern bool TimestampDifferenceExceeds(TimestampTz start_time,
-						   TimestampTz stop_time,
-						   int msec);
+extern void        TimestampDifference(TimestampTz start_time, TimestampTz stop_time, long *secs, int *microsecs);
+extern bool        TimestampDifferenceExceeds(TimestampTz start_time, TimestampTz stop_time, int msec);
 
 /*
  * Prototypes for functions to deal with integer timestamps, when the native
  * format is float timestamps.
  */
 #ifndef HAVE_INT64_TIMESTAMP
-extern int64 GetCurrentIntegerTimestamp(void);
+extern int64       GetCurrentIntegerTimestamp(void);
 extern TimestampTz IntegerTimestampToTimestampTz(int64 timestamp);
 #else
-#define GetCurrentIntegerTimestamp()	GetCurrentTimestamp()
+#define GetCurrentIntegerTimestamp() GetCurrentTimestamp()
 #define IntegerTimestampToTimestampTz(timestamp) (timestamp)
 #endif
 
 extern TimestampTz time_t_to_timestamptz(pg_time_t tm);
-extern pg_time_t timestamptz_to_time_t(TimestampTz t);
+extern pg_time_t   timestamptz_to_time_t(TimestampTz t);
 
 extern const char *timestamptz_to_str(TimestampTz t);
 
-extern int	tm2timestamp(struct pg_tm * tm, fsec_t fsec, int *tzp, Timestamp *dt);
-extern int timestamp2tm(Timestamp dt, int *tzp, struct pg_tm * tm,
-			 fsec_t *fsec, const char **tzn, pg_tz *attimezone);
+extern int  tm2timestamp(struct pg_tm *tm, fsec_t fsec, int *tzp, Timestamp *dt);
+extern int  timestamp2tm(Timestamp dt, int *tzp, struct pg_tm *tm, fsec_t *fsec, const char **tzn, pg_tz *attimezone);
 extern void dt2time(Timestamp dt, int *hour, int *min, int *sec, fsec_t *fsec);
 
-extern int	interval2tm(Interval span, struct pg_tm * tm, fsec_t *fsec);
-extern int	tm2interval(struct pg_tm * tm, fsec_t fsec, Interval *span);
+extern int interval2tm(Interval span, struct pg_tm *tm, fsec_t *fsec);
+extern int tm2interval(struct pg_tm *tm, fsec_t fsec, Interval *span);
 
 extern Timestamp SetEpochTimestamp(void);
-extern void GetEpochTime(struct pg_tm * tm);
+extern void      GetEpochTime(struct pg_tm *tm);
 
-extern int	timestamp_cmp_internal(Timestamp dt1, Timestamp dt2);
+extern int timestamp_cmp_internal(Timestamp dt1, Timestamp dt2);
 
 /* timestamp comparison works for timestamptz also */
-#define timestamptz_cmp_internal(dt1,dt2)	timestamp_cmp_internal(dt1, dt2)
+#define timestamptz_cmp_internal(dt1, dt2) timestamp_cmp_internal(dt1, dt2)
 
-extern int	isoweek2j(int year, int week);
+extern int  isoweek2j(int year, int week);
 extern void isoweek2date(int woy, int *year, int *mon, int *mday);
 extern void isoweekdate2date(int isoweek, int wday, int *year, int *mon, int *mday);
-extern int	date2isoweek(int year, int mon, int mday);
-extern int	date2isoyear(int year, int mon, int mday);
-extern int	date2isoyearday(int year, int mon, int mday);
+extern int  date2isoweek(int year, int mon, int mday);
+extern int  date2isoyear(int year, int mon, int mday);
+extern int  date2isoyearday(int year, int mon, int mday);
 
-#endif   /* TIMESTAMP_H */
+#endif /* TIMESTAMP_H */

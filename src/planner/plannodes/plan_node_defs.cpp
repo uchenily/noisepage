@@ -5,107 +5,107 @@
 namespace noisepage::planner {
 
 std::string PlanNodeTypeToString(PlanNodeType type) {
-  switch (type) {
+    switch (type) {
     case PlanNodeType::INVALID:
-      return "Invalid";
+        return "Invalid";
     case PlanNodeType::SEQSCAN:
-      return "SequentialScan";
+        return "SequentialScan";
     case PlanNodeType::INDEXSCAN:
-      return "IndexScan";
+        return "IndexScan";
     case PlanNodeType::CSVSCAN:
-      return "CsvScan";
+        return "CsvScan";
     case PlanNodeType::NESTLOOP:
-      return "NestedLoop";
+        return "NestedLoop";
     case PlanNodeType::HASHJOIN:
-      return "HashJoin";
+        return "HashJoin";
     case PlanNodeType::INDEXNLJOIN:
-      return "IndexNestedLoopJoin";
+        return "IndexNestedLoopJoin";
     case PlanNodeType::UPDATE:
-      return "Update";
+        return "Update";
     case PlanNodeType::INSERT:
-      return "Insert";
+        return "Insert";
     case PlanNodeType::DELETE:
-      return "Delete";
+        return "Delete";
     case PlanNodeType::CREATE_DATABASE:
-      return "CreateDatabase";
+        return "CreateDatabase";
     case PlanNodeType::CREATE_NAMESPACE:
-      return "CreateNamespace";
+        return "CreateNamespace";
     case PlanNodeType::CREATE_TABLE:
-      return "CreateTable";
+        return "CreateTable";
     case PlanNodeType::CREATE_INDEX:
-      return "CreateIndex";
+        return "CreateIndex";
     case PlanNodeType::CREATE_FUNC:
-      return "CreateFunction";
+        return "CreateFunction";
     case PlanNodeType::CREATE_TRIGGER:
-      return "CreateTrigger";
+        return "CreateTrigger";
     case PlanNodeType::CREATE_VIEW:
-      return "CreateView";
+        return "CreateView";
     case PlanNodeType::DROP_DATABASE:
-      return "DropDatabase";
+        return "DropDatabase";
     case PlanNodeType::DROP_NAMESPACE:
-      return "DropNamespace";
+        return "DropNamespace";
     case PlanNodeType::DROP_TABLE:
-      return "DropTable";
+        return "DropTable";
     case PlanNodeType::DROP_INDEX:
-      return "DropIndex";
+        return "DropIndex";
     case PlanNodeType::DROP_TRIGGER:
-      return "DropTrigger";
+        return "DropTrigger";
     case PlanNodeType::DROP_VIEW:
-      return "DropView";
+        return "DropView";
     case PlanNodeType::ANALYZE:
-      return "Analyze";
+        return "Analyze";
     case PlanNodeType::AGGREGATE:
-      return "Aggregate";
+        return "Aggregate";
     case PlanNodeType::ORDERBY:
-      return "OrderBy";
+        return "OrderBy";
     case PlanNodeType::PROJECTION:
-      return "Projection";
+        return "Projection";
     case PlanNodeType::LIMIT:
-      return "Limit";
+        return "Limit";
     case PlanNodeType::DISTINCT:
-      return "Distinct";
+        return "Distinct";
     case PlanNodeType::HASH:
-      return "Hash";
+        return "Hash";
     case PlanNodeType::SETOP:
-      return "SetOperation";
+        return "SetOperation";
     case PlanNodeType::EXPORT_EXTERNAL_FILE:
-      return "ExportExternalFile";
+        return "ExportExternalFile";
     case PlanNodeType::RESULT:
-      return "Result";
+        return "Result";
     case PlanNodeType::CTESCAN:
-      return "CteScan";
+        return "CteScan";
     case PlanNodeType::CTESCANLEADER:
-      return "CteScanLeader";
+        return "CteScanLeader";
     case PlanNodeType::MOCK:
-      return "Mock";
-  }
-  UNREACHABLE("Impossible to reach. All plan node types handled.");
+        return "Mock";
+    }
+    UNREACHABLE("Impossible to reach. All plan node types handled.");
 }
 
 std::string JoinTypeToString(LogicalJoinType type) {
-  switch (type) {
+    switch (type) {
     case LogicalJoinType::INVALID:
-      return "Invalid";
+        return "Invalid";
     case LogicalJoinType::LEFT:
-      return "Left";
+        return "Left";
     case LogicalJoinType::RIGHT:
-      return "Right";
+        return "Right";
     case LogicalJoinType::INNER:
-      return "Inner";
+        return "Inner";
     case LogicalJoinType::OUTER:
-      return "Outer";
+        return "Outer";
     case LogicalJoinType::SEMI:
-      return "Semi";
+        return "Semi";
     case LogicalJoinType::ANTI:
-      return "Anti";
+        return "Anti";
     case LogicalJoinType::LEFT_SEMI:
-      return "LeftSemi";
+        return "LeftSemi";
     case LogicalJoinType::RIGHT_SEMI:
-      return "RightSemi";
+        return "RightSemi";
     case LogicalJoinType::RIGHT_ANTI:
-      return "RightAnti";
-  }
-  UNREACHABLE("Impossible to reach. All join types handled.");
+        return "RightAnti";
+    }
+    UNREACHABLE("Impossible to reach. All join types handled.");
 }
 
-}  // namespace noisepage::planner
+} // namespace noisepage::planner

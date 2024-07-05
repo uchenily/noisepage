@@ -22,8 +22,10 @@ struct HashCombine {};
  */
 template <typename T>
 struct Hash<T, std::enable_if_t<std::is_arithmetic_v<T>>> {
-  /** @return The hash value for the input. */
-  hash_t operator()(T input, bool null) const noexcept { return null ? hash_t(0) : common::HashUtil::HashCrc(input); }
+    /** @return The hash value for the input. */
+    hash_t operator()(T input, bool null) const noexcept {
+        return null ? hash_t(0) : common::HashUtil::HashCrc(input);
+    }
 };
 
 /**
@@ -31,10 +33,10 @@ struct Hash<T, std::enable_if_t<std::is_arithmetic_v<T>>> {
  */
 template <typename T>
 struct HashCombine<T, std::enable_if_t<std::is_arithmetic_v<T>>> {
-  /** @return The hash value for the input with the given seed. */
-  hash_t operator()(T input, bool null, const hash_t seed) const noexcept {
-    return null ? hash_t(0) : common::HashUtil::HashCrc(input, seed);
-  }
+    /** @return The hash value for the input with the given seed. */
+    hash_t operator()(T input, bool null, const hash_t seed) const noexcept {
+        return null ? hash_t(0) : common::HashUtil::HashCrc(input, seed);
+    }
 };
 
 /**
@@ -42,8 +44,10 @@ struct HashCombine<T, std::enable_if_t<std::is_arithmetic_v<T>>> {
  */
 template <>
 struct Hash<Date> {
-  /** @return Hash value for the specified date. */
-  hash_t operator()(Date input, bool null) const noexcept { return null ? hash_t(0) : input.Hash(); }
+    /** @return Hash value for the specified date. */
+    hash_t operator()(Date input, bool null) const noexcept {
+        return null ? hash_t(0) : input.Hash();
+    }
 };
 
 /**
@@ -51,10 +55,10 @@ struct Hash<Date> {
  */
 template <>
 struct HashCombine<Date> {
-  /** @return Hash value for the specified date with the given seed. */
-  hash_t operator()(Date input, bool null, const hash_t seed) const noexcept {
-    return null ? hash_t(0) : input.Hash(seed);
-  }
+    /** @return Hash value for the specified date with the given seed. */
+    hash_t operator()(Date input, bool null, const hash_t seed) const noexcept {
+        return null ? hash_t(0) : input.Hash(seed);
+    }
 };
 
 /**
@@ -62,8 +66,10 @@ struct HashCombine<Date> {
  */
 template <>
 struct Hash<Timestamp> {
-  /** @return Hash value for the specified timestamp. */
-  hash_t operator()(Timestamp input, bool null) const noexcept { return null ? hash_t(0) : input.Hash(); }
+    /** @return Hash value for the specified timestamp. */
+    hash_t operator()(Timestamp input, bool null) const noexcept {
+        return null ? hash_t(0) : input.Hash();
+    }
 };
 
 /**
@@ -71,10 +77,10 @@ struct Hash<Timestamp> {
  */
 template <>
 struct HashCombine<Timestamp> {
-  /** @return Hash value for the specified timestamp with the given seed. */
-  hash_t operator()(Timestamp input, bool null, const hash_t seed) const noexcept {
-    return null ? hash_t(0) : input.Hash(seed);
-  }
+    /** @return Hash value for the specified timestamp with the given seed. */
+    hash_t operator()(Timestamp input, bool null, const hash_t seed) const noexcept {
+        return null ? hash_t(0) : input.Hash(seed);
+    }
 };
 
 /**
@@ -82,10 +88,10 @@ struct HashCombine<Timestamp> {
  */
 template <>
 struct Hash<storage::VarlenEntry> {
-  /** @return Hash value for the specified varlen. */
-  hash_t operator()(const storage::VarlenEntry &input, bool null) const noexcept {
-    return null ? hash_t(0) : input.Hash();
-  }
+    /** @return Hash value for the specified varlen. */
+    hash_t operator()(const storage::VarlenEntry &input, bool null) const noexcept {
+        return null ? hash_t(0) : input.Hash();
+    }
 };
 
 /**
@@ -93,10 +99,10 @@ struct Hash<storage::VarlenEntry> {
  */
 template <>
 struct HashCombine<storage::VarlenEntry> {
-  /** @return Hash value for the specified varlen with the given seed. */
-  hash_t operator()(const storage::VarlenEntry &input, bool null, const hash_t seed) const noexcept {
-    return null ? hash_t(0) : input.Hash(seed);
-  }
+    /** @return Hash value for the specified varlen with the given seed. */
+    hash_t operator()(const storage::VarlenEntry &input, bool null, const hash_t seed) const noexcept {
+        return null ? hash_t(0) : input.Hash(seed);
+    }
 };
 
-}  // namespace noisepage::execution::sql
+} // namespace noisepage::execution::sql

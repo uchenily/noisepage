@@ -7,10 +7,10 @@
 #ifdef NOISEPAGE_USE_LOGGING
 
 namespace noisepage::modelserver {
-extern std::shared_ptr<spdlog::logger> model_server_logger;  // NOLINT
+extern std::shared_ptr<spdlog::logger> model_server_logger; // NOLINT
 
 void InitModelServerLogger();
-}  // namespace noisepage::modelserver
+} // namespace noisepage::modelserver
 
 #define MODEL_SERVER_LOG_TRACE(...) ::noisepage::modelserver::model_server_logger->trace(__VA_ARGS__);
 #define MODEL_SERVER_LOG_DEBUG(...) ::noisepage::modelserver::model_server_logger->debug(__VA_ARGS__);
@@ -20,10 +20,10 @@ void InitModelServerLogger();
 
 #else
 
-#define MODEL_SERVER_LOG_TRACE(...) ((void)0)
-#define MODEL_SERVER_LOG_DEBUG(...) ((void)0)
-#define MODEL_SERVER_LOG_INFO(...) ((void)0)
-#define MODEL_SERVER_LOG_WARN(...) ((void)0)
-#define MODEL_SERVER_LOG_ERROR(...) ((void)0)
+#define MODEL_SERVER_LOG_TRACE(...) ((void) 0)
+#define MODEL_SERVER_LOG_DEBUG(...) ((void) 0)
+#define MODEL_SERVER_LOG_INFO(...) ((void) 0)
+#define MODEL_SERVER_LOG_WARN(...) ((void) 0)
+#define MODEL_SERVER_LOG_ERROR(...) ((void) 0)
 
 #endif

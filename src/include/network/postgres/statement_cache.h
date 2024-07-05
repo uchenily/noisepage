@@ -17,35 +17,38 @@ namespace noisepage::network {
  * size, replacement policy, etc.
  */
 class StatementCache {
- public:
-  /**
-   * Check if a Statement for a query string exists
-   * @param query_text key to look up
-   * @return pointer to Statement object if it already exists, nullptr otherwise
-   */
-  common::ManagedPointer<Statement> Lookup(const std::string &query_text) const {
-    const auto it = cache_.find(query_text);
-    if (it != cache_.end()) return common::ManagedPointer(it->second);
-    return nullptr;
-  }
+public:
+    /**
+     * Check if a Statement for a query string exists
+     * @param query_text key to look up
+     * @return pointer to Statement object if it already exists, nullptr otherwise
+     */
+    common::ManagedPointer<Statement> Lookup(const std::string &query_text) const {
+        const auto it = cache_.find(query_text);
+        if (it != cache_.end())
+            return common::ManagedPointer(it->second);
+        return nullptr;
+    }
 
-  /**
-   * Transfer ownership of a Statement to the cache
-   * @param statement object to take ownership of
-   */
-  void Add(std::unique_ptr<network::Statement> &&statement) {
-    cache_[statement->GetQueryText()] = std::move(statement);
-  }
+    /**
+     * Transfer ownership of a Statement to the cache
+     * @param statement object to take ownership of
+     */
+    void Add(std::unique_ptr<network::Statement> &&statement) {
+        cache_[statement->GetQueryText()] = std::move(statement);
+    }
 
- private:
-  /**
-   * We'll use xxHash for the keys since it's a fast hash algorithm for strings.
-   */
-  struct FastStringHasher {
-    std::size_t operator()(const std::string &key) const { return XXH3_64bits(key.data(), key.length()); }
-  };
+private:
+    /**
+     * We'll use xxHash for the keys since it's a fast hash algorithm for strings.
+     */
+    struct FastStringHasher {
+        std::size_t operator()(const std::string &key) const {
+            return XXH3_64bits(key.data(), key.length());
+        }
+    };
 
-  std::unordered_map<std::string, std::unique_ptr<Statement>, FastStringHasher> cache_;
+    std::unordered_map<std::string, std::unique_ptr<Statement>, FastStringHasher> cache_;
 };
 
-}  // namespace noisepage::network
+} // namespace noisepage::network

@@ -25,84 +25,223 @@ using SetClause = std::pair<catalog::col_oid_t, common::ManagedPointer<parser::A
  * Plan node for update
  */
 class UpdatePlanNode : public AbstractPlanNode {
- public:
-  /**
-   * Builder for an delete plan node
-   */
-  class Builder : public AbstractPlanNode::Builder<Builder> {
-   public:
-    Builder() = default;
-
+public:
     /**
-     * Don't allow builder to be copied or moved
+     * Builder for an delete plan node
      */
-    DISALLOW_COPY_AND_MOVE(Builder)
+    class Builder : public AbstractPlanNode::Builder<Builder> {
+    public:
+        Builder() = default;
 
+        /**
+         * Don't allow builder to be copied or moved
+         */
+        DISALLOW_COPY_AND_MOVE(Builder)
+
+        /**
+         * @param database_oid OID of the database
+         * @return builder object
+         */
+        Builder &SetDatabaseOid(catalog::db_oid_t database_oid) {
+            database_oid_ = database_oid;
+            return *this;
+        }
+
+        /**
+         * @param table_oid the OID of the target SQL table
+         * @return builder object
+         */
+        Builder &SetTableOid(catalog::table_oid_t table_oid) {
+            table_oid_ = table_oid;
+            return *this;
+        }
+
+        /**
+         * @param update_primary_key whether to update primary key
+         * @return builder object
+         */
+        Builder &SetUpdatePrimaryKey(bool update_primary_key) {
+            update_primary_key_ = update_primary_key;
+            return *this;
+        }
+
+        /**
+         * @param indexed_update whether to update indexes
+         * @return builder object
+         */
+        Builder &SetIndexedUpdate(bool indexed_update) {
+            indexed_update_ = indexed_update;
+            return *this;
+        }
+
+        /**
+         * @param clause SET clause in a update statement
+         * @return builder object
+         */
+        Builder &AddSetClause(SetClause clause) {
+            sets_.push_back(clause);
+            return *this;
+        }
+
+        /**
+         * @param index_oids vector of indexes to update
+         * @return builder object
+         */
+        Builder &SetIndexOids(std::vector<catalog::index_oid_t> &&index_oids) {
+            index_oids_ = index_oids;
+            return *this;
+        }
+
+        /**
+         * Build the delete plan node
+         * @return plan node
+         */
+        std::unique_ptr<UpdatePlanNode> Build() {
+            return std::unique_ptr<UpdatePlanNode>(new UpdatePlanNode(std::move(children_),
+                                                                      std::make_unique<OutputSchema>(),
+                                                                      database_oid_,
+                                                                      table_oid_,
+                                                                      update_primary_key_,
+                                                                      indexed_update_,
+                                                                      std::move(sets_),
+                                                                      std::move(index_oids_),
+                                                                      plan_node_id_));
+        }
+
+    protected:
+        /**
+         * OID of the database
+         */
+        catalog::db_oid_t database_oid_;
+
+        /**
+         * OID of the table to update
+         */
+        catalog::table_oid_t table_oid_;
+
+        /**
+         * Whether to update primary key
+         */
+        bool update_primary_key_;
+
+        /**
+         * Whether to update indexes
+         */
+        bool indexed_update_;
+
+        /**
+         * Set Clauses
+         */
+        std::vector<SetClause> sets_;
+
+        /**
+         * Vector of indexes to update
+         */
+        std::vector<catalog::index_oid_t> index_oids_;
+    };
+
+private:
     /**
+     * @param children child plan nodes
+     * @param output_schema Schema representing the structure of the output of this plan node
      * @param database_oid OID of the database
-     * @return builder object
-     */
-    Builder &SetDatabaseOid(catalog::db_oid_t database_oid) {
-      database_oid_ = database_oid;
-      return *this;
-    }
-
-    /**
-     * @param table_oid the OID of the target SQL table
-     * @return builder object
-     */
-    Builder &SetTableOid(catalog::table_oid_t table_oid) {
-      table_oid_ = table_oid;
-      return *this;
-    }
-
-    /**
+     * @param namespace_oid OID of the namespace
+     * @param table_oid OID of the target SQL table
      * @param update_primary_key whether to update primary key
-     * @return builder object
-     */
-    Builder &SetUpdatePrimaryKey(bool update_primary_key) {
-      update_primary_key_ = update_primary_key;
-      return *this;
-    }
-
-    /**
      * @param indexed_update whether to update indexes
-     * @return builder object
+     * @param sets SET clauses
+     * @param index_oids Indexes to update
+     * @param plan_node_id Plan node id
      */
-    Builder &SetIndexedUpdate(bool indexed_update) {
-      indexed_update_ = indexed_update;
-      return *this;
+    UpdatePlanNode(std::vector<std::unique_ptr<AbstractPlanNode>> &&children,
+                   std::unique_ptr<OutputSchema>                    output_schema,
+                   catalog::db_oid_t                                database_oid,
+                   catalog::table_oid_t                             table_oid,
+                   bool                                             update_primary_key,
+                   bool                                             indexed_update,
+                   std::vector<SetClause>                           sets,
+                   std::vector<catalog::index_oid_t>              &&index_oids,
+                   plan_node_id_t                                   plan_node_id)
+        : AbstractPlanNode(std::move(children), std::move(output_schema), plan_node_id)
+        , database_oid_(database_oid)
+        , table_oid_(table_oid)
+        , update_primary_key_(update_primary_key)
+        , indexed_update_(indexed_update)
+        , sets_(std::move(sets))
+        , index_oids_(std::move(index_oids)) {}
+
+public:
+    /**
+     * Default constructor for deserialization
+     */
+    UpdatePlanNode() = default;
+
+    DISALLOW_COPY_AND_MOVE(UpdatePlanNode)
+
+    /**
+     * @return OID of the database
+     */
+    catalog::db_oid_t GetDatabaseOid() const {
+        return database_oid_;
     }
 
     /**
-     * @param clause SET clause in a update statement
-     * @return builder object
+     * @return the OID of the target table to operate on
      */
-    Builder &AddSetClause(SetClause clause) {
-      sets_.push_back(clause);
-      return *this;
+    catalog::table_oid_t GetTableOid() const {
+        return table_oid_;
     }
 
     /**
-     * @param index_oids vector of indexes to update
-     * @return builder object
+     * @return whether to update primary key
      */
-    Builder &SetIndexOids(std::vector<catalog::index_oid_t> &&index_oids) {
-      index_oids_ = index_oids;
-      return *this;
+    bool GetUpdatePrimaryKey() const {
+        return update_primary_key_;
     }
 
     /**
-     * Build the delete plan node
-     * @return plan node
+     * @return whether to update indexes
      */
-    std::unique_ptr<UpdatePlanNode> Build() {
-      return std::unique_ptr<UpdatePlanNode>(new UpdatePlanNode(
-          std::move(children_), std::make_unique<OutputSchema>(), database_oid_, table_oid_, update_primary_key_,
-          indexed_update_, std::move(sets_), std::move(index_oids_), plan_node_id_));
+    bool GetIndexedUpdate() const {
+        return indexed_update_;
     }
 
-   protected:
+    /**
+     * @return the type of this plan node
+     */
+    PlanNodeType GetPlanNodeType() const override {
+        return PlanNodeType::UPDATE;
+    }
+
+    /**
+     * @return SET clauses
+     */
+    const std::vector<SetClause> &GetSetClauses() const {
+        return sets_;
+    }
+
+    /**
+     * @return the indexes to update
+     */
+    const std::vector<catalog::index_oid_t> &GetIndexOids() const {
+        return index_oids_;
+    }
+
+    /**
+     * @return the hashed value of this plan node
+     */
+    common::hash_t Hash() const override;
+
+    bool operator==(const AbstractPlanNode &rhs) const override;
+
+    void Accept(common::ManagedPointer<PlanVisitor> v) const override {
+        v->Visit(this);
+    }
+
+    nlohmann::json                                           ToJson() const override;
+    std::vector<std::unique_ptr<parser::AbstractExpression>> FromJson(const nlohmann::json &j) override;
+
+private:
     /**
      * OID of the database
      */
@@ -124,7 +263,7 @@ class UpdatePlanNode : public AbstractPlanNode {
     bool indexed_update_;
 
     /**
-     * Set Clauses
+     * SET clauses
      */
     std::vector<SetClause> sets_;
 
@@ -132,120 +271,8 @@ class UpdatePlanNode : public AbstractPlanNode {
      * Vector of indexes to update
      */
     std::vector<catalog::index_oid_t> index_oids_;
-  };
-
- private:
-  /**
-   * @param children child plan nodes
-   * @param output_schema Schema representing the structure of the output of this plan node
-   * @param database_oid OID of the database
-   * @param namespace_oid OID of the namespace
-   * @param table_oid OID of the target SQL table
-   * @param update_primary_key whether to update primary key
-   * @param indexed_update whether to update indexes
-   * @param sets SET clauses
-   * @param index_oids Indexes to update
-   * @param plan_node_id Plan node id
-   */
-  UpdatePlanNode(std::vector<std::unique_ptr<AbstractPlanNode>> &&children, std::unique_ptr<OutputSchema> output_schema,
-                 catalog::db_oid_t database_oid, catalog::table_oid_t table_oid, bool update_primary_key,
-                 bool indexed_update, std::vector<SetClause> sets, std::vector<catalog::index_oid_t> &&index_oids,
-                 plan_node_id_t plan_node_id)
-      : AbstractPlanNode(std::move(children), std::move(output_schema), plan_node_id),
-        database_oid_(database_oid),
-        table_oid_(table_oid),
-        update_primary_key_(update_primary_key),
-        indexed_update_(indexed_update),
-        sets_(std::move(sets)),
-        index_oids_(std::move(index_oids)) {}
-
- public:
-  /**
-   * Default constructor for deserialization
-   */
-  UpdatePlanNode() = default;
-
-  DISALLOW_COPY_AND_MOVE(UpdatePlanNode)
-
-  /**
-   * @return OID of the database
-   */
-  catalog::db_oid_t GetDatabaseOid() const { return database_oid_; }
-
-  /**
-   * @return the OID of the target table to operate on
-   */
-  catalog::table_oid_t GetTableOid() const { return table_oid_; }
-
-  /**
-   * @return whether to update primary key
-   */
-  bool GetUpdatePrimaryKey() const { return update_primary_key_; }
-
-  /**
-   * @return whether to update indexes
-   */
-  bool GetIndexedUpdate() const { return indexed_update_; }
-
-  /**
-   * @return the type of this plan node
-   */
-  PlanNodeType GetPlanNodeType() const override { return PlanNodeType::UPDATE; }
-
-  /**
-   * @return SET clauses
-   */
-  const std::vector<SetClause> &GetSetClauses() const { return sets_; }
-
-  /**
-   * @return the indexes to update
-   */
-  const std::vector<catalog::index_oid_t> &GetIndexOids() const { return index_oids_; }
-
-  /**
-   * @return the hashed value of this plan node
-   */
-  common::hash_t Hash() const override;
-
-  bool operator==(const AbstractPlanNode &rhs) const override;
-
-  void Accept(common::ManagedPointer<PlanVisitor> v) const override { v->Visit(this); }
-
-  nlohmann::json ToJson() const override;
-  std::vector<std::unique_ptr<parser::AbstractExpression>> FromJson(const nlohmann::json &j) override;
-
- private:
-  /**
-   * OID of the database
-   */
-  catalog::db_oid_t database_oid_;
-
-  /**
-   * OID of the table to update
-   */
-  catalog::table_oid_t table_oid_;
-
-  /**
-   * Whether to update primary key
-   */
-  bool update_primary_key_;
-
-  /**
-   * Whether to update indexes
-   */
-  bool indexed_update_;
-
-  /**
-   * SET clauses
-   */
-  std::vector<SetClause> sets_;
-
-  /**
-   * Vector of indexes to update
-   */
-  std::vector<catalog::index_oid_t> index_oids_;
 };
 
 DEFINE_JSON_HEADER_DECLARATIONS(UpdatePlanNode);
 
-}  // namespace noisepage::planner
+} // namespace noisepage::planner

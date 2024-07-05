@@ -94,340 +94,371 @@ namespace noisepage::execution::sql {
  * pattern with Vector, and think about writing a new vector primitive to achieve your objective.
  */
 class EXPORT Vector {
-  friend class VectorOps;
-  friend class VectorProjectionIterator;
+    friend class VectorOps;
+    friend class VectorProjectionIterator;
 
- public:
-  /** The null mask for the vector indicates which entries are NULL. */
-  using NullMask = util::BitVector<uint64_t>;
+public:
+    /** The null mask for the vector indicates which entries are NULL. */
+    using NullMask = util::BitVector<uint64_t>;
 
-  /**
-   * Scope object that temporary sets the filter for a vector over the lifetime of the scope. When
-   * the object goes out of scope, the input vector's previous filter status is restored.
-   */
-  class TempFilterScope {
-   public:
     /**
-     * Create a new temporary filter scope.
-     * @param vector The vector to be filtered.
-     * @param tid_list The filtered tuple ID list for the vector.
-     * @param count The number of active elements.
+     * Scope object that temporary sets the filter for a vector over the lifetime of the scope. When
+     * the object goes out of scope, the input vector's previous filter status is restored.
      */
-    TempFilterScope(Vector *vector, const TupleIdList *tid_list, const uint64_t count)
-        : vector_(vector), prev_tid_list_(vector->GetFilteredTupleIdList()), prev_count_(vector->GetCount()) {
-      vector_->SetFilteredTupleIdList(tid_list, count);
+    class TempFilterScope {
+    public:
+        /**
+         * Create a new temporary filter scope.
+         * @param vector The vector to be filtered.
+         * @param tid_list The filtered tuple ID list for the vector.
+         * @param count The number of active elements.
+         */
+        TempFilterScope(Vector *vector, const TupleIdList *tid_list, const uint64_t count)
+            : vector_(vector)
+            , prev_tid_list_(vector->GetFilteredTupleIdList())
+            , prev_count_(vector->GetCount()) {
+            vector_->SetFilteredTupleIdList(tid_list, count);
+        }
+
+        /** Restore the previous state of the vector prior to filtering. */
+        ~TempFilterScope() {
+            vector_->SetFilteredTupleIdList(prev_tid_list_, prev_count_);
+        }
+
+    private:
+        /** The vector to filter. */
+        Vector *vector_;
+        /** The previous filter in the vector. Can be NULL. */
+        const TupleIdList *prev_tid_list_;
+        /** The previous count of the vector. */
+        uint64_t prev_count_;
+    };
+
+    /**
+     * Create an empty vector.
+     * @param type The type of the elements in the vector.
+     */
+    explicit Vector(TypeId type);
+
+    /**
+     * Create a new owning vector with a maximum capacity of kDefaultVectorSize. If @em create_data
+     * is set, the vector will allocate memory for the vector's contents. If @em clear is set, the
+     * memory will be zeroed out after allocation.
+     * @param type The primitive type ID of the elements in this vector.
+     * @param create_data Should the vector allocate space for the contents?
+     * @param clear Should the vector zero the data if it allocates any?
+     */
+    Vector(TypeId type, bool create_data, bool clear);
+
+    /**
+     * Vector's cannot be implicitly copied or moved.
+     */
+    DISALLOW_COPY_AND_MOVE(Vector);
+
+    /**
+     * Destructor.
+     */
+    ~Vector();
+
+    /**
+     * @return The type of the elements contained in this vector.
+     */
+    TypeId GetTypeId() const noexcept {
+        return type_;
     }
 
-    /** Restore the previous state of the vector prior to filtering. */
-    ~TempFilterScope() { vector_->SetFilteredTupleIdList(prev_tid_list_, prev_count_); }
+    /**
+     * @return The number of active, i.e., externally visible, elements in the vector. Active elements
+     *         are those that have survived any filters in the selection vector. The count of a vector
+     *         is guaranteed to be <= the size of the vector.
+     */
+    uint64_t GetCount() const noexcept {
+        return count_;
+    }
 
-   private:
-    /** The vector to filter. */
-    Vector *vector_;
-    /** The previous filter in the vector. Can be NULL. */
-    const TupleIdList *prev_tid_list_;
-    /** The previous count of the vector. */
-    uint64_t prev_count_;
-  };
+    /**
+     * @return The total number of tuples currently in the vector, including those that may have been
+     *         filtered out by the selection vector, if one exists. The size of a vector is always
+     *         greater than or equal to the selected count.
+     */
+    uint64_t GetSize() const noexcept {
+        return num_elements_;
+    }
 
-  /**
-   * Create an empty vector.
-   * @param type The type of the elements in the vector.
-   */
-  explicit Vector(TypeId type);
+    /**
+     * @return The maximum capacity of this vector.
+     */
+    uint64_t GetCapacity() const noexcept {
+        return common::Constants::K_DEFAULT_VECTOR_SIZE;
+    }
 
-  /**
-   * Create a new owning vector with a maximum capacity of kDefaultVectorSize. If @em create_data
-   * is set, the vector will allocate memory for the vector's contents. If @em clear is set, the
-   * memory will be zeroed out after allocation.
-   * @param type The primitive type ID of the elements in this vector.
-   * @param create_data Should the vector allocate space for the contents?
-   * @param clear Should the vector zero the data if it allocates any?
-   */
-  Vector(TypeId type, bool create_data, bool clear);
+    /**
+     * @return The raw untyped data pointer.
+     */
+    byte *GetData() const noexcept {
+        return data_;
+    }
 
-  /**
-   * Vector's cannot be implicitly copied or moved.
-   */
-  DISALLOW_COPY_AND_MOVE(Vector);
+    /**
+     * @return The list of active TIDs in the vector. If all TIDs are visible, the list is NULL.
+     */
+    const TupleIdList *GetFilteredTupleIdList() const noexcept {
+        return tid_list_;
+    }
 
-  /**
-   * Destructor.
-   */
-  ~Vector();
+    /**
+     * @return An immutable view of this vector's NULL indication bit mask.
+     */
+    const NullMask &GetNullMask() const noexcept {
+        return null_mask_;
+    }
 
-  /**
-   * @return The type of the elements contained in this vector.
-   */
-  TypeId GetTypeId() const noexcept { return type_; }
+    /**
+     * @return A mutable pointer to this vector's NULL indication bit mask.
+     */
+    NullMask *GetMutableNullMask() noexcept {
+        return &null_mask_;
+    }
 
-  /**
-   * @return The number of active, i.e., externally visible, elements in the vector. Active elements
-   *         are those that have survived any filters in the selection vector. The count of a vector
-   *         is guaranteed to be <= the size of the vector.
-   */
-  uint64_t GetCount() const noexcept { return count_; }
+    /**
+     * @return A mutable pointer to this vector's string heap.
+     */
+    VarlenHeap *GetMutableStringHeap() noexcept {
+        return &varlen_heap_;
+    }
 
-  /**
-   * @return The total number of tuples currently in the vector, including those that may have been
-   *         filtered out by the selection vector, if one exists. The size of a vector is always
-   *         greater than or equal to the selected count.
-   */
-  uint64_t GetSize() const noexcept { return num_elements_; }
+    /**
+     * Set the (optional) list of filtered TIDs in the vector and the new count of vector. A null
+     * @em tid_list indicates that the vector is unfiltered in which case @em count must match the
+     * current vector size. A non-null TID list contains the TIDs of active vector elements, and
+     * @em count must match the size of the TID list.
+     *
+     * Note: For non-null input TID lists, we don't necessarily need the count since we can derive it
+     *       using TupleIdList::GetTupleCount(). We don't do that here for performance. This method is
+     *       called either during vector operations which simply propagate the TID list by reference,
+     *       or through a VectorProjection. In the former case, the cached count value in the source
+     *       vector is also propagated. In the latter case, the count is computed once for the
+     *       projection and sent to each child vector.
+     *
+     * TODO(pmenon): Is the above optimization valid?
+     *
+     * @param tid_list The list of active TIDs in the vector.
+     * @param count The number of elements in the selection vector.
+     */
+    void SetFilteredTupleIdList(const TupleIdList *tid_list, const uint64_t count) {
+        NOISEPAGE_ASSERT(tid_list == nullptr || tid_list->GetCapacity() == num_elements_,
+                         "TID list too small to capture all vector elements");
+        NOISEPAGE_ASSERT(tid_list == nullptr || tid_list->GetTupleCount() == count,
+                         "TID list size and count do not match");
+        NOISEPAGE_ASSERT(count <= num_elements_, "TID list count must be smaller than vector size");
+        tid_list_ = tid_list;
+        count_ = count;
+    }
 
-  /**
-   * @return The maximum capacity of this vector.
-   */
-  uint64_t GetCapacity() const noexcept { return common::Constants::K_DEFAULT_VECTOR_SIZE; }
+    /**
+     * @return True if this vector is holding a single constant value; false otherwise.
+     */
+    bool IsConstant() const noexcept {
+        return num_elements_ == 1 && tid_list_ == nullptr;
+    }
 
-  /**
-   * @return The raw untyped data pointer.
-   */
-  byte *GetData() const noexcept { return data_; }
+    /**
+     * @return True if this vector is empty; false otherwise.
+     */
+    bool IsEmpty() const noexcept {
+        return num_elements_ == 0;
+    }
 
-  /**
-   * @return The list of active TIDs in the vector. If all TIDs are visible, the list is NULL.
-   */
-  const TupleIdList *GetFilteredTupleIdList() const noexcept { return tid_list_; }
+    /**
+     * @return The computed selectivity of this vector, i.e., the fraction of tuples that are
+     *         externally visible.
+     */
+    float ComputeSelectivity() const noexcept {
+        return IsEmpty() ? 0 : static_cast<float>(count_) / num_elements_;
+    }
 
-  /**
-   * @return An immutable view of this vector's NULL indication bit mask.
-   */
-  const NullMask &GetNullMask() const noexcept { return null_mask_; }
+    /**
+     * @return True if the value at index @em index is NULL; false otherwise.
+     */
+    bool IsNull(const uint64_t index) const {
+        // TODO(WAN): poke Prashanth to see if this makes sense
+        return index >= GetCount() ? false : (null_mask_[tid_list_ != nullptr ? (*tid_list_)[index] : index]);
+    }
 
-  /**
-   * @return A mutable pointer to this vector's NULL indication bit mask.
-   */
-  NullMask *GetMutableNullMask() noexcept { return &null_mask_; }
+    /**
+     * Set the value at position @em index to @em null.
+     * @param index The index of the element to modify.
+     * @param null Whether the element is NULL.
+     */
+    void SetNull(const uint64_t index, const bool null) {
+        null_mask_[tid_list_ != nullptr ? (*tid_list_)[index] : index] = null;
+    }
 
-  /**
-   * @return A mutable pointer to this vector's string heap.
-   */
-  VarlenHeap *GetMutableStringHeap() noexcept { return &varlen_heap_; }
+    /**
+     * Returns the value of the element at the given position in the vector.
+     *
+     * NOTE: This shouldn't be used in performance-critical code. It's mostly for debugging and
+     * validity checks, or for read-once-per-vector type operations.
+     *
+     * @param index The position in the vector to read.
+     * @return The element at the specified position.
+     */
+    GenericValue GetValue(uint64_t index) const;
 
-  /**
-   * Set the (optional) list of filtered TIDs in the vector and the new count of vector. A null
-   * @em tid_list indicates that the vector is unfiltered in which case @em count must match the
-   * current vector size. A non-null TID list contains the TIDs of active vector elements, and
-   * @em count must match the size of the TID list.
-   *
-   * Note: For non-null input TID lists, we don't necessarily need the count since we can derive it
-   *       using TupleIdList::GetTupleCount(). We don't do that here for performance. This method is
-   *       called either during vector operations which simply propagate the TID list by reference,
-   *       or through a VectorProjection. In the former case, the cached count value in the source
-   *       vector is also propagated. In the latter case, the count is computed once for the
-   *       projection and sent to each child vector.
-   *
-   * TODO(pmenon): Is the above optimization valid?
-   *
-   * @param tid_list The list of active TIDs in the vector.
-   * @param count The number of elements in the selection vector.
-   */
-  void SetFilteredTupleIdList(const TupleIdList *tid_list, const uint64_t count) {
-    NOISEPAGE_ASSERT(tid_list == nullptr || tid_list->GetCapacity() == num_elements_,
-                     "TID list too small to capture all vector elements");
-    NOISEPAGE_ASSERT(tid_list == nullptr || tid_list->GetTupleCount() == count, "TID list size and count do not match");
-    NOISEPAGE_ASSERT(count <= num_elements_, "TID list count must be smaller than vector size");
-    tid_list_ = tid_list;
-    count_ = count;
-  }
+    /**
+     * Set the value at position @em index in the vector to the value @em value.
+     *
+     * NOTE: This shouldn't be used in performance-critical code. It's mostly for debugging and
+     * validity checks, or for read-once-per-vector type operations.
+     *
+     * @param index The (zero-based) index in the element to modify.
+     * @param val The value to set the element to.
+     */
+    void SetValue(uint64_t index, const GenericValue &val);
 
-  /**
-   * @return True if this vector is holding a single constant value; false otherwise.
-   */
-  bool IsConstant() const noexcept { return num_elements_ == 1 && tid_list_ == nullptr; }
+    /**
+     * Resize the vector to the given size. Resizing REMOVES any existing selection vector, reverts
+     * the selected count and total count to the provided size.
+     *
+     * @pre The new size must be less than the capacity.
+     *
+     * @param size The size to set the vector to.
+     */
+    void Resize(uint32_t size);
 
-  /**
-   * @return True if this vector is empty; false otherwise.
-   */
-  bool IsEmpty() const noexcept { return num_elements_ == 0; }
+    /**
+     * Cast this vector to a different type. If the target type is the same as the current type,
+     * nothing is done.
+     * @param exec_settings The execution settings for this query.
+     * @param new_type The type to cast this vector into.
+     */
+    void Cast(const exec::ExecutionSettings &exec_settings, TypeId new_type);
 
-  /**
-   * @return The computed selectivity of this vector, i.e., the fraction of tuples that are
-   *         externally visible.
-   */
-  float ComputeSelectivity() const noexcept { return IsEmpty() ? 0 : static_cast<float>(count_) / num_elements_; }
+    /**
+     * Append the contents of the provided vector @em other into this vector.
+     * @param other The vector whose contents will be copied and appended to the end of this vector.
+     */
+    void Append(const Vector &other);
 
-  /**
-   * @return True if the value at index @em index is NULL; false otherwise.
-   */
-  bool IsNull(const uint64_t index) const {
-    // TODO(WAN): poke Prashanth to see if this makes sense
-    return index >= GetCount() ? false : (null_mask_[tid_list_ != nullptr ? (*tid_list_)[index] : index]);
-  }
+    /**
+     * Create a clone of this vector into the target vector. The clone will have a copy of all data
+     * and will retain the same shape of this vector.
+     * @param[out] target Where the clone is stored.
+     */
+    void Clone(Vector *target);
 
-  /**
-   * Set the value at position @em index to @em null.
-   * @param index The index of the element to modify.
-   * @param null Whether the element is NULL.
-   */
-  void SetNull(const uint64_t index, const bool null) {
-    null_mask_[tid_list_ != nullptr ? (*tid_list_)[index] : index] = null;
-  }
+    /**
+     * Copies the ACTIVE vector elements in this vector into another vector. Vectors storing complex
+     * objects will invoke copy constructors of these objects when creating new instances in the
+     * target vector.Callers can optionally specify at what offset to begin copying at. The default
+     * offset is 0.
+     * @param other The vector to copy into.
+     * @param offset The offset in this vector to begin copying.
+     */
+    void CopyTo(Vector *other, uint64_t offset = 0);
 
-  /**
-   * Returns the value of the element at the given position in the vector.
-   *
-   * NOTE: This shouldn't be used in performance-critical code. It's mostly for debugging and
-   * validity checks, or for read-once-per-vector type operations.
-   *
-   * @param index The position in the vector to read.
-   * @return The element at the specified position.
-   */
-  GenericValue GetValue(uint64_t index) const;
+    /**
+     * Move the data from this vector into another vector, and empty initialize this vector.
+     * @param other The vector that will take ownership of all our data, if any.
+     */
+    void MoveTo(Vector *other);
 
-  /**
-   * Set the value at position @em index in the vector to the value @em value.
-   *
-   * NOTE: This shouldn't be used in performance-critical code. It's mostly for debugging and
-   * validity checks, or for read-once-per-vector type operations.
-   *
-   * @param index The (zero-based) index in the element to modify.
-   * @param val The value to set the element to.
-   */
-  void SetValue(uint64_t index, const GenericValue &val);
+    /**
+     * Reference a single value.
+     * @param value The value to reference.
+     */
+    void Reference(GenericValue *value);
 
-  /**
-   * Resize the vector to the given size. Resizing REMOVES any existing selection vector, reverts
-   * the selected count and total count to the provided size.
-   *
-   * @pre The new size must be less than the capacity.
-   *
-   * @param size The size to set the vector to.
-   */
-  void Resize(uint32_t size);
+    /**
+     * Reference a specific chunk of data.
+     * @param data The data.
+     * @param null_mask The NULL bitmap.
+     * @param size The number of elements in the array.
+     */
+    void Reference(byte *data, const uint32_t *null_mask, uint64_t size);
 
-  /**
-   * Cast this vector to a different type. If the target type is the same as the current type,
-   * nothing is done.
-   * @param exec_settings The execution settings for this query.
-   * @param new_type The type to cast this vector into.
-   */
-  void Cast(const exec::ExecutionSettings &exec_settings, TypeId new_type);
+    /**
+     * Reference a specific chunk of data.
+     * @param data The data.
+     * @param null_mask The NULL bitmap.
+     * @param size The number of elements in the array.
+     */
+    void ReferenceNullMask(byte *data, const NullMask *null_mask, uint64_t size);
 
-  /**
-   * Append the contents of the provided vector @em other into this vector.
-   * @param other The vector whose contents will be copied and appended to the end of this vector.
-   */
-  void Append(const Vector &other);
+    /**
+     * Change this vector to reference data held (and potentially owned) by the provided vector.
+     * @param other The vector to reference.
+     */
+    void Reference(const Vector *other);
 
-  /**
-   * Create a clone of this vector into the target vector. The clone will have a copy of all data
-   * and will retain the same shape of this vector.
-   * @param[out] target Where the clone is stored.
-   */
-  void Clone(Vector *target);
+    /**
+     * Packing (or compressing) a vector rearranges this vector's contents by contiguously storing
+     * all active vector elements, removing any TID filter list.
+     */
+    void Pack();
 
-  /**
-   * Copies the ACTIVE vector elements in this vector into another vector. Vectors storing complex
-   * objects will invoke copy constructors of these objects when creating new instances in the
-   * target vector.Callers can optionally specify at what offset to begin copying at. The default
-   * offset is 0.
-   * @param other The vector to copy into.
-   * @param offset The offset in this vector to begin copying.
-   */
-  void CopyTo(Vector *other, uint64_t offset = 0);
+    /**
+     * Populate the input TID lists with the TIDs of all non-NULL active vector elements and active
+     * NULL vector elements, respectively.
+     * @param[out] non_null_tids The list of non-NULL TIDs in this vector.
+     * @param[out] null_tids The list of NULL TIDs in this vector.
+     */
+    void GetNonNullSelections(TupleIdList *non_null_tids, TupleIdList *null_tids) const;
 
-  /**
-   * Move the data from this vector into another vector, and empty initialize this vector.
-   * @param other The vector that will take ownership of all our data, if any.
-   */
-  void MoveTo(Vector *other);
+    /**
+     * Return a string representation of this vector.
+     * @return A string representation of the vector's contents.
+     */
+    std::string ToString() const;
 
-  /**
-   * Reference a single value.
-   * @param value The value to reference.
-   */
-  void Reference(GenericValue *value);
+    /**
+     * Print a string representation of this vector to the output stream.
+     * @param os The stream where the string representation of this vector is written to.
+     */
+    void Dump(std::ostream &os) const;
 
-  /**
-   * Reference a specific chunk of data.
-   * @param data The data.
-   * @param null_mask The NULL bitmap.
-   * @param size The number of elements in the array.
-   */
-  void Reference(byte *data, const uint32_t *null_mask, uint64_t size);
+    /**
+     * Perform an integrity check on this vector. This is used in debug mode for sanity checks.
+     */
+    void CheckIntegrity() const;
 
-  /**
-   * Reference a specific chunk of data.
-   * @param data The data.
-   * @param null_mask The NULL bitmap.
-   * @param size The number of elements in the array.
-   */
-  void ReferenceNullMask(byte *data, const NullMask *null_mask, uint64_t size);
+private:
+    // Create a new vector with the provided type. Any existing data is destroyed.
+    void Initialize(TypeId new_type, bool clear);
 
-  /**
-   * Change this vector to reference data held (and potentially owned) by the provided vector.
-   * @param other The vector to reference.
-   */
-  void Reference(const Vector *other);
+    // Destroy the vector, delete any owned data, and reset it to an empty vector.
+    void Destroy();
 
-  /**
-   * Packing (or compressing) a vector rearranges this vector's contents by contiguously storing
-   * all active vector elements, removing any TID filter list.
-   */
-  void Pack();
+    friend class VectorProjection;
+    byte *GetValuePointer(uint64_t index) {
+        return GetData() + index * GetTypeIdSize(type_);
+    }
 
-  /**
-   * Populate the input TID lists with the TIDs of all non-NULL active vector elements and active
-   * NULL vector elements, respectively.
-   * @param[out] non_null_tids The list of non-NULL TIDs in this vector.
-   * @param[out] null_tids The list of NULL TIDs in this vector.
-   */
-  void GetNonNullSelections(TupleIdList *non_null_tids, TupleIdList *null_tids) const;
+private:
+    // The type of the elements stored in the vector.
+    TypeId type_;
 
-  /**
-   * Return a string representation of this vector.
-   * @return A string representation of the vector's contents.
-   */
-  std::string ToString() const;
+    // The number of elements in the vector.
+    uint64_t count_;
 
-  /**
-   * Print a string representation of this vector to the output stream.
-   * @param os The stream where the string representation of this vector is written to.
-   */
-  void Dump(std::ostream &os) const;
+    // The number of physically contiguous elements in the vector.
+    uint64_t num_elements_;
 
-  /**
-   * Perform an integrity check on this vector. This is used in debug mode for sanity checks.
-   */
-  void CheckIntegrity() const;
+    // A pointer to the data.
+    byte *data_;
 
- private:
-  // Create a new vector with the provided type. Any existing data is destroyed.
-  void Initialize(TypeId new_type, bool clear);
+    // The list of active tuple IDs in the vector. If all TIDs are active, the
+    // list is NOT used and will be NULL.
+    const TupleIdList *tid_list_;
 
-  // Destroy the vector, delete any owned data, and reset it to an empty vector.
-  void Destroy();
+    // The null mask used to indicate if an element in the vector is NULL.
+    NullMask null_mask_;
 
-  friend class VectorProjection;
-  byte *GetValuePointer(uint64_t index) { return GetData() + index * GetTypeIdSize(type_); }
+    // Heap container for strings owned by this vector.
+    VarlenHeap varlen_heap_;
 
- private:
-  // The type of the elements stored in the vector.
-  TypeId type_;
-
-  // The number of elements in the vector.
-  uint64_t count_;
-
-  // The number of physically contiguous elements in the vector.
-  uint64_t num_elements_;
-
-  // A pointer to the data.
-  byte *data_;
-
-  // The list of active tuple IDs in the vector. If all TIDs are active, the
-  // list is NOT used and will be NULL.
-  const TupleIdList *tid_list_;
-
-  // The null mask used to indicate if an element in the vector is NULL.
-  NullMask null_mask_;
-
-  // Heap container for strings owned by this vector.
-  VarlenHeap varlen_heap_;
-
-  // If the vector holds allocated data, this field manages it.
-  std::unique_ptr<byte[]> owned_data_;
+    // If the vector holds allocated data, this field manages it.
+    std::unique_ptr<byte[]> owned_data_;
 };
 
-}  // namespace noisepage::execution::sql
+} // namespace noisepage::execution::sql

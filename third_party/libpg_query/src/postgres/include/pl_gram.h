@@ -31,10 +31,10 @@
    version 2.2 of Bison.  */
 
 #ifndef YY_PLPGSQL_YY_PL_GRAM_H_INCLUDED
-# define YY_PLPGSQL_YY_PL_GRAM_H_INCLUDED
+#define YY_PLPGSQL_YY_PL_GRAM_H_INCLUDED
 /* Debug traces.  */
 #ifndef YYDEBUG
-# define YYDEBUG 0
+#define YYDEBUG 0
 #endif
 #if YYDEBUG
 extern int plpgsql_yydebug;
@@ -42,9 +42,8 @@ extern int plpgsql_yydebug;
 
 /* Token type.  */
 #ifndef YYTOKENTYPE
-# define YYTOKENTYPE
-  enum yytokentype
-  {
+#define YYTOKENTYPE
+enum yytokentype {
     IDENT = 258,
     FCONST = 259,
     SCONST = 260,
@@ -163,89 +162,82 @@ extern int plpgsql_yydebug;
     K_WARNING = 373,
     K_WHEN = 374,
     K_WHILE = 375
-  };
+};
 #endif
 
 /* Value type.  */
-#if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-typedef union YYSTYPE YYSTYPE;
-union YYSTYPE
-{
+#if !defined YYSTYPE && !defined YYSTYPE_IS_DECLARED
+typedef union YYSTYPE            YYSTYPE;
+union YYSTYPE {
 #line 117 "pl_gram.y" /* yacc.c:1909  */
 
-		core_YYSTYPE			core_yystype;
-		/* these fields must match core_YYSTYPE: */
-		int						ival;
-		char					*str;
-		const char				*keyword;
+    core_YYSTYPE core_yystype;
+    /* these fields must match core_YYSTYPE: */
+    int         ival;
+    char       *str;
+    const char *keyword;
 
-		PLword					word;
-		PLcword					cword;
-		PLwdatum				wdatum;
-		bool					boolean;
-		Oid						oid;
-		struct
-		{
-			char *name;
-			int  lineno;
-		}						varname;
-		struct
-		{
-			char *name;
-			int  lineno;
-			PLpgSQL_datum   *scalar;
-			PLpgSQL_rec		*rec;
-			PLpgSQL_row		*row;
-		}						forvariable;
-		struct
-		{
-			char *label;
-			int  n_initvars;
-			int  *initvarnos;
-		}						declhdr;
-		struct
-		{
-			List *stmts;
-			char *end_label;
-			int   end_label_location;
-		}						loop_body;
-		List					*list;
-		PLpgSQL_type			*dtype;
-		PLpgSQL_datum			*datum;
-		PLpgSQL_var				*var;
-		PLpgSQL_expr			*expr;
-		PLpgSQL_stmt			*stmt;
-		PLpgSQL_condition		*condition;
-		PLpgSQL_exception		*exception;
-		PLpgSQL_exception_block	*exception_block;
-		PLpgSQL_nsitem			*nsitem;
-		PLpgSQL_diag_item		*diagitem;
-		PLpgSQL_stmt_fetch		*fetch;
-		PLpgSQL_case_when		*casewhen;
+    PLword   word;
+    PLcword  cword;
+    PLwdatum wdatum;
+    bool     boolean;
+    Oid      oid;
+    struct {
+        char *name;
+        int   lineno;
+    } varname;
+    struct {
+        char          *name;
+        int            lineno;
+        PLpgSQL_datum *scalar;
+        PLpgSQL_rec   *rec;
+        PLpgSQL_row   *row;
+    } forvariable;
+    struct {
+        char *label;
+        int   n_initvars;
+        int  *initvarnos;
+    } declhdr;
+    struct {
+        List *stmts;
+        char *end_label;
+        int   end_label_location;
+    } loop_body;
+    List                    *list;
+    PLpgSQL_type            *dtype;
+    PLpgSQL_datum           *datum;
+    PLpgSQL_var             *var;
+    PLpgSQL_expr            *expr;
+    PLpgSQL_stmt            *stmt;
+    PLpgSQL_condition       *condition;
+    PLpgSQL_exception       *exception;
+    PLpgSQL_exception_block *exception_block;
+    PLpgSQL_nsitem          *nsitem;
+    PLpgSQL_diag_item       *diagitem;
+    PLpgSQL_stmt_fetch      *fetch;
+    PLpgSQL_case_when       *casewhen;
 
 #line 227 "pl_gram.h" /* yacc.c:1909  */
 };
-# define YYSTYPE_IS_TRIVIAL 1
-# define YYSTYPE_IS_DECLARED 1
+#define YYSTYPE_IS_TRIVIAL 1
+#define YYSTYPE_IS_DECLARED 1
 #endif
 
 /* Location type.  */
-#if ! defined YYLTYPE && ! defined YYLTYPE_IS_DECLARED
-typedef struct YYLTYPE YYLTYPE;
-struct YYLTYPE
-{
-  int first_line;
-  int first_column;
-  int last_line;
-  int last_column;
+#if !defined YYLTYPE && !defined YYLTYPE_IS_DECLARED
+typedef struct YYLTYPE           YYLTYPE;
+struct YYLTYPE {
+    int first_line;
+    int first_column;
+    int last_line;
+    int last_column;
 };
-# define YYLTYPE_IS_DECLARED 1
-# define YYLTYPE_IS_TRIVIAL 1
+#define YYLTYPE_IS_DECLARED 1
+#define YYLTYPE_IS_TRIVIAL 1
 #endif
 
-
-extern __thread  YYSTYPE plpgsql_yylval;
-extern __thread  YYLTYPE plpgsql_yylloc;
-int plpgsql_yyparse (void);
+extern __thread YYSTYPE plpgsql_yylval;
+extern __thread YYLTYPE plpgsql_yylloc;
+int                     plpgsql_yyparse(void);
 
 #endif /* !YY_PLPGSQL_YY_PL_GRAM_H_INCLUDED  */

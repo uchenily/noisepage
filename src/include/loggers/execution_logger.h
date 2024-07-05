@@ -8,7 +8,7 @@ namespace noisepage::execution {
 extern common::SanctionedSharedPtr<spdlog::logger>::Ptr execution_logger;
 
 void InitExecutionLogger();
-}  // namespace noisepage::execution
+} // namespace noisepage::execution
 
 #define EXECUTION_LOG_TRACE(...) ::noisepage::execution::execution_logger->trace(__VA_ARGS__)
 #define EXECUTION_LOG_DEBUG(...) ::noisepage::execution::execution_logger->debug(__VA_ARGS__)
@@ -18,10 +18,10 @@ void InitExecutionLogger();
 
 #else
 
-#define EXECUTION_LOG_TRACE(...) ((void)0)
-#define EXECUTION_LOG_DEBUG(...) ((void)0)
-#define EXECUTION_LOG_INFO(...) ((void)0)
-#define EXECUTION_LOG_WARN(...) ((void)0)
-#define EXECUTION_LOG_ERROR(...) ((void)0)
+#define EXECUTION_LOG_TRACE(...) ((void) 0)
+#define EXECUTION_LOG_DEBUG(...) ((void) 0)
+#define EXECUTION_LOG_INFO(...) ((void) 0)
+#define EXECUTION_LOG_WARN(...) ((void) 0)
+#define EXECUTION_LOG_ERROR(...) ((void) 0)
 
 #endif

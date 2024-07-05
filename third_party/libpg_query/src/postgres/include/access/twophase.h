@@ -25,7 +25,7 @@
 typedef struct GlobalTransactionData *GlobalTransaction;
 
 /* GUC variable */
-extern int	max_prepared_xacts;
+extern int max_prepared_xacts;
 
 extern Size TwoPhaseShmemSize(void);
 extern void TwoPhaseShmemInit(void);
@@ -33,21 +33,19 @@ extern void TwoPhaseShmemInit(void);
 extern void AtAbort_Twophase(void);
 extern void PostPrepare_Twophase(void);
 
-extern PGPROC *TwoPhaseGetDummyProc(TransactionId xid);
+extern PGPROC   *TwoPhaseGetDummyProc(TransactionId xid);
 extern BackendId TwoPhaseGetDummyBackendId(TransactionId xid);
 
-extern GlobalTransaction MarkAsPreparing(TransactionId xid, const char *gid,
-				TimestampTz prepared_at,
-				Oid owner, Oid databaseid);
+extern GlobalTransaction
+MarkAsPreparing(TransactionId xid, const char *gid, TimestampTz prepared_at, Oid owner, Oid databaseid);
 
 extern void StartPrepare(GlobalTransaction gxact);
 extern void EndPrepare(GlobalTransaction gxact);
 extern bool StandbyTransactionIdIsPrepared(TransactionId xid);
 
-extern TransactionId PrescanPreparedTransactions(TransactionId **xids_p,
-							int *nxids_p);
-extern void StandbyRecoverPreparedTransactions(bool overwriteOK);
-extern void RecoverPreparedTransactions(void);
+extern TransactionId PrescanPreparedTransactions(TransactionId **xids_p, int *nxids_p);
+extern void          StandbyRecoverPreparedTransactions(bool overwriteOK);
+extern void          RecoverPreparedTransactions(void);
 
 extern void RecreateTwoPhaseFile(TransactionId xid, void *content, int len);
 extern void RemoveTwoPhaseFile(TransactionId xid, bool giveWarning);
@@ -56,4 +54,4 @@ extern void CheckPointTwoPhase(XLogRecPtr redo_horizon);
 
 extern void FinishPreparedTransaction(const char *gid, bool isCommit);
 
-#endif   /* TWOPHASE_H */
+#endif /* TWOPHASE_H */

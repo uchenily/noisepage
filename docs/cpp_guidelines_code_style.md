@@ -14,7 +14,7 @@ We strive to write modern C++17 code, but C++ is a language with a lot of legacy
 
 ### `.h` and `.cpp` files
 
-Surprisingly, there is no universal standards on what to call c++ code files. In this project, we will use `.h` for headers, inside the various `/include` directories, and `.cpp` for the implementation. 
+Surprisingly, there is no universal standards on what to call c++ code files. In this project, we will use `.h` for headers, inside the various `/include` directories, and `.cpp` for the implementation.
 
 When possible, implementation should be separated between `.h` and `.cpp` files, as this will make the compilation process much faster and hassle-free. Documentation should be written in the `.h` files. There are a couple of exceptions to this rule:
   - One-liners or otherwise boilerplate code that is unlikely to change. What constitutes a one-liner is somewhat ambiguous and can be subjective, but > 5 lines would not pass the smell test.
@@ -106,7 +106,7 @@ ResultType TestingSQLUtil::ExecuteSQLQuery(
 Needless to say, this is bad. You should not write one in our new codebase. Having dense code itself is not a problem, but the "Wall of Text" is usually a symptom of one of the following, more severe problems, ranked from least severe to most severe, with mitigation strategies:
 - Lack of meaningful logical blocks, comments, and readability features such as extra blank line between irrelevant statement groups. **Solution**: Write code in logical blocks, clearly separated by an extra blank line, and prefixed with comments.
 
-- Lack of abstraction in the code. Some of the code clutter may qualify for helper methods. Longer methods might have been broken up into several smaller ones. **Solution**: Avoid long methods. Actively seek out opportunities to abstract reusable code blocks out into functions. 
+- Lack of abstraction in the code. Some of the code clutter may qualify for helper methods. Longer methods might have been broken up into several smaller ones. **Solution**: Avoid long methods. Actively seek out opportunities to abstract reusable code blocks out into functions.
 
 - Copy-and-pasted code. **Solution**: DON'T
 

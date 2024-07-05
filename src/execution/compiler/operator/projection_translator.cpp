@@ -11,27 +11,28 @@ namespace noisepage::execution::compiler {
 // requesting an output from the expression.
 
 ProjectionTranslator::ProjectionTranslator(const planner::ProjectionPlanNode &plan,
-                                           CompilationContext *compilation_context, Pipeline *pipeline)
+                                           CompilationContext                *compilation_context,
+                                           Pipeline                          *pipeline)
     : OperatorTranslator(plan, compilation_context, pipeline, selfdriving::ExecutionOperatingUnitType::PROJECTION) {
-  switch (plan.GetChildrenSize()) {
+    switch (plan.GetChildrenSize()) {
     case 0: {
-      // This should only happen for SELECT 1; type of situations.
-      pipeline->RegisterSource(this, Pipeline::Parallelism::Serial);
-      break;
+        // This should only happen for SELECT 1; type of situations.
+        pipeline->RegisterSource(this, Pipeline::Parallelism::Serial);
+        break;
     }
     case 1: {
-      // Projections are expected to have one child, unless you have a SELECT 1; type of situation.
-      // Prepare children for codegen.
-      compilation_context->Prepare(*plan.GetChild(0), pipeline);
-      break;
+        // Projections are expected to have one child, unless you have a SELECT 1; type of situation.
+        // Prepare children for codegen.
+        compilation_context->Prepare(*plan.GetChild(0), pipeline);
+        break;
     }
     default:
-      UNREACHABLE("Projections should have either 0 or 1 child!");
-  }
+        UNREACHABLE("Projections should have either 0 or 1 child!");
+    }
 }
 
 void ProjectionTranslator::PerformPipelineWork(WorkContext *context, FunctionBuilder *function) const {
-  context->Push(function);
+    context->Push(function);
 }
 
-}  // namespace noisepage::execution::compiler
+} // namespace noisepage::execution::compiler

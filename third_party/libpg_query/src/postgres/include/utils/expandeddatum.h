@@ -64,15 +64,13 @@
  * get_flat_size twice, so it's worthwhile to make sure that that doesn't
  * incur too much overhead.
  */
-typedef Size (*EOM_get_flat_size_method) (ExpandedObjectHeader *eohptr);
-typedef void (*EOM_flatten_into_method) (ExpandedObjectHeader *eohptr,
-										  void *result, Size allocated_size);
+typedef Size (*EOM_get_flat_size_method)(ExpandedObjectHeader *eohptr);
+typedef void (*EOM_flatten_into_method)(ExpandedObjectHeader *eohptr, void *result, Size allocated_size);
 
 /* Struct of function pointers for an expanded object's methods */
-typedef struct ExpandedObjectMethods
-{
-	EOM_get_flat_size_method get_flat_size;
-	EOM_flatten_into_method flatten_into;
+typedef struct ExpandedObjectMethods {
+    EOM_get_flat_size_method get_flat_size;
+    EOM_flatten_into_method  flatten_into;
 } ExpandedObjectMethods;
 
 /*
@@ -95,22 +93,21 @@ typedef struct ExpandedObjectMethods
  *
  * The typedef declaration for this appears in postgres.h.
  */
-struct ExpandedObjectHeader
-{
-	/* Phony varlena header */
-	int32		vl_len_;		/* always EOH_HEADER_MAGIC, see below */
+struct ExpandedObjectHeader {
+    /* Phony varlena header */
+    int32 vl_len_; /* always EOH_HEADER_MAGIC, see below */
 
-	/* Pointer to methods required for object type */
-	const ExpandedObjectMethods *eoh_methods;
+    /* Pointer to methods required for object type */
+    const ExpandedObjectMethods *eoh_methods;
 
-	/* Memory context containing this header and subsidiary data */
-	MemoryContext eoh_context;
+    /* Memory context containing this header and subsidiary data */
+    MemoryContext eoh_context;
 
-	/* Standard R/W TOAST pointer for this object is kept here */
-	char		eoh_rw_ptr[EXPANDED_POINTER_SIZE];
+    /* Standard R/W TOAST pointer for this object is kept here */
+    char eoh_rw_ptr[EXPANDED_POINTER_SIZE];
 
-	/* Standard R/O TOAST pointer for this object is kept here */
-	char		eoh_ro_ptr[EXPANDED_POINTER_SIZE];
+    /* Standard R/O TOAST pointer for this object is kept here */
+    char eoh_ro_ptr[EXPANDED_POINTER_SIZE];
 };
 
 /*
@@ -125,27 +122,24 @@ struct ExpandedObjectHeader
  * always returns either a 4-byte-header flat object or an expanded object.
  */
 #define EOH_HEADER_MAGIC (-1)
-#define VARATT_IS_EXPANDED_HEADER(PTR) \
-	(((ExpandedObjectHeader *) (PTR))->vl_len_ == EOH_HEADER_MAGIC)
+#define VARATT_IS_EXPANDED_HEADER(PTR) (((ExpandedObjectHeader *) (PTR))->vl_len_ == EOH_HEADER_MAGIC)
 
 /*
  * Generic support functions for expanded objects.
  * (More of these might be worth inlining later.)
  */
 
-#define EOHPGetRWDatum(eohptr)	PointerGetDatum((eohptr)->eoh_rw_ptr)
-#define EOHPGetRODatum(eohptr)	PointerGetDatum((eohptr)->eoh_ro_ptr)
+#define EOHPGetRWDatum(eohptr) PointerGetDatum((eohptr)->eoh_rw_ptr)
+#define EOHPGetRODatum(eohptr) PointerGetDatum((eohptr)->eoh_ro_ptr)
 
 extern ExpandedObjectHeader *DatumGetEOHP(Datum d);
-extern void EOH_init_header(ExpandedObjectHeader *eohptr,
-				const ExpandedObjectMethods *methods,
-				MemoryContext obj_context);
-extern Size EOH_get_flat_size(ExpandedObjectHeader *eohptr);
-extern void EOH_flatten_into(ExpandedObjectHeader *eohptr,
-				 void *result, Size allocated_size);
-extern bool DatumIsReadWriteExpandedObject(Datum d, bool isnull, int16 typlen);
+extern void
+EOH_init_header(ExpandedObjectHeader *eohptr, const ExpandedObjectMethods *methods, MemoryContext obj_context);
+extern Size  EOH_get_flat_size(ExpandedObjectHeader *eohptr);
+extern void  EOH_flatten_into(ExpandedObjectHeader *eohptr, void *result, Size allocated_size);
+extern bool  DatumIsReadWriteExpandedObject(Datum d, bool isnull, int16 typlen);
 extern Datum MakeExpandedObjectReadOnly(Datum d, bool isnull, int16 typlen);
 extern Datum TransferExpandedObject(Datum d, MemoryContext new_parent);
-extern void DeleteExpandedObject(Datum d);
+extern void  DeleteExpandedObject(Datum d);
 
-#endif   /* EXPANDEDDATUM_H */
+#endif /* EXPANDEDDATUM_H */

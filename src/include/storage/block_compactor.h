@@ -24,77 +24,87 @@ using VarlenEntryMap = std::unordered_map<VarlenEntry, T, VarlenContentHasher, V
  * data.
  */
 class BlockCompactor {
- private:
-  // A Compaction group is a series of blocks all belonging to the same data table. We compact them together
-  // so slots can be freed up. If we only compact single block at a time, deleted slots will never be reclaimed.
-  struct CompactionGroup {
-    CompactionGroup(transaction::TransactionContext *txn, DataTable *table)
-        : txn_(txn),
-          table_(table),
-          all_cols_initializer_(
-              ProjectedRowInitializer::Create(table_->GetBlockLayout(), table_->GetBlockLayout().AllColumns())),
-          read_buffer_(all_cols_initializer_.InitializeRow(
-              common::AllocationUtil::AllocateAligned(all_cols_initializer_.ProjectedRowSize()))) {}
+private:
+    // A Compaction group is a series of blocks all belonging to the same data table. We compact them together
+    // so slots can be freed up. If we only compact single block at a time, deleted slots will never be reclaimed.
+    struct CompactionGroup {
+        CompactionGroup(transaction::TransactionContext *txn, DataTable *table)
+            : txn_(txn)
+            , table_(table)
+            , all_cols_initializer_(
+                  ProjectedRowInitializer::Create(table_->GetBlockLayout(), table_->GetBlockLayout().AllColumns()))
+            , read_buffer_(all_cols_initializer_.InitializeRow(
+                  common::AllocationUtil::AllocateAligned(all_cols_initializer_.ProjectedRowSize()))) {}
 
-    ~CompactionGroup() {
-      // Deleting nullptr is just a noop
-      delete[] reinterpret_cast<byte *>(read_buffer_);
+        ~CompactionGroup() {
+            // Deleting nullptr is just a noop
+            delete[] reinterpret_cast<byte *>(read_buffer_);
+        }
+
+        // A single compaction task is done within a single transaction
+        transaction::TransactionContext                      *txn_;
+        DataTable                                            *table_;
+        std::unordered_map<RawBlock *, std::vector<uint32_t>> blocks_to_compact_;
+        ProjectedRowInitializer                               all_cols_initializer_;
+        ProjectedRow                                         *read_buffer_;
+    };
+
+public:
+    FAKED_IN_TEST ~BlockCompactor() = default;
+
+    /**
+     * Processes the compaction queue and mark processed blocks as cold if successful. The compaction can fail due
+     * to live versions or contention. There will be a brief window where user transactions writing to the block
+     * can be aborted, but no readers would be blocked.
+     */
+    void ProcessCompactionQueue(transaction::DeferredActionManager *deferred_action_manager,
+                                transaction::TransactionManager    *txn_manager);
+
+    /**
+     * Adds a block associated with a data table to the compaction to be processed in the future.
+     * @param block the block that needs to be processed by the compactor
+     */
+    FAKED_IN_TEST void PutInQueue(RawBlock *block) {
+        compaction_queue_.push(block);
     }
 
-    // A single compaction task is done within a single transaction
-    transaction::TransactionContext *txn_;
-    DataTable *table_;
-    std::unordered_map<RawBlock *, std::vector<uint32_t>> blocks_to_compact_;
-    ProjectedRowInitializer all_cols_initializer_;
-    ProjectedRow *read_buffer_;
-  };
+private:
+    bool EliminateGaps(CompactionGroup *cg);
 
- public:
-  FAKED_IN_TEST ~BlockCompactor() = default;
+    bool CheckForVersionsAndGaps(const TupleAccessStrategy &accessor, RawBlock *block);
 
-  /**
-   * Processes the compaction queue and mark processed blocks as cold if successful. The compaction can fail due
-   * to live versions or contention. There will be a brief window where user transactions writing to the block
-   * can be aborted, but no readers would be blocked.
-   */
-  void ProcessCompactionQueue(transaction::DeferredActionManager *deferred_action_manager,
-                              transaction::TransactionManager *txn_manager);
+    // Move a tuple and updated associated information in their respective blocks
+    bool MoveTuple(CompactionGroup *cg, TupleSlot from, TupleSlot to);
 
-  /**
-   * Adds a block associated with a data table to the compaction to be processed in the future.
-   * @param block the block that needs to be processed by the compactor
-   */
-  FAKED_IN_TEST void PutInQueue(RawBlock *block) { compaction_queue_.push(block); }
+    void GatherVarlens(std::vector<const byte *> *loose_ptrs, RawBlock *block, DataTable *table);
 
- private:
-  bool EliminateGaps(CompactionGroup *cg);
+    void CopyToArrowVarlen(std::vector<const byte *>   *loose_ptrs,
+                           ArrowBlockMetadata          *metadata,
+                           col_id_t                     col_id,
+                           common::RawConcurrentBitmap *column_bitmap,
+                           ArrowColumnInfo             *col,
+                           VarlenEntry                 *values);
 
-  bool CheckForVersionsAndGaps(const TupleAccessStrategy &accessor, RawBlock *block);
+    void BuildDictionary(std::vector<const byte *>   *loose_ptrs,
+                         ArrowBlockMetadata          *metadata,
+                         col_id_t                     col_id,
+                         common::RawConcurrentBitmap *column_bitmap,
+                         ArrowColumnInfo             *col,
+                         VarlenEntry                 *values);
 
-  // Move a tuple and updated associated information in their respective blocks
-  bool MoveTuple(CompactionGroup *cg, TupleSlot from, TupleSlot to);
-
-  void GatherVarlens(std::vector<const byte *> *loose_ptrs, RawBlock *block, DataTable *table);
-
-  void CopyToArrowVarlen(std::vector<const byte *> *loose_ptrs, ArrowBlockMetadata *metadata, col_id_t col_id,
-                         common::RawConcurrentBitmap *column_bitmap, ArrowColumnInfo *col, VarlenEntry *values);
-
-  void BuildDictionary(std::vector<const byte *> *loose_ptrs, ArrowBlockMetadata *metadata, col_id_t col_id,
-                       common::RawConcurrentBitmap *column_bitmap, ArrowColumnInfo *col, VarlenEntry *values);
-
-  void ComputeFilled(const BlockLayout &layout, std::vector<uint32_t> *filled, const std::vector<uint32_t> &empty) {
-    // Reconstruct the list of filled slots
-    // Since the list of empty slots is sorted, we can use a counter j to keep track of the next empty slot that
-    // we have not encountered yet
-    for (uint32_t i = 0, j = 0; i < layout.NumSlots(); i++) {
-      if (j >= empty.size() || empty[j] != i)
-        // Not empty, must be filled
-        filled->push_back(i);
-      else
-        j++;
+    void ComputeFilled(const BlockLayout &layout, std::vector<uint32_t> *filled, const std::vector<uint32_t> &empty) {
+        // Reconstruct the list of filled slots
+        // Since the list of empty slots is sorted, we can use a counter j to keep track of the next empty slot that
+        // we have not encountered yet
+        for (uint32_t i = 0, j = 0; i < layout.NumSlots(); i++) {
+            if (j >= empty.size() || empty[j] != i)
+                // Not empty, must be filled
+                filled->push_back(i);
+            else
+                j++;
+        }
     }
-  }
 
-  std::queue<RawBlock *> compaction_queue_;
+    std::queue<RawBlock *> compaction_queue_;
 };
-}  // namespace noisepage::storage
+} // namespace noisepage::storage

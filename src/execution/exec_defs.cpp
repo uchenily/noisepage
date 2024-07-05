@@ -9,4 +9,4 @@ STRONG_TYPEDEF_BODY(pipeline_id_t, uint32_t);
 STRONG_TYPEDEF_BODY(feature_id_t, uint32_t);
 STRONG_TYPEDEF_BODY(translator_id_t, uint32_t);
 
-}  // namespace noisepage::execution
+} // namespace noisepage::execution

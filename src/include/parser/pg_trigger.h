@@ -38,8 +38,8 @@
 #define TRIGGER_TYPE_TIMING_MASK (TRIGGER_TYPE_BEFORE | TRIGGER_TYPE_INSTEAD | TRIGGER_TYPE_COMMIT)
 #define TRIGGER_TYPE_AFTER 0
 
-#define TRIGGER_TYPE_EVENT_MASK \
-  (TRIGGER_TYPE_INSERT | TRIGGER_TYPE_DELETE | TRIGGER_TYPE_UPDATE | TRIGGER_TYPE_TRUNCATE)
+#define TRIGGER_TYPE_EVENT_MASK                                                                                        \
+    (TRIGGER_TYPE_INSERT | TRIGGER_TYPE_DELETE | TRIGGER_TYPE_UPDATE | TRIGGER_TYPE_TRUNCATE)
 
 /* Macros for manipulating tgtype */
 #define TRIGGER_CLEAR_TYPE(type) ((type) = 0)
@@ -54,14 +54,14 @@
 #define TRIGGER_SETT_UPDATE(type) ((type) |= TRIGGER_TYPE_UPDATE)
 #define TRIGGER_SETT_TRUNCATE(type) ((type) |= TRIGGER_TYPE_TRUNCATE)
 
-#define TRIGGER_FOR_ROW(type) ((type)&TRIGGER_TYPE_ROW)
-#define TRIGGER_FOR_BEFORE(type) (((type)&TRIGGER_TYPE_TIMING_MASK) == TRIGGER_TYPE_BEFORE)
-#define TRIGGER_FOR_AFTER(type) (((type)&TRIGGER_TYPE_TIMING_MASK) == TRIGGER_TYPE_AFTER)
-#define TRIGGER_FOR_INSTEAD(type) (((type)&TRIGGER_TYPE_TIMING_MASK) == TRIGGER_TYPE_INSTEAD)
-#define TRIGGER_FOR_INSERT(type) ((type)&TRIGGER_TYPE_INSERT)
-#define TRIGGER_FOR_DELETE(type) ((type)&TRIGGER_TYPE_DELETE)
-#define TRIGGER_FOR_UPDATE(type) ((type)&TRIGGER_TYPE_UPDATE)
-#define TRIGGER_FOR_TRUNCATE(type) ((type)&TRIGGER_TYPE_TRUNCATE)
+#define TRIGGER_FOR_ROW(type) ((type) & TRIGGER_TYPE_ROW)
+#define TRIGGER_FOR_BEFORE(type) (((type) & TRIGGER_TYPE_TIMING_MASK) == TRIGGER_TYPE_BEFORE)
+#define TRIGGER_FOR_AFTER(type) (((type) & TRIGGER_TYPE_TIMING_MASK) == TRIGGER_TYPE_AFTER)
+#define TRIGGER_FOR_INSTEAD(type) (((type) & TRIGGER_TYPE_TIMING_MASK) == TRIGGER_TYPE_INSTEAD)
+#define TRIGGER_FOR_INSERT(type) ((type) & TRIGGER_TYPE_INSERT)
+#define TRIGGER_FOR_DELETE(type) ((type) & TRIGGER_TYPE_DELETE)
+#define TRIGGER_FOR_UPDATE(type) ((type) & TRIGGER_TYPE_UPDATE)
+#define TRIGGER_FOR_TRUNCATE(type) ((type) & TRIGGER_TYPE_TRUNCATE)
 
 /*
  * Efficient macro for checking if tgtype matches a particular level
@@ -70,5 +70,5 @@
  * TRIGGER_TYPE_DELETE, TRIGGER_TYPE_UPDATE, or TRIGGER_TYPE_TRUNCATE).  Note
  * that a tgtype can match more than one event, but only one level or timing.
  */
-#define TRIGGER_TYPE_MATCHES(type, level, timing, event) \
-  (((type) & (TRIGGER_TYPE_LEVEL_MASK | TRIGGER_TYPE_TIMING_MASK | (event))) == ((level) | (timing) | (event)))
+#define TRIGGER_TYPE_MATCHES(type, level, timing, event)                                                               \
+    (((type) & (TRIGGER_TYPE_LEVEL_MASK | TRIGGER_TYPE_TIMING_MASK | (event))) == ((level) | (timing) | (event)))

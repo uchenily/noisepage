@@ -33,12 +33,10 @@
 
 #include "access/hash.h"
 
+#define WORDNUM(x) ((x) / BITS_PER_BITMAPWORD)
+#define BITNUM(x) ((x) % BITS_PER_BITMAPWORD)
 
-#define WORDNUM(x)	((x) / BITS_PER_BITMAPWORD)
-#define BITNUM(x)	((x) % BITS_PER_BITMAPWORD)
-
-#define BITMAPSET_SIZE(nwords)	\
-	(offsetof(Bitmapset, words) + (nwords) * sizeof(bitmapword))
+#define BITMAPSET_SIZE(nwords) (offsetof(Bitmapset, words) + (nwords) * sizeof(bitmapword))
 
 /*----------
  * This is a well-known cute trick for isolating the rightmost one-bit
@@ -59,8 +57,7 @@
  */
 #define RIGHTMOST_ONE(x) ((signedbitmapword) (x) & -((signedbitmapword) (x)))
 
-#define HAS_MULTIPLE_ONES(x)	((bitmapword) RIGHTMOST_ONE(x) != (x))
-
+#define HAS_MULTIPLE_ONES(x) ((bitmapword) RIGHTMOST_ONE(x) != (x))
 
 /*
  * Lookup tables to avoid need for bit-by-bit groveling
@@ -75,43 +72,28 @@
  * especially fast on many machines, so working a byte at a time seems best.
  */
 
-static const uint8 rightmost_one_pos[256] = {
-	0, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-	4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-	5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-	4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-	6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-	4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-	5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-	4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-	7, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-	4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-	5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-	4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-	6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-	4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-	5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-	4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0
-};
-
-
-
+static const uint8 rightmost_one_pos[256]
+    = {0, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2,
+       0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 6, 0, 1, 0, 2, 0, 1, 0, 3, 0,
+       1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1,
+       0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 7, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0,
+       2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3,
+       0, 1, 0, 2, 0, 1, 0, 6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0,
+       1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0};
 
 /*
  * bms_copy - make a palloc'd copy of a bitmapset
  */
-Bitmapset *
-bms_copy(const Bitmapset *a)
-{
-	Bitmapset  *result;
-	size_t		size;
+Bitmapset *bms_copy(const Bitmapset *a) {
+    Bitmapset *result;
+    size_t     size;
 
-	if (a == NULL)
-		return NULL;
-	size = BITMAPSET_SIZE(a->nwords);
-	result = (Bitmapset *) palloc(size);
-	memcpy(result, a, size);
-	return result;
+    if (a == NULL)
+        return NULL;
+    size = BITMAPSET_SIZE(a->nwords);
+    result = (Bitmapset *) palloc(size);
+    memcpy(result, a, size);
+    return result;
 }
 
 /*
@@ -120,94 +102,76 @@ bms_copy(const Bitmapset *a)
  * This is logical not physical equality; in particular, a NULL pointer will
  * be reported as equal to a palloc'd value containing no members.
  */
-bool
-bms_equal(const Bitmapset *a, const Bitmapset *b)
-{
-	const Bitmapset *shorter;
-	const Bitmapset *longer;
-	int			shortlen;
-	int			longlen;
-	int			i;
+bool bms_equal(const Bitmapset *a, const Bitmapset *b) {
+    const Bitmapset *shorter;
+    const Bitmapset *longer;
+    int              shortlen;
+    int              longlen;
+    int              i;
 
-	/* Handle cases where either input is NULL */
-	if (a == NULL)
-	{
-		if (b == NULL)
-			return true;
-		return bms_is_empty(b);
-	}
-	else if (b == NULL)
-		return bms_is_empty(a);
-	/* Identify shorter and longer input */
-	if (a->nwords <= b->nwords)
-	{
-		shorter = a;
-		longer = b;
-	}
-	else
-	{
-		shorter = b;
-		longer = a;
-	}
-	/* And process */
-	shortlen = shorter->nwords;
-	for (i = 0; i < shortlen; i++)
-	{
-		if (shorter->words[i] != longer->words[i])
-			return false;
-	}
-	longlen = longer->nwords;
-	for (; i < longlen; i++)
-	{
-		if (longer->words[i] != 0)
-			return false;
-	}
-	return true;
+    /* Handle cases where either input is NULL */
+    if (a == NULL) {
+        if (b == NULL)
+            return true;
+        return bms_is_empty(b);
+    } else if (b == NULL)
+        return bms_is_empty(a);
+    /* Identify shorter and longer input */
+    if (a->nwords <= b->nwords) {
+        shorter = a;
+        longer = b;
+    } else {
+        shorter = b;
+        longer = a;
+    }
+    /* And process */
+    shortlen = shorter->nwords;
+    for (i = 0; i < shortlen; i++) {
+        if (shorter->words[i] != longer->words[i])
+            return false;
+    }
+    longlen = longer->nwords;
+    for (; i < longlen; i++) {
+        if (longer->words[i] != 0)
+            return false;
+    }
+    return true;
 }
 
 /*
  * bms_make_singleton - build a bitmapset containing a single member
  */
 
-
 /*
  * bms_free - free a bitmapset
  *
  * Same as pfree except for allowing NULL input
  */
-void
-bms_free(Bitmapset *a)
-{
-	if (a)
-		pfree(a);
+void bms_free(Bitmapset *a) {
+    if (a)
+        pfree(a);
 }
-
 
 /*
  * These operations all make a freshly palloc'd result,
  * leaving their inputs untouched
  */
 
-
 /*
  * bms_union - set union
  */
-
 
 /*
  * bms_intersect - set intersection
  */
 
-
 /*
  * bms_difference - set difference (ie, A without members of B)
  */
 
-
 /*
  * bms_is_subset - is A a subset of B?
  */
-
 
 /*
  * bms_subset_compare - compare A and B for equality/subset relationships
@@ -215,28 +179,23 @@ bms_free(Bitmapset *a)
  * This is more efficient than testing bms_is_subset in both directions.
  */
 
-
 /*
  * bms_is_member - is X a member of A?
  */
-
 
 /*
  * bms_overlap - do sets overlap (ie, have a nonempty intersection)?
  */
 
-
 /*
  * bms_nonempty_difference - do sets have a nonempty difference?
  */
-
 
 /*
  * bms_singleton_member - return the sole integer member of set
  *
  * Raises error if |a| is not 1.
  */
-
 
 /*
  * bms_get_singleton_member
@@ -250,11 +209,9 @@ bms_free(Bitmapset *a)
  * from multiple-member sets.
  */
 
-
 /*
  * bms_num_members - count members of set
  */
-
 
 /*
  * bms_membership - does a set have zero, one, or multiple members?
@@ -262,31 +219,26 @@ bms_free(Bitmapset *a)
  * This is faster than making an exact count with bms_num_members().
  */
 
-
 /*
  * bms_is_empty - is a set empty?
  *
  * This is even faster than bms_membership().
  */
-bool
-bms_is_empty(const Bitmapset *a)
-{
-	int			nwords;
-	int			wordnum;
+bool bms_is_empty(const Bitmapset *a) {
+    int nwords;
+    int wordnum;
 
-	if (a == NULL)
-		return true;
-	nwords = a->nwords;
-	for (wordnum = 0; wordnum < nwords; wordnum++)
-	{
-		bitmapword	w = a->words[wordnum];
+    if (a == NULL)
+        return true;
+    nwords = a->nwords;
+    for (wordnum = 0; wordnum < nwords; wordnum++) {
+        bitmapword w = a->words[wordnum];
 
-		if (w != 0)
-			return false;
-	}
-	return true;
+        if (w != 0)
+            return false;
+    }
+    return true;
 }
-
 
 /*
  * These operations all "recycle" their non-const inputs, ie, either
@@ -297,13 +249,11 @@ bms_is_empty(const Bitmapset *a)
  *		foo = bms_add_member(foo, x);
  */
 
-
 /*
  * bms_add_member - add a specified member to set
  *
  * Input set is modified or recycled!
  */
-
 
 /*
  * bms_del_member - remove a specified member from set
@@ -313,26 +263,21 @@ bms_is_empty(const Bitmapset *a)
  * Input set is modified in-place!
  */
 
-
 /*
  * bms_add_members - like bms_union, but left input is recycled
  */
-
 
 /*
  * bms_int_members - like bms_intersect, but left input is recycled
  */
 
-
 /*
  * bms_del_members - like bms_difference, but left input is recycled
  */
 
-
 /*
  * bms_join - like bms_union, but *both* inputs are recycled
  */
-
 
 /*
  * bms_first_member - find and remove first member of a set
@@ -348,37 +293,32 @@ bms_is_empty(const Bitmapset *a)
  * CAUTION: this destroys the content of "inputset".  If the set must
  * not be modified, use bms_next_member instead.
  */
-int
-bms_first_member(Bitmapset *a)
-{
-	int			nwords;
-	int			wordnum;
+int bms_first_member(Bitmapset *a) {
+    int nwords;
+    int wordnum;
 
-	if (a == NULL)
-		return -1;
-	nwords = a->nwords;
-	for (wordnum = 0; wordnum < nwords; wordnum++)
-	{
-		bitmapword	w = a->words[wordnum];
+    if (a == NULL)
+        return -1;
+    nwords = a->nwords;
+    for (wordnum = 0; wordnum < nwords; wordnum++) {
+        bitmapword w = a->words[wordnum];
 
-		if (w != 0)
-		{
-			int			result;
+        if (w != 0) {
+            int result;
 
-			w = RIGHTMOST_ONE(w);
-			a->words[wordnum] &= ~w;
+            w = RIGHTMOST_ONE(w);
+            a->words[wordnum] &= ~w;
 
-			result = wordnum * BITS_PER_BITMAPWORD;
-			while ((w & 255) == 0)
-			{
-				w >>= 8;
-				result += 8;
-			}
-			result += rightmost_one_pos[w & 255];
-			return result;
-		}
-	}
-	return -1;
+            result = wordnum * BITS_PER_BITMAPWORD;
+            while ((w & 255) == 0) {
+                w >>= 8;
+                result += 8;
+            }
+            result += rightmost_one_pos[w & 255];
+            return result;
+        }
+    }
+    return -1;
 }
 
 /*
@@ -401,7 +341,6 @@ bms_first_member(Bitmapset *a)
  * might need such an ability.
  */
 
-
 /*
  * bms_hash_value - compute a hash key for a Bitmapset
  *
@@ -410,4 +349,3 @@ bms_first_member(Bitmapset *a)
  * words must not affect the result.  Hence we strip those before applying
  * hash_any().
  */
-

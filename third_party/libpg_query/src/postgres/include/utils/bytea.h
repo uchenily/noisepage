@@ -16,14 +16,9 @@
 
 #include "fmgr.h"
 
+typedef enum { BYTEA_OUTPUT_ESCAPE, BYTEA_OUTPUT_HEX } ByteaOutputType;
 
-typedef enum
-{
-	BYTEA_OUTPUT_ESCAPE,
-	BYTEA_OUTPUT_HEX
-}	ByteaOutputType;
-
-extern int	bytea_output;		/* ByteaOutputType, but int for GUC enum */
+extern int bytea_output; /* ByteaOutputType, but int for GUC enum */
 
 /* functions are in utils/adt/varlena.c */
 extern Datum byteain(PG_FUNCTION_ARGS);
@@ -49,4 +44,4 @@ extern Datum bytea_substr_no_len(PG_FUNCTION_ARGS);
 extern Datum byteaoverlay(PG_FUNCTION_ARGS);
 extern Datum byteaoverlay_no_len(PG_FUNCTION_ARGS);
 
-#endif   /* BYTEA_H */
+#endif /* BYTEA_H */

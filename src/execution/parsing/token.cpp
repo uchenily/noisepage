@@ -14,4 +14,4 @@ const char *Token::token_strings[] = {TOKENS(T, T)};
 const uint32_t Token::TOKEN_PRECEDENCES[] = {TOKENS(T, T)};
 #undef T
 
-}  // namespace noisepage::execution::parsing
+} // namespace noisepage::execution::parsing

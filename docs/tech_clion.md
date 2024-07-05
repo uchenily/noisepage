@@ -15,7 +15,7 @@ Note that **File** > **Settings** is **CLion** > **Preferences** on macOS.
    - Install all the necessary packages: `sudo bash ./packages.sh`
 
 **Required: Profiles**
-1. In the top left, go to **File** > **Settings** > **Build, Execution, Deployment** > **CMake**.  
+1. In the top left, go to **File** > **Settings** > **Build, Execution, Deployment** > **CMake**.
 2. If you only have a `Debug` profile, hit the `+` button and you should get a `Release` profile.
 3. We will figure out how many cores you have.
    - In the terminal, run `python -c 'import multiprocessing as mp; print(mp.cpu_count())'`.
@@ -29,12 +29,12 @@ Note that **File** > **Settings** is **CLion** > **Preferences** on macOS.
 6. If you have at least 16 GB of RAM, you can:
    - Significantly improve compilation time: add `-DNOISEPAGE_UNITY_BUILD=ON` to the CMake options of both `Debug` and `Release` above.
 
-**Required: clang-tidy**  
+**Required: clang-tidy**
 1. In the top left, go to **File** > **Settings** > **Editor** > **Inspections** > **C/C++** > **General** > **Clang-Tidy**.
 2. Click the link for `Specify Clang-Tidy executable` and point it to `/bin/clang-tidy-8`. The default CLion-bundled version may provide different warnings.
 3. Make sure `Prefer .clang-tidy files over IDE settings` is checked.
 
-**Required: clang-format**  
+**Required: clang-format**
 1. In the top left, go to **File** > **Settings** > **Editor** > **Code Style**.
 2. Make sure `Enable ClangFormat` is checked. This will force CLion to use the project's .clang-format file for formatting operations.
 
@@ -44,7 +44,7 @@ Note that **File** > **Settings** is **CLion** > **Preferences** on macOS.
 2. Make sure that `origin` corresponds to `git@github.com:YOUR_GITHUB_USERNAME/noisepage.git`.
 3. Add a new remote:
    - Name: upstream
-   - URL: `git@github.com:cmu-db/noisepage.git` 
+   - URL: `git@github.com:cmu-db/noisepage.git`
 
 ### Using CLion
 
@@ -87,7 +87,7 @@ Note: If you are on a Mac and these shortcuts do not work, try `Cmd` instead of 
 
 - `Ctrl`+`Shift`+`F`: [find everywhere](https://www.jetbrains.com/help/clion/finding-and-replacing-text-in-project.html) for the provided **string**.
 - `Ctrl`+`Shift`+`R`: [replace everywhere](https://www.jetbrains.com/help/clion/finding-and-replacing-text-in-project.html) for the provided **string**.
-   - Note that you can replace with matching capitalization and with regex capture groups. Very powerful. 
+   - Note that you can replace with matching capitalization and with regex capture groups. Very powerful.
 - `Shift`+`Shift`: [search everywhere](https://www.jetbrains.com/help/clion/searching-everywhere.html) for the provided **symbol**. Symbols are like class names, file names, etc.
 - `Ctrl`+`Alt`+`L`: [reformat code](https://www.jetbrains.com/help/idea/reformat-and-rearrange-code.html) in the current file.
 - `Ctrl`+`Click`: [quick definition](https://www.jetbrains.com/help/clion/viewing-definition.html), hover over symbol to see documentation, click to jump to definition.

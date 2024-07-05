@@ -28,15 +28,15 @@
  *		typedef struct FormData_pg_ts_config
  * ----------------
  */
-#define TSConfigRelationId	3602
+#define TSConfigRelationId 3602
 
-CATALOG(pg_ts_config,3602)
-{
-	NameData	cfgname;		/* name of configuration */
-	Oid			cfgnamespace;	/* name space */
-	Oid			cfgowner;		/* owner */
-	Oid			cfgparser;		/* OID of parser (in pg_ts_parser) */
-} FormData_pg_ts_config;
+CATALOG(pg_ts_config, 3602) {
+    NameData cfgname;      /* name of configuration */
+    Oid      cfgnamespace; /* name space */
+    Oid      cfgowner;     /* owner */
+    Oid      cfgparser;    /* OID of parser (in pg_ts_parser) */
+}
+FormData_pg_ts_config;
 
 typedef FormData_pg_ts_config *Form_pg_ts_config;
 
@@ -44,17 +44,17 @@ typedef FormData_pg_ts_config *Form_pg_ts_config;
  *		compiler constants for pg_ts_config
  * ----------------
  */
-#define Natts_pg_ts_config				4
-#define Anum_pg_ts_config_cfgname		1
-#define Anum_pg_ts_config_cfgnamespace	2
-#define Anum_pg_ts_config_cfgowner		3
-#define Anum_pg_ts_config_cfgparser		4
+#define Natts_pg_ts_config 4
+#define Anum_pg_ts_config_cfgname 1
+#define Anum_pg_ts_config_cfgnamespace 2
+#define Anum_pg_ts_config_cfgowner 3
+#define Anum_pg_ts_config_cfgparser 4
 
 /* ----------------
  *		initial contents of pg_ts_config
  * ----------------
  */
-DATA(insert OID = 3748 ( "simple" PGNSP PGUID 3722 ));
+DATA(insert OID = 3748("simple" PGNSP PGUID 3722));
 DESCR("simple configuration");
 
-#endif   /* PG_TS_CONFIG_H */
+#endif /* PG_TS_CONFIG_H */

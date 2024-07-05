@@ -22,7 +22,7 @@
  */
 typedef int Buffer;
 
-#define InvalidBuffer	0
+#define InvalidBuffer 0
 
 /*
  * BufferIsInvalid
@@ -34,7 +34,7 @@ typedef int Buffer;
  * BufferIsLocal
  *		True iff the buffer is local (not visible to other backends).
  */
-#define BufferIsLocal(buffer)	((buffer) < 0)
+#define BufferIsLocal(buffer) ((buffer) < 0)
 
 /*
  * Buffer access strategy objects.
@@ -43,4 +43,4 @@ typedef int Buffer;
  */
 typedef struct BufferAccessStrategyData *BufferAccessStrategy;
 
-#endif   /* BUF_H */
+#endif /* BUF_H */

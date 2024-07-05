@@ -56,22 +56,20 @@
 #include "storage/pg_sema.h"
 #endif
 
-
-#define SpinLockInit(lock)	S_INIT_LOCK(lock)
+#define SpinLockInit(lock) S_INIT_LOCK(lock)
 
 #define SpinLockAcquire(lock) S_LOCK(lock)
 
 #define SpinLockRelease(lock) S_UNLOCK(lock)
 
-#define SpinLockFree(lock)	S_LOCK_FREE(lock)
+#define SpinLockFree(lock) S_LOCK_FREE(lock)
 
-
-extern int	SpinlockSemas(void);
+extern int  SpinlockSemas(void);
 extern Size SpinlockSemaSize(void);
 
 #ifndef HAVE_SPINLOCKS
-extern void SpinlockSemaInit(PGSemaphore);
+extern void        SpinlockSemaInit(PGSemaphore);
 extern PGSemaphore SpinlockSemaArray;
 #endif
 
-#endif   /* SPIN_H */
+#endif /* SPIN_H */

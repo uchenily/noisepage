@@ -12,7 +12,7 @@ BIN_DIR = "/noisepage/build/bin"
 
 class TestServerArgumentConstruction(unittest.TestCase):
     """
-    Test the construction of individual arguments passed 
+    Test the construction of individual arguments passed
     to the database server. Tests in this TestCase verify
     that attribute and value preprocessors are behaving
     as expected.
@@ -56,7 +56,7 @@ class TestServerArgumentStringConstruction(unittest.TestCase):
     from one or many individual arguments (attribute:value)
     that must be forwarded to the DBMS server.
     """
-    
+
     def test_single_argument_0(self):
         r = construct_server_args_string({"wal_enable": True}, BIN_DIR)
         self.assertEqual(r, "-wal_enable=true")

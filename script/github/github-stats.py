@@ -48,14 +48,14 @@ if __name__ == '__main__':
     aparser.add_argument('token', type=str, help='Github API Token')
     aparser.add_argument("--debug", action='store_true')
     args = vars(aparser.parse_args())
-    
+
     ## ----------------------------------------------
-    
+
     if args['debug']:
         LOG.setLevel(logging.DEBUG)
 
     ## ----------------------------------------------
-    
+
     gh = Github(token=args['token'])
     r = gh.repos.get(user=GITHUB_USER, repo=GITHUB_REPO)
 
@@ -72,7 +72,7 @@ if __name__ == '__main__':
         #pprint(dir(x))
         #
         #print "="*100
-        
+
     # Hash of the latest commit is fetched through the GitHub API
     target_url = GITHUB_REPO_API_URL + "/git/refs/heads/master"
     contents = urllib2.urlopen(target_url).read()
@@ -86,7 +86,7 @@ if __name__ == '__main__':
             num_commits = int(github_data["total_commits"])
         ## IF
     ## IF
-        
+
     data = {
         "created": int(time.time()),
         "commits": num_commits,
@@ -103,6 +103,6 @@ if __name__ == '__main__':
         "subscribers_url": r.subscribers_url,
         "network": r.network_count,
     }
-    print json.dumps(data)
-    
+    print(json.dumps(data))
+
 ## MAIN

@@ -17,89 +17,77 @@
 #include "nodes/nodes.h"
 #include "utils/aclchk_internal.h"
 
-
 /*
  * Support for keeping track of collected commands.
  */
-typedef enum CollectedCommandType
-{
-	SCT_Simple,
-	SCT_AlterTable,
-	SCT_Grant,
-	SCT_AlterOpFamily,
-	SCT_AlterDefaultPrivileges,
-	SCT_CreateOpClass,
-	SCT_AlterTSConfig
+typedef enum CollectedCommandType {
+    SCT_Simple,
+    SCT_AlterTable,
+    SCT_Grant,
+    SCT_AlterOpFamily,
+    SCT_AlterDefaultPrivileges,
+    SCT_CreateOpClass,
+    SCT_AlterTSConfig
 } CollectedCommandType;
 
 /*
  * For ALTER TABLE commands, we keep a list of the subcommands therein.
  */
-typedef struct CollectedATSubcmd
-{
-	ObjectAddress address;		/* affected column, constraint, index, ... */
-	Node	   *parsetree;
+typedef struct CollectedATSubcmd {
+    ObjectAddress address; /* affected column, constraint, index, ... */
+    Node         *parsetree;
 } CollectedATSubcmd;
 
-typedef struct CollectedCommand
-{
-	CollectedCommandType type;
-	bool		in_extension;
-	Node	   *parsetree;
+typedef struct CollectedCommand {
+    CollectedCommandType type;
+    bool                 in_extension;
+    Node                *parsetree;
 
-	union
-	{
-		/* most commands */
-		struct
-		{
-			ObjectAddress address;
-			ObjectAddress secondaryObject;
-		}			simple;
+    union {
+        /* most commands */
+        struct {
+            ObjectAddress address;
+            ObjectAddress secondaryObject;
+        } simple;
 
-		/* ALTER TABLE, and internal uses thereof */
-		struct
-		{
-			Oid			objectId;
-			Oid			classId;
-			List	   *subcmds;
-		}			alterTable;
+        /* ALTER TABLE, and internal uses thereof */
+        struct {
+            Oid   objectId;
+            Oid   classId;
+            List *subcmds;
+        } alterTable;
 
-		/* GRANT / REVOKE */
-		struct
-		{
-			InternalGrant *istmt;
-		}			grant;
+        /* GRANT / REVOKE */
+        struct {
+            InternalGrant *istmt;
+        } grant;
 
-		/* ALTER OPERATOR FAMILY */
-		struct
-		{
-			ObjectAddress address;
-			List	   *operators;
-			List	   *procedures;
-		}			opfam;
+        /* ALTER OPERATOR FAMILY */
+        struct {
+            ObjectAddress address;
+            List         *operators;
+            List         *procedures;
+        } opfam;
 
-		/* CREATE OPERATOR CLASS */
-		struct
-		{
-			ObjectAddress address;
-			List	   *operators;
-			List	   *procedures;
-		}			createopc;
+        /* CREATE OPERATOR CLASS */
+        struct {
+            ObjectAddress address;
+            List         *operators;
+            List         *procedures;
+        } createopc;
 
-		/* ALTER TEXT SEARCH CONFIGURATION ADD/ALTER/DROP MAPPING */
-		struct
-		{
-			ObjectAddress address;
-			Oid		   *dictIds;
-			int			ndicts;
-		}			atscfg;
+        /* ALTER TEXT SEARCH CONFIGURATION ADD/ALTER/DROP MAPPING */
+        struct {
+            ObjectAddress address;
+            Oid          *dictIds;
+            int           ndicts;
+        } atscfg;
 
-		/* ALTER DEFAULT PRIVILEGES */
-		struct
-		{
-			GrantObjectType objtype;
-		}			defprivs;
-	}			d;
+        /* ALTER DEFAULT PRIVILEGES */
+        struct {
+            GrantObjectType objtype;
+        } defprivs;
+    } d;
 } CollectedCommand;
 
-#endif   /* DEPARSE_UTILITY_H */
+#endif /* DEPARSE_UTILITY_H */

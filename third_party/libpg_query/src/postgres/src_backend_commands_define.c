@@ -52,31 +52,25 @@
  * Extract a string value (otherwise uninterpreted) from a DefElem.
  */
 
-
 /*
  * Extract a numeric value (actually double) from a DefElem.
  */
-
 
 /*
  * Extract a boolean value from a DefElem.
  */
 
-
 /*
  * Extract an int32 value from a DefElem.
  */
-
 
 /*
  * Extract an int64 value from a DefElem.
  */
 
-
 /*
  * Extract a possibly-qualified name (as a List of Strings) from a DefElem.
  */
-
 
 /*
  * Extract a TypeName from a DefElem.
@@ -85,18 +79,14 @@
  * return a bare List when the name looks like an operator name.
  */
 
-
 /*
  * Extract a type length indicator (either absolute bytes, or
  * -1 for "variable") from a DefElem.
  */
 
-
 /*
  * Create a DefElem setting "oids" to the specified value.
  */
-DefElem *
-defWithOids(bool value)
-{
-	return makeDefElem("oids", (Node *) makeInteger(value));
+DefElem *defWithOids(bool value) {
+    return makeDefElem("oids", (Node *) makeInteger(value));
 }

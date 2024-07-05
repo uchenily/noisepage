@@ -482,4 +482,3 @@ statement ok
 
 statement ok
 -- WITH RECURSIVE x(i) AS (WITH a(m) AS (SELECT j FROM y) SELECT m FROM a), y(j) AS (SELECT 1) SELECT i FROM x;
-

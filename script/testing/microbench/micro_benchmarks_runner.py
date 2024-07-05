@@ -143,10 +143,10 @@ class MicroBenchmarksRunner(object):
         LOG.debug(f'Executing command [num_threads={self.config.num_threads}]: {cmd}')
         try:
             output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
-            
+
             # Strip DBMS debug messages
             output = re.sub(r"\[.*?\] \[.*?\] \[[\w]+\] .*\n", "", output.decode('utf8'))
-            
+
             pretty_format_json = json.dumps(json.loads(output.replace("'", '"')), indent=4)
             LOG.debug(f'OUTPUT: {pretty_format_json}')
             return 0, None
@@ -160,7 +160,7 @@ class MicroBenchmarksRunner(object):
         """ Create directories to be used as historical results for future
         local runs.
 
-        This will create a directory for the build in the LOCAL_REPO_DIR. 
+        This will create a directory for the build in the LOCAL_REPO_DIR.
         Each time the microbenchmark script is run it will create another dir
         by incrementing the last dir name created. If the script is run 3 times
         the LOCAL_REPO_DIR will have directories named 001 002 003 each

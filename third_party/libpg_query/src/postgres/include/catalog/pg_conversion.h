@@ -35,18 +35,18 @@
  *	condefault			TRUE if this is a default conversion
  * ----------------------------------------------------------------
  */
-#define ConversionRelationId  2607
+#define ConversionRelationId 2607
 
-CATALOG(pg_conversion,2607)
-{
-	NameData	conname;
-	Oid			connamespace;
-	Oid			conowner;
-	int32		conforencoding;
-	int32		contoencoding;
-	regproc		conproc;
-	bool		condefault;
-} FormData_pg_conversion;
+CATALOG(pg_conversion, 2607) {
+    NameData conname;
+    Oid      connamespace;
+    Oid      conowner;
+    int32    conforencoding;
+    int32    contoencoding;
+    regproc  conproc;
+    bool     condefault;
+}
+FormData_pg_conversion;
 
 /* ----------------
  *		Form_pg_conversion corresponds to a pointer to a tuple with
@@ -60,18 +60,18 @@ typedef FormData_pg_conversion *Form_pg_conversion;
  * ----------------
  */
 
-#define Natts_pg_conversion				7
-#define Anum_pg_conversion_conname		1
+#define Natts_pg_conversion 7
+#define Anum_pg_conversion_conname 1
 #define Anum_pg_conversion_connamespace 2
-#define Anum_pg_conversion_conowner		3
-#define Anum_pg_conversion_conforencoding		4
-#define Anum_pg_conversion_contoencoding		5
-#define Anum_pg_conversion_conproc		6
-#define Anum_pg_conversion_condefault	7
+#define Anum_pg_conversion_conowner 3
+#define Anum_pg_conversion_conforencoding 4
+#define Anum_pg_conversion_contoencoding 5
+#define Anum_pg_conversion_conproc 6
+#define Anum_pg_conversion_condefault 7
 
 /* ----------------
  * initial contents of pg_conversion
  * ---------------
  */
 
-#endif   /* PG_CONVERSION_H */
+#endif /* PG_CONVERSION_H */

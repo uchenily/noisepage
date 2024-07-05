@@ -26,7 +26,7 @@ Hi! Welcome to CMU DB.
 1. **GitHub** We use GitHub for all our development.
    - **Account** [Sign up](https://github.com/join) for a GitHub account.
    - **Fork** Visit the [NoisePage repository](https://github.com/cmu-db/noisepage). Click the `Fork` button in the top right and fork the repository. You should be able to see the forked repository at `https://github.com/YOUR_GITHUB_USERNAME/noisepage`.
-   - **SSH key** You should add a [SSH key](https://docs.github.com/en/free-pro-team@latest/github/authenticating-to-github/adding-a-new-ssh-key-to-your-github-account) to your GitHub account.  
+   - **SSH key** You should add a [SSH key](https://docs.github.com/en/free-pro-team@latest/github/authenticating-to-github/adding-a-new-ssh-key-to-your-github-account) to your GitHub account.
 2. **OS** Make sure you are running [Ubuntu 20.04](https://releases.ubuntu.com/20.04/). If not, the recommended approach is to dual boot or to use a VM.
 3. **IDE** We officially only support [CLion](https://www.jetbrains.com/clion/).
    - You can download CLion for free with the generous [Jetbrains educational license](https://www.jetbrains.com/community/education/#students).

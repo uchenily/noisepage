@@ -32,16 +32,14 @@
  *				Some routines use it to scan through a StringInfo.
  *-------------------------
  */
-typedef struct StringInfoData
-{
-	char	   *data;
-	int			len;
-	int			maxlen;
-	int			cursor;
+typedef struct StringInfoData {
+    char *data;
+    int   len;
+    int   maxlen;
+    int   cursor;
 } StringInfoData;
 
 typedef StringInfoData *StringInfo;
-
 
 /*------------------------
  * There are two ways to create a StringInfo object initially:
@@ -92,7 +90,7 @@ extern void resetStringInfo(StringInfo str);
  * to str if necessary.  This is sort of like a combination of sprintf and
  * strcat.
  */
-extern void appendStringInfo(StringInfo str, const char *fmt,...) pg_attribute_printf(2, 3);
+extern void appendStringInfo(StringInfo str, const char *fmt, ...) pg_attribute_printf(2, 3);
 
 /*------------------------
  * appendStringInfoVA
@@ -103,7 +101,7 @@ extern void appendStringInfo(StringInfo str, const char *fmt,...) pg_attribute_p
  * pass the return value to enlargeStringInfo() before trying again; see
  * appendStringInfo for standard usage pattern.
  */
-extern int	appendStringInfoVA(StringInfo str, const char *fmt, va_list args) pg_attribute_printf(2, 0);
+extern int appendStringInfoVA(StringInfo str, const char *fmt, va_list args) pg_attribute_printf(2, 0);
 
 /*------------------------
  * appendStringInfoString
@@ -124,10 +122,9 @@ extern void appendStringInfoChar(StringInfo str, char ch);
  * As above, but a macro for even more speed where it matters.
  * Caution: str argument will be evaluated multiple times.
  */
-#define appendStringInfoCharMacro(str,ch) \
-	(((str)->len + 1 >= (str)->maxlen) ? \
-	 appendStringInfoChar(str, ch) : \
-	 (void)((str)->data[(str)->len] = (ch), (str)->data[++(str)->len] = '\0'))
+#define appendStringInfoCharMacro(str, ch)                                                                             \
+    (((str)->len + 1 >= (str)->maxlen) ? appendStringInfoChar(str, ch)                                                 \
+                                       : (void) ((str)->data[(str)->len] = (ch), (str)->data[++(str)->len] = '\0'))
 
 /*------------------------
  * appendStringInfoSpaces
@@ -140,8 +137,7 @@ extern void appendStringInfoSpaces(StringInfo str, int count);
  * Append arbitrary binary data to a StringInfo, allocating more space
  * if necessary.
  */
-extern void appendBinaryStringInfo(StringInfo str,
-					   const char *data, int datalen);
+extern void appendBinaryStringInfo(StringInfo str, const char *data, int datalen);
 
 /*------------------------
  * enlargeStringInfo
@@ -149,4 +145,4 @@ extern void appendBinaryStringInfo(StringInfo str,
  */
 extern void enlargeStringInfo(StringInfo str, int needed);
 
-#endif   /* STRINGINFO_H */
+#endif /* STRINGINFO_H */

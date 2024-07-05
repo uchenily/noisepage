@@ -18,7 +18,6 @@
 #include "access/stratnum.h"
 #include "fmgr.h"
 
-
 /*
  * A ScanKey represents the application of a comparison operator between
  * a table or index column and a constant.  When it's part of an array of
@@ -61,15 +60,14 @@
  * sk_strategy/sk_subtype are not meaningful (but sk_collation can be); and
  * sk_func may refer to a function that returns something other than boolean.
  */
-typedef struct ScanKeyData
-{
-	int			sk_flags;		/* flags, see below */
-	AttrNumber	sk_attno;		/* table or index column number */
-	StrategyNumber sk_strategy; /* operator strategy number */
-	Oid			sk_subtype;		/* strategy subtype */
-	Oid			sk_collation;	/* collation to use, if needed */
-	FmgrInfo	sk_func;		/* lookup info for function to call */
-	Datum		sk_argument;	/* data to compare */
+typedef struct ScanKeyData {
+    int            sk_flags;     /* flags, see below */
+    AttrNumber     sk_attno;     /* table or index column number */
+    StrategyNumber sk_strategy;  /* operator strategy number */
+    Oid            sk_subtype;   /* strategy subtype */
+    Oid            sk_collation; /* collation to use, if needed */
+    FmgrInfo       sk_func;      /* lookup info for function to call */
+    Datum          sk_argument;  /* data to compare */
 } ScanKeyData;
 
 typedef ScanKeyData *ScanKey;
@@ -112,41 +110,38 @@ typedef ScanKeyData *ScanKey;
  * bits should be defined here).  Bits 16-31 are reserved for use within
  * individual index access methods.
  */
-#define SK_ISNULL			0x0001		/* sk_argument is NULL */
-#define SK_UNARY			0x0002		/* unary operator (not supported!) */
-#define SK_ROW_HEADER		0x0004		/* row comparison header (see above) */
-#define SK_ROW_MEMBER		0x0008		/* row comparison member (see above) */
-#define SK_ROW_END			0x0010		/* last row comparison member */
-#define SK_SEARCHARRAY		0x0020		/* scankey represents ScalarArrayOp */
-#define SK_SEARCHNULL		0x0040		/* scankey represents "col IS NULL" */
-#define SK_SEARCHNOTNULL	0x0080		/* scankey represents "col IS NOT
-										 * NULL" */
-#define SK_ORDER_BY			0x0100		/* scankey is for ORDER BY op */
-
+#define SK_ISNULL 0x0001      /* sk_argument is NULL */
+#define SK_UNARY 0x0002       /* unary operator (not supported!) */
+#define SK_ROW_HEADER 0x0004  /* row comparison header (see above) */
+#define SK_ROW_MEMBER 0x0008  /* row comparison member (see above) */
+#define SK_ROW_END 0x0010     /* last row comparison member */
+#define SK_SEARCHARRAY 0x0020 /* scankey represents ScalarArrayOp */
+#define SK_SEARCHNULL 0x0040  /* scankey represents "col IS NULL" */
+#define SK_SEARCHNOTNULL                                                                                               \
+    0x0080                 /* scankey represents "col IS NOT                                                           \
+                            * NULL" */
+#define SK_ORDER_BY 0x0100 /* scankey is for ORDER BY op */
 
 /*
  * prototypes for functions in access/common/scankey.c
  */
-extern void ScanKeyInit(ScanKey entry,
-			AttrNumber attributeNumber,
-			StrategyNumber strategy,
-			RegProcedure procedure,
-			Datum argument);
-extern void ScanKeyEntryInitialize(ScanKey entry,
-					   int flags,
-					   AttrNumber attributeNumber,
-					   StrategyNumber strategy,
-					   Oid subtype,
-					   Oid collation,
-					   RegProcedure procedure,
-					   Datum argument);
-extern void ScanKeyEntryInitializeWithInfo(ScanKey entry,
-							   int flags,
-							   AttrNumber attributeNumber,
-							   StrategyNumber strategy,
-							   Oid subtype,
-							   Oid collation,
-							   FmgrInfo *finfo,
-							   Datum argument);
+extern void
+ScanKeyInit(ScanKey entry, AttrNumber attributeNumber, StrategyNumber strategy, RegProcedure procedure, Datum argument);
+extern void ScanKeyEntryInitialize(ScanKey        entry,
+                                   int            flags,
+                                   AttrNumber     attributeNumber,
+                                   StrategyNumber strategy,
+                                   Oid            subtype,
+                                   Oid            collation,
+                                   RegProcedure   procedure,
+                                   Datum          argument);
+extern void ScanKeyEntryInitializeWithInfo(ScanKey        entry,
+                                           int            flags,
+                                           AttrNumber     attributeNumber,
+                                           StrategyNumber strategy,
+                                           Oid            subtype,
+                                           Oid            collation,
+                                           FmgrInfo      *finfo,
+                                           Datum          argument);
 
-#endif   /* SKEY_H */
+#endif /* SKEY_H */

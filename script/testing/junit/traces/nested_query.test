@@ -432,4 +432,3 @@ DROP TABLE supplier;
 
 statement ok
 DROP TABLE part;
-

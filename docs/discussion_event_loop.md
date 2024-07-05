@@ -70,7 +70,7 @@ from libevent to libev for 60 seconds, we get the following results (Note: each 
 | Libev | NoOp | 50.15175110158765 | 3173.42297782733 |
 | Libevent | NoOp | 50.14538746950166 | 3231.0416656357247 |
 | Libevent | NoOp | 50.294910261202624 | 3254.812815029675 |
-| Libev | TPCC | 1.325 | 753.367 | 
+| Libev | TPCC | 1.325 | 753.367 |
 | Libev | TPCC | 1.396 | 714.883 |
 | Libevent | TPCC | 1.295 | 770.867 |
 | Libevent | TPCC | 1.344 | 743.033 |

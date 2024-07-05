@@ -13,9 +13,9 @@ namespace noisepage::common {
  */
 
 struct Settings {
-  /**
-   * Server connection backlog.
-   */
-  static const int CONNECTION_BACKLOG = 12;
+    /**
+     * Server connection backlog.
+     */
+    static const int CONNECTION_BACKLOG = 12;
 };
-}  // namespace noisepage::common
+} // namespace noisepage::common

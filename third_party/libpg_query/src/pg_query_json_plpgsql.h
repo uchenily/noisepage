@@ -3,6 +3,6 @@
 
 #include "plpgsql.h"
 
-char* plpgsqlToJSON(PLpgSQL_function* func);
+char *plpgsqlToJSON(PLpgSQL_function *func);
 
 #endif

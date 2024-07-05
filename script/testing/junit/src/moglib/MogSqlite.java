@@ -198,7 +198,7 @@ public class MogSqlite {
          * 3. Now, valuesort if necessary.
          * 4. nosort is the default.
          *
-         * This logic handles the nosort, rowsort, and valuesort cases properly with 
+         * This logic handles the nosort, rowsort, and valuesort cases properly with
          * minimal branching. But adding new sorting cases may require a rewrite.
          */
         if (this.sortMode.equals("rowsort")) {

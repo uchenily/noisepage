@@ -7,13 +7,13 @@ namespace noisepage::execution::ast {
 
 class BlockStmt;
 class Context;
-class Expr;  // NOLINT it picks up the parser's global Expr
+class Expr; // NOLINT it picks up the parser's global Expr
 class Decl;
 class FieldDecl;
-class File;  // NOLINT it picks up madoka's File
+class File; // NOLINT it picks up madoka's File
 class FunctionDecl;
 class Stmt;
 class StructDecl;
 class VariableDecl;
 
-}  // namespace noisepage::execution::ast
+} // namespace noisepage::execution::ast

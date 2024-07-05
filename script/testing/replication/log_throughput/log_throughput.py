@@ -16,10 +16,8 @@ from .metrics_file_util import (create_results_dir, delete_metrics_file,
 from .node_server import NodeServer, PrimaryNode, ReplicaNode
 from .test_type import TestType
 
-"""
-This file helps to generate load for the a NoisePage server. Then using the metrics collection framework will calculate 
-the log throughput for that server. 
-"""
+# This file helps to generate load for the a NoisePage server. Then using the metrics collection framework will calculate
+# the log throughput for that server.
 
 
 def log_throughput(test_type: TestType, build_type: str, replication_enabled: bool, async_replication: bool,

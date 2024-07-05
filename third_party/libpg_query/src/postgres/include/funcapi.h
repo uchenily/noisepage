@@ -16,11 +16,10 @@
 #ifndef FUNCAPI_H
 #define FUNCAPI_H
 
-#include "fmgr.h"
 #include "access/tupdesc.h"
 #include "executor/executor.h"
 #include "executor/tuptable.h"
-
+#include "fmgr.h"
 
 /*-------------------------------------------------------------------------
  *	Support to ease writing Functions returning composite types
@@ -32,19 +31,18 @@
  * is derived from the TupleDesc, but it is stored here to
  * avoid redundant cpu cycles on each call to an SRF.
  */
-typedef struct AttInMetadata
-{
-	/* full TupleDesc */
-	TupleDesc	tupdesc;
+typedef struct AttInMetadata {
+    /* full TupleDesc */
+    TupleDesc tupdesc;
 
-	/* array of attribute type input function finfo */
-	FmgrInfo   *attinfuncs;
+    /* array of attribute type input function finfo */
+    FmgrInfo *attinfuncs;
 
-	/* array of attribute type i/o parameter OIDs */
-	Oid		   *attioparams;
+    /* array of attribute type i/o parameter OIDs */
+    Oid *attioparams;
 
-	/* array of attribute typmod */
-	int32	   *atttypmods;
+    /* array of attribute typmod */
+    int32 *atttypmods;
 } AttInMetadata;
 
 /*-------------------------------------------------------------------------
@@ -54,70 +52,69 @@ typedef struct AttInMetadata
  * This struct holds function context for Set Returning Functions.
  * Use fn_extra to hold a pointer to it across calls
  */
-typedef struct FuncCallContext
-{
-	/*
-	 * Number of times we've been called before
-	 *
-	 * call_cntr is initialized to 0 for you by SRF_FIRSTCALL_INIT(), and
-	 * incremented for you every time SRF_RETURN_NEXT() is called.
-	 */
-	uint32		call_cntr;
+typedef struct FuncCallContext {
+    /*
+     * Number of times we've been called before
+     *
+     * call_cntr is initialized to 0 for you by SRF_FIRSTCALL_INIT(), and
+     * incremented for you every time SRF_RETURN_NEXT() is called.
+     */
+    uint32 call_cntr;
 
-	/*
-	 * OPTIONAL maximum number of calls
-	 *
-	 * max_calls is here for convenience only and setting it is optional. If
-	 * not set, you must provide alternative means to know when the function
-	 * is done.
-	 */
-	uint32		max_calls;
+    /*
+     * OPTIONAL maximum number of calls
+     *
+     * max_calls is here for convenience only and setting it is optional. If
+     * not set, you must provide alternative means to know when the function
+     * is done.
+     */
+    uint32 max_calls;
 
-	/*
-	 * OPTIONAL pointer to result slot
-	 *
-	 * This is obsolete and only present for backwards compatibility, viz,
-	 * user-defined SRFs that use the deprecated TupleDescGetSlot().
-	 */
-	TupleTableSlot *slot;
+    /*
+     * OPTIONAL pointer to result slot
+     *
+     * This is obsolete and only present for backwards compatibility, viz,
+     * user-defined SRFs that use the deprecated TupleDescGetSlot().
+     */
+    TupleTableSlot *slot;
 
-	/*
-	 * OPTIONAL pointer to miscellaneous user-provided context information
-	 *
-	 * user_fctx is for use as a pointer to your own struct to retain
-	 * arbitrary context information between calls of your function.
-	 */
-	void	   *user_fctx;
+    /*
+     * OPTIONAL pointer to miscellaneous user-provided context information
+     *
+     * user_fctx is for use as a pointer to your own struct to retain
+     * arbitrary context information between calls of your function.
+     */
+    void *user_fctx;
 
-	/*
-	 * OPTIONAL pointer to struct containing attribute type input metadata
-	 *
-	 * attinmeta is for use when returning tuples (i.e. composite data types)
-	 * and is not used when returning base data types. It is only needed if
-	 * you intend to use BuildTupleFromCStrings() to create the return tuple.
-	 */
-	AttInMetadata *attinmeta;
+    /*
+     * OPTIONAL pointer to struct containing attribute type input metadata
+     *
+     * attinmeta is for use when returning tuples (i.e. composite data types)
+     * and is not used when returning base data types. It is only needed if
+     * you intend to use BuildTupleFromCStrings() to create the return tuple.
+     */
+    AttInMetadata *attinmeta;
 
-	/*
-	 * memory context used for structures that must live for multiple calls
-	 *
-	 * multi_call_memory_ctx is set by SRF_FIRSTCALL_INIT() for you, and used
-	 * by SRF_RETURN_DONE() for cleanup. It is the most appropriate memory
-	 * context for any memory that is to be reused across multiple calls of
-	 * the SRF.
-	 */
-	MemoryContext multi_call_memory_ctx;
+    /*
+     * memory context used for structures that must live for multiple calls
+     *
+     * multi_call_memory_ctx is set by SRF_FIRSTCALL_INIT() for you, and used
+     * by SRF_RETURN_DONE() for cleanup. It is the most appropriate memory
+     * context for any memory that is to be reused across multiple calls of
+     * the SRF.
+     */
+    MemoryContext multi_call_memory_ctx;
 
-	/*
-	 * OPTIONAL pointer to struct containing tuple description
-	 *
-	 * tuple_desc is for use when returning tuples (i.e. composite data types)
-	 * and is only needed if you are going to build the tuples with
-	 * heap_form_tuple() rather than with BuildTupleFromCStrings(). Note that
-	 * the TupleDesc pointer stored here should usually have been run through
-	 * BlessTupleDesc() first.
-	 */
-	TupleDesc	tuple_desc;
+    /*
+     * OPTIONAL pointer to struct containing tuple description
+     *
+     * tuple_desc is for use when returning tuples (i.e. composite data types)
+     * and is only needed if you are going to build the tuples with
+     * heap_form_tuple() rather than with BuildTupleFromCStrings(). Note that
+     * the TupleDesc pointer stored here should usually have been run through
+     * BlessTupleDesc() first.
+     */
+    TupleDesc tuple_desc;
 
 } FuncCallContext;
 
@@ -147,43 +144,28 @@ typedef struct FuncCallContext
  */
 
 /* Type categories for get_call_result_type and siblings */
-typedef enum TypeFuncClass
-{
-	TYPEFUNC_SCALAR,			/* scalar result type */
-	TYPEFUNC_COMPOSITE,			/* determinable rowtype result */
-	TYPEFUNC_RECORD,			/* indeterminate rowtype result */
-	TYPEFUNC_OTHER				/* bogus type, eg pseudotype */
+typedef enum TypeFuncClass {
+    TYPEFUNC_SCALAR,    /* scalar result type */
+    TYPEFUNC_COMPOSITE, /* determinable rowtype result */
+    TYPEFUNC_RECORD,    /* indeterminate rowtype result */
+    TYPEFUNC_OTHER      /* bogus type, eg pseudotype */
 } TypeFuncClass;
 
-extern TypeFuncClass get_call_result_type(FunctionCallInfo fcinfo,
-					 Oid *resultTypeId,
-					 TupleDesc *resultTupleDesc);
-extern TypeFuncClass get_expr_result_type(Node *expr,
-					 Oid *resultTypeId,
-					 TupleDesc *resultTupleDesc);
-extern TypeFuncClass get_func_result_type(Oid functionId,
-					 Oid *resultTypeId,
-					 TupleDesc *resultTupleDesc);
+extern TypeFuncClass get_call_result_type(FunctionCallInfo fcinfo, Oid *resultTypeId, TupleDesc *resultTupleDesc);
+extern TypeFuncClass get_expr_result_type(Node *expr, Oid *resultTypeId, TupleDesc *resultTupleDesc);
+extern TypeFuncClass get_func_result_type(Oid functionId, Oid *resultTypeId, TupleDesc *resultTupleDesc);
 
-extern bool resolve_polymorphic_argtypes(int numargs, Oid *argtypes,
-							 char *argmodes,
-							 Node *call_expr);
+extern bool resolve_polymorphic_argtypes(int numargs, Oid *argtypes, char *argmodes, Node *call_expr);
 
-extern int get_func_arg_info(HeapTuple procTup,
-				  Oid **p_argtypes, char ***p_argnames,
-				  char **p_argmodes);
+extern int get_func_arg_info(HeapTuple procTup, Oid **p_argtypes, char ***p_argnames, char **p_argmodes);
 
-extern int get_func_input_arg_names(Datum proargnames, Datum proargmodes,
-						 char ***arg_names);
+extern int get_func_input_arg_names(Datum proargnames, Datum proargmodes, char ***arg_names);
 
-extern int	get_func_trftypes(HeapTuple procTup, Oid **p_trftypes);
+extern int   get_func_trftypes(HeapTuple procTup, Oid **p_trftypes);
 extern char *get_func_result_name(Oid functionId);
 
-extern TupleDesc build_function_result_tupdesc_d(Datum proallargtypes,
-								Datum proargmodes,
-								Datum proargnames);
+extern TupleDesc build_function_result_tupdesc_d(Datum proallargtypes, Datum proargmodes, Datum proargnames);
 extern TupleDesc build_function_result_tupdesc_t(HeapTuple procTuple);
-
 
 /*----------
  *	Support to ease writing functions returning composite types
@@ -219,20 +201,19 @@ extern TupleDesc build_function_result_tupdesc_t(HeapTuple procTuple);
  *----------
  */
 
-#define HeapTupleGetDatum(tuple)		HeapTupleHeaderGetDatum((tuple)->t_data)
+#define HeapTupleGetDatum(tuple) HeapTupleHeaderGetDatum((tuple)->t_data)
 /* obsolete version of above */
-#define TupleGetDatum(_slot, _tuple)	HeapTupleGetDatum(_tuple)
+#define TupleGetDatum(_slot, _tuple) HeapTupleGetDatum(_tuple)
 
 extern TupleDesc RelationNameGetTupleDesc(const char *relname);
 extern TupleDesc TypeGetTupleDesc(Oid typeoid, List *colaliases);
 
 /* from execTuples.c */
-extern TupleDesc BlessTupleDesc(TupleDesc tupdesc);
-extern AttInMetadata *TupleDescGetAttInMetadata(TupleDesc tupdesc);
-extern HeapTuple BuildTupleFromCStrings(AttInMetadata *attinmeta, char **values);
-extern Datum HeapTupleHeaderGetDatum(HeapTupleHeader tuple);
+extern TupleDesc       BlessTupleDesc(TupleDesc tupdesc);
+extern AttInMetadata  *TupleDescGetAttInMetadata(TupleDesc tupdesc);
+extern HeapTuple       BuildTupleFromCStrings(AttInMetadata *attinmeta, char **values);
+extern Datum           HeapTupleHeaderGetDatum(HeapTupleHeader tuple);
 extern TupleTableSlot *TupleDescGetSlot(TupleDesc tupdesc);
-
 
 /*----------
  *		Support for Set Returning Functions (SRFs)
@@ -280,7 +261,7 @@ extern TupleTableSlot *TupleDescGetSlot(TupleDesc tupdesc);
 /* from funcapi.c */
 extern FuncCallContext *init_MultiFuncCall(PG_FUNCTION_ARGS);
 extern FuncCallContext *per_MultiFuncCall(PG_FUNCTION_ARGS);
-extern void end_MultiFuncCall(PG_FUNCTION_ARGS, FuncCallContext *funcctx);
+extern void             end_MultiFuncCall(PG_FUNCTION_ARGS, FuncCallContext *funcctx);
 
 #define SRF_IS_FIRSTCALL() (fcinfo->flinfo->fn_extra == NULL)
 
@@ -288,31 +269,31 @@ extern void end_MultiFuncCall(PG_FUNCTION_ARGS, FuncCallContext *funcctx);
 
 #define SRF_PERCALL_SETUP() per_MultiFuncCall(fcinfo)
 
-#define SRF_RETURN_NEXT(_funcctx, _result) \
-	do { \
-		ReturnSetInfo	   *rsi; \
-		(_funcctx)->call_cntr++; \
-		rsi = (ReturnSetInfo *) fcinfo->resultinfo; \
-		rsi->isDone = ExprMultipleResult; \
-		PG_RETURN_DATUM(_result); \
-	} while (0)
+#define SRF_RETURN_NEXT(_funcctx, _result)                                                                             \
+    do {                                                                                                               \
+        ReturnSetInfo *rsi;                                                                                            \
+        (_funcctx)->call_cntr++;                                                                                       \
+        rsi = (ReturnSetInfo *) fcinfo->resultinfo;                                                                    \
+        rsi->isDone = ExprMultipleResult;                                                                              \
+        PG_RETURN_DATUM(_result);                                                                                      \
+    } while (0)
 
-#define SRF_RETURN_NEXT_NULL(_funcctx) \
-	do { \
-		ReturnSetInfo	   *rsi; \
-		(_funcctx)->call_cntr++; \
-		rsi = (ReturnSetInfo *) fcinfo->resultinfo; \
-		rsi->isDone = ExprMultipleResult; \
-		PG_RETURN_NULL(); \
-	} while (0)
+#define SRF_RETURN_NEXT_NULL(_funcctx)                                                                                 \
+    do {                                                                                                               \
+        ReturnSetInfo *rsi;                                                                                            \
+        (_funcctx)->call_cntr++;                                                                                       \
+        rsi = (ReturnSetInfo *) fcinfo->resultinfo;                                                                    \
+        rsi->isDone = ExprMultipleResult;                                                                              \
+        PG_RETURN_NULL();                                                                                              \
+    } while (0)
 
-#define  SRF_RETURN_DONE(_funcctx) \
-	do { \
-		ReturnSetInfo	   *rsi; \
-		end_MultiFuncCall(fcinfo, _funcctx); \
-		rsi = (ReturnSetInfo *) fcinfo->resultinfo; \
-		rsi->isDone = ExprEndResult; \
-		PG_RETURN_NULL(); \
-	} while (0)
+#define SRF_RETURN_DONE(_funcctx)                                                                                      \
+    do {                                                                                                               \
+        ReturnSetInfo *rsi;                                                                                            \
+        end_MultiFuncCall(fcinfo, _funcctx);                                                                           \
+        rsi = (ReturnSetInfo *) fcinfo->resultinfo;                                                                    \
+        rsi->isDone = ExprEndResult;                                                                                   \
+        PG_RETURN_NULL();                                                                                              \
+    } while (0)
 
-#endif   /* FUNCAPI_H */
+#endif /* FUNCAPI_H */

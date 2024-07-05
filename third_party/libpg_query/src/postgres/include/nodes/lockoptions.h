@@ -18,13 +18,12 @@
  * The ordering here is important, because the highest numerical value takes
  * precedence when a RTE is specified multiple ways.  See applyLockingClause.
  */
-typedef enum LockClauseStrength
-{
-	LCS_NONE,					/* no such clause - only used in PlanRowMark */
-	LCS_FORKEYSHARE,			/* FOR KEY SHARE */
-	LCS_FORSHARE,				/* FOR SHARE */
-	LCS_FORNOKEYUPDATE,			/* FOR NO KEY UPDATE */
-	LCS_FORUPDATE				/* FOR UPDATE */
+typedef enum LockClauseStrength {
+    LCS_NONE,           /* no such clause - only used in PlanRowMark */
+    LCS_FORKEYSHARE,    /* FOR KEY SHARE */
+    LCS_FORSHARE,       /* FOR SHARE */
+    LCS_FORNOKEYUPDATE, /* FOR NO KEY UPDATE */
+    LCS_FORUPDATE       /* FOR UPDATE */
 } LockClauseStrength;
 
 /*
@@ -33,14 +32,13 @@ typedef enum LockClauseStrength
  * The ordering here is important, because the highest numerical value takes
  * precedence when a RTE is specified multiple ways.  See applyLockingClause.
  */
-typedef enum LockWaitPolicy
-{
-	/* Wait for the lock to become available (default behavior) */
-	LockWaitBlock,
-	/* Skip rows that can't be locked (SKIP LOCKED) */
-	LockWaitSkip,
-	/* Raise an error if a row cannot be locked (NOWAIT) */
-	LockWaitError
+typedef enum LockWaitPolicy {
+    /* Wait for the lock to become available (default behavior) */
+    LockWaitBlock,
+    /* Skip rows that can't be locked (SKIP LOCKED) */
+    LockWaitSkip,
+    /* Raise an error if a row cannot be locked (NOWAIT) */
+    LockWaitError
 } LockWaitPolicy;
 
-#endif   /* LOCKOPTIONS_H */
+#endif /* LOCKOPTIONS_H */

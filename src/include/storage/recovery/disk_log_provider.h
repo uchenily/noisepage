@@ -13,30 +13,37 @@ namespace noisepage::storage {
  * BufferedLogReader.
  */
 class DiskLogProvider : public AbstractLogProvider {
- public:
-  /**
-   * @param log_file_path path to log file to read logs from
-   */
-  explicit DiskLogProvider(const std::string &log_file_path) : in_(BufferedLogReader(log_file_path.c_str())) {}
+public:
+    /**
+     * @param log_file_path path to log file to read logs from
+     */
+    explicit DiskLogProvider(const std::string &log_file_path)
+        : in_(BufferedLogReader(log_file_path.c_str())) {}
 
-  LogProviderType GetType() const override { return LogProviderType::DISK; }
+    LogProviderType GetType() const override {
+        return LogProviderType::DISK;
+    }
 
- private:
-  // Buffered log file reader
-  storage::BufferedLogReader in_;
+private:
+    // Buffered log file reader
+    storage::BufferedLogReader in_;
 
-  /**
-   * @return true if log file contains more records, false otherwise
-   */
-  bool HasMoreRecords() override { return in_.HasMore(); }
+    /**
+     * @return true if log file contains more records, false otherwise
+     */
+    bool HasMoreRecords() override {
+        return in_.HasMore();
+    }
 
-  /**
-   * Read data from the log file into the destination provided
-   * @param dest pointer to location to read into
-   * @param size number of bytes to read
-   * @return true if we read the given number of bytes
-   */
-  bool Read(void *dest, uint32_t size) override { return in_.Read(dest, size); }
+    /**
+     * Read data from the log file into the destination provided
+     * @param dest pointer to location to read into
+     * @param size number of bytes to read
+     * @return true if we read the given number of bytes
+     */
+    bool Read(void *dest, uint32_t size) override {
+        return in_.Read(dest, size);
+    }
 };
 
-}  // namespace noisepage::storage
+} // namespace noisepage::storage

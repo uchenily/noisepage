@@ -15,140 +15,140 @@ namespace noisepage {
  * The benchmark is not currently part of CI because it proved too noisy in Jenkins runs.
  */
 class VarlenEntryBenchmark : public benchmark::Fixture {
- public:
-  void SetUp(const benchmark::State &state) final {}
+public:
+    void SetUp(const benchmark::State &state) final {}
 
-  void TearDown(const benchmark::State &state) final {}
+    void TearDown(const benchmark::State &state) final {}
 
-  std::default_random_engine generator_;
+    std::default_random_engine generator_;
 };
 
 // NOLINTNEXTLINE
 BENCHMARK_DEFINE_F(VarlenEntryBenchmark, HashInline)(benchmark::State &state) {
-  const auto varlen_bytes = state.range(0);
+    const auto varlen_bytes = state.range(0);
 
-  byte random_buffer[varlen_bytes];
-  StorageTestUtil::FillWithRandomBytes(varlen_bytes, random_buffer, &generator_);
+    byte random_buffer[varlen_bytes];
+    StorageTestUtil::FillWithRandomBytes(varlen_bytes, random_buffer, &generator_);
 
-  const auto varlen_entry = storage::VarlenEntry::CreateInline(random_buffer, varlen_bytes);
-  /* NOLINTNEXTLINE */
-  for (auto _ : state) {
-    benchmark::DoNotOptimize(varlen_entry.Hash());
-  }
+    const auto varlen_entry = storage::VarlenEntry::CreateInline(random_buffer, varlen_bytes);
+    /* NOLINTNEXTLINE */
+    for (auto _ : state) {
+        benchmark::DoNotOptimize(varlen_entry.Hash());
+    }
 
-  state.SetItemsProcessed(state.iterations());
-  state.SetBytesProcessed(state.iterations() * varlen_bytes);
+    state.SetItemsProcessed(state.iterations());
+    state.SetBytesProcessed(state.iterations() * varlen_bytes);
 }
 
 // NOLINTNEXTLINE
 BENCHMARK_DEFINE_F(VarlenEntryBenchmark, HashNotInline)(benchmark::State &state) {
-  const auto varlen_bytes = state.range(0);
+    const auto varlen_bytes = state.range(0);
 
-  byte random_buffer[varlen_bytes];
-  StorageTestUtil::FillWithRandomBytes(varlen_bytes, random_buffer, &generator_);
+    byte random_buffer[varlen_bytes];
+    StorageTestUtil::FillWithRandomBytes(varlen_bytes, random_buffer, &generator_);
 
-  const auto varlen_entry = storage::VarlenEntry::Create(random_buffer, varlen_bytes, false);
-  /* NOLINTNEXTLINE */
-  for (auto _ : state) {
-    benchmark::DoNotOptimize(varlen_entry.Hash());
-  }
+    const auto varlen_entry = storage::VarlenEntry::Create(random_buffer, varlen_bytes, false);
+    /* NOLINTNEXTLINE */
+    for (auto _ : state) {
+        benchmark::DoNotOptimize(varlen_entry.Hash());
+    }
 
-  state.SetItemsProcessed(state.iterations());
-  state.SetBytesProcessed(state.iterations() * (varlen_bytes));
+    state.SetItemsProcessed(state.iterations());
+    state.SetBytesProcessed(state.iterations() * (varlen_bytes));
 }
 
 // NOLINTNEXTLINE
 BENCHMARK_DEFINE_F(VarlenEntryBenchmark, EqualityInlineEqualPrefixOnly)(benchmark::State &state) {
-  constexpr std::string_view wan = "wan";
+    constexpr std::string_view wan = "wan";
 
-  const auto lhs = storage::VarlenEntry::Create(wan);
-  const auto rhs = storage::VarlenEntry::Create(wan);
+    const auto lhs = storage::VarlenEntry::Create(wan);
+    const auto rhs = storage::VarlenEntry::Create(wan);
 
-  /* NOLINTNEXTLINE */
-  for (auto _ : state) {
-    benchmark::DoNotOptimize(lhs == rhs);
-  }
+    /* NOLINTNEXTLINE */
+    for (auto _ : state) {
+        benchmark::DoNotOptimize(lhs == rhs);
+    }
 
-  state.SetItemsProcessed(state.iterations());
+    state.SetItemsProcessed(state.iterations());
 }
 
 // NOLINTNEXTLINE
 BENCHMARK_DEFINE_F(VarlenEntryBenchmark, EqualityInlineEqualPrefixDifferentLength)(benchmark::State &state) {
-  constexpr std::string_view matt = "matt";
-  constexpr std::string_view matthew = "matthew";
+    constexpr std::string_view matt = "matt";
+    constexpr std::string_view matthew = "matthew";
 
-  const auto lhs = storage::VarlenEntry::Create(matt);
-  const auto rhs = storage::VarlenEntry::Create(matthew);
+    const auto lhs = storage::VarlenEntry::Create(matt);
+    const auto rhs = storage::VarlenEntry::Create(matthew);
 
-  /* NOLINTNEXTLINE */
-  for (auto _ : state) {
-    benchmark::DoNotOptimize(lhs == rhs);
-  }
+    /* NOLINTNEXTLINE */
+    for (auto _ : state) {
+        benchmark::DoNotOptimize(lhs == rhs);
+    }
 
-  state.SetItemsProcessed(state.iterations());
+    state.SetItemsProcessed(state.iterations());
 }
 
 // NOLINTNEXTLINE
 BENCHMARK_DEFINE_F(VarlenEntryBenchmark, EqualityInlineEqualPrefixEqualLength)(benchmark::State &state) {
-  constexpr std::string_view johnny = "johnny";
-  constexpr std::string_view johnie = "johnie";
+    constexpr std::string_view johnny = "johnny";
+    constexpr std::string_view johnie = "johnie";
 
-  const auto lhs = storage::VarlenEntry::Create(johnny);
-  const auto rhs = storage::VarlenEntry::Create(johnie);
+    const auto lhs = storage::VarlenEntry::Create(johnny);
+    const auto rhs = storage::VarlenEntry::Create(johnie);
 
-  /* NOLINTNEXTLINE */
-  for (auto _ : state) {
-    benchmark::DoNotOptimize(lhs == rhs);
-  }
+    /* NOLINTNEXTLINE */
+    for (auto _ : state) {
+        benchmark::DoNotOptimize(lhs == rhs);
+    }
 
-  state.SetItemsProcessed(state.iterations());
+    state.SetItemsProcessed(state.iterations());
 }
 
 // NOLINTNEXTLINE
 BENCHMARK_DEFINE_F(VarlenEntryBenchmark, EqualityInlineDifferentPrefixEqualLength)(benchmark::State &state) {
-  constexpr std::string_view matt = "matt";
-  constexpr std::string_view john = "john";
+    constexpr std::string_view matt = "matt";
+    constexpr std::string_view john = "john";
 
-  const auto lhs = storage::VarlenEntry::Create(matt);
-  const auto rhs = storage::VarlenEntry::Create(john);
+    const auto lhs = storage::VarlenEntry::Create(matt);
+    const auto rhs = storage::VarlenEntry::Create(john);
 
-  /* NOLINTNEXTLINE */
-  for (auto _ : state) {
-    benchmark::DoNotOptimize(lhs == rhs);
-  }
+    /* NOLINTNEXTLINE */
+    for (auto _ : state) {
+        benchmark::DoNotOptimize(lhs == rhs);
+    }
 
-  state.SetItemsProcessed(state.iterations());
+    state.SetItemsProcessed(state.iterations());
 }
 
 // NOLINTNEXTLINE
 BENCHMARK_DEFINE_F(VarlenEntryBenchmark, EqualityNotInlineEqualContentEqualLength)(benchmark::State &state) {
-  constexpr std::string_view matthew_was_here = "matthew_was_here";
+    constexpr std::string_view matthew_was_here = "matthew_was_here";
 
-  const auto lhs = storage::VarlenEntry::Create(matthew_was_here);
-  const auto rhs = storage::VarlenEntry::Create(matthew_was_here);
+    const auto lhs = storage::VarlenEntry::Create(matthew_was_here);
+    const auto rhs = storage::VarlenEntry::Create(matthew_was_here);
 
-  /* NOLINTNEXTLINE */
-  for (auto _ : state) {
-    benchmark::DoNotOptimize(lhs == rhs);
-  }
+    /* NOLINTNEXTLINE */
+    for (auto _ : state) {
+        benchmark::DoNotOptimize(lhs == rhs);
+    }
 
-  state.SetItemsProcessed(state.iterations());
+    state.SetItemsProcessed(state.iterations());
 }
 
 // NOLINTNEXTLINE
 BENCHMARK_DEFINE_F(VarlenEntryBenchmark, EqualityNotInlineDifferentContentEqualLength)(benchmark::State &state) {
-  constexpr std::string_view matthew_was_here = "matthew_was_here";
-  constexpr std::string_view matthew_was_gone = "matthew_was_gone";
+    constexpr std::string_view matthew_was_here = "matthew_was_here";
+    constexpr std::string_view matthew_was_gone = "matthew_was_gone";
 
-  const auto lhs = storage::VarlenEntry::Create(matthew_was_here);
-  const auto rhs = storage::VarlenEntry::Create(matthew_was_gone);
+    const auto lhs = storage::VarlenEntry::Create(matthew_was_here);
+    const auto rhs = storage::VarlenEntry::Create(matthew_was_gone);
 
-  /* NOLINTNEXTLINE */
-  for (auto _ : state) {
-    benchmark::DoNotOptimize(lhs == rhs);
-  }
+    /* NOLINTNEXTLINE */
+    for (auto _ : state) {
+        benchmark::DoNotOptimize(lhs == rhs);
+    }
 
-  state.SetItemsProcessed(state.iterations());
+    state.SetItemsProcessed(state.iterations());
 }
 
 // ----------------------------------------------------------------------------
@@ -165,4 +165,4 @@ BENCHMARK_REGISTER_F(VarlenEntryBenchmark, EqualityNotInlineEqualContentEqualLen
 BENCHMARK_REGISTER_F(VarlenEntryBenchmark, EqualityNotInlineDifferentContentEqualLength);
 // clang-format on
 
-}  // namespace noisepage
+} // namespace noisepage

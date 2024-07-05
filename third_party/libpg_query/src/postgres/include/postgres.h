@@ -65,13 +65,12 @@
  * you can look at these fields!  (The reason we use memcmp is to avoid
  * having to do that just to detect equality of two TOAST pointers...)
  */
-typedef struct varatt_external
-{
-	int32		va_rawsize;		/* Original data size (includes header) */
-	int32		va_extsize;		/* External saved size (doesn't) */
-	Oid			va_valueid;		/* Unique ID of value within TOAST table */
-	Oid			va_toastrelid;	/* RelID of TOAST table containing it */
-}	varatt_external;
+typedef struct varatt_external {
+    int32 va_rawsize;    /* Original data size (includes header) */
+    int32 va_extsize;    /* External saved size (doesn't) */
+    Oid   va_valueid;    /* Unique ID of value within TOAST table */
+    Oid   va_toastrelid; /* RelID of TOAST table containing it */
+} varatt_external;
 
 /*
  * struct varatt_indirect is a "TOAST pointer" representing an out-of-line
@@ -82,10 +81,9 @@ typedef struct varatt_external
  * Note that just as for struct varatt_external, this struct is stored
  * unaligned within any containing tuple.
  */
-typedef struct varatt_indirect
-{
-	struct varlena *pointer;	/* Pointer to in-memory varlena */
-}	varatt_indirect;
+typedef struct varatt_indirect {
+    struct varlena *pointer; /* Pointer to in-memory varlena */
+} varatt_indirect;
 
 /*
  * struct varatt_expanded is a "TOAST pointer" representing an out-of-line
@@ -99,9 +97,8 @@ typedef struct varatt_indirect
  */
 typedef struct ExpandedObjectHeader ExpandedObjectHeader;
 
-typedef struct varatt_expanded
-{
-	ExpandedObjectHeader *eohptr;
+typedef struct varatt_expanded {
+    ExpandedObjectHeader *eohptr;
 } varatt_expanded;
 
 /*
@@ -109,23 +106,21 @@ typedef struct varatt_expanded
  * value for VARTAG_ONDISK comes from a requirement for on-disk compatibility
  * with a previous notion that the tag field was the pointer datum's length.
  */
-typedef enum vartag_external
-{
-	VARTAG_INDIRECT = 1,
-	VARTAG_EXPANDED_RO = 2,
-	VARTAG_EXPANDED_RW = 3,
-	VARTAG_ONDISK = 18
+typedef enum vartag_external {
+    VARTAG_INDIRECT = 1,
+    VARTAG_EXPANDED_RO = 2,
+    VARTAG_EXPANDED_RW = 3,
+    VARTAG_ONDISK = 18
 } vartag_external;
 
 /* this test relies on the specific tag values above */
-#define VARTAG_IS_EXPANDED(tag) \
-	(((tag) & ~1) == VARTAG_EXPANDED_RO)
+#define VARTAG_IS_EXPANDED(tag) (((tag) & ~1) == VARTAG_EXPANDED_RO)
 
-#define VARTAG_SIZE(tag) \
-	((tag) == VARTAG_INDIRECT ? sizeof(varatt_indirect) : \
-	 VARTAG_IS_EXPANDED(tag) ? sizeof(varatt_expanded) : \
-	 (tag) == VARTAG_ONDISK ? sizeof(varatt_external) : \
-	 TrapMacro(true, "unrecognized TOAST vartag"))
+#define VARTAG_SIZE(tag)                                                                                               \
+    ((tag) == VARTAG_INDIRECT  ? sizeof(varatt_indirect)                                                               \
+     : VARTAG_IS_EXPANDED(tag) ? sizeof(varatt_expanded)                                                               \
+     : (tag) == VARTAG_ONDISK  ? sizeof(varatt_external)                                                               \
+                               : TrapMacro(true, "unrecognized TOAST vartag"))
 
 /*
  * These structs describe the header of a varlena object that may have been
@@ -136,33 +131,30 @@ typedef enum vartag_external
  * compiler might otherwise think it could generate code that assumes
  * alignment while touching fields of a 1-byte-header varlena.
  */
-typedef union
-{
-	struct						/* Normal varlena (4-byte length) */
-	{
-		uint32		va_header;
-		char		va_data[FLEXIBLE_ARRAY_MEMBER];
-	}			va_4byte;
-	struct						/* Compressed-in-line format */
-	{
-		uint32		va_header;
-		uint32		va_rawsize; /* Original data size (excludes header) */
-		char		va_data[FLEXIBLE_ARRAY_MEMBER];		/* Compressed data */
-	}			va_compressed;
+typedef union {
+    struct /* Normal varlena (4-byte length) */
+    {
+        uint32 va_header;
+        char   va_data[FLEXIBLE_ARRAY_MEMBER];
+    } va_4byte;
+    struct /* Compressed-in-line format */
+    {
+        uint32 va_header;
+        uint32 va_rawsize;                     /* Original data size (excludes header) */
+        char   va_data[FLEXIBLE_ARRAY_MEMBER]; /* Compressed data */
+    } va_compressed;
 } varattrib_4b;
 
-typedef struct
-{
-	uint8		va_header;
-	char		va_data[FLEXIBLE_ARRAY_MEMBER]; /* Data begins here */
+typedef struct {
+    uint8 va_header;
+    char  va_data[FLEXIBLE_ARRAY_MEMBER]; /* Data begins here */
 } varattrib_1b;
 
 /* TOAST pointers are a subset of varattrib_1b with an identifying tag byte */
-typedef struct
-{
-	uint8		va_header;		/* Always 0x80 or 0x01 */
-	uint8		va_tag;			/* Type of datum */
-	char		va_data[FLEXIBLE_ARRAY_MEMBER]; /* Type-specific data */
+typedef struct {
+    uint8 va_header;                      /* Always 0x80 or 0x01 */
+    uint8 va_tag;                         /* Type of datum */
+    char  va_data[FLEXIBLE_ARRAY_MEMBER]; /* Type-specific data */
 } varattrib_1b_e;
 
 /*
@@ -202,87 +194,58 @@ typedef struct
 
 #ifdef WORDS_BIGENDIAN
 
-#define VARATT_IS_4B(PTR) \
-	((((varattrib_1b *) (PTR))->va_header & 0x80) == 0x00)
-#define VARATT_IS_4B_U(PTR) \
-	((((varattrib_1b *) (PTR))->va_header & 0xC0) == 0x00)
-#define VARATT_IS_4B_C(PTR) \
-	((((varattrib_1b *) (PTR))->va_header & 0xC0) == 0x40)
-#define VARATT_IS_1B(PTR) \
-	((((varattrib_1b *) (PTR))->va_header & 0x80) == 0x80)
-#define VARATT_IS_1B_E(PTR) \
-	((((varattrib_1b *) (PTR))->va_header) == 0x80)
-#define VARATT_NOT_PAD_BYTE(PTR) \
-	(*((uint8 *) (PTR)) != 0)
+#define VARATT_IS_4B(PTR) ((((varattrib_1b *) (PTR))->va_header & 0x80) == 0x00)
+#define VARATT_IS_4B_U(PTR) ((((varattrib_1b *) (PTR))->va_header & 0xC0) == 0x00)
+#define VARATT_IS_4B_C(PTR) ((((varattrib_1b *) (PTR))->va_header & 0xC0) == 0x40)
+#define VARATT_IS_1B(PTR) ((((varattrib_1b *) (PTR))->va_header & 0x80) == 0x80)
+#define VARATT_IS_1B_E(PTR) ((((varattrib_1b *) (PTR))->va_header) == 0x80)
+#define VARATT_NOT_PAD_BYTE(PTR) (*((uint8 *) (PTR)) != 0)
 
 /* VARSIZE_4B() should only be used on known-aligned data */
-#define VARSIZE_4B(PTR) \
-	(((varattrib_4b *) (PTR))->va_4byte.va_header & 0x3FFFFFFF)
-#define VARSIZE_1B(PTR) \
-	(((varattrib_1b *) (PTR))->va_header & 0x7F)
-#define VARTAG_1B_E(PTR) \
-	(((varattrib_1b_e *) (PTR))->va_tag)
+#define VARSIZE_4B(PTR) (((varattrib_4b *) (PTR))->va_4byte.va_header & 0x3FFFFFFF)
+#define VARSIZE_1B(PTR) (((varattrib_1b *) (PTR))->va_header & 0x7F)
+#define VARTAG_1B_E(PTR) (((varattrib_1b_e *) (PTR))->va_tag)
 
-#define SET_VARSIZE_4B(PTR,len) \
-	(((varattrib_4b *) (PTR))->va_4byte.va_header = (len) & 0x3FFFFFFF)
-#define SET_VARSIZE_4B_C(PTR,len) \
-	(((varattrib_4b *) (PTR))->va_4byte.va_header = ((len) & 0x3FFFFFFF) | 0x40000000)
-#define SET_VARSIZE_1B(PTR,len) \
-	(((varattrib_1b *) (PTR))->va_header = (len) | 0x80)
-#define SET_VARTAG_1B_E(PTR,tag) \
-	(((varattrib_1b_e *) (PTR))->va_header = 0x80, \
-	 ((varattrib_1b_e *) (PTR))->va_tag = (tag))
-#else							/* !WORDS_BIGENDIAN */
+#define SET_VARSIZE_4B(PTR, len) (((varattrib_4b *) (PTR))->va_4byte.va_header = (len) & 0x3FFFFFFF)
+#define SET_VARSIZE_4B_C(PTR, len) (((varattrib_4b *) (PTR))->va_4byte.va_header = ((len) & 0x3FFFFFFF) | 0x40000000)
+#define SET_VARSIZE_1B(PTR, len) (((varattrib_1b *) (PTR))->va_header = (len) | 0x80)
+#define SET_VARTAG_1B_E(PTR, tag)                                                                                      \
+    (((varattrib_1b_e *) (PTR))->va_header = 0x80, ((varattrib_1b_e *) (PTR))->va_tag = (tag))
+#else /* !WORDS_BIGENDIAN */
 
-#define VARATT_IS_4B(PTR) \
-	((((varattrib_1b *) (PTR))->va_header & 0x01) == 0x00)
-#define VARATT_IS_4B_U(PTR) \
-	((((varattrib_1b *) (PTR))->va_header & 0x03) == 0x00)
-#define VARATT_IS_4B_C(PTR) \
-	((((varattrib_1b *) (PTR))->va_header & 0x03) == 0x02)
-#define VARATT_IS_1B(PTR) \
-	((((varattrib_1b *) (PTR))->va_header & 0x01) == 0x01)
-#define VARATT_IS_1B_E(PTR) \
-	((((varattrib_1b *) (PTR))->va_header) == 0x01)
-#define VARATT_NOT_PAD_BYTE(PTR) \
-	(*((uint8 *) (PTR)) != 0)
+#define VARATT_IS_4B(PTR) ((((varattrib_1b *) (PTR))->va_header & 0x01) == 0x00)
+#define VARATT_IS_4B_U(PTR) ((((varattrib_1b *) (PTR))->va_header & 0x03) == 0x00)
+#define VARATT_IS_4B_C(PTR) ((((varattrib_1b *) (PTR))->va_header & 0x03) == 0x02)
+#define VARATT_IS_1B(PTR) ((((varattrib_1b *) (PTR))->va_header & 0x01) == 0x01)
+#define VARATT_IS_1B_E(PTR) ((((varattrib_1b *) (PTR))->va_header) == 0x01)
+#define VARATT_NOT_PAD_BYTE(PTR) (*((uint8 *) (PTR)) != 0)
 
 /* VARSIZE_4B() should only be used on known-aligned data */
-#define VARSIZE_4B(PTR) \
-	((((varattrib_4b *) (PTR))->va_4byte.va_header >> 2) & 0x3FFFFFFF)
-#define VARSIZE_1B(PTR) \
-	((((varattrib_1b *) (PTR))->va_header >> 1) & 0x7F)
-#define VARTAG_1B_E(PTR) \
-	(((varattrib_1b_e *) (PTR))->va_tag)
+#define VARSIZE_4B(PTR) ((((varattrib_4b *) (PTR))->va_4byte.va_header >> 2) & 0x3FFFFFFF)
+#define VARSIZE_1B(PTR) ((((varattrib_1b *) (PTR))->va_header >> 1) & 0x7F)
+#define VARTAG_1B_E(PTR) (((varattrib_1b_e *) (PTR))->va_tag)
 
-#define SET_VARSIZE_4B(PTR,len) \
-	(((varattrib_4b *) (PTR))->va_4byte.va_header = (((uint32) (len)) << 2))
-#define SET_VARSIZE_4B_C(PTR,len) \
-	(((varattrib_4b *) (PTR))->va_4byte.va_header = (((uint32) (len)) << 2) | 0x02)
-#define SET_VARSIZE_1B(PTR,len) \
-	(((varattrib_1b *) (PTR))->va_header = (((uint8) (len)) << 1) | 0x01)
-#define SET_VARTAG_1B_E(PTR,tag) \
-	(((varattrib_1b_e *) (PTR))->va_header = 0x01, \
-	 ((varattrib_1b_e *) (PTR))->va_tag = (tag))
-#endif   /* WORDS_BIGENDIAN */
+#define SET_VARSIZE_4B(PTR, len) (((varattrib_4b *) (PTR))->va_4byte.va_header = (((uint32) (len)) << 2))
+#define SET_VARSIZE_4B_C(PTR, len) (((varattrib_4b *) (PTR))->va_4byte.va_header = (((uint32) (len)) << 2) | 0x02)
+#define SET_VARSIZE_1B(PTR, len) (((varattrib_1b *) (PTR))->va_header = (((uint8) (len)) << 1) | 0x01)
+#define SET_VARTAG_1B_E(PTR, tag)                                                                                      \
+    (((varattrib_1b_e *) (PTR))->va_header = 0x01, ((varattrib_1b_e *) (PTR))->va_tag = (tag))
+#endif /* WORDS_BIGENDIAN */
 
-#define VARHDRSZ_SHORT			offsetof(varattrib_1b, va_data)
-#define VARATT_SHORT_MAX		0x7F
-#define VARATT_CAN_MAKE_SHORT(PTR) \
-	(VARATT_IS_4B_U(PTR) && \
-	 (VARSIZE(PTR) - VARHDRSZ + VARHDRSZ_SHORT) <= VARATT_SHORT_MAX)
-#define VARATT_CONVERTED_SHORT_SIZE(PTR) \
-	(VARSIZE(PTR) - VARHDRSZ + VARHDRSZ_SHORT)
+#define VARHDRSZ_SHORT offsetof(varattrib_1b, va_data)
+#define VARATT_SHORT_MAX 0x7F
+#define VARATT_CAN_MAKE_SHORT(PTR)                                                                                     \
+    (VARATT_IS_4B_U(PTR) && (VARSIZE(PTR) - VARHDRSZ + VARHDRSZ_SHORT) <= VARATT_SHORT_MAX)
+#define VARATT_CONVERTED_SHORT_SIZE(PTR) (VARSIZE(PTR) - VARHDRSZ + VARHDRSZ_SHORT)
 
-#define VARHDRSZ_EXTERNAL		offsetof(varattrib_1b_e, va_data)
+#define VARHDRSZ_EXTERNAL offsetof(varattrib_1b_e, va_data)
 
-#define VARDATA_4B(PTR)		(((varattrib_4b *) (PTR))->va_4byte.va_data)
-#define VARDATA_4B_C(PTR)	(((varattrib_4b *) (PTR))->va_compressed.va_data)
-#define VARDATA_1B(PTR)		(((varattrib_1b *) (PTR))->va_data)
-#define VARDATA_1B_E(PTR)	(((varattrib_1b_e *) (PTR))->va_data)
+#define VARDATA_4B(PTR) (((varattrib_4b *) (PTR))->va_4byte.va_data)
+#define VARDATA_4B_C(PTR) (((varattrib_4b *) (PTR))->va_compressed.va_data)
+#define VARDATA_1B(PTR) (((varattrib_1b *) (PTR))->va_data)
+#define VARDATA_1B_E(PTR) (((varattrib_1b_e *) (PTR))->va_data)
 
-#define VARRAWSIZE_4B_C(PTR) \
-	(((varattrib_4b *) (PTR))->va_compressed.va_rawsize)
+#define VARRAWSIZE_4B_C(PTR) (((varattrib_4b *) (PTR))->va_compressed.va_rawsize)
 
 /* Externally visible macros */
 
@@ -302,53 +265,43 @@ typedef struct
  * doesn't matter or because you're not going to access its constituent parts
  * and just use things like memcpy on it anyways.
  */
-#define VARDATA(PTR)						VARDATA_4B(PTR)
-#define VARSIZE(PTR)						VARSIZE_4B(PTR)
+#define VARDATA(PTR) VARDATA_4B(PTR)
+#define VARSIZE(PTR) VARSIZE_4B(PTR)
 
-#define VARSIZE_SHORT(PTR)					VARSIZE_1B(PTR)
-#define VARDATA_SHORT(PTR)					VARDATA_1B(PTR)
+#define VARSIZE_SHORT(PTR) VARSIZE_1B(PTR)
+#define VARDATA_SHORT(PTR) VARDATA_1B(PTR)
 
-#define VARTAG_EXTERNAL(PTR)				VARTAG_1B_E(PTR)
-#define VARSIZE_EXTERNAL(PTR)				(VARHDRSZ_EXTERNAL + VARTAG_SIZE(VARTAG_EXTERNAL(PTR)))
-#define VARDATA_EXTERNAL(PTR)				VARDATA_1B_E(PTR)
+#define VARTAG_EXTERNAL(PTR) VARTAG_1B_E(PTR)
+#define VARSIZE_EXTERNAL(PTR) (VARHDRSZ_EXTERNAL + VARTAG_SIZE(VARTAG_EXTERNAL(PTR)))
+#define VARDATA_EXTERNAL(PTR) VARDATA_1B_E(PTR)
 
-#define VARATT_IS_COMPRESSED(PTR)			VARATT_IS_4B_C(PTR)
-#define VARATT_IS_EXTERNAL(PTR)				VARATT_IS_1B_E(PTR)
-#define VARATT_IS_EXTERNAL_ONDISK(PTR) \
-	(VARATT_IS_EXTERNAL(PTR) && VARTAG_EXTERNAL(PTR) == VARTAG_ONDISK)
-#define VARATT_IS_EXTERNAL_INDIRECT(PTR) \
-	(VARATT_IS_EXTERNAL(PTR) && VARTAG_EXTERNAL(PTR) == VARTAG_INDIRECT)
-#define VARATT_IS_EXTERNAL_EXPANDED_RO(PTR) \
-	(VARATT_IS_EXTERNAL(PTR) && VARTAG_EXTERNAL(PTR) == VARTAG_EXPANDED_RO)
-#define VARATT_IS_EXTERNAL_EXPANDED_RW(PTR) \
-	(VARATT_IS_EXTERNAL(PTR) && VARTAG_EXTERNAL(PTR) == VARTAG_EXPANDED_RW)
-#define VARATT_IS_EXTERNAL_EXPANDED(PTR) \
-	(VARATT_IS_EXTERNAL(PTR) && VARTAG_IS_EXPANDED(VARTAG_EXTERNAL(PTR)))
-#define VARATT_IS_SHORT(PTR)				VARATT_IS_1B(PTR)
-#define VARATT_IS_EXTENDED(PTR)				(!VARATT_IS_4B_U(PTR))
+#define VARATT_IS_COMPRESSED(PTR) VARATT_IS_4B_C(PTR)
+#define VARATT_IS_EXTERNAL(PTR) VARATT_IS_1B_E(PTR)
+#define VARATT_IS_EXTERNAL_ONDISK(PTR) (VARATT_IS_EXTERNAL(PTR) && VARTAG_EXTERNAL(PTR) == VARTAG_ONDISK)
+#define VARATT_IS_EXTERNAL_INDIRECT(PTR) (VARATT_IS_EXTERNAL(PTR) && VARTAG_EXTERNAL(PTR) == VARTAG_INDIRECT)
+#define VARATT_IS_EXTERNAL_EXPANDED_RO(PTR) (VARATT_IS_EXTERNAL(PTR) && VARTAG_EXTERNAL(PTR) == VARTAG_EXPANDED_RO)
+#define VARATT_IS_EXTERNAL_EXPANDED_RW(PTR) (VARATT_IS_EXTERNAL(PTR) && VARTAG_EXTERNAL(PTR) == VARTAG_EXPANDED_RW)
+#define VARATT_IS_EXTERNAL_EXPANDED(PTR) (VARATT_IS_EXTERNAL(PTR) && VARTAG_IS_EXPANDED(VARTAG_EXTERNAL(PTR)))
+#define VARATT_IS_SHORT(PTR) VARATT_IS_1B(PTR)
+#define VARATT_IS_EXTENDED(PTR) (!VARATT_IS_4B_U(PTR))
 
-#define SET_VARSIZE(PTR, len)				SET_VARSIZE_4B(PTR, len)
-#define SET_VARSIZE_SHORT(PTR, len)			SET_VARSIZE_1B(PTR, len)
-#define SET_VARSIZE_COMPRESSED(PTR, len)	SET_VARSIZE_4B_C(PTR, len)
+#define SET_VARSIZE(PTR, len) SET_VARSIZE_4B(PTR, len)
+#define SET_VARSIZE_SHORT(PTR, len) SET_VARSIZE_1B(PTR, len)
+#define SET_VARSIZE_COMPRESSED(PTR, len) SET_VARSIZE_4B_C(PTR, len)
 
-#define SET_VARTAG_EXTERNAL(PTR, tag)		SET_VARTAG_1B_E(PTR, tag)
+#define SET_VARTAG_EXTERNAL(PTR, tag) SET_VARTAG_1B_E(PTR, tag)
 
-#define VARSIZE_ANY(PTR) \
-	(VARATT_IS_1B_E(PTR) ? VARSIZE_EXTERNAL(PTR) : \
-	 (VARATT_IS_1B(PTR) ? VARSIZE_1B(PTR) : \
-	  VARSIZE_4B(PTR)))
+#define VARSIZE_ANY(PTR)                                                                                               \
+    (VARATT_IS_1B_E(PTR) ? VARSIZE_EXTERNAL(PTR) : (VARATT_IS_1B(PTR) ? VARSIZE_1B(PTR) : VARSIZE_4B(PTR)))
 
 /* Size of a varlena data, excluding header */
-#define VARSIZE_ANY_EXHDR(PTR) \
-	(VARATT_IS_1B_E(PTR) ? VARSIZE_EXTERNAL(PTR)-VARHDRSZ_EXTERNAL : \
-	 (VARATT_IS_1B(PTR) ? VARSIZE_1B(PTR)-VARHDRSZ_SHORT : \
-	  VARSIZE_4B(PTR)-VARHDRSZ))
+#define VARSIZE_ANY_EXHDR(PTR)                                                                                         \
+    (VARATT_IS_1B_E(PTR) ? VARSIZE_EXTERNAL(PTR) - VARHDRSZ_EXTERNAL                                                   \
+                         : (VARATT_IS_1B(PTR) ? VARSIZE_1B(PTR) - VARHDRSZ_SHORT : VARSIZE_4B(PTR) - VARHDRSZ))
 
 /* caution: this will not work on an external or compressed-in-line Datum */
 /* caution: this will return a possibly unaligned pointer */
-#define VARDATA_ANY(PTR) \
-	 (VARATT_IS_1B(PTR) ? VARDATA_1B(PTR) : VARDATA_4B(PTR))
-
+#define VARDATA_ANY(PTR) (VARATT_IS_1B(PTR) ? VARDATA_1B(PTR) : VARDATA_4B(PTR))
 
 /* ----------------------------------------------------------------
  *				Section 2:	datum type + support macros
@@ -377,17 +330,17 @@ typedef uintptr_t Datum;
 
 typedef Datum *DatumPtr;
 
-#define GET_1_BYTE(datum)	(((Datum) (datum)) & 0x000000ff)
-#define GET_2_BYTES(datum)	(((Datum) (datum)) & 0x0000ffff)
-#define GET_4_BYTES(datum)	(((Datum) (datum)) & 0xffffffff)
+#define GET_1_BYTE(datum) (((Datum) (datum)) & 0x000000ff)
+#define GET_2_BYTES(datum) (((Datum) (datum)) & 0x0000ffff)
+#define GET_4_BYTES(datum) (((Datum) (datum)) & 0xffffffff)
 #if SIZEOF_DATUM == 8
-#define GET_8_BYTES(datum)	((Datum) (datum))
+#define GET_8_BYTES(datum) ((Datum) (datum))
 #endif
-#define SET_1_BYTE(value)	(((Datum) (value)) & 0x000000ff)
-#define SET_2_BYTES(value)	(((Datum) (value)) & 0x0000ffff)
-#define SET_4_BYTES(value)	(((Datum) (value)) & 0xffffffff)
+#define SET_1_BYTE(value) (((Datum) (value)) & 0x000000ff)
+#define SET_2_BYTES(value) (((Datum) (value)) & 0x0000ffff)
+#define SET_4_BYTES(value) (((Datum) (value)) & 0xffffffff)
 #if SIZEOF_DATUM == 8
-#define SET_8_BYTES(value)	((Datum) (value))
+#define SET_8_BYTES(value) ((Datum) (value))
 #endif
 
 /*
@@ -612,7 +565,7 @@ typedef Datum *DatumPtr;
 #ifdef USE_FLOAT8_BYVAL
 #define DatumGetInt64(X) ((int64) GET_8_BYTES(X))
 #else
-#define DatumGetInt64(X) (* ((int64 *) DatumGetPointer(X)))
+#define DatumGetInt64(X) (*((int64 *) DatumGetPointer(X)))
 #endif
 
 /*
@@ -639,7 +592,7 @@ extern Datum Int64GetDatum(int64 X);
 #ifdef USE_FLOAT4_BYVAL
 extern float4 DatumGetFloat4(Datum X);
 #else
-#define DatumGetFloat4(X) (* ((float4 *) DatumGetPointer(X)))
+#define DatumGetFloat4(X) (*((float4 *) DatumGetPointer(X)))
 #endif
 
 /*
@@ -662,7 +615,7 @@ extern Datum Float4GetDatum(float4 X);
 #ifdef USE_FLOAT8_BYVAL
 extern float8 DatumGetFloat8(Datum X);
 #else
-#define DatumGetFloat8(X) (* ((float8 *) DatumGetPointer(X)))
+#define DatumGetFloat8(X) (*((float8 *) DatumGetPointer(X)))
 #endif
 
 /*
@@ -674,7 +627,6 @@ extern float8 DatumGetFloat8(Datum X);
  */
 
 extern Datum Float8GetDatum(float8 X);
-
 
 /*
  * Int64GetDatumFast
@@ -691,10 +643,10 @@ extern Datum Float8GetDatum(float8 X);
  */
 
 #ifdef USE_FLOAT8_BYVAL
-#define Int64GetDatumFast(X)  Int64GetDatum(X)
+#define Int64GetDatumFast(X) Int64GetDatum(X)
 #define Float8GetDatumFast(X) Float8GetDatum(X)
 #else
-#define Int64GetDatumFast(X)  PointerGetDatum(&(X))
+#define Int64GetDatumFast(X) PointerGetDatum(&(X))
 #define Float8GetDatumFast(X) PointerGetDatum(&(X))
 #endif
 
@@ -703,7 +655,6 @@ extern Datum Float8GetDatum(float8 X);
 #else
 #define Float4GetDatumFast(X) PointerGetDatum(&(X))
 #endif
-
 
 /* ----------------------------------------------------------------
  *				Section 3:	exception handling backend support
@@ -715,8 +666,7 @@ extern Datum Float8GetDatum(float8 X);
  *
  * ExceptionalCondition must be present even when assertions are not enabled.
  */
-extern void ExceptionalCondition(const char *conditionName,
-					 const char *errorType,
-			   const char *fileName, int lineNumber) pg_attribute_noreturn();
+extern void ExceptionalCondition(const char *conditionName, const char *errorType, const char *fileName, int lineNumber)
+    pg_attribute_noreturn();
 
-#endif   /* POSTGRES_H */
+#endif /* POSTGRES_H */

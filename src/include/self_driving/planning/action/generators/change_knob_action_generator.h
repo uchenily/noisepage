@@ -10,29 +10,29 @@
 namespace noisepage {
 
 namespace settings {
-class SettingsManager;
+    class SettingsManager;
 }
 
 namespace selfdriving::pilot {
 
-class AbstractAction;
+    class AbstractAction;
 
-/**
- * Generate change knob candidate actions
- */
-class ChangeKnobActionGenerator : AbstractActionGenerator {
- public:
-  void GenerateActions(const std::vector<std::unique_ptr<planner::AbstractPlanNode>> &plans,
-                       common::ManagedPointer<settings::SettingsManager> settings_manager,
-                       std::map<action_id_t, std::unique_ptr<AbstractAction>> *action_map,
-                       std::vector<action_id_t> *candidate_actions) override;
+    /**
+     * Generate change knob candidate actions
+     */
+    class ChangeKnobActionGenerator : AbstractActionGenerator {
+    public:
+        void GenerateActions(const std::vector<std::unique_ptr<planner::AbstractPlanNode>> &plans,
+                             common::ManagedPointer<settings::SettingsManager>              settings_manager,
+                             std::map<action_id_t, std::unique_ptr<AbstractAction>>        *action_map,
+                             std::vector<action_id_t>                                      *candidate_actions) override;
 
- private:
-  template <class T>
-  static void GenerateActionForType(common::ManagedPointer<settings::SettingsManager> settings_manager,
-                                    std::map<action_id_t, std::unique_ptr<AbstractAction>> *action_map,
-                                    std::vector<action_id_t> *candidate_actions);
-};
+    private:
+        template <class T>
+        static void GenerateActionForType(common::ManagedPointer<settings::SettingsManager>       settings_manager,
+                                          std::map<action_id_t, std::unique_ptr<AbstractAction>> *action_map,
+                                          std::vector<action_id_t>                               *candidate_actions);
+    };
 
-}  // namespace selfdriving::pilot
-}  // namespace noisepage
+} // namespace selfdriving::pilot
+} // namespace noisepage

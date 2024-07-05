@@ -5,10 +5,10 @@ namespace noisepage::parser {
 common::SanctionedSharedPtr<spdlog::logger>::Ptr parser_logger = nullptr;
 
 void InitParserLogger() {
-  if (parser_logger == nullptr) {
-    parser_logger = std::make_shared<spdlog::logger>("parser_logger", ::default_sink);  // NOLINT
-    spdlog::register_logger(parser_logger);
-  }
+    if (parser_logger == nullptr) {
+        parser_logger = std::make_shared<spdlog::logger>("parser_logger", ::default_sink); // NOLINT
+        spdlog::register_logger(parser_logger);
+    }
 }
 #endif
-}  // namespace noisepage::parser
+} // namespace noisepage::parser

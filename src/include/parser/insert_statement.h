@@ -13,82 +13,101 @@
 
 namespace noisepage {
 namespace parser {
-/**
- * InsertStatement represents the sql "INSERT ..."
- */
-class InsertStatement : public SQLStatement {
- public:
-  /**
-   * Insert from SELECT
-   * @param columns columns to insert into
-   * @param table_ref table
-   * @param select select statement to insert from
-   */
-  InsertStatement(std::unique_ptr<std::vector<std::string>> columns, std::unique_ptr<TableRef> table_ref,
-                  std::unique_ptr<SelectStatement> select)
-      : SQLStatement(StatementType::INSERT),
-        type_(InsertType::SELECT),
-        columns_(std::move(columns)),
-        table_ref_(std::move(table_ref)),
-        select_(std::move(select)) {}
+    /**
+     * InsertStatement represents the sql "INSERT ..."
+     */
+    class InsertStatement : public SQLStatement {
+    public:
+        /**
+         * Insert from SELECT
+         * @param columns columns to insert into
+         * @param table_ref table
+         * @param select select statement to insert from
+         */
+        InsertStatement(std::unique_ptr<std::vector<std::string>> columns,
+                        std::unique_ptr<TableRef>                 table_ref,
+                        std::unique_ptr<SelectStatement>          select)
+            : SQLStatement(StatementType::INSERT)
+            , type_(InsertType::SELECT)
+            , columns_(std::move(columns))
+            , table_ref_(std::move(table_ref))
+            , select_(std::move(select)) {}
 
-  /**
-   * Insert from VALUES
-   * @param columns columns to insert into
-   * @param table_ref table
-   * @param insert_values values to be inserted
-   */
-  InsertStatement(std::unique_ptr<std::vector<std::string>> columns, std::unique_ptr<TableRef> table_ref,
-                  std::unique_ptr<std::vector<std::vector<common::ManagedPointer<AbstractExpression>>>> insert_values)
-      : SQLStatement(StatementType::INSERT),
-        type_(InsertType::VALUES),
-        columns_(std::move(columns)),
-        table_ref_(std::move(table_ref)),
-        insert_values_(std::move(insert_values)) {}
+        /**
+         * Insert from VALUES
+         * @param columns columns to insert into
+         * @param table_ref table
+         * @param insert_values values to be inserted
+         */
+        InsertStatement(
+            std::unique_ptr<std::vector<std::string>>                                             columns,
+            std::unique_ptr<TableRef>                                                             table_ref,
+            std::unique_ptr<std::vector<std::vector<common::ManagedPointer<AbstractExpression>>>> insert_values)
+            : SQLStatement(StatementType::INSERT)
+            , type_(InsertType::VALUES)
+            , columns_(std::move(columns))
+            , table_ref_(std::move(table_ref))
+            , insert_values_(std::move(insert_values)) {}
 
-  /** @param type insert type (SELECT or VALUES) */
-  explicit InsertStatement(InsertType type) : SQLStatement(StatementType::INSERT), type_(type) {}
+        /** @param type insert type (SELECT or VALUES) */
+        explicit InsertStatement(InsertType type)
+            : SQLStatement(StatementType::INSERT)
+            , type_(type) {}
 
-  ~InsertStatement() override = default;
+        ~InsertStatement() override = default;
 
-  void Accept(common::ManagedPointer<binder::SqlNodeVisitor> v) override { v->Visit(common::ManagedPointer(this)); }
+        void Accept(common::ManagedPointer<binder::SqlNodeVisitor> v) override {
+            v->Visit(common::ManagedPointer(this));
+        }
 
-  /** @return type of insertion */
-  InsertType GetInsertType() { return type_; }
+        /** @return type of insertion */
+        InsertType GetInsertType() {
+            return type_;
+        }
 
-  /** @return columns to insert into */
-  common::ManagedPointer<std::vector<std::string>> GetInsertColumns() { return common::ManagedPointer(columns_); }
+        /** @return columns to insert into */
+        common::ManagedPointer<std::vector<std::string>> GetInsertColumns() {
+            return common::ManagedPointer(columns_);
+        }
 
-  /** @return table to insert into */
-  common::ManagedPointer<TableRef> GetInsertionTable() const { return common::ManagedPointer(table_ref_); }
+        /** @return table to insert into */
+        common::ManagedPointer<TableRef> GetInsertionTable() const {
+            return common::ManagedPointer(table_ref_);
+        }
 
-  /** @return select statement we're inserting from */
-  common::ManagedPointer<SelectStatement> GetSelect() const { return common::ManagedPointer(select_); }
+        /** @return select statement we're inserting from */
+        common::ManagedPointer<SelectStatement> GetSelect() const {
+            return common::ManagedPointer(select_);
+        }
 
-  /** @return values that we're inserting */
-  common::ManagedPointer<std::vector<std::vector<common::ManagedPointer<AbstractExpression>>>> GetValues() {
-    return common::ManagedPointer(insert_values_);
-  }
+        /** @return values that we're inserting */
+        common::ManagedPointer<std::vector<std::vector<common::ManagedPointer<AbstractExpression>>>> GetValues() {
+            return common::ManagedPointer(insert_values_);
+        }
 
-  /** @return a collection of the temporary tables available to the INSERT */
-  std::vector<common::ManagedPointer<TableRef>> GetInsertWith() const {
-    // TODO(Kyle): This collection is currently NEVER populated
-    std::vector<common::ManagedPointer<TableRef>> table_refs{};
-    table_refs.reserve(with_tables_.size());
-    std::transform(with_tables_.cbegin(), with_tables_.cend(), std::back_inserter(table_refs),
-                   [](const auto &ref) { return common::ManagedPointer<TableRef>(ref); });
-    return table_refs;
-  }
+        /** @return a collection of the temporary tables available to the INSERT */
+        std::vector<common::ManagedPointer<TableRef>> GetInsertWith() const {
+            // TODO(Kyle): This collection is currently NEVER populated
+            std::vector<common::ManagedPointer<TableRef>> table_refs{};
+            table_refs.reserve(with_tables_.size());
+            std::transform(with_tables_.cbegin(),
+                           with_tables_.cend(),
+                           std::back_inserter(table_refs),
+                           [](const auto &ref) {
+                               return common::ManagedPointer<TableRef>(ref);
+                           });
+            return table_refs;
+        }
 
- private:
-  const InsertType type_;
-  const std::unique_ptr<std::vector<std::string>> columns_;
-  const std::unique_ptr<TableRef> table_ref_;
-  const std::unique_ptr<SelectStatement> select_;
-  const std::unique_ptr<std::vector<std::vector<common::ManagedPointer<AbstractExpression>>>> insert_values_;
+    private:
+        const InsertType                                                                            type_;
+        const std::unique_ptr<std::vector<std::string>>                                             columns_;
+        const std::unique_ptr<TableRef>                                                             table_ref_;
+        const std::unique_ptr<SelectStatement>                                                      select_;
+        const std::unique_ptr<std::vector<std::vector<common::ManagedPointer<AbstractExpression>>>> insert_values_;
 
-  std::vector<std::unique_ptr<TableRef>> with_tables_{};
-};
+        std::vector<std::unique_ptr<TableRef>> with_tables_{};
+    };
 
-}  // namespace parser
-}  // namespace noisepage
+} // namespace parser
+} // namespace noisepage

@@ -7,8 +7,10 @@ namespace noisepage::execution::sql {
  */
 template <typename T>
 struct BitwiseAnd {
-  /** @return a & b. */
-  constexpr T operator()(const T &a, const T &b) const noexcept { return a & b; }
+    /** @return a & b. */
+    constexpr T operator()(const T &a, const T &b) const noexcept {
+        return a & b;
+    }
 };
 
 /**
@@ -16,8 +18,10 @@ struct BitwiseAnd {
  */
 template <typename T>
 struct BitwiseOr {
-  /** @return a | b. */
-  constexpr T operator()(const T &a, const T &b) const noexcept { return a | b; }
+    /** @return a | b. */
+    constexpr T operator()(const T &a, const T &b) const noexcept {
+        return a | b;
+    }
 };
 
 /**
@@ -25,8 +29,10 @@ struct BitwiseOr {
  */
 template <typename T>
 struct BitwiseShiftLeft {
-  /** @return a << b. */
-  constexpr T operator()(const T &a, const T &b) const noexcept { return a << b; }
+    /** @return a << b. */
+    constexpr T operator()(const T &a, const T &b) const noexcept {
+        return a << b;
+    }
 };
 
 /**
@@ -34,8 +40,10 @@ struct BitwiseShiftLeft {
  */
 template <typename T>
 struct BitwiseShiftRight {
-  /** @return a >> b. */
-  constexpr T operator()(const T &a, const T &b) const noexcept { return a >> b; }
+    /** @return a >> b. */
+    constexpr T operator()(const T &a, const T &b) const noexcept {
+        return a >> b;
+    }
 };
 
 /**
@@ -43,8 +51,10 @@ struct BitwiseShiftRight {
  */
 template <typename T>
 struct BitwiseNot {
-  /** @return ~input. */
-  constexpr T operator()(const T &input) const noexcept { return ~input; }
+    /** @return ~input. */
+    constexpr T operator()(const T &input) const noexcept {
+        return ~input;
+    }
 };
 
 /**
@@ -52,8 +62,10 @@ struct BitwiseNot {
  */
 template <typename T>
 struct BitwiseXor {
-  /** @return a ^ b. */
-  constexpr T operator()(const T &a, const T &b) const noexcept { return a ^ b; }
+    /** @return a ^ b. */
+    constexpr T operator()(const T &a, const T &b) const noexcept {
+        return a ^ b;
+    }
 };
 
-}  // namespace noisepage::execution::sql
+} // namespace noisepage::execution::sql

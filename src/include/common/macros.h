@@ -34,7 +34,7 @@
 //===--------------------------------------------------------------------===//
 
 #ifdef NDEBUG
-#define NOISEPAGE_ASSERT(expr, message) ((void)0)
+#define NOISEPAGE_ASSERT(expr, message) ((void) 0)
 #else
 /*
  * On assert failure, most existing implementations of C++ will print out the condition.
@@ -87,29 +87,29 @@
 
 // Macros to disable copying and moving
 #ifndef DISALLOW_COPY
-#define DISALLOW_COPY(cname)     \
-  /* Delete copy constructor. */ \
-  cname(const cname &) = delete; \
-  /* Delete copy assignment. */  \
-  cname &operator=(const cname &) = delete;
+#define DISALLOW_COPY(cname)                                                                                           \
+    /* Delete copy constructor. */                                                                                     \
+    cname(const cname &) = delete;                                                                                     \
+    /* Delete copy assignment. */                                                                                      \
+    cname &operator=(const cname &) = delete;
 
-#define DISALLOW_MOVE(cname)     \
-  /* Delete move constructor. */ \
-  cname(cname &&) = delete;      \
-  /* Delete move assignment. */  \
-  cname &operator=(cname &&) = delete;
+#define DISALLOW_MOVE(cname)                                                                                           \
+    /* Delete move constructor. */                                                                                     \
+    cname(cname &&) = delete;                                                                                          \
+    /* Delete move assignment. */                                                                                      \
+    cname &operator=(cname &&) = delete;
 
 /**
  * Disable copy and move.
  */
-#define DISALLOW_COPY_AND_MOVE(cname) \
-  DISALLOW_COPY(cname);               \
-  DISALLOW_MOVE(cname);
+#define DISALLOW_COPY_AND_MOVE(cname)                                                                                  \
+    DISALLOW_COPY(cname);                                                                                              \
+    DISALLOW_MOVE(cname);
 
 /** Disallow instantiation of the class. This should be used for classes that only have static functions. */
-#define DISALLOW_INSTANTIATION(cname) \
-  /* Prevent instantiation. */        \
-  cname() = delete;
+#define DISALLOW_INSTANTIATION(cname)                                                                                  \
+    /* Prevent instantiation. */                                                                                       \
+    cname() = delete;
 
 #endif
 
@@ -123,17 +123,17 @@
  * Typically classes marked with these will expose static factory methods that calculate the size of an object in memory
  * given some parameters and an Initialize method to construct a valid object from pointer to a chunk of memory
  */
-#define MEM_REINTERPRETATION_ONLY(cname) \
-  cname() = delete;                      \
-  DISALLOW_COPY_AND_MOVE(cname)          \
-  ~cname() = delete;
+#define MEM_REINTERPRETATION_ONLY(cname)                                                                               \
+    cname() = delete;                                                                                                  \
+    DISALLOW_COPY_AND_MOVE(cname)                                                                                      \
+    ~cname() = delete;
 
 //===----------------------------------------------------------------------===//
 // LLVM version checking macros
 //===----------------------------------------------------------------------===//
 
-#define LLVM_VERSION_GE(major, minor) \
-  (LLVM_VERSION_MAJOR > (major) || (LLVM_VERSION_MAJOR == (major) && LLVM_VERSION_MINOR >= (minor)))
+#define LLVM_VERSION_GE(major, minor)                                                                                  \
+    (LLVM_VERSION_MAJOR > (major) || (LLVM_VERSION_MAJOR == (major) && LLVM_VERSION_MINOR >= (minor)))
 
 #define LLVM_VERSION_EQ(major, minor) (LLVM_VERSION_MAJOR == (major) && LLVM_VERSION_MINOR == (minor))
 
@@ -141,9 +141,9 @@
 // switch statements
 //===----------------------------------------------------------------------===//
 #if defined __clang__
-#define NOISEPAGE_FALLTHROUGH [[clang::fallthrough]]  // NOLINT
+#define NOISEPAGE_FALLTHROUGH [[clang::fallthrough]] // NOLINT
 #elif defined __GNUC__ && __GNUC__ >= 7
-#define NOISEPAGE_FALLTHROUGH [[fallthrough]]  // NOLINT
+#define NOISEPAGE_FALLTHROUGH [[fallthrough]] // NOLINT
 #else
 #define NOISEPAGE_FALLTHROUGH
 #endif

@@ -27,54 +27,56 @@ enum class PropertyType { SORT };
  * transformation.
  */
 class Property {
- public:
-  /**
-   * Trivial destructor for Property
-   */
-  virtual ~Property() = default;
+public:
+    /**
+     * Trivial destructor for Property
+     */
+    virtual ~Property() = default;
 
-  /**
-   * @returns Type of the Property
-   */
-  virtual PropertyType Type() const = 0;
+    /**
+     * @returns Type of the Property
+     */
+    virtual PropertyType Type() const = 0;
 
-  /**
-   * Copy
-   */
-  virtual Property *Copy() = 0;
+    /**
+     * Copy
+     */
+    virtual Property *Copy() = 0;
 
-  /**
-   * Hashes the given Property
-   * @returns Hash code
-   */
-  virtual common::hash_t Hash() const {
-    PropertyType t = Type();
-    return common::HashUtil::Hash(t);
-  }
-
-  /**
-   * Checks whether this >= r
-   * @returns TRUE if this and r share the same type
-   */
-  virtual bool operator>=(const Property &r) const { return Type() == r.Type(); }
-
-  /**
-   * Accept function used for visitor pattern
-   * @param v Visitor
-   */
-  virtual void Accept(PropertyVisitor *v) const = 0;
-
-  /**
-   * Casts a generic Property to a specialized class
-   * @returns specialized pointer or nullptr if invalid
-   */
-  template <typename T>
-  const T *As() const {
-    if (typeid(*this) == typeid(T)) {
-      return reinterpret_cast<const T *>(this);
+    /**
+     * Hashes the given Property
+     * @returns Hash code
+     */
+    virtual common::hash_t Hash() const {
+        PropertyType t = Type();
+        return common::HashUtil::Hash(t);
     }
-    return nullptr;
-  }
+
+    /**
+     * Checks whether this >= r
+     * @returns TRUE if this and r share the same type
+     */
+    virtual bool operator>=(const Property &r) const {
+        return Type() == r.Type();
+    }
+
+    /**
+     * Accept function used for visitor pattern
+     * @param v Visitor
+     */
+    virtual void Accept(PropertyVisitor *v) const = 0;
+
+    /**
+     * Casts a generic Property to a specialized class
+     * @returns specialized pointer or nullptr if invalid
+     */
+    template <typename T>
+    const T *As() const {
+        if (typeid(*this) == typeid(T)) {
+            return reinterpret_cast<const T *>(this);
+        }
+        return nullptr;
+    }
 };
 
-}  // namespace noisepage::optimizer
+} // namespace noisepage::optimizer

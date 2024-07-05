@@ -40,7 +40,7 @@ To address the bug, especially if it environment specific, we need to know what 
 
 **OS**: Ubuntu (LTS) 20.04 or macOS 10.14+ (please specify version).
 
-**Compiler**: GCC 7.0+ or Clang 8.0+. 
+**Compiler**: GCC 7.0+ or Clang 8.0+.
 
 **CMake Profile**: `Debug`, `Release`, `FastDebug`, or `Relwithdebinfo`. If exists across all cmake profiles on a platform-compiler combo, then please say so.
 

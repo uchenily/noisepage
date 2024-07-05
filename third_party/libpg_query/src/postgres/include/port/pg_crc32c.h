@@ -41,8 +41,7 @@ typedef uint32 pg_crc32c;
 
 #if defined(USE_SSE42_CRC32C)
 /* Use SSE4.2 instructions. */
-#define COMP_CRC32C(crc, data, len) \
-	((crc) = pg_comp_crc32c_sse42((crc), (data), (len)))
+#define COMP_CRC32C(crc, data, len) ((crc) = pg_comp_crc32c_sse42((crc), (data), (len)))
 #define FIN_CRC32C(crc) ((crc) ^= 0xFFFFFFFF)
 
 extern pg_crc32c pg_comp_crc32c_sse42(pg_crc32c crc, const void *data, size_t len);
@@ -52,13 +51,12 @@ extern pg_crc32c pg_comp_crc32c_sse42(pg_crc32c crc, const void *data, size_t le
  * Use SSE4.2 instructions, but perform a runtime check first to check that
  * they are available.
  */
-#define COMP_CRC32C(crc, data, len) \
-	((crc) = pg_comp_crc32c((crc), (data), (len)))
+#define COMP_CRC32C(crc, data, len) ((crc) = pg_comp_crc32c((crc), (data), (len)))
 #define FIN_CRC32C(crc) ((crc) ^= 0xFFFFFFFF)
 
 extern pg_crc32c pg_comp_crc32c_sse42(pg_crc32c crc, const void *data, size_t len);
 extern pg_crc32c pg_comp_crc32c_sb8(pg_crc32c crc, const void *data, size_t len);
-extern pg_crc32c (*pg_comp_crc32c) (pg_crc32c crc, const void *data, size_t len);
+extern pg_crc32c (*pg_comp_crc32c)(pg_crc32c crc, const void *data, size_t len);
 
 #else
 /*
@@ -68,17 +66,14 @@ extern pg_crc32c (*pg_comp_crc32c) (pg_crc32c crc, const void *data, size_t len)
  * order, to avoid byte-swapping during the calculation. FIN_CRC32C reverses
  * the bytes to the final order.
  */
-#define COMP_CRC32C(crc, data, len) \
-	((crc) = pg_comp_crc32c_sb8((crc), (data), (len)))
+#define COMP_CRC32C(crc, data, len) ((crc) = pg_comp_crc32c_sb8((crc), (data), (len)))
 #ifdef WORDS_BIGENDIAN
 
 #ifdef HAVE__BUILTIN_BSWAP32
 #define BSWAP32(x) __builtin_bswap32(x)
 #else
-#define BSWAP32(x) (((x << 24) & 0xff000000) | \
-					((x << 8) & 0x00ff0000) | \
-					((x >> 8) & 0x0000ff00) | \
-					((x >> 24) & 0x000000ff))
+#define BSWAP32(x)                                                                                                     \
+    (((x << 24) & 0xff000000) | ((x << 8) & 0x00ff0000) | ((x >> 8) & 0x0000ff00) | ((x >> 24) & 0x000000ff))
 #endif
 
 #define FIN_CRC32C(crc) ((crc) = BSWAP32(crc) ^ 0xFFFFFFFF)
@@ -90,4 +85,4 @@ extern pg_crc32c pg_comp_crc32c_sb8(pg_crc32c crc, const void *data, size_t len)
 
 #endif
 
-#endif   /* PG_CRC32C_H */
+#endif /* PG_CRC32C_H */

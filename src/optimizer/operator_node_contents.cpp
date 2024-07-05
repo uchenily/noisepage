@@ -14,65 +14,76 @@ Operator::Operator() noexcept = default;
 Operator::Operator(common::ManagedPointer<BaseOperatorNodeContents> contents)
     : AbstractOptimizerNodeContents(contents.CastManagedPointerTo<AbstractOptimizerNodeContents>()) {}
 
-Operator::Operator(Operator &&o) noexcept : AbstractOptimizerNodeContents(o.contents_) {}
+Operator::Operator(Operator &&o) noexcept
+    : AbstractOptimizerNodeContents(o.contents_) {}
 
-void Operator::Accept(common::ManagedPointer<OperatorVisitor> v) const { contents_->Accept(v); }
+void Operator::Accept(common::ManagedPointer<OperatorVisitor> v) const {
+    contents_->Accept(v);
+}
 
 std::string Operator::GetName() const {
-  if (IsDefined()) {
-    return contents_->GetName();
-  }
-  return "Undefined";
+    if (IsDefined()) {
+        return contents_->GetName();
+    }
+    return "Undefined";
 }
 
 OpType Operator::GetOpType() const {
-  if (IsDefined()) {
-    return contents_->GetOpType();
-  }
+    if (IsDefined()) {
+        return contents_->GetOpType();
+    }
 
-  return OpType::UNDEFINED;
+    return OpType::UNDEFINED;
 }
 
-parser::ExpressionType Operator::GetExpType() const { return parser::ExpressionType::INVALID; }
+parser::ExpressionType Operator::GetExpType() const {
+    return parser::ExpressionType::INVALID;
+}
 
 bool Operator::IsLogical() const {
-  if (IsDefined()) {
-    return contents_->IsLogical();
-  }
-  return false;
+    if (IsDefined()) {
+        return contents_->IsLogical();
+    }
+    return false;
 }
 
 bool Operator::IsPhysical() const {
-  if (IsDefined()) {
-    return contents_->IsPhysical();
-  }
-  return false;
+    if (IsDefined()) {
+        return contents_->IsPhysical();
+    }
+    return false;
 }
 
 common::hash_t Operator::Hash() const {
-  if (IsDefined()) {
-    return contents_->Hash();
-  }
-  return 0;
+    if (IsDefined()) {
+        return contents_->Hash();
+    }
+    return 0;
 }
 
 bool Operator::operator==(const Operator &rhs) const {
-  if (IsDefined() && rhs.IsDefined()) {
-    return *contents_ == *rhs.contents_;
-  }
+    if (IsDefined() && rhs.IsDefined()) {
+        return *contents_ == *rhs.contents_;
+    }
 
-  return !IsDefined() && !rhs.IsDefined();
+    return !IsDefined() && !rhs.IsDefined();
 }
 
-bool Operator::IsDefined() const { return contents_ != nullptr; }
+bool Operator::IsDefined() const {
+    return contents_ != nullptr;
+}
 
 Operator Operator::RegisterWithTxnContext(transaction::TransactionContext *txn) {
-  auto *op = dynamic_cast<BaseOperatorNodeContents *>(contents_.Get());
-  if (txn != nullptr) {
-    txn->RegisterCommitAction([=]() { delete op; });
-    txn->RegisterAbortAction([=]() { delete op; });
-  }
-  return *this;
+    auto *op = dynamic_cast<BaseOperatorNodeContents *>(contents_.Get());
+    if (txn != nullptr) {
+        txn->RegisterCommitAction([=]() {
+            delete op;
+        });
+        txn->RegisterAbortAction([=]() {
+            delete op;
+        });
+    }
+    return *this;
 }
 
-}  // namespace noisepage::optimizer
+} // namespace noisepage::optimizer

@@ -8,25 +8,25 @@ class FileTest : public TplTest {};
 
 // NOLINTNEXTLINE
 TEST_F(FileTest, CreateTemporaryFile) {
-  // Create a temporary file and write a string into it
-  auto f = File();
-  f.CreateTemp(true);
+    // Create a temporary file and write a string into it
+    auto f = File();
+    f.CreateTemp(true);
 
-  ASSERT_FALSE(f.HasError());
-  ASSERT_TRUE(f.IsCreated());
+    ASSERT_FALSE(f.HasError());
+    ASSERT_TRUE(f.IsCreated());
 
-  auto s = std::string("Simple Test");
-  auto written = f.WriteFull(reinterpret_cast<std::byte *>(s.data()), s.length());
-  ASSERT_FALSE(f.HasError());
-  ASSERT_EQ(written, s.length());
-  ASSERT_TRUE(f.Flush());
+    auto s = std::string("Simple Test");
+    auto written = f.WriteFull(reinterpret_cast<std::byte *>(s.data()), s.length());
+    ASSERT_FALSE(f.HasError());
+    ASSERT_EQ(written, s.length());
+    ASSERT_TRUE(f.Flush());
 
-  char r[100];
-  auto chars_read = f.ReadFullFromPosition(0, reinterpret_cast<std::byte *>(r), s.length());
-  ASSERT_FALSE(f.HasError());
-  ASSERT_EQ(chars_read, s.length());
+    char r[100];
+    auto chars_read = f.ReadFullFromPosition(0, reinterpret_cast<std::byte *>(r), s.length());
+    ASSERT_FALSE(f.HasError());
+    ASSERT_EQ(chars_read, s.length());
 
-  ASSERT_EQ(std::string(r, s.length()), s);
+    ASSERT_EQ(std::string(r, s.length()), s);
 }
 
 // TODO(WAN): filesystem header things.
@@ -165,4 +165,4 @@ TEST_F(FileTest, Seek) {
 }
 #endif
 
-}  // namespace noisepage::execution::util::test
+} // namespace noisepage::execution::util::test

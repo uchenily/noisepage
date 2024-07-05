@@ -21,4 +21,4 @@ std::string GetBuildRootPath();
  * @return The absolute path to the binary artifact, as a string.
  */
 std::string GetBinaryArtifactPath(std::string_view name);
-}  // namespace noisepage::common
+} // namespace noisepage::common

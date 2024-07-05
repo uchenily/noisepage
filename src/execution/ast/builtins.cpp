@@ -9,4 +9,4 @@ const char *Builtins::builtin_function_names[] = {
 #undef ENTRY
 };
 
-}  // namespace noisepage::execution::ast
+} // namespace noisepage::execution::ast

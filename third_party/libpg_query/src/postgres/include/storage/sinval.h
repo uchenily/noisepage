@@ -56,81 +56,71 @@
  * sent immediately when the underlying file change is made.
  */
 
-typedef struct
-{
-	int8		id;				/* cache ID --- must be first */
-	Oid			dbId;			/* database ID, or 0 if a shared relation */
-	uint32		hashValue;		/* hash value of key for this catcache */
+typedef struct {
+    int8   id;        /* cache ID --- must be first */
+    Oid    dbId;      /* database ID, or 0 if a shared relation */
+    uint32 hashValue; /* hash value of key for this catcache */
 } SharedInvalCatcacheMsg;
 
-#define SHAREDINVALCATALOG_ID	(-1)
+#define SHAREDINVALCATALOG_ID (-1)
 
-typedef struct
-{
-	int8		id;				/* type field --- must be first */
-	Oid			dbId;			/* database ID, or 0 if a shared catalog */
-	Oid			catId;			/* ID of catalog whose contents are invalid */
+typedef struct {
+    int8 id;    /* type field --- must be first */
+    Oid  dbId;  /* database ID, or 0 if a shared catalog */
+    Oid  catId; /* ID of catalog whose contents are invalid */
 } SharedInvalCatalogMsg;
 
-#define SHAREDINVALRELCACHE_ID	(-2)
+#define SHAREDINVALRELCACHE_ID (-2)
 
-typedef struct
-{
-	int8		id;				/* type field --- must be first */
-	Oid			dbId;			/* database ID, or 0 if a shared relation */
-	Oid			relId;			/* relation ID */
+typedef struct {
+    int8 id;    /* type field --- must be first */
+    Oid  dbId;  /* database ID, or 0 if a shared relation */
+    Oid  relId; /* relation ID */
 } SharedInvalRelcacheMsg;
 
-#define SHAREDINVALSMGR_ID		(-3)
+#define SHAREDINVALSMGR_ID (-3)
 
-typedef struct
-{
-	/* note: field layout chosen to pack into 16 bytes */
-	int8		id;				/* type field --- must be first */
-	int8		backend_hi;		/* high bits of backend ID, if temprel */
-	uint16		backend_lo;		/* low bits of backend ID, if temprel */
-	RelFileNode rnode;			/* spcNode, dbNode, relNode */
+typedef struct {
+    /* note: field layout chosen to pack into 16 bytes */
+    int8        id;         /* type field --- must be first */
+    int8        backend_hi; /* high bits of backend ID, if temprel */
+    uint16      backend_lo; /* low bits of backend ID, if temprel */
+    RelFileNode rnode;      /* spcNode, dbNode, relNode */
 } SharedInvalSmgrMsg;
 
-#define SHAREDINVALRELMAP_ID	(-4)
+#define SHAREDINVALRELMAP_ID (-4)
 
-typedef struct
-{
-	int8		id;				/* type field --- must be first */
-	Oid			dbId;			/* database ID, or 0 for shared catalogs */
+typedef struct {
+    int8 id;   /* type field --- must be first */
+    Oid  dbId; /* database ID, or 0 for shared catalogs */
 } SharedInvalRelmapMsg;
 
-#define SHAREDINVALSNAPSHOT_ID	(-5)
+#define SHAREDINVALSNAPSHOT_ID (-5)
 
-typedef struct
-{
-	int8		id;				/* type field --- must be first */
-	Oid			dbId;			/* database ID, or 0 if a shared relation */
-	Oid			relId;			/* relation ID */
+typedef struct {
+    int8 id;    /* type field --- must be first */
+    Oid  dbId;  /* database ID, or 0 if a shared relation */
+    Oid  relId; /* relation ID */
 } SharedInvalSnapshotMsg;
 
-typedef union
-{
-	int8		id;				/* type field --- must be first */
-	SharedInvalCatcacheMsg cc;
-	SharedInvalCatalogMsg cat;
-	SharedInvalRelcacheMsg rc;
-	SharedInvalSmgrMsg sm;
-	SharedInvalRelmapMsg rm;
-	SharedInvalSnapshotMsg sn;
+typedef union {
+    int8                   id; /* type field --- must be first */
+    SharedInvalCatcacheMsg cc;
+    SharedInvalCatalogMsg  cat;
+    SharedInvalRelcacheMsg rc;
+    SharedInvalSmgrMsg     sm;
+    SharedInvalRelmapMsg   rm;
+    SharedInvalSnapshotMsg sn;
 } SharedInvalidationMessage;
-
 
 /* Counter of messages processed; don't worry about overflow. */
 extern uint64 SharedInvalidMessageCounter;
 
 extern volatile sig_atomic_t catchupInterruptPending;
 
-extern void SendSharedInvalidMessages(const SharedInvalidationMessage *msgs,
-						  int n);
-extern void ReceiveSharedInvalidMessages(
-					  void (*invalFunction) (SharedInvalidationMessage *msg),
-							 void (*resetFunction) (void));
+extern void SendSharedInvalidMessages(const SharedInvalidationMessage *msgs, int n);
+extern void ReceiveSharedInvalidMessages(void (*invalFunction)(SharedInvalidationMessage *msg),
+                                         void (*resetFunction)(void));
 
 /* signal handler for catchup events (PROCSIG_CATCHUP_INTERRUPT) */
 extern void HandleCatchupInterrupt(void);
@@ -142,12 +132,13 @@ extern void HandleCatchupInterrupt(void);
  */
 extern void ProcessCatchupInterrupt(void);
 
-extern int xactGetCommittedInvalidationMessages(SharedInvalidationMessage **msgs,
-									 bool *RelcacheInitFileInval);
+extern int  xactGetCommittedInvalidationMessages(SharedInvalidationMessage **msgs, bool *RelcacheInitFileInval);
 extern void ProcessCommittedInvalidationMessages(SharedInvalidationMessage *msgs,
-									 int nmsgs, bool RelcacheInitFileInval,
-									 Oid dbid, Oid tsid);
+                                                 int                        nmsgs,
+                                                 bool                       RelcacheInitFileInval,
+                                                 Oid                        dbid,
+                                                 Oid                        tsid);
 
 extern void LocalExecuteInvalidationMessage(SharedInvalidationMessage *msg);
 
-#endif   /* SINVAL_H */
+#endif /* SINVAL_H */

@@ -11,7 +11,7 @@
 
 namespace noisepage::planner {
 class AbstractPlanNode;
-}  // namespace noisepage::planner
+} // namespace noisepage::planner
 
 namespace noisepage::network {
 
@@ -22,58 +22,68 @@ namespace noisepage::network {
  * optimized physical plan. It represents a query ready to be executed.
  */
 class Portal {
- public:
-  /**
-   * Constructor that doesnt have params or result_formats, i.e. Simple Query protocol. We default the output format to
-   * text for Simple Query protocol per the spec.
-   * @param statement statement that this Portal refers to
-   */
-  explicit Portal(const common::ManagedPointer<Statement> statement) : Portal(statement, {}, {FieldFormat::text}) {}
+public:
+    /**
+     * Constructor that doesnt have params or result_formats, i.e. Simple Query protocol. We default the output format
+     * to text for Simple Query protocol per the spec.
+     * @param statement statement that this Portal refers to
+     */
+    explicit Portal(const common::ManagedPointer<Statement> statement)
+        : Portal(statement, {}, {FieldFormat::text}) {}
 
-  /**
-   * Constructor that doesnt have params or result_formats, i.e. Extended Query protocol
-   * @param statement statement that this Portal refers to
-   * @param params params for this query
-   * @param result_formats output formats for this query
-   */
-  Portal(const common::ManagedPointer<Statement> statement, std::vector<parser::ConstantValueExpression> &&params,
-         std::vector<FieldFormat> &&result_formats)
-      : statement_(statement), params_(std::move(params)), result_formats_(std::move(result_formats)) {}
+    /**
+     * Constructor that doesnt have params or result_formats, i.e. Extended Query protocol
+     * @param statement statement that this Portal refers to
+     * @param params params for this query
+     * @param result_formats output formats for this query
+     */
+    Portal(const common::ManagedPointer<Statement>        statement,
+           std::vector<parser::ConstantValueExpression> &&params,
+           std::vector<FieldFormat>                     &&result_formats)
+        : statement_(statement)
+        , params_(std::move(params))
+        , result_formats_(std::move(result_formats)) {}
 
-  /**
-   * @return Statement that this Portal references
-   */
-  common::ManagedPointer<Statement> GetStatement() const { return statement_; }
+    /**
+     * @return Statement that this Portal references
+     */
+    common::ManagedPointer<Statement> GetStatement() const {
+        return statement_;
+    }
 
-  /**
-   * @return the optimize result for this query
-   */
-  common::ManagedPointer<optimizer::OptimizeResult> OptimizeResult() const { return statement_->OptimizeResult(); }
+    /**
+     * @return the optimize result for this query
+     */
+    common::ManagedPointer<optimizer::OptimizeResult> OptimizeResult() const {
+        return statement_->OptimizeResult();
+    }
 
-  /**
-   * @return output formats for this query
-   */
-  const std::vector<FieldFormat> &ResultFormats() const { return result_formats_; }
+    /**
+     * @return output formats for this query
+     */
+    const std::vector<FieldFormat> &ResultFormats() const {
+        return result_formats_;
+    }
 
-  /**
-   * @return params for this query
-   */
-  common::ManagedPointer<const std::vector<parser::ConstantValueExpression>> Parameters() {
-    return common::ManagedPointer(reinterpret_cast<const std::vector<parser::ConstantValueExpression> *>(&params_));
-  }
+    /**
+     * @return params for this query
+     */
+    common::ManagedPointer<const std::vector<parser::ConstantValueExpression>> Parameters() {
+        return common::ManagedPointer(reinterpret_cast<const std::vector<parser::ConstantValueExpression> *>(&params_));
+    }
 
-  /**
-   * @return modifiable params for this query (Some existing API requires this version. Use with caution.)
-   * TODO(lin): If we have time, we probably should refactor other APIs to always use the const version
-   */
-  common::ManagedPointer<std::vector<parser::ConstantValueExpression>> ModifiableParameters() {
-    return common::ManagedPointer(&params_);
-  }
+    /**
+     * @return modifiable params for this query (Some existing API requires this version. Use with caution.)
+     * TODO(lin): If we have time, we probably should refactor other APIs to always use the const version
+     */
+    common::ManagedPointer<std::vector<parser::ConstantValueExpression>> ModifiableParameters() {
+        return common::ManagedPointer(&params_);
+    }
 
- private:
-  const common::ManagedPointer<network::Statement> statement_;
-  std::vector<parser::ConstantValueExpression> params_;
-  const std::vector<FieldFormat> result_formats_;
+private:
+    const common::ManagedPointer<network::Statement> statement_;
+    std::vector<parser::ConstantValueExpression>     params_;
+    const std::vector<FieldFormat>                   result_formats_;
 };
 
-}  // namespace noisepage::network
+} // namespace noisepage::network

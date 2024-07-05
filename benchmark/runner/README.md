@@ -1,5 +1,5 @@
 # TPCHRunner Instruction
-The class TPCHRunner contanins two benchmark, TPC-H benchmark from [TPC.ORG](http://www.tpc.org/tpch/), 
+The class TPCHRunner contanins two benchmark, TPC-H benchmark from [TPC.ORG](http://www.tpc.org/tpch/),
 and Star Schema Benchmark, a TPC-H based benchmark described [here](https://www.cs.umb.edu/~poneil/StarSchemaB.PDF).
 
 *How to start:*
@@ -22,9 +22,9 @@ Make sure generated tables align with the path in TPCHRunner, i.e.
 const std::string tpch_table_root_ = "../../../tpl_tables/tables/";
 const std::string ssb_dir_ = "../../../ssb_tables/ssb_tables/tables/";
 ```
-For TPCH, use 
+For TPCH, use
 ```
-$ bash gen_tpch.sh <scale_factor> 
+$ bash gen_tpch.sh <scale_factor>
 ```
 to generate tables
 
@@ -40,8 +40,8 @@ csv files are generated under ../ssb_tables. Note that this will only compile in
 3. To switch to SSB, change
 ```
  tpch::Workload::BenchmarkType type = tpch::Workload::BenchmarkType::TPCH;
-``` 
-to 
+```
+to
 ```
  tpch::Workload::BenchmarkType type = tpch::Workload::BenchmarkType::SSB;
 ```

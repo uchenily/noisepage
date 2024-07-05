@@ -23,21 +23,23 @@
 #include "loggers/loggers_util.h"
 
 int main(int argc, char **argv) {
-  noisepage::LoggersUtil::Initialize();
+    noisepage::LoggersUtil::Initialize();
 
-  // Benchmark Config Environment Variables
-  // Check whether we are being passed environment variables to override configuration parameter
-  // for this benchmark run.
-  const char *env_num_threads = std::getenv(noisepage::ENV_NUM_THREADS);
-  if (env_num_threads != nullptr) noisepage::BenchmarkConfig::num_threads = atoi(env_num_threads);
+    // Benchmark Config Environment Variables
+    // Check whether we are being passed environment variables to override configuration parameter
+    // for this benchmark run.
+    const char *env_num_threads = std::getenv(noisepage::ENV_NUM_THREADS);
+    if (env_num_threads != nullptr)
+        noisepage::BenchmarkConfig::num_threads = atoi(env_num_threads);
 
-  const char *env_logfile_path = std::getenv(noisepage::ENV_LOGFILE_PATH);
-  if (env_logfile_path != nullptr) noisepage::BenchmarkConfig::logfile_path = std::string_view(env_logfile_path);
+    const char *env_logfile_path = std::getenv(noisepage::ENV_LOGFILE_PATH);
+    if (env_logfile_path != nullptr)
+        noisepage::BenchmarkConfig::logfile_path = std::string_view(env_logfile_path);
 
-  benchmark::Initialize(&argc, argv);
-  benchmark::RunSpecifiedBenchmarks();
+    benchmark::Initialize(&argc, argv);
+    benchmark::RunSpecifiedBenchmarks();
 
-  noisepage::LoggersUtil::ShutDown();
+    noisepage::LoggersUtil::ShutDown();
 
-  return 0;
+    return 0;
 }

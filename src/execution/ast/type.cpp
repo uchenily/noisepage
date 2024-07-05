@@ -27,11 +27,11 @@ namespace noisepage::execution::ast {
 
 // TODO(pmenon): Fix me
 bool Type::IsArithmetic() const {
-  return IsIntegerType() ||                          // Primitive TPL integers
-         IsFloatType() ||                            // Primitive TPL floats
-         IsSpecificBuiltin(BuiltinType::Integer) ||  // SQL integer
-         IsSpecificBuiltin(BuiltinType::Real) ||     // SQL reals
-         IsSpecificBuiltin(BuiltinType::Decimal);    // SQL decimals
+    return IsIntegerType() ||                         // Primitive TPL integers
+           IsFloatType() ||                           // Primitive TPL floats
+           IsSpecificBuiltin(BuiltinType::Integer) || // SQL integer
+           IsSpecificBuiltin(BuiltinType::Real) ||    // SQL reals
+           IsSpecificBuiltin(BuiltinType::Decimal);   // SQL decimals
 }
 
 // ---------------------------------------------------------
@@ -86,29 +86,35 @@ const bool BuiltinType::SIGNED_FLAGS[] = {
 // ---------------------------------------------------------
 
 FunctionType::FunctionType(util::RegionVector<Field> &&params, Type *ret)
-    : Type(ret->GetContext(), sizeof(void *), alignof(void *), TypeId::FunctionType),
-      params_(std::move(params)),
-      ret_(ret) {}
+    : Type(ret->GetContext(), sizeof(void *), alignof(void *), TypeId::FunctionType)
+    , params_(std::move(params))
+    , ret_(ret) {}
 
 // ---------------------------------------------------------
 // Map Type
 // ---------------------------------------------------------
 
 MapType::MapType(Type *key_type, Type *val_type)
-    : Type(key_type->GetContext(), sizeof(std::unordered_map<int32_t, int32_t>),
-           alignof(std::unordered_map<int32_t, int32_t>), TypeId::MapType),
-      key_type_(key_type),
-      val_type_(val_type) {}
+    : Type(key_type->GetContext(),
+           sizeof(std::unordered_map<int32_t, int32_t>),
+           alignof(std::unordered_map<int32_t, int32_t>),
+           TypeId::MapType)
+    , key_type_(key_type)
+    , val_type_(val_type) {}
 
 // ---------------------------------------------------------
 // Struct Type
 // ---------------------------------------------------------
 
-StructType::StructType(Context *ctx, uint32_t size, uint32_t alignment, util::RegionVector<Field> &&fields,
-                       util::RegionVector<Field> &&unpadded_fields, util::RegionVector<uint32_t> &&field_offsets)
-    : Type(ctx, size, alignment, TypeId::StructType),
-      fields_(std::move(fields)),
-      unpadded_fields_(std::move(unpadded_fields)),
-      field_offsets_(std::move(field_offsets)) {}
+StructType::StructType(Context                       *ctx,
+                       uint32_t                       size,
+                       uint32_t                       alignment,
+                       util::RegionVector<Field>    &&fields,
+                       util::RegionVector<Field>    &&unpadded_fields,
+                       util::RegionVector<uint32_t> &&field_offsets)
+    : Type(ctx, size, alignment, TypeId::StructType)
+    , fields_(std::move(fields))
+    , unpadded_fields_(std::move(unpadded_fields))
+    , field_offsets_(std::move(field_offsets)) {}
 
-}  // namespace noisepage::execution::ast
+} // namespace noisepage::execution::ast

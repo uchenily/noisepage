@@ -14,37 +14,37 @@ class PropertySet;
  * a specified GroupExpression.
  */
 class PropertyEnforcer : public PropertyVisitor {
- public:
-  /**
-   * Enforces a property for a given GroupExpression
-   * @param gexpr GroupExpression to enforce the property for
-   * @param property Property to enforce
-   * @param txn transaction context for memory management
-   * @returns GroupExpression that enforces this property
-   */
-  GroupExpression *EnforceProperty(GroupExpression *gexpr, Property *property, transaction::TransactionContext *txn);
+public:
+    /**
+     * Enforces a property for a given GroupExpression
+     * @param gexpr GroupExpression to enforce the property for
+     * @param property Property to enforce
+     * @param txn transaction context for memory management
+     * @returns GroupExpression that enforces this property
+     */
+    GroupExpression *EnforceProperty(GroupExpression *gexpr, Property *property, transaction::TransactionContext *txn);
 
-  /**
-   * Implementation of the Visit function for PropertySort
-   * @param prop PropertySort being visited
-   */
-  void Visit(const PropertySort *prop) override;
+    /**
+     * Implementation of the Visit function for PropertySort
+     * @param prop PropertySort being visited
+     */
+    void Visit(const PropertySort *prop) override;
 
- private:
-  /**
-   * Input GroupExpression to enforce
-   */
-  GroupExpression *input_gexpr_;
+private:
+    /**
+     * Input GroupExpression to enforce
+     */
+    GroupExpression *input_gexpr_;
 
-  /**
-   * Output GroupExpression after enforcing
-   */
-  GroupExpression *output_gexpr_;
+    /**
+     * Output GroupExpression after enforcing
+     */
+    GroupExpression *output_gexpr_;
 
-  /**
-   * Transaction context for managing memory
-   */
-  transaction::TransactionContext *txn_;
+    /**
+     * Transaction context for managing memory
+     */
+    transaction::TransactionContext *txn_;
 };
 
-}  // namespace noisepage::optimizer
+} // namespace noisepage::optimizer

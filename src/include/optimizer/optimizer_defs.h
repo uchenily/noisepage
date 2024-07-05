@@ -39,158 +39,167 @@ enum class OrderByOrderingType { ASC, DESC };
  * Operator type
  */
 enum class OpType {
-  UNDEFINED = 0,
+    UNDEFINED = 0,
 
-  // Special wildcard
-  LEAF,
+    // Special wildcard
+    LEAF,
 
-  // Logical Operators
-  LOGICALGET,
-  LOGICALEXTERNALFILEGET,
-  LOGICALQUERYDERIVEDGET,
-  LOGICALPROJECTION,
-  LOGICALFILTER,
-  LOGICALMARKJOIN,
-  LOGICALDEPENDENTJOIN,
-  LOGICALSINGLEJOIN,
-  LOGICALINNERJOIN,
-  LOGICALLEFTJOIN,
-  LOGICALRIGHTJOIN,
-  LOGICALOUTERJOIN,
-  LOGICALSEMIJOIN,
-  LOGICALAGGREGATEANDGROUPBY,
-  LOGICALINSERT,
-  LOGICALINSERTSELECT,
-  LOGICALDELETE,
-  LOGICALUPDATE,
-  LOGICALLIMIT,
-  LOGICALEXPORTEXTERNALFILE,
-  LOGICALCREATEDATABASE,
-  LOGICALCREATEFUNCTION,
-  LOGICALCREATEINDEX,
-  LOGICALCREATETABLE,
-  LOGICALCREATENAMESPACE,
-  LOGICALCREATETRIGGER,
-  LOGICALCREATEVIEW,
-  LOGICALDROPDATABASE,
-  LOGICALDROPTABLE,
-  LOGICALDROPINDEX,
-  LOGICALDROPNAMESPACE,
-  LOGICALDROPFUNCTION,
-  LOGICALDROPTRIGGER,
-  LOGICALDROPVIEW,
-  LOGICALANALYZE,
-  LOGICALCTESCAN,
-  LOGICALUNION,
-  // Separation of logical and physical operators
-  LOGICALPHYSICALDELIMITER,
+    // Logical Operators
+    LOGICALGET,
+    LOGICALEXTERNALFILEGET,
+    LOGICALQUERYDERIVEDGET,
+    LOGICALPROJECTION,
+    LOGICALFILTER,
+    LOGICALMARKJOIN,
+    LOGICALDEPENDENTJOIN,
+    LOGICALSINGLEJOIN,
+    LOGICALINNERJOIN,
+    LOGICALLEFTJOIN,
+    LOGICALRIGHTJOIN,
+    LOGICALOUTERJOIN,
+    LOGICALSEMIJOIN,
+    LOGICALAGGREGATEANDGROUPBY,
+    LOGICALINSERT,
+    LOGICALINSERTSELECT,
+    LOGICALDELETE,
+    LOGICALUPDATE,
+    LOGICALLIMIT,
+    LOGICALEXPORTEXTERNALFILE,
+    LOGICALCREATEDATABASE,
+    LOGICALCREATEFUNCTION,
+    LOGICALCREATEINDEX,
+    LOGICALCREATETABLE,
+    LOGICALCREATENAMESPACE,
+    LOGICALCREATETRIGGER,
+    LOGICALCREATEVIEW,
+    LOGICALDROPDATABASE,
+    LOGICALDROPTABLE,
+    LOGICALDROPINDEX,
+    LOGICALDROPNAMESPACE,
+    LOGICALDROPFUNCTION,
+    LOGICALDROPTRIGGER,
+    LOGICALDROPVIEW,
+    LOGICALANALYZE,
+    LOGICALCTESCAN,
+    LOGICALUNION,
+    // Separation of logical and physical operators
+    LOGICALPHYSICALDELIMITER,
 
-  // Physical Operators
-  TABLEFREESCAN,  // Scan Op for SELECT without FROM
-  SEQSCAN,
-  INDEXSCAN,
-  EXTERNALFILESCAN,
-  QUERYDERIVEDSCAN,
-  ORDERBY,
-  LIMIT,
-  INNERINDEXJOIN,
-  INNERNLJOIN,
-  LEFTNLJOIN,
-  RIGHTNLJOIN,
-  OUTERNLJOIN,
-  INNERHASHJOIN,
-  LEFTHASHJOIN,
-  RIGHTHASHJOIN,
-  OUTERHASHJOIN,
-  LEFTSEMIHASHJOIN,
-  INSERT,
-  INSERTSELECT,
-  DELETE,
-  UPDATE,
-  AGGREGATE,
-  HASHGROUPBY,
-  SORTGROUPBY,
-  EXPORTEXTERNALFILE,
-  CREATEDATABASE,
-  CREATEFUNCTION,
-  CREATEINDEX,
-  CREATETABLE,
-  CREATENAMESPACE,
-  CREATETRIGGER,
-  CREATEVIEW,
-  DROPDATABASE,
-  DROPTABLE,
-  DROPINDEX,
-  DROPNAMESPACE,
-  DROPFUNCTION,
-  DROPTRIGGER,
-  DROPVIEW,
-  ANALYZE,
-  CTESCAN
+    // Physical Operators
+    TABLEFREESCAN, // Scan Op for SELECT without FROM
+    SEQSCAN,
+    INDEXSCAN,
+    EXTERNALFILESCAN,
+    QUERYDERIVEDSCAN,
+    ORDERBY,
+    LIMIT,
+    INNERINDEXJOIN,
+    INNERNLJOIN,
+    LEFTNLJOIN,
+    RIGHTNLJOIN,
+    OUTERNLJOIN,
+    INNERHASHJOIN,
+    LEFTHASHJOIN,
+    RIGHTHASHJOIN,
+    OUTERHASHJOIN,
+    LEFTSEMIHASHJOIN,
+    INSERT,
+    INSERTSELECT,
+    DELETE,
+    UPDATE,
+    AGGREGATE,
+    HASHGROUPBY,
+    SORTGROUPBY,
+    EXPORTEXTERNALFILE,
+    CREATEDATABASE,
+    CREATEFUNCTION,
+    CREATEINDEX,
+    CREATETABLE,
+    CREATENAMESPACE,
+    CREATETRIGGER,
+    CREATEVIEW,
+    DROPDATABASE,
+    DROPTABLE,
+    DROPINDEX,
+    DROPNAMESPACE,
+    DROPFUNCTION,
+    DROPTRIGGER,
+    DROPVIEW,
+    ANALYZE,
+    CTESCAN
 };
 
 /**
  * Augmented expression with a set of table aliases
  */
 class AnnotatedExpression {
- public:
-  /**
-   * Create an AnnotatedExpression
-   * @param expr expression to be annotated
-   * @param table_alias_set an unordered set of table aliases
-   */
-  AnnotatedExpression(common::ManagedPointer<parser::AbstractExpression> expr,
-                      std::unordered_set<parser::AliasType> &&table_alias_set)
-      : expr_(expr), table_alias_set_(std::move(table_alias_set)) {}
-
-  /**
-   * Default copy constructor
-   * @param ant_expr reference to the AnnotatedExpression to copy from
-   */
-  AnnotatedExpression(const AnnotatedExpression &ant_expr) = default;
-
-  /**
-   * @return the expresion to be annotated
-   */
-  common::ManagedPointer<parser::AbstractExpression> GetExpr() const { return expr_; }
-
-  /**
-   * @return the unordered set of table aliases
-   */
-  const std::unordered_set<parser::AliasType> &GetTableAliasSet() const { return table_alias_set_; }
-
-  /**
-   * Logical equality check.
-   * @param rhs other
-   * @return true if the two expressions are logically equal
-   */
-  bool operator==(const AnnotatedExpression &rhs) const {
+public:
     /**
-     * In the original code, the comparison was implemented in
-     * /src/optimizer/operators.cpp by comparing only the expr of the AnnotatedExpression
+     * Create an AnnotatedExpression
+     * @param expr expression to be annotated
+     * @param table_alias_set an unordered set of table aliases
      */
-    if (!expr_ && !(rhs.expr_)) return true;
-    if (expr_ && rhs.expr_) return *expr_ == *(rhs.expr_);
-    return false;
-  }
+    AnnotatedExpression(common::ManagedPointer<parser::AbstractExpression> expr,
+                        std::unordered_set<parser::AliasType>            &&table_alias_set)
+        : expr_(expr)
+        , table_alias_set_(std::move(table_alias_set)) {}
 
-  /**
-   * Logical inequality check.
-   * @param rhs other
-   * @return true if the two expressions are logically not equal
-   */
-  bool operator!=(const AnnotatedExpression &rhs) const { return !operator==(rhs); }
+    /**
+     * Default copy constructor
+     * @param ant_expr reference to the AnnotatedExpression to copy from
+     */
+    AnnotatedExpression(const AnnotatedExpression &ant_expr) = default;
 
- private:
-  /**
-   * Expression to be annotated
-   */
-  common::ManagedPointer<parser::AbstractExpression> expr_;
+    /**
+     * @return the expresion to be annotated
+     */
+    common::ManagedPointer<parser::AbstractExpression> GetExpr() const {
+        return expr_;
+    }
 
-  /**
-   * Unordered set of table aliases
-   */
-  std::unordered_set<parser::AliasType> table_alias_set_;
+    /**
+     * @return the unordered set of table aliases
+     */
+    const std::unordered_set<parser::AliasType> &GetTableAliasSet() const {
+        return table_alias_set_;
+    }
+
+    /**
+     * Logical equality check.
+     * @param rhs other
+     * @return true if the two expressions are logically equal
+     */
+    bool operator==(const AnnotatedExpression &rhs) const {
+        /**
+         * In the original code, the comparison was implemented in
+         * /src/optimizer/operators.cpp by comparing only the expr of the AnnotatedExpression
+         */
+        if (!expr_ && !(rhs.expr_))
+            return true;
+        if (expr_ && rhs.expr_)
+            return *expr_ == *(rhs.expr_);
+        return false;
+    }
+
+    /**
+     * Logical inequality check.
+     * @param rhs other
+     * @return true if the two expressions are logically not equal
+     */
+    bool operator!=(const AnnotatedExpression &rhs) const {
+        return !operator==(rhs);
+    }
+
+private:
+    /**
+     * Expression to be annotated
+     */
+    common::ManagedPointer<parser::AbstractExpression> expr_;
+
+    /**
+     * Unordered set of table aliases
+     */
+    std::unordered_set<parser::AliasType> table_alias_set_;
 };
 
 /**
@@ -198,50 +207,50 @@ class AnnotatedExpression {
  * and the const version const noisepage::parser::AbstractExpression*
  */
 struct ExprEqualCmp {
-  /**
-   * Checks two AbstractExpression for equality
-   * @param lhs one of the AbstractExpression
-   * @param rhs the other AbstractExpression
-   * @return whether the two are equal
-   *
-   * @pre lhs != nullptr && rhs != nullptr
-   */
-  bool operator()(common::ManagedPointer<noisepage::parser::AbstractExpression> lhs,
-                  common::ManagedPointer<noisepage::parser::AbstractExpression> rhs) {
-    NOISEPAGE_ASSERT(lhs != nullptr && rhs != nullptr, "AbstractExpressions should not be null");
-    return (*lhs == *rhs);
-  }
+    /**
+     * Checks two AbstractExpression for equality
+     * @param lhs one of the AbstractExpression
+     * @param rhs the other AbstractExpression
+     * @return whether the two are equal
+     *
+     * @pre lhs != nullptr && rhs != nullptr
+     */
+    bool operator()(common::ManagedPointer<noisepage::parser::AbstractExpression> lhs,
+                    common::ManagedPointer<noisepage::parser::AbstractExpression> rhs) {
+        NOISEPAGE_ASSERT(lhs != nullptr && rhs != nullptr, "AbstractExpressions should not be null");
+        return (*lhs == *rhs);
+    }
 
-  /**
-   * Checks two AbstractExpression for equality (const version)
-   * @param lhs one of the AbstractExpression
-   * @param rhs the other AbstractExpression
-   * @return whether the two are equal
-   *
-   * @pre lhs != nullptr && rhs != nullptr
-   */
-  bool operator()(const common::ManagedPointer<noisepage::parser::AbstractExpression> lhs,
-                  const common::ManagedPointer<noisepage::parser::AbstractExpression> rhs) const {
-    NOISEPAGE_ASSERT(lhs != nullptr && rhs != nullptr, "AbstractExpressions should not be null");
-    return (*lhs == *rhs);
-  }
+    /**
+     * Checks two AbstractExpression for equality (const version)
+     * @param lhs one of the AbstractExpression
+     * @param rhs the other AbstractExpression
+     * @return whether the two are equal
+     *
+     * @pre lhs != nullptr && rhs != nullptr
+     */
+    bool operator()(const common::ManagedPointer<noisepage::parser::AbstractExpression> lhs,
+                    const common::ManagedPointer<noisepage::parser::AbstractExpression> rhs) const {
+        NOISEPAGE_ASSERT(lhs != nullptr && rhs != nullptr, "AbstractExpressions should not be null");
+        return (*lhs == *rhs);
+    }
 };
 
 /**
  * Struct implementing Hash() for const noisepage::parser::AbstractExpression*
  */
 struct ExprHasher {
-  /**
-   * Hashes the given expression
-   * @param expr the expression to hash
-   * @return hash code of the given expression
-   *
-   * @pre expr != nullptr
-   */
-  size_t operator()(const common::ManagedPointer<noisepage::parser::AbstractExpression> expr) const {
-    NOISEPAGE_ASSERT(expr != nullptr, "AbstractExpression should not be null");
-    return expr->Hash();
-  }
+    /**
+     * Hashes the given expression
+     * @param expr the expression to hash
+     * @return hash code of the given expression
+     *
+     * @pre expr != nullptr
+     */
+    size_t operator()(const common::ManagedPointer<noisepage::parser::AbstractExpression> expr) const {
+        NOISEPAGE_ASSERT(expr != nullptr, "AbstractExpression should not be null");
+        return expr->Hash();
+    }
 };
 
 /**
@@ -249,8 +258,8 @@ struct ExprHasher {
  * ExprMap is used exclusively in the optimizer to map from an AbstractExpression
  * to a given column offset created by specific operators.
  */
-using ExprMap =
-    std::unordered_map<common::ManagedPointer<parser::AbstractExpression>, unsigned, ExprHasher, ExprEqualCmp>;
+using ExprMap
+    = std::unordered_map<common::ManagedPointer<parser::AbstractExpression>, unsigned, ExprHasher, ExprEqualCmp>;
 
 /**
  * Defines an ExprSet.
@@ -259,4 +268,4 @@ using ExprMap =
  */
 using ExprSet = std::unordered_set<common::ManagedPointer<parser::AbstractExpression>, ExprHasher, ExprEqualCmp>;
 
-}  // namespace noisepage::optimizer
+} // namespace noisepage::optimizer

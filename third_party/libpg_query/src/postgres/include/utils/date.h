@@ -18,7 +18,6 @@
 
 #include "fmgr.h"
 
-
 typedef int32 DateADT;
 
 #ifdef HAVE_INT64_TIMESTAMP
@@ -27,23 +26,22 @@ typedef int64 TimeADT;
 typedef float8 TimeADT;
 #endif
 
-typedef struct
-{
-	TimeADT		time;			/* all time units other than months and years */
-	int32		zone;			/* numeric time zone, in seconds */
+typedef struct {
+    TimeADT time; /* all time units other than months and years */
+    int32   zone; /* numeric time zone, in seconds */
 } TimeTzADT;
 
 /*
  * Infinity and minus infinity must be the max and min values of DateADT.
  */
-#define DATEVAL_NOBEGIN		((DateADT) PG_INT32_MIN)
-#define DATEVAL_NOEND		((DateADT) PG_INT32_MAX)
+#define DATEVAL_NOBEGIN ((DateADT) PG_INT32_MIN)
+#define DATEVAL_NOEND ((DateADT) PG_INT32_MAX)
 
-#define DATE_NOBEGIN(j)		((j) = DATEVAL_NOBEGIN)
-#define DATE_IS_NOBEGIN(j)	((j) == DATEVAL_NOBEGIN)
-#define DATE_NOEND(j)		((j) = DATEVAL_NOEND)
-#define DATE_IS_NOEND(j)	((j) == DATEVAL_NOEND)
-#define DATE_NOT_FINITE(j)	(DATE_IS_NOBEGIN(j) || DATE_IS_NOEND(j))
+#define DATE_NOBEGIN(j) ((j) = DATEVAL_NOBEGIN)
+#define DATE_IS_NOBEGIN(j) ((j) == DATEVAL_NOBEGIN)
+#define DATE_NOEND(j) ((j) = DATEVAL_NOEND)
+#define DATE_IS_NOEND(j) ((j) == DATEVAL_NOEND)
+#define DATE_NOT_FINITE(j) (DATE_IS_NOBEGIN(j) || DATE_IS_NOEND(j))
 
 /*
  * Macros for fmgr-callable functions.
@@ -55,14 +53,14 @@ typedef struct
 
 #define MAX_TIME_PRECISION 6
 
-#define DatumGetDateADT(X)	  ((DateADT) DatumGetInt32(X))
-#define DatumGetTimeADT(X)	  ((TimeADT) DatumGetInt64(X))
+#define DatumGetDateADT(X) ((DateADT) DatumGetInt32(X))
+#define DatumGetTimeADT(X) ((TimeADT) DatumGetInt64(X))
 #define DatumGetTimeTzADTP(X) ((TimeTzADT *) DatumGetPointer(X))
 
-#define DateADTGetDatum(X)	  Int32GetDatum(X)
-#define TimeADTGetDatum(X)	  Int64GetDatum(X)
+#define DateADTGetDatum(X) Int32GetDatum(X)
+#define TimeADTGetDatum(X) Int64GetDatum(X)
 #define TimeTzADTPGetDatum(X) PointerGetDatum(X)
-#else							/* !HAVE_INT64_TIMESTAMP */
+#else /* !HAVE_INT64_TIMESTAMP */
 
 #define MAX_TIME_PRECISION 10
 
@@ -70,27 +68,26 @@ typedef struct
 #define TIME_PREC_INV 10000000000.0
 #define TIMEROUND(j) (rint(((double) (j)) * TIME_PREC_INV) / TIME_PREC_INV)
 
-#define DatumGetDateADT(X)	  ((DateADT) DatumGetInt32(X))
-#define DatumGetTimeADT(X)	  ((TimeADT) DatumGetFloat8(X))
+#define DatumGetDateADT(X) ((DateADT) DatumGetInt32(X))
+#define DatumGetTimeADT(X) ((TimeADT) DatumGetFloat8(X))
 #define DatumGetTimeTzADTP(X) ((TimeTzADT *) DatumGetPointer(X))
 
-#define DateADTGetDatum(X)	  Int32GetDatum(X)
-#define TimeADTGetDatum(X)	  Float8GetDatum(X)
+#define DateADTGetDatum(X) Int32GetDatum(X)
+#define TimeADTGetDatum(X) Float8GetDatum(X)
 #define TimeTzADTPGetDatum(X) PointerGetDatum(X)
-#endif   /* HAVE_INT64_TIMESTAMP */
+#endif /* HAVE_INT64_TIMESTAMP */
 
-#define PG_GETARG_DATEADT(n)	 DatumGetDateADT(PG_GETARG_DATUM(n))
-#define PG_GETARG_TIMEADT(n)	 DatumGetTimeADT(PG_GETARG_DATUM(n))
+#define PG_GETARG_DATEADT(n) DatumGetDateADT(PG_GETARG_DATUM(n))
+#define PG_GETARG_TIMEADT(n) DatumGetTimeADT(PG_GETARG_DATUM(n))
 #define PG_GETARG_TIMETZADT_P(n) DatumGetTimeTzADTP(PG_GETARG_DATUM(n))
 
-#define PG_RETURN_DATEADT(x)	 return DateADTGetDatum(x)
-#define PG_RETURN_TIMEADT(x)	 return TimeADTGetDatum(x)
+#define PG_RETURN_DATEADT(x) return DateADTGetDatum(x)
+#define PG_RETURN_TIMEADT(x) return TimeADTGetDatum(x)
 #define PG_RETURN_TIMETZADT_P(x) return TimeTzADTPGetDatum(x)
-
 
 /* date.c */
 extern double date2timestamp_no_overflow(DateADT dateVal);
-extern void EncodeSpecialDate(DateADT dt, char *str);
+extern void   EncodeSpecialDate(DateADT dt, char *str);
 
 extern Datum date_in(PG_FUNCTION_ARGS);
 extern Datum date_out(PG_FUNCTION_ARGS);
@@ -205,4 +202,4 @@ extern Datum timetz_izone(PG_FUNCTION_ARGS);
 extern Datum timetz_pl_interval(PG_FUNCTION_ARGS);
 extern Datum timetz_mi_interval(PG_FUNCTION_ARGS);
 
-#endif   /* DATE_H */
+#endif /* DATE_H */

@@ -14,38 +14,36 @@
 #ifndef AUTOVACUUM_H
 #define AUTOVACUUM_H
 
-
 /* GUC variables */
-extern bool autovacuum_start_daemon;
-extern int	autovacuum_max_workers;
-extern int	autovacuum_work_mem;
-extern int	autovacuum_naptime;
-extern int	autovacuum_vac_thresh;
+extern bool   autovacuum_start_daemon;
+extern int    autovacuum_max_workers;
+extern int    autovacuum_work_mem;
+extern int    autovacuum_naptime;
+extern int    autovacuum_vac_thresh;
 extern double autovacuum_vac_scale;
-extern int	autovacuum_anl_thresh;
+extern int    autovacuum_anl_thresh;
 extern double autovacuum_anl_scale;
-extern int	autovacuum_freeze_max_age;
-extern int	autovacuum_multixact_freeze_max_age;
-extern int	autovacuum_vac_cost_delay;
-extern int	autovacuum_vac_cost_limit;
+extern int    autovacuum_freeze_max_age;
+extern int    autovacuum_multixact_freeze_max_age;
+extern int    autovacuum_vac_cost_delay;
+extern int    autovacuum_vac_cost_limit;
 
 /* autovacuum launcher PID, only valid when worker is shutting down */
-extern int	AutovacuumLauncherPid;
+extern int AutovacuumLauncherPid;
 
-extern int	Log_autovacuum_min_duration;
+extern int Log_autovacuum_min_duration;
 
 /* Status inquiry functions */
 extern bool AutoVacuumingActive(void);
 extern bool IsAutoVacuumLauncherProcess(void);
 extern bool IsAutoVacuumWorkerProcess(void);
 
-#define IsAnyAutoVacuumProcess() \
-	(IsAutoVacuumLauncherProcess() || IsAutoVacuumWorkerProcess())
+#define IsAnyAutoVacuumProcess() (IsAutoVacuumLauncherProcess() || IsAutoVacuumWorkerProcess())
 
 /* Functions to start autovacuum process, called from postmaster */
 extern void autovac_init(void);
-extern int	StartAutoVacLauncher(void);
-extern int	StartAutoVacWorker(void);
+extern int  StartAutoVacLauncher(void);
+extern int  StartAutoVacWorker(void);
 
 /* called from postmaster when a worker could not be forked */
 extern void AutoVacWorkerFailed(void);
@@ -64,4 +62,4 @@ extern void AutovacuumLauncherIAm(void);
 extern Size AutoVacuumShmemSize(void);
 extern void AutoVacuumShmemInit(void);
 
-#endif   /* AUTOVACUUM_H */
+#endif /* AUTOVACUUM_H */

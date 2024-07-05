@@ -58,7 +58,7 @@ INSERT INTO department VALUES (7, 5, 'G');
 -- handle the case were recursive structure is ignored
 WITH RECURSIVE subdepartment AS (SELECT * FROM department WHERE name = 'A') SELECT * FROM subdepartment;
 
--- add an outer ORDER BY 
+-- add an outer ORDER BY
 -- TODO: Crashes the DBMS
 -- WITH RECURSIVE subdepartment AS (SELECT * FROM department WHERE name = 'A') SELECT * FROM subdepartment ORDER BY name;
 

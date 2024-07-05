@@ -4,7 +4,7 @@ There are lots of guides and documents on the internet, but there are too many a
 
 ### Remote Transfer or how to communicate with the world
 * Get a fresh repository: git clone `<remote path>`
-* Update current repository to latest: git fetch -v 
+* Update current repository to latest: git fetch -v
 * Update current repository with commit from a fork: git fetch -v `<remote path>` `<branch>`
 * Send your new commit to the remote: git push `<remote>` `<branch>`
 
@@ -16,7 +16,7 @@ There are lots of guides and documents on the internet, but there are too many a
 * discard your change **forever** with dynamic selection: git checkout -p -- `<file>`
 
 ### Stash or how to save your precious work
-Stash is very useful. For example, you will use it before/after (push/pop) merge/rebase action 
+Stash is very useful. For example, you will use it before/after (push/pop) merge/rebase action
 * Push pending update on the stack: git stash
 * Get back your update: git stash pop
 * view content of your stash: git stash show -p `stash@\{0\}`
@@ -43,7 +43,7 @@ Let's say you want to rebase your current branch topic-v1 to topic-v2 with new a
 * Go to current branch: git checkout topic-v1
 * Create a new one: git branch topic-v2
 * Go into the new branch: git checkout topic-v2
-* Set the reference: git branch --set-upstream-to=origin/master topic-v2 
+* Set the reference: git branch --set-upstream-to=origin/master topic-v2
 * Rebase: git rebase -i
 * ...
 

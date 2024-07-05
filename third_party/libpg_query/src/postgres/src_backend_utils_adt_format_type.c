@@ -26,19 +26,18 @@
 #include "access/htup_details.h"
 #include "catalog/namespace.h"
 #include "catalog/pg_type.h"
+#include "mb/pg_wchar.h"
 #include "utils/builtins.h"
 #include "utils/lsyscache.h"
 #include "utils/numeric.h"
 #include "utils/syscache.h"
-#include "mb/pg_wchar.h"
 
 #define MAX_INT32_LEN 11
 
-//static char *format_type_internal(Oid type_oid, int32 typemod,
+// static char *format_type_internal(Oid type_oid, int32 typemod,
 //					 bool typemod_given, bool allow_invalid,
 //					 bool force_qualify);
-//static char *printTypmod(const char *typname, int32 typmod, Oid typmodout);
-
+// static char *printTypmod(const char *typname, int32 typmod, Oid typmodout);
 
 /*
  * SQL function: format_type(type_oid, typemod)
@@ -67,34 +66,27 @@
  * Not worth changing it now, however.
  */
 
-
 /*
  * This version is for use within the backend in error messages, etc.
  * One difference is that it will fail for an invalid type.
  *
  * The result is always a palloc'd string.
  */
-char * format_type_be(Oid type_oid) { return pstrdup("-"); }
-
+char *format_type_be(Oid type_oid) {
+    return pstrdup("-");
+}
 
 /*
  * This version returns a name which is always qualified.
  */
 
-
 /*
  * This version allows a nondefault typemod to be specified.
  */
 
-
-
-
-
 /*
  * Add typmod decoration to the basic type name
  */
-
-
 
 /*
  * type_maximum_size --- determine maximum width of a variable-width column
@@ -111,9 +103,6 @@ char * format_type_be(Oid type_oid) { return pstrdup("-"); }
  * interesting to wonder if it's worth trying to factor this code too...)
  */
 
-
-
 /*
  * oidvectortypes			- converts a vector of type OIDs to "typname" list
  */
-

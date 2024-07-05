@@ -14,24 +14,24 @@ class Pipeline;
  * parallel work.
  */
 class PipelineDriver {
- public:
-  /**
-   * No-op virtual destructor.
-   */
-  virtual ~PipelineDriver() = default;
+public:
+    /**
+     * No-op virtual destructor.
+     */
+    virtual ~PipelineDriver() = default;
 
-  /**
-   * @return The list of extra fields added to the "work" function. By default, the first two
-   *         arguments are the query state and the pipeline state.
-   */
-  virtual util::RegionVector<ast::FieldDecl *> GetWorkerParams() const = 0;
+    /**
+     * @return The list of extra fields added to the "work" function. By default, the first two
+     *         arguments are the query state and the pipeline state.
+     */
+    virtual util::RegionVector<ast::FieldDecl *> GetWorkerParams() const = 0;
 
-  /**
-   * This is called to launch the provided worker function in parallel across a set of threads.
-   * @param function The function being built.
-   * @param work_func_name The name of the work function that implements the pipeline logic.
-   */
-  virtual void LaunchWork(FunctionBuilder *function, ast::Identifier work_func_name) const = 0;
+    /**
+     * This is called to launch the provided worker function in parallel across a set of threads.
+     * @param function The function being built.
+     * @param work_func_name The name of the work function that implements the pipeline logic.
+     */
+    virtual void LaunchWork(FunctionBuilder *function, ast::Identifier work_func_name) const = 0;
 };
 
-}  // namespace noisepage::execution::compiler
+} // namespace noisepage::execution::compiler

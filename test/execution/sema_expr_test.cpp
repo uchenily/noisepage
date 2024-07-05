@@ -9,49 +9,52 @@
 namespace noisepage::execution::sema::test {
 
 class SemaExprTest : public TplTest, public ast::test::TestAstBuilder {
- public:
-  void ResetErrorReporter() { ErrorReporter()->Reset(); }
+public:
+    void ResetErrorReporter() {
+        ErrorReporter()->Reset();
+    }
 };
 
 struct SemaExprTestCase {
-  bool has_errors_;
-  std::string msg_;
-  ast::AstNode *tree_;
+    bool          has_errors_;
+    std::string   msg_;
+    ast::AstNode *tree_;
 };
 
 // NOLINTNEXTLINE
 TEST_F(SemaExprTest, LogicalOperationTest) {
-  SemaExprTestCase tests[] = {
-      // Test: 1 and 2
-      // Expectation: Error
-      {true, "1 and 2 is not a valid logical operation", BinOp<parsing::Token::Type::AND>(IntLit(1), IntLit(2))},
+    SemaExprTestCase tests[] = {
+  // Test: 1 and 2
+  // Expectation: Error
+        { true,"1 and 2 is not a valid logical operation",      BinOp<parsing::Token::Type::AND>(IntLit(1),     IntLit(2))            },
 
-      // Test: 1 and true
-      // Expectation: Error
-      {true, "1 and true is not a valid logical operation", BinOp<parsing::Token::Type::AND>(IntLit(1), BoolLit(true))},
+ // Test: 1 and true
+  // Expectation: Error
+        { true,
+         "1 and true is not a valid logical operation",      BinOp<parsing::Token::Type::AND>(IntLit(1), BoolLit(true)) },
 
-      // Test: false and 2
-      // Expectation: Error
-      {true, "false and 1 is not a valid logical operation",
-       BinOp<parsing::Token::Type::AND>(BoolLit(false), IntLit(2))},
+ // Test: false and 2
+  // Expectation: Error
+        { true,
+         "false and 1 is not a valid logical operation", BinOp<parsing::Token::Type::AND>(BoolLit(false),     IntLit(2))},
 
-      // Test: false and true
-      // Expectation: Valid
-      {false, "false and true is a valid logical operation",
-       BinOp<parsing::Token::Type::AND>(BoolLit(false), BoolLit(true))},
-  };
+ // Test: false and true
+  // Expectation: Valid
+        {false,
+         "false and true is a valid logical operation", BinOp<parsing::Token::Type::AND>(BoolLit(false), BoolLit(true)) },
+    };
 
-  for (const auto &test : tests) {
-    Sema sema(Ctx());
-    bool has_errors = sema.Run(test.tree_);
-    EXPECT_EQ(test.has_errors_, has_errors) << test.msg_;
-    ResetErrorReporter();
-  }
+    for (const auto &test : tests) {
+        Sema sema(Ctx());
+        bool has_errors = sema.Run(test.tree_);
+        EXPECT_EQ(test.has_errors_, has_errors) << test.msg_;
+        ResetErrorReporter();
+    }
 }
 
 // NOLINTNEXTLINE
 TEST_F(SemaExprTest, ComparisonOperationWithImplicitCastTest) {
-  // clang-format off
+    // clang-format off
   SemaExprTestCase tests[] = {
       // Test: Compare a primitive int32 with a SQL integer
       // Expectation: Valid
@@ -80,19 +83,19 @@ TEST_F(SemaExprTest, ComparisonOperationWithImplicitCastTest) {
            ExprStmt(CmpLt(IdentExpr("b"), IdentExpr("sqlInt"))),        // b < sqlInt
        })},
   };
-  // clang-format on
+    // clang-format on
 
-  for (const auto &test : tests) {
-    Sema sema(Ctx());
-    bool has_errors = sema.Run(test.tree_);
-    EXPECT_EQ(test.has_errors_, has_errors) << test.msg_;
-    ResetErrorReporter();
-  }
+    for (const auto &test : tests) {
+        Sema sema(Ctx());
+        bool has_errors = sema.Run(test.tree_);
+        EXPECT_EQ(test.has_errors_, has_errors) << test.msg_;
+        ResetErrorReporter();
+    }
 }
 
 // NOLINTNEXTLINE
 TEST_F(SemaExprTest, ComparisonOperationWithPointersTest) {
-  // clang-format off
+    // clang-format off
   SemaExprTestCase tests[] = {
       // Test: Compare a primitive int32 with an integer
       // Expectation: Invalid
@@ -130,19 +133,19 @@ TEST_F(SemaExprTest, ComparisonOperationWithPointersTest) {
            ExprStmt(CmpLt(IdentExpr("ptr1"), IdentExpr("ptr2"))),               // ptr1 == ptr2
        })},
   };
-  // clang-format on
+    // clang-format on
 
-  for (const auto &test : tests) {
-    Sema sema(Ctx());
-    bool has_errors = sema.Run(test.tree_);
-    EXPECT_EQ(test.has_errors_, has_errors) << test.msg_;
-    ResetErrorReporter();
-  }
+    for (const auto &test : tests) {
+        Sema sema(Ctx());
+        bool has_errors = sema.Run(test.tree_);
+        EXPECT_EQ(test.has_errors_, has_errors) << test.msg_;
+        ResetErrorReporter();
+    }
 }
 
 // NOLINTNEXTLINE
 TEST_F(SemaExprTest, ArrayIndexTest) {
-  // clang-format off
+    // clang-format off
   SemaExprTestCase tests[] = {
       // Test: Perform an array index using an integer literal
       // Expectation: Valid
@@ -179,14 +182,14 @@ TEST_F(SemaExprTest, ArrayIndexTest) {
            ExprStmt(ArrayIndex(IdentExpr("arr"), IdentExpr("i"))),                // arr[i]
        })},
   };
-  // clang-format on
+    // clang-format on
 
-  for (const auto &test : tests) {
-    Sema sema(Ctx());
-    bool has_errors = sema.Run(test.tree_);
-    EXPECT_EQ(test.has_errors_, has_errors) << test.msg_;
-    ResetErrorReporter();
-  }
+    for (const auto &test : tests) {
+        Sema sema(Ctx());
+        bool has_errors = sema.Run(test.tree_);
+        EXPECT_EQ(test.has_errors_, has_errors) << test.msg_;
+        ResetErrorReporter();
+    }
 }
 
-}  // namespace noisepage::execution::sema::test
+} // namespace noisepage::execution::sema::test

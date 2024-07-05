@@ -8,7 +8,7 @@ namespace noisepage::common {
 extern common::SanctionedSharedPtr<spdlog::logger>::Ptr common_logger;
 
 void InitCommonLogger();
-}  // namespace noisepage::common
+} // namespace noisepage::common
 
 #define COMMON_LOG_TRACE(...) ::noisepage::common::common_logger->trace(__VA_ARGS__)
 #define COMMON_LOG_DEBUG(...) ::noisepage::common::common_logger->debug(__VA_ARGS__)
@@ -18,10 +18,10 @@ void InitCommonLogger();
 
 #else
 
-#define COMMON_LOG_TRACE(...) ((void)0)
-#define COMMON_LOG_DEBUG(...) ((void)0)
-#define COMMON_LOG_INFO(...) ((void)0)
-#define COMMON_LOG_WARN(...) ((void)0)
-#define COMMON_LOG_ERROR(...) ((void)0)
+#define COMMON_LOG_TRACE(...) ((void) 0)
+#define COMMON_LOG_DEBUG(...) ((void) 0)
+#define COMMON_LOG_INFO(...) ((void) 0)
+#define COMMON_LOG_WARN(...) ((void) 0)
+#define COMMON_LOG_ERROR(...) ((void) 0)
 
 #endif

@@ -7,7 +7,7 @@
 
 namespace noisepage::util {
 class QueryExecUtil;
-}  // namespace noisepage::util
+} // namespace noisepage::util
 
 namespace noisepage::task {
 class TaskManager;
@@ -27,32 +27,32 @@ namespace noisepage::metrics {
  * @see Metric for detailed description of how this would work.
  */
 class AbstractRawData {
- public:
-  virtual ~AbstractRawData() = default;
+public:
+    virtual ~AbstractRawData() = default;
 
-  /**
-   * Given another AbstractRawData classes, combine the other's content with the
-   * content of this one. It is guaranteed that nobody will have access to the
-   * other object at this point or after.
-   * @param other The other AbstractRawData to be merged
-   */
-  virtual void Aggregate(AbstractRawData *other) = 0;
+    /**
+     * Given another AbstractRawData classes, combine the other's content with the
+     * content of this one. It is guaranteed that nobody will have access to the
+     * other object at this point or after.
+     * @param other The other AbstractRawData to be merged
+     */
+    virtual void Aggregate(AbstractRawData *other) = 0;
 
-  /**
-   * @return the type of the metric this object is holding the data for
-   */
-  virtual MetricsComponent GetMetricType() const = 0;
+    /**
+     * @return the type of the metric this object is holding the data for
+     */
+    virtual MetricsComponent GetMetricType() const = 0;
 
-  /**
-   * Writes the data to internal tables
-   * @param task_manager Task manager to submit tasks to
-   */
-  virtual void ToDB(common::ManagedPointer<task::TaskManager> task_manager) {}
+    /**
+     * Writes the data to internal tables
+     * @param task_manager Task manager to submit tasks to
+     */
+    virtual void ToDB(common::ManagedPointer<task::TaskManager> task_manager) {}
 
-  /**
-   * Writes the data to files, and then clears the data
-   * @param outfile vector of ofstreams to write to that have been opened by the MetricsManager
-   */
-  virtual void ToCSV(std::vector<std::ofstream> *outfile) = 0;
+    /**
+     * Writes the data to files, and then clears the data
+     * @param outfile vector of ofstreams to write to that have been opened by the MetricsManager
+     */
+    virtual void ToCSV(std::vector<std::ofstream> *outfile) = 0;
 };
-}  // namespace noisepage::metrics
+} // namespace noisepage::metrics

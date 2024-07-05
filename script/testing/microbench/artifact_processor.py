@@ -10,7 +10,7 @@ from .jenkins.jenkins import Jenkins
 
 
 class ArtifactProcessor(object):
-    """ Loads historical Google benchmark test results. Provide access by 
+    """ Loads historical Google benchmark test results. Provide access by
     (suite_name, test_name)
     """
 
@@ -26,11 +26,11 @@ class ArtifactProcessor(object):
 
         It reads the results from the local directory structure and stores
         them in the artifact processor.
-        
+
         Parameters
         ----------
         latest_local_build_dir : str
-            The path to the latest local build dir. The directories increment 
+            The path to the latest local build dir. The directories increment
             001, 002, 003, etc. This is the highest one.
         """
         LOG.debug("Processing local data repository {}".format(LOCAL_REPO_DIR))
@@ -49,7 +49,7 @@ class ArtifactProcessor(object):
 
     def load_jenkins_artifacts(self, ref_data_source):
         """ Load the Jenkins artifacts into the artifact processor.
-        
+
         Parameters
         ----------
         ref_data_source : dict
@@ -118,7 +118,7 @@ class ArtifactProcessor(object):
     def get_comparison_for_publish_result(self, bench_name, gbench_result, lax_tolerance=None):
         """ Create and return a dict comparing the historical benchmark results
         to the benchmark result passed in.
-        
+
         This will format the results in a way that the performance storage
         service will understand. The main difference between this method and
         get_comparison is stdev_throughput.
@@ -188,10 +188,10 @@ class ArtifactProcessor(object):
 
     def _create_comparison_dict(self, bench_name, gbench_result, ref_type='none', lax_tolerance=None):
         """ Creates the comparison dict based on the ref type.
-        
+
         It takes a GBenchTestResult and compares it against the results for the
         same benchmark stored in the artifact processor.
-        
+
         Parameters
         ----------
         bench_name : str
@@ -248,10 +248,10 @@ class ArtifactProcessor(object):
 
 def is_comparison_pass(avg_historical_throughput, test_throughput, tolerance, ref_type='none'):
     """ Determine whether or not to consider the benchmark test as passed.
-    
+
     This is based on whether the throughput of the microbenchmark has decreased
     more than the allowed tolerance %.
-    
+
     Parameters
     ----------
     avg_historical_throughput : int

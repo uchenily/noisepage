@@ -9,19 +9,21 @@ namespace noisepage::execution::compiler {
  * CteScan Translator
  */
 class CteScanTranslator : public SeqScanTranslator {
- public:
-  /**
-   * Create a translator for the given plan.
-   * @param plan The plan.
-   * @param compilation_context The context this translator belongs to.
-   * @param pipeline The pipeline this translator is participating in.
-   */
-  CteScanTranslator(const planner::CteScanPlanNode &plan, CompilationContext *compilation_context, Pipeline *pipeline);
+public:
+    /**
+     * Create a translator for the given plan.
+     * @param plan The plan.
+     * @param compilation_context The context this translator belongs to.
+     * @param pipeline The pipeline this translator is participating in.
+     */
+    CteScanTranslator(const planner::CteScanPlanNode &plan,
+                      CompilationContext             *compilation_context,
+                      Pipeline                       *pipeline);
 
-  /**
-   * This class cannot be copied or moved.
-   */
-  DISALLOW_COPY_AND_MOVE(CteScanTranslator);
+    /**
+     * This class cannot be copied or moved.
+     */
+    DISALLOW_COPY_AND_MOVE(CteScanTranslator);
 };
 
-}  // namespace noisepage::execution::compiler
+} // namespace noisepage::execution::compiler

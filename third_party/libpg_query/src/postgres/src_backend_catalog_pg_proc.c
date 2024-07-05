@@ -46,23 +46,20 @@
 #include "utils/rel.h"
 #include "utils/syscache.h"
 
+Datum fmgr_internal_validator(PG_FUNCTION_ARGS);
+Datum fmgr_c_validator(PG_FUNCTION_ARGS);
+Datum fmgr_sql_validator(PG_FUNCTION_ARGS);
 
-Datum		fmgr_internal_validator(PG_FUNCTION_ARGS);
-Datum		fmgr_c_validator(PG_FUNCTION_ARGS);
-Datum		fmgr_sql_validator(PG_FUNCTION_ARGS);
-
-typedef struct
-{
-	char	   *proname;
-	char	   *prosrc;
+typedef struct {
+    char *proname;
+    char *prosrc;
 } parse_error_callback_arg;
 
-//static void sql_function_parse_error_callback(void *arg);
-//static int match_prosrc_to_query(const char *prosrc, const char *queryText,
+// static void sql_function_parse_error_callback(void *arg);
+// static int match_prosrc_to_query(const char *prosrc, const char *queryText,
 //					  int cursorpos);
-//static bool match_prosrc_to_literal(const char *prosrc, const char *literal,
+// static bool match_prosrc_to_literal(const char *prosrc, const char *literal,
 //						int cursorpos, int *newcursorpos);
-
 
 /* ----------------------------------------------------------------
  *		ProcedureCreate
@@ -73,18 +70,12 @@ typedef struct
  * ----------------------------------------------------------------
  */
 
-
-
-
 /*
  * Validator for internal functions
  *
  * Check that the given internal function name (the "prosrc" value) is
  * a known builtin function.
  */
-
-
-
 
 /*
  * Validator for C language functions
@@ -94,19 +85,15 @@ typedef struct
  * information record.
  */
 
-
-
 /*
  * Validator for SQL language functions
  *
  * Parse it here in order to be sure that it contains no syntax errors.
  */
 
-
 /*
  * Error context callback for handling errors in SQL function definitions
  */
-
 
 /*
  * Adjust a syntax error occurring inside the function body of a CREATE
@@ -119,8 +106,9 @@ typedef struct
  *
  * Returns true if a syntax error was processed, false if not.
  */
-bool function_parse_error_transpose(const char *prosrc) { return false; }
-
+bool function_parse_error_transpose(const char *prosrc) {
+    return false;
+}
 
 /*
  * Try to locate the string literal containing the function body in the
@@ -128,7 +116,6 @@ bool function_parse_error_transpose(const char *prosrc) { return false; }
  * the character (not byte) index within the command corresponding to the
  * given character index within the literal.  If not successful, return 0.
  */
-
 
 /*
  * Try to match the given source text to a single-quoted literal.
@@ -138,6 +125,3 @@ bool function_parse_error_transpose(const char *prosrc) { return false; }
  * At entry, literal points just past a ' character.  We must check for the
  * trailing quote.
  */
-
-
-

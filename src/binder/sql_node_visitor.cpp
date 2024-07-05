@@ -18,49 +18,49 @@
 
 namespace noisepage {
 void binder::SqlNodeVisitor::Visit(common::ManagedPointer<parser::AggregateExpression> expr) {
-  expr->AcceptChildren(common::ManagedPointer(this));
+    expr->AcceptChildren(common::ManagedPointer(this));
 }
 void binder::SqlNodeVisitor::Visit(common::ManagedPointer<parser::CaseExpression> expr) {
-  expr->AcceptChildren(common::ManagedPointer(this));
+    expr->AcceptChildren(common::ManagedPointer(this));
 }
 void binder::SqlNodeVisitor::Visit(common::ManagedPointer<parser::ColumnValueExpression> expr) {
-  expr->AcceptChildren(common::ManagedPointer(this));
+    expr->AcceptChildren(common::ManagedPointer(this));
 }
 void binder::SqlNodeVisitor::Visit(common::ManagedPointer<parser::ComparisonExpression> expr) {
-  expr->AcceptChildren(common::ManagedPointer(this));
+    expr->AcceptChildren(common::ManagedPointer(this));
 }
 void binder::SqlNodeVisitor::Visit(common::ManagedPointer<parser::ConjunctionExpression> expr) {
-  expr->AcceptChildren(common::ManagedPointer(this));
+    expr->AcceptChildren(common::ManagedPointer(this));
 }
 void binder::SqlNodeVisitor::Visit(common::ManagedPointer<parser::ConstantValueExpression> expr) {
-  expr->AcceptChildren(common::ManagedPointer(this));
+    expr->AcceptChildren(common::ManagedPointer(this));
 }
 void binder::SqlNodeVisitor::Visit(common::ManagedPointer<parser::DefaultValueExpression> expr) {
-  expr->AcceptChildren(common::ManagedPointer(this));
+    expr->AcceptChildren(common::ManagedPointer(this));
 }
 void binder::SqlNodeVisitor::Visit(common::ManagedPointer<parser::DerivedValueExpression> expr) {
-  expr->AcceptChildren(common::ManagedPointer(this));
+    expr->AcceptChildren(common::ManagedPointer(this));
 }
 void binder::SqlNodeVisitor::Visit(common::ManagedPointer<parser::FunctionExpression> expr) {
-  expr->AcceptChildren(common::ManagedPointer(this));
+    expr->AcceptChildren(common::ManagedPointer(this));
 }
 void binder::SqlNodeVisitor::Visit(common::ManagedPointer<parser::OperatorExpression> expr) {
-  expr->AcceptChildren(common::ManagedPointer(this));
+    expr->AcceptChildren(common::ManagedPointer(this));
 }
 void binder::SqlNodeVisitor::Visit(common::ManagedPointer<parser::ParameterValueExpression> expr) {
-  expr->AcceptChildren(common::ManagedPointer(this));
+    expr->AcceptChildren(common::ManagedPointer(this));
 }
 void binder::SqlNodeVisitor::Visit(common::ManagedPointer<parser::StarExpression> expr) {
-  expr->AcceptChildren(common::ManagedPointer(this));
+    expr->AcceptChildren(common::ManagedPointer(this));
 }
 void binder::SqlNodeVisitor::Visit(common::ManagedPointer<parser::TableStarExpression> expr) {
-  expr->AcceptChildren(common::ManagedPointer(this));
+    expr->AcceptChildren(common::ManagedPointer(this));
 }
 void binder::SqlNodeVisitor::Visit(common::ManagedPointer<parser::SubqueryExpression> expr) {
-  expr->AcceptChildren(common::ManagedPointer(this));
+    expr->AcceptChildren(common::ManagedPointer(this));
 }
 void binder::SqlNodeVisitor::Visit(common::ManagedPointer<parser::TypeCastExpression> expr) {
-  expr->AcceptChildren(common::ManagedPointer(this));
+    expr->AcceptChildren(common::ManagedPointer(this));
 }
 
-}  // namespace noisepage
+} // namespace noisepage

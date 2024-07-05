@@ -43,22 +43,22 @@ const char *Bytecodes::bytecode_handler_name[] = {
 
 // static
 uint32_t Bytecodes::MaxBytecodeNameLength() {
-  static constexpr const uint32_t max_inst_name_length = std::max({
+    static constexpr const uint32_t max_inst_name_length = std::max({
 #define ENTRY(name, ...) sizeof(#name),
-      BYTECODE_LIST(ENTRY)
+        BYTECODE_LIST(ENTRY)
 #undef ENTRY
-  });
-  return max_inst_name_length;
+    });
+    return max_inst_name_length;
 }
 
 uint32_t Bytecodes::GetNthOperandOffset(Bytecode bytecode, uint32_t operand_index) {
-  NOISEPAGE_ASSERT(operand_index < NumOperands(bytecode), "Invalid operand index");
-  uint32_t offset = sizeof(std::underlying_type_t<Bytecode>);
-  for (uint32_t i = 0; i < operand_index; i++) {
-    OperandSize operand_size = GetNthOperandSize(bytecode, i);
-    offset += static_cast<uint32_t>(operand_size);
-  }
-  return offset;
+    NOISEPAGE_ASSERT(operand_index < NumOperands(bytecode), "Invalid operand index");
+    uint32_t offset = sizeof(std::underlying_type_t<Bytecode>);
+    for (uint32_t i = 0; i < operand_index; i++) {
+        OperandSize operand_size = GetNthOperandSize(bytecode, i);
+        offset += static_cast<uint32_t>(operand_size);
+    }
+    return offset;
 }
 
-}  // namespace noisepage::execution::vm
+} // namespace noisepage::execution::vm

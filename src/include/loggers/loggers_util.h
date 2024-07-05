@@ -20,23 +20,23 @@ namespace noisepage {
  * Debug loggers get initialized here in a single static class.
  */
 class LoggersUtil {
- public:
-  LoggersUtil() = delete;
+public:
+    LoggersUtil() = delete;
 
-  /**
-   * Initialize all of the debug loggers in the system.
-   */
-  static void Initialize();
+    /**
+     * Initialize all of the debug loggers in the system.
+     */
+    static void Initialize();
 
-  /**
-   * Shut down all of the debug loggers in the system.
-   */
-  static void ShutDown();
+    /**
+     * Shut down all of the debug loggers in the system.
+     */
+    static void ShutDown();
 
-  /** @return The specified level. */
-  static std::optional<spdlog::level::level_enum> GetLevel(const std::string_view &name);
+    /** @return The specified level. */
+    static std::optional<spdlog::level::level_enum> GetLevel(const std::string_view &name);
 
-  /** @return The logger for the specified component. */
-  static noisepage::common::SanctionedSharedPtr<spdlog::logger>::Ptr GetLogger(const std::string_view &name);
+    /** @return The logger for the specified component. */
+    static noisepage::common::SanctionedSharedPtr<spdlog::logger>::Ptr GetLogger(const std::string_view &name);
 };
-}  // namespace noisepage
+} // namespace noisepage

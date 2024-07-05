@@ -15,10 +15,12 @@ namespace noisepage::execution::sql {
  */
 template <typename T>
 struct Add {
-  /**
-   * @return The result of a+b;
-   */
-  constexpr T operator()(T a, T b) const { return a + b; }
+    /**
+     * @return The result of a+b;
+     */
+    constexpr T operator()(T a, T b) const {
+        return a + b;
+    }
 };
 
 /**
@@ -27,10 +29,12 @@ struct Add {
  */
 template <typename T>
 struct AddWithOverflow {
-  /**
-   * @return True if a+b overflows; false otherwise. @em result stores the result regardless.
-   */
-  constexpr bool operator()(T a, T b, T *result) const { return util::ArithmeticOverflow::Add(a, b, result); }
+    /**
+     * @return True if a+b overflows; false otherwise. @em result stores the result regardless.
+     */
+    constexpr bool operator()(T a, T b, T *result) const {
+        return util::ArithmeticOverflow::Add(a, b, result);
+    }
 };
 
 /**
@@ -39,10 +43,12 @@ struct AddWithOverflow {
  */
 template <typename T>
 struct Subtract {
-  /**
-   * @return The result of a-b;
-   */
-  constexpr T operator()(T a, T b) const { return a - b; }
+    /**
+     * @return The result of a-b;
+     */
+    constexpr T operator()(T a, T b) const {
+        return a - b;
+    }
 };
 
 /**
@@ -51,10 +57,12 @@ struct Subtract {
  */
 template <typename T>
 struct SubtractWithOverflow {
-  /**
-   * @return True if a-b overflows; false otherwise. @em result stores the result regardless.
-   */
-  constexpr bool operator()(T a, T b, T *result) const { return util::ArithmeticOverflow::Sub(a, b, result); }
+    /**
+     * @return True if a-b overflows; false otherwise. @em result stores the result regardless.
+     */
+    constexpr bool operator()(T a, T b, T *result) const {
+        return util::ArithmeticOverflow::Sub(a, b, result);
+    }
 };
 
 /**
@@ -63,10 +71,12 @@ struct SubtractWithOverflow {
  */
 template <typename T>
 struct Multiply {
-  /**
-   * @return The result of a*b;
-   */
-  constexpr T operator()(T a, T b) const { return a * b; }
+    /**
+     * @return The result of a*b;
+     */
+    constexpr T operator()(T a, T b) const {
+        return a * b;
+    }
 };
 
 /**
@@ -75,10 +85,12 @@ struct Multiply {
  */
 template <typename T>
 struct MultiplyWithOverflow {
-  /**
-   * @return True if a*b overflows; false otherwise. @em result stores the result regardless.
-   */
-  constexpr bool operator()(T a, T b, T *result) const { return util::ArithmeticOverflow::Mul(a, b, result); }
+    /**
+     * @return True if a*b overflows; false otherwise. @em result stores the result regardless.
+     */
+    constexpr bool operator()(T a, T b, T *result) const {
+        return util::ArithmeticOverflow::Mul(a, b, result);
+    }
 };
 
 /**
@@ -87,13 +99,13 @@ struct MultiplyWithOverflow {
  */
 template <typename T>
 struct Divide {
-  /**
-   * @return The result of a/b;
-   */
-  constexpr T operator()(T a, T b) const {
-    NOISEPAGE_ASSERT(b != 0, "Divide by zero");  // Assumed to have checked earlier.
-    return a / b;
-  }
+    /**
+     * @return The result of a/b;
+     */
+    constexpr T operator()(T a, T b) const {
+        NOISEPAGE_ASSERT(b != 0, "Divide by zero"); // Assumed to have checked earlier.
+        return a / b;
+    }
 };
 
 /**
@@ -102,13 +114,13 @@ struct Divide {
  */
 template <typename T, typename Enable = void>
 struct Modulo {
-  /**
-   * @return The result of a%b;
-   */
-  constexpr T operator()(T a, T b) const {
-    NOISEPAGE_ASSERT(b != 0, "Divide by zero");  // Assumed to have checked earlier.
-    return a % b;
-  }
+    /**
+     * @return The result of a%b;
+     */
+    constexpr T operator()(T a, T b) const {
+        NOISEPAGE_ASSERT(b != 0, "Divide by zero"); // Assumed to have checked earlier.
+        return a % b;
+    }
 };
 
 /**
@@ -117,13 +129,13 @@ struct Modulo {
  */
 template <typename T>
 struct Modulo<T, std::enable_if_t<std::is_floating_point_v<T>>> {
-  /**
-   * @return The result of a%b;
-   */
-  constexpr T operator()(T a, T b) const {
-    NOISEPAGE_ASSERT(b != 0, "Divide by zero");  // Assumed to have checked earlier.
-    return std::fmod(a, b);
-  }
+    /**
+     * @return The result of a%b;
+     */
+    constexpr T operator()(T a, T b) const {
+        NOISEPAGE_ASSERT(b != 0, "Divide by zero"); // Assumed to have checked earlier.
+        return std::fmod(a, b);
+    }
 };
 
-}  // namespace noisepage::execution::sql
+} // namespace noisepage::execution::sql

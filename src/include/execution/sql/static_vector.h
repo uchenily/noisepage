@@ -16,19 +16,20 @@ namespace noisepage::execution::sql {
  */
 template <typename T>
 class StaticVector : public Vector {
- public:
-  /**
-   * Create a new empty static vector.
-   * The capacity, size, and count of the vector is determined by the default vector size constant, usually 2048.
-   */
-  StaticVector() : Vector(execution::sql::GetTypeId<T>()) {
-    // Arrange for the vector to reference the inlined data.
-    Reference(reinterpret_cast<byte *>(inlined_data_.data()), nullptr, common::Constants::K_DEFAULT_VECTOR_SIZE);
-  }
+public:
+    /**
+     * Create a new empty static vector.
+     * The capacity, size, and count of the vector is determined by the default vector size constant, usually 2048.
+     */
+    StaticVector()
+        : Vector(execution::sql::GetTypeId<T>()) {
+        // Arrange for the vector to reference the inlined data.
+        Reference(reinterpret_cast<byte *>(inlined_data_.data()), nullptr, common::Constants::K_DEFAULT_VECTOR_SIZE);
+    }
 
- private:
-  // The underlying vector data.
-  std::array<T, common::Constants::K_DEFAULT_VECTOR_SIZE> inlined_data_;
+private:
+    // The underlying vector data.
+    std::array<T, common::Constants::K_DEFAULT_VECTOR_SIZE> inlined_data_;
 };
 
-}  // namespace noisepage::execution::sql
+} // namespace noisepage::execution::sql

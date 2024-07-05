@@ -34,26 +34,13 @@
 #include "miscadmin.h"
 #include "storage/backendid.h"
 
-
-
-
 __thread volatile bool InterruptPending = false;
-
-
-
 
 __thread volatile uint32 InterruptHoldoffCount = 0;
 
 __thread volatile uint32 QueryCancelHoldoffCount = 0;
 
 __thread volatile uint32 CritSectionCount = 0;
-
-
-
-
-
-
-
 
 /*
  * MyLatch points to the latch that should be used for signal handling by the
@@ -63,7 +50,6 @@ __thread volatile uint32 CritSectionCount = 0;
  * without checking for its existence.
  */
 
-
 /*
  * DataDir is the absolute path to the top level of the PGDATA directory tree.
  * Except during early startup, this is also the server's working directory;
@@ -71,31 +57,21 @@ __thread volatile uint32 CritSectionCount = 0;
  * explicitly.
  */
 
+/* debugging output file */
 
-	/* debugging output file */
-
-	/* full path to my executable */
-		/* full path to lib directory */
+/* full path to my executable */
+/* full path to lib directory */
 
 #ifdef EXEC_BACKEND
-char		postgres_exec_path[MAXPGPATH];		/* full path to backend */
+char postgres_exec_path[MAXPGPATH]; /* full path to backend */
 
 /* note: currently this is not valid in backend processes */
 #endif
-
-
-
-
-
-
 
 /*
  * DatabasePath is the path (relative to DataDir) of my database's
  * primary directory, ie, its directory in the default tablespace.
  */
-
-
-
 
 /*
  * IsPostmasterEnvironment is true in a postmaster process and any postmaster
@@ -108,23 +84,9 @@ char		postgres_exec_path[MAXPGPATH];		/* full path to backend */
  *
  * These are initialized for the bootstrap/standalone case.
  */
-__thread bool		IsPostmasterEnvironment = false;
+__thread bool IsPostmasterEnvironment = false;
 
-
-
-
-
-__thread bool		ExitOnAnyError = false;
-
-
-
-
-
-
-
-
-
-
+__thread bool ExitOnAnyError = false;
 
 /*
  * Primary determinants of sizes of shared-memory structures.
@@ -133,19 +95,6 @@ __thread bool		ExitOnAnyError = false;
  * register background workers.
  */
 
+/* GUC parameters for vacuum */
 
-
-
-
-		/* GUC parameters for vacuum */
-
-
-
-
-
-
-
-
-
-		/* working state for vacuum */
-
+/* working state for vacuum */

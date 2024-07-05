@@ -72,204 +72,214 @@ static constexpr const char *K_EXIT_KEYWORD = ".exit";
  * @param name The name of the TPL file.
  */
 static void CompileAndRun(const std::string &source, const std::string &name = "tmp-tpl") {
-  // Initialize noisepage objects
-  auto db_main_builder = noisepage::DBMain::Builder().SetUseGC(true).SetUseCatalog(true).SetUseGCThread(true);
-  auto db_main = db_main_builder.Build();
+    // Initialize noisepage objects
+    auto db_main_builder = noisepage::DBMain::Builder().SetUseGC(true).SetUseCatalog(true).SetUseGCThread(true);
+    auto db_main = db_main_builder.Build();
 
-  // Get the correct output format for this test
-  exec::SampleOutput sample_output;
-  sample_output.InitTestOutput();
-  const auto *output_schema = sample_output.GetSchema(OUTPUT_NAME.data());
+    // Get the correct output format for this test
+    exec::SampleOutput sample_output;
+    sample_output.InitTestOutput();
+    const auto *output_schema = sample_output.GetSchema(OUTPUT_NAME.data());
 
-  auto catalog = db_main->GetCatalogLayer()->GetCatalog();
-  auto txn_manager = db_main->GetTransactionLayer()->GetTransactionManager();
+    auto catalog = db_main->GetCatalogLayer()->GetCatalog();
+    auto txn_manager = db_main->GetTransactionLayer()->GetTransactionManager();
 
-  auto *txn = txn_manager->BeginTransaction();
+    auto *txn = txn_manager->BeginTransaction();
 
-  auto db_oid = catalog->CreateDatabase(common::ManagedPointer(txn), "test_db", true);
-  auto accessor = catalog->GetAccessor(common::ManagedPointer(txn), db_oid, DISABLED);
-  auto ns_oid = accessor->GetDefaultNamespace();
+    auto db_oid = catalog->CreateDatabase(common::ManagedPointer(txn), "test_db", true);
+    auto accessor = catalog->GetAccessor(common::ManagedPointer(txn), db_oid, DISABLED);
+    auto ns_oid = accessor->GetDefaultNamespace();
 
-  // Make the execution context
-  exec::ExecutionSettings exec_settings{};
-  exec::OutputPrinter printer(output_schema);
-  exec::OutputCallback callback = printer;
-  exec::ExecutionContext exec_ctx{
-      db_oid,        common::ManagedPointer(txn),  callback, output_schema, common::ManagedPointer(accessor),
-      exec_settings, db_main->GetMetricsManager(), DISABLED, DISABLED};
-  // Add dummy parameters for tests
-  std::vector<parser::ConstantValueExpression> params;
-  params.emplace_back(execution::sql::SqlTypeId::Integer, sql::Integer(37));
-  params.emplace_back(execution::sql::SqlTypeId::Double, sql::Real(37.73));
-  params.emplace_back(execution::sql::SqlTypeId::Date, sql::DateVal(sql::Date::FromYMD(1937, 3, 7)));
-  auto string_val = sql::ValueUtil::CreateStringVal(std::string_view("37 Strings"));
-  params.emplace_back(execution::sql::SqlTypeId::Varchar, string_val.first, std::move(string_val.second));
-  exec_ctx.SetParams(common::ManagedPointer<const std::vector<parser::ConstantValueExpression>>(&params));
+    // Make the execution context
+    exec::ExecutionSettings exec_settings{};
+    exec::OutputPrinter     printer(output_schema);
+    exec::OutputCallback    callback = printer;
+    exec::ExecutionContext  exec_ctx{db_oid,
+                                    common::ManagedPointer(txn),
+                                    callback,
+                                    output_schema,
+                                    common::ManagedPointer(accessor),
+                                    exec_settings,
+                                    db_main->GetMetricsManager(),
+                                    DISABLED,
+                                    DISABLED};
+    // Add dummy parameters for tests
+    std::vector<parser::ConstantValueExpression> params;
+    params.emplace_back(execution::sql::SqlTypeId::Integer, sql::Integer(37));
+    params.emplace_back(execution::sql::SqlTypeId::Double, sql::Real(37.73));
+    params.emplace_back(execution::sql::SqlTypeId::Date, sql::DateVal(sql::Date::FromYMD(1937, 3, 7)));
+    auto string_val = sql::ValueUtil::CreateStringVal(std::string_view("37 Strings"));
+    params.emplace_back(execution::sql::SqlTypeId::Varchar, string_val.first, std::move(string_val.second));
+    exec_ctx.SetParams(common::ManagedPointer<const std::vector<parser::ConstantValueExpression>>(&params));
 
-  // Generate test tables
-  sql::TableGenerator table_generator{&exec_ctx, db_main->GetStorageLayer()->GetBlockStore(), ns_oid};
-  table_generator.GenerateTestTables();
-  // Comment out to make more tables available at runtime
-  // table_generator.GenerateTPCHTables(<path_to_tpch_dir>);
-  // table_generator.GenerateTableFromFile(<path_to_schema>, <path_to_data>);
+    // Generate test tables
+    sql::TableGenerator table_generator{&exec_ctx, db_main->GetStorageLayer()->GetBlockStore(), ns_oid};
+    table_generator.GenerateTestTables();
+    // Comment out to make more tables available at runtime
+    // table_generator.GenerateTPCHTables(<path_to_tpch_dir>);
+    // table_generator.GenerateTableFromFile(<path_to_schema>, <path_to_data>);
 
-  // Let's parse the source
-  util::Region err_region{"tmp-error-region"};
-  util::Region context_region{"tmp-context-region"};
-  sema::ErrorReporter error_reporter{&err_region};
-  ast::Context context(&context_region, &error_reporter);
+    // Let's parse the source
+    util::Region        err_region{"tmp-error-region"};
+    util::Region        context_region{"tmp-context-region"};
+    sema::ErrorReporter error_reporter{&err_region};
+    ast::Context        context(&context_region, &error_reporter);
 
-  parsing::Scanner scanner(source.data(), source.length());
-  parsing::Parser parser(&scanner, &context);
+    parsing::Scanner scanner(source.data(), source.length());
+    parsing::Parser  parser(&scanner, &context);
 
-  double parse_ms = 0.0,       // Time to parse the source
-      typecheck_ms = 0.0,      // Time to perform semantic analysis
-      codegen_ms = 0.0,        // Time to generate TBC
-      interp_exec_ms = 0.0,    // Time to execute the program in fully interpreted mode
-      adaptive_exec_ms = 0.0,  // Time to execute the program in adaptive mode
-      jit_exec_ms = 0.0;       // Time to execute the program in JIT excluding compilation time
+    double parse_ms = 0.0,      // Time to parse the source
+        typecheck_ms = 0.0,     // Time to perform semantic analysis
+        codegen_ms = 0.0,       // Time to generate TBC
+        interp_exec_ms = 0.0,   // Time to execute the program in fully interpreted mode
+        adaptive_exec_ms = 0.0, // Time to execute the program in adaptive mode
+        jit_exec_ms = 0.0;      // Time to execute the program in JIT excluding compilation time
 
-  //
-  // Parse
-  //
+    //
+    // Parse
+    //
 
-  ast::AstNode *root;
-  {
-    util::ScopedTimer<std::milli> timer(&parse_ms);
-    root = parser.Parse();
-  }
+    ast::AstNode *root;
+    {
+        util::ScopedTimer<std::milli> timer(&parse_ms);
+        root = parser.Parse();
+    }
 
-  if (error_reporter.HasErrors()) {
-    EXECUTION_LOG_ERROR("Parsing error! Error: {}", error_reporter.SerializeErrors());
-    return;
-  }
+    if (error_reporter.HasErrors()) {
+        EXECUTION_LOG_ERROR("Parsing error! Error: {}", error_reporter.SerializeErrors());
+        return;
+    }
 
-  //
-  // Type check
-  //
+    //
+    // Type check
+    //
 
-  {
-    util::ScopedTimer<std::milli> timer(&typecheck_ms);
-    sema::Sema type_check(&context);
-    type_check.Run(root);
-  }
+    {
+        util::ScopedTimer<std::milli> timer(&typecheck_ms);
+        sema::Sema                    type_check(&context);
+        type_check.Run(root);
+    }
 
-  if (error_reporter.HasErrors()) {
-    EXECUTION_LOG_ERROR("Type-checking error! Error: {}", error_reporter.SerializeErrors());
-    return;
-  }
+    if (error_reporter.HasErrors()) {
+        EXECUTION_LOG_ERROR("Type-checking error! Error: {}", error_reporter.SerializeErrors());
+        return;
+    }
 
-  // Dump AST
-  if (PRINT_AST) {
-    std::cout << ast::AstDump::Dump(root);  // NOLINT
-  }
+    // Dump AST
+    if (PRINT_AST) {
+        std::cout << ast::AstDump::Dump(root); // NOLINT
+    }
 
-  // Pretty-print AST
-  if (PRETTY_PRINT) {
-    ast::AstPrettyPrint::Dump(std::cout, root);  // NOLINT
-  }
+    // Pretty-print AST
+    if (PRETTY_PRINT) {
+        ast::AstPrettyPrint::Dump(std::cout, root); // NOLINT
+    }
 
-  //
-  // TBC generation
-  //
+    //
+    // TBC generation
+    //
 
-  std::unique_ptr<vm::BytecodeModule> bytecode_module;
-  {
-    util::ScopedTimer<std::milli> timer(&codegen_ms);
-    bytecode_module = vm::BytecodeGenerator::Compile(root, name);
-  }
+    std::unique_ptr<vm::BytecodeModule> bytecode_module;
+    {
+        util::ScopedTimer<std::milli> timer(&codegen_ms);
+        bytecode_module = vm::BytecodeGenerator::Compile(root, name);
+    }
 
-  // Dump Bytecode
-  if (PRINT_TBC) {
-    bytecode_module->Dump(std::cout);  // NOLINT
-  }
+    // Dump Bytecode
+    if (PRINT_TBC) {
+        bytecode_module->Dump(std::cout); // NOLINT
+    }
 
-  vm::CompileTimeModuleMetadata compile_metadata{};
-  vm::ModuleMetadata module_metadata{std::move(compile_metadata)};
-  auto module = std::make_unique<vm::Module>(std::move(bytecode_module), std::move(module_metadata));
+    vm::CompileTimeModuleMetadata compile_metadata{};
+    vm::ModuleMetadata            module_metadata{std::move(compile_metadata)};
+    auto module = std::make_unique<vm::Module>(std::move(bytecode_module), std::move(module_metadata));
 
-  //
-  // Interpret
-  //
+    //
+    // Interpret
+    //
 
-  {
-    exec_ctx.SetExecutionMode(static_cast<uint8_t>(vm::ExecutionMode::Interpret));
-    util::ScopedTimer<std::milli> timer(&interp_exec_ms);
+    {
+        exec_ctx.SetExecutionMode(static_cast<uint8_t>(vm::ExecutionMode::Interpret));
+        util::ScopedTimer<std::milli> timer(&interp_exec_ms);
+
+        if (IS_SQL) {
+            std::function<int32_t(exec::ExecutionContext *)> main;
+            if (!module->GetFunction("main", vm::ExecutionMode::Interpret, &main)) {
+                EXECUTION_LOG_ERROR("Missing 'main' entry function with signature (*ExecutionContext)->int32");
+                return;
+            }
+            EXECUTION_LOG_INFO("VM main() returned: {}", main(&exec_ctx));
+        } else {
+            std::function<int32_t()> main;
+            if (!module->GetFunction("main", vm::ExecutionMode::Interpret, &main)) {
+                EXECUTION_LOG_ERROR("Missing 'main' entry function with signature ()->int32");
+                return;
+            }
+            EXECUTION_LOG_INFO("VM main() returned: {}", main());
+        }
+    }
+
+    //
+    // Adaptive
+    //
+
+    exec_ctx.SetExecutionMode(static_cast<uint8_t>(vm::ExecutionMode::Adaptive));
+    util::ScopedTimer<std::milli> timer(&adaptive_exec_ms);
 
     if (IS_SQL) {
-      std::function<int32_t(exec::ExecutionContext *)> main;
-      if (!module->GetFunction("main", vm::ExecutionMode::Interpret, &main)) {
-        EXECUTION_LOG_ERROR("Missing 'main' entry function with signature (*ExecutionContext)->int32");
-        return;
-      }
-      EXECUTION_LOG_INFO("VM main() returned: {}", main(&exec_ctx));
+        std::function<int32_t(exec::ExecutionContext *)> main;
+        if (!module->GetFunction("main", vm::ExecutionMode::Adaptive, &main)) {
+            EXECUTION_LOG_ERROR("Missing 'main' entry function with signature (*ExecutionContext)->int32");
+            return;
+        }
+        EXECUTION_LOG_INFO("ADAPTIVE main() returned: {}", main(&exec_ctx));
     } else {
-      std::function<int32_t()> main;
-      if (!module->GetFunction("main", vm::ExecutionMode::Interpret, &main)) {
-        EXECUTION_LOG_ERROR("Missing 'main' entry function with signature ()->int32");
-        return;
-      }
-      EXECUTION_LOG_INFO("VM main() returned: {}", main());
+        std::function<int32_t()> main;
+        if (!module->GetFunction("main", vm::ExecutionMode::Adaptive, &main)) {
+            EXECUTION_LOG_ERROR("Missing 'main' entry function with signature ()->int32");
+            return;
+        }
+        EXECUTION_LOG_INFO("ADAPTIVE main() returned: {}", main());
     }
-  }
 
-  //
-  // Adaptive
-  //
+    //
+    // JIT
+    //
+    {
+        exec_ctx.SetExecutionMode(static_cast<uint8_t>(vm::ExecutionMode::Compiled));
+        util::ScopedTimer<std::milli> timer(&jit_exec_ms);
 
-  exec_ctx.SetExecutionMode(static_cast<uint8_t>(vm::ExecutionMode::Adaptive));
-  util::ScopedTimer<std::milli> timer(&adaptive_exec_ms);
-
-  if (IS_SQL) {
-    std::function<int32_t(exec::ExecutionContext *)> main;
-    if (!module->GetFunction("main", vm::ExecutionMode::Adaptive, &main)) {
-      EXECUTION_LOG_ERROR("Missing 'main' entry function with signature (*ExecutionContext)->int32");
-      return;
+        if (IS_SQL) {
+            std::function<int32_t(exec::ExecutionContext *)> main;
+            if (!module->GetFunction("main", vm::ExecutionMode::Compiled, &main)) {
+                EXECUTION_LOG_ERROR("Missing 'main' entry function with signature (*ExecutionContext)->int32");
+                return;
+            }
+            util::Timer<std::milli> x;
+            x.Start();
+            EXECUTION_LOG_INFO("JIT main() returned: {}", main(&exec_ctx));
+            x.Stop();
+            EXECUTION_LOG_INFO("Jit exec: {} ms", x.GetElapsed());
+        } else {
+            std::function<int32_t()> main;
+            if (!module->GetFunction("main", vm::ExecutionMode::Compiled, &main)) {
+                EXECUTION_LOG_ERROR("Missing 'main' entry function with signature ()->int32");
+                return;
+            }
+            EXECUTION_LOG_INFO("JIT main() returned: {}", main());
+        }
     }
-    EXECUTION_LOG_INFO("ADAPTIVE main() returned: {}", main(&exec_ctx));
-  } else {
-    std::function<int32_t()> main;
-    if (!module->GetFunction("main", vm::ExecutionMode::Adaptive, &main)) {
-      EXECUTION_LOG_ERROR("Missing 'main' entry function with signature ()->int32");
-      return;
-    }
-    EXECUTION_LOG_INFO("ADAPTIVE main() returned: {}", main());
-  }
 
-  //
-  // JIT
-  //
-  {
-    exec_ctx.SetExecutionMode(static_cast<uint8_t>(vm::ExecutionMode::Compiled));
-    util::ScopedTimer<std::milli> timer(&jit_exec_ms);
-
-    if (IS_SQL) {
-      std::function<int32_t(exec::ExecutionContext *)> main;
-      if (!module->GetFunction("main", vm::ExecutionMode::Compiled, &main)) {
-        EXECUTION_LOG_ERROR("Missing 'main' entry function with signature (*ExecutionContext)->int32");
-        return;
-      }
-      util::Timer<std::milli> x;
-      x.Start();
-      EXECUTION_LOG_INFO("JIT main() returned: {}", main(&exec_ctx));
-      x.Stop();
-      EXECUTION_LOG_INFO("Jit exec: {} ms", x.GetElapsed());
-    } else {
-      std::function<int32_t()> main;
-      if (!module->GetFunction("main", vm::ExecutionMode::Compiled, &main)) {
-        EXECUTION_LOG_ERROR("Missing 'main' entry function with signature ()->int32");
-        return;
-      }
-      EXECUTION_LOG_INFO("JIT main() returned: {}", main());
-    }
-  }
-
-  // Dump stats
-  EXECUTION_LOG_INFO(
-      "Parse: {} ms, Type-check: {} ms, Code-gen: {} ms, Interp. Exec.: {} ms, "
-      "Adaptive Exec.: {} ms, Jit+Exec.: {} ms",
-      parse_ms, typecheck_ms, codegen_ms, interp_exec_ms, adaptive_exec_ms, jit_exec_ms);
-  txn_manager->Commit(txn, transaction::TransactionUtil::EmptyCallback, nullptr);
+    // Dump stats
+    EXECUTION_LOG_INFO("Parse: {} ms, Type-check: {} ms, Code-gen: {} ms, Interp. Exec.: {} ms, "
+                       "Adaptive Exec.: {} ms, Jit+Exec.: {} ms",
+                       parse_ms,
+                       typecheck_ms,
+                       codegen_ms,
+                       interp_exec_ms,
+                       adaptive_exec_ms,
+                       jit_exec_ms);
+    txn_manager->Commit(txn, transaction::TransactionUtil::EmptyCallback, nullptr);
 }
 
 /**
@@ -277,125 +287,125 @@ static void CompileAndRun(const std::string &source, const std::string &name = "
  * @param filename The name of TPL file to compile and run.
  */
 static void RunFile(const std::string &filename) {
-  auto file = llvm::MemoryBuffer::getFile(filename);
-  if (std::error_code error = file.getError()) {
-    EXECUTION_LOG_ERROR("There was an error reading file '{}': {}", filename, error.message());
-    return;
-  }
+    auto file = llvm::MemoryBuffer::getFile(filename);
+    if (std::error_code error = file.getError()) {
+        EXECUTION_LOG_ERROR("There was an error reading file '{}': {}", filename, error.message());
+        return;
+    }
 
-  EXECUTION_LOG_INFO("Compiling and running file: {}", filename);
+    EXECUTION_LOG_INFO("Compiling and running file: {}", filename);
 
-  // Copy the source into a temporary, compile, and run
-  CompileAndRun((*file)->getBuffer().str(), filename);
+    // Copy the source into a temporary, compile, and run
+    CompileAndRun((*file)->getBuffer().str(), filename);
 }
 
 /**
  * Run the REPL.
  */
 static void RunRepl() {
-  const auto prompt_and_read_line = [] {
-    std::string line;
-    printf(">>> ");  // NOLINT
-    std::getline(std::cin, line);
-    return line;
-  };
+    const auto prompt_and_read_line = [] {
+        std::string line;
+        printf(">>> "); // NOLINT
+        std::getline(std::cin, line);
+        return line;
+    };
 
-  while (true) {
-    std::string line = prompt_and_read_line();
+    while (true) {
+        std::string line = prompt_and_read_line();
 
-    // Exit?
-    if (line == K_EXIT_KEYWORD) {
-      return;
+        // Exit?
+        if (line == K_EXIT_KEYWORD) {
+            return;
+        }
+
+        // Run file?
+        if (llvm::StringRef line_ref(line); line_ref.startswith_lower(".run")) {
+            auto pair = line_ref.split(' ');
+            RunFile(pair.second);
+            continue;
+        }
+
+        // Code ...
+        std::string input;
+        while (!line.empty()) {
+            input.append(line).append("\n");
+            line = prompt_and_read_line();
+        }
+        // Try to compile and run it
+        CompileAndRun(input);
     }
-
-    // Run file?
-    if (llvm::StringRef line_ref(line); line_ref.startswith_lower(".run")) {
-      auto pair = line_ref.split(' ');
-      RunFile(pair.second);
-      continue;
-    }
-
-    // Code ...
-    std::string input;
-    while (!line.empty()) {
-      input.append(line).append("\n");
-      line = prompt_and_read_line();
-    }
-    // Try to compile and run it
-    CompileAndRun(input);
-  }
 }
 
 /**
  * Initialize all TPL subsystems in preparation for execution.
  */
 void InitTPL(std::string_view bytecode_handlers_path) {
-  execution::CpuInfo::Instance();
+    execution::CpuInfo::Instance();
 
-  auto settings = std::make_unique<execution::vm::LLVMEngine::Settings>(bytecode_handlers_path);
-  execution::vm::LLVMEngine::Initialize(std::move(settings));
+    auto settings = std::make_unique<execution::vm::LLVMEngine::Settings>(bytecode_handlers_path);
+    execution::vm::LLVMEngine::Initialize(std::move(settings));
 
-  EXECUTION_LOG_INFO("TPL Bytecode Count: {}", execution::vm::Bytecodes::NumBytecodes());
+    EXECUTION_LOG_INFO("TPL Bytecode Count: {}", execution::vm::Bytecodes::NumBytecodes());
 
-  EXECUTION_LOG_INFO("TPL initialized ...");
+    EXECUTION_LOG_INFO("TPL initialized ...");
 }
 
 /**
  * Shutdown all TPL subsystems.
  */
 void ShutdownTPL() {
-  noisepage::execution::vm::LLVMEngine::Shutdown();
+    noisepage::execution::vm::LLVMEngine::Shutdown();
 
-  scheduler.terminate();
+    scheduler.terminate();
 
-  EXECUTION_LOG_INFO("TPL cleanly shutdown ...");
+    EXECUTION_LOG_INFO("TPL cleanly shutdown ...");
 }
 
-}  // namespace noisepage::execution
+} // namespace noisepage::execution
 
 void SignalHandler(int32_t sig_num) {
-  if (sig_num == SIGINT) {
-    noisepage::execution::ShutdownTPL();
-    exit(0);
-  }
+    if (sig_num == SIGINT) {
+        noisepage::execution::ShutdownTPL();
+        exit(0);
+    }
 }
 
 int main(int argc, char **argv) {
-  noisepage::LoggersUtil::Initialize();
+    noisepage::LoggersUtil::Initialize();
 
-  // Parse options
-  llvm::cl::HideUnrelatedOptions(TPL_OPTIONS_CATEGORY);
-  llvm::cl::ParseCommandLineOptions(argc, argv);
+    // Parse options
+    llvm::cl::HideUnrelatedOptions(TPL_OPTIONS_CATEGORY);
+    llvm::cl::ParseCommandLineOptions(argc, argv);
 
-  // Initialize a signal handler to call SignalHandler()
-  struct sigaction sa;  // NOLINT
-  sa.sa_handler = &SignalHandler;
-  sa.sa_flags = SA_RESTART;
+    // Initialize a signal handler to call SignalHandler()
+    struct sigaction sa; // NOLINT
+    sa.sa_handler = &SignalHandler;
+    sa.sa_flags = SA_RESTART;
 
-  sigfillset(&sa.sa_mask);
+    sigfillset(&sa.sa_mask);
 
-  if (sigaction(SIGINT, &sa, nullptr) == -1) {
-    EXECUTION_LOG_ERROR("Cannot handle SIGNIT: {}", strerror(errno));
-    return errno;
-  }
+    if (sigaction(SIGINT, &sa, nullptr) == -1) {
+        EXECUTION_LOG_ERROR("Cannot handle SIGNIT: {}", strerror(errno));
+        return errno;
+    }
 
-  // Init TPL
-  noisepage::execution::InitTPL(HANDLERS_PATH);
+    // Init TPL
+    noisepage::execution::InitTPL(HANDLERS_PATH);
 
-  EXECUTION_LOG_INFO("\n{}", noisepage::execution::CpuInfo::Instance()->PrettyPrintInfo());
+    EXECUTION_LOG_INFO("\n{}", noisepage::execution::CpuInfo::Instance()->PrettyPrintInfo());
 
-  EXECUTION_LOG_INFO("Welcome to TPL (ver. {}.{})", TPL_VERSION_MAJOR, TPL_VERSION_MINOR);
+    EXECUTION_LOG_INFO("Welcome to TPL (ver. {}.{})", TPL_VERSION_MAJOR, TPL_VERSION_MINOR);
 
-  // Either execute a TPL program from a source file, or run REPL
-  if (!INPUT_FILE.empty()) {
-    noisepage::execution::RunFile(INPUT_FILE);
-  } else {
-    noisepage::execution::RunRepl();
-  }
+    // Either execute a TPL program from a source file, or run REPL
+    if (!INPUT_FILE.empty()) {
+        noisepage::execution::RunFile(INPUT_FILE);
+    } else {
+        noisepage::execution::RunRepl();
+    }
 
-  // Cleanup
-  noisepage::execution::ShutdownTPL();
-  noisepage::LoggersUtil::ShutDown();
+    // Cleanup
+    noisepage::execution::ShutdownTPL();
+    noisepage::LoggersUtil::ShutDown();
 
-  return 0;
+    return 0;
 }

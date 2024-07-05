@@ -21,4 +21,3 @@ def round_to_interval(time, interval):
     :return: time in us rounded to the closest interval ahead
     """
     return time - time % interval
-

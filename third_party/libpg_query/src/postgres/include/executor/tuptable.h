@@ -110,65 +110,56 @@
  * be touched by any other code.
  *----------
  */
-typedef struct TupleTableSlot
-{
-	NodeTag		type;
-	bool		tts_isempty;	/* true = slot is empty */
-	bool		tts_shouldFree; /* should pfree tts_tuple? */
-	bool		tts_shouldFreeMin;		/* should pfree tts_mintuple? */
-	bool		tts_slow;		/* saved state for slot_deform_tuple */
-	HeapTuple	tts_tuple;		/* physical tuple, or NULL if virtual */
-	TupleDesc	tts_tupleDescriptor;	/* slot's tuple descriptor */
-	MemoryContext tts_mcxt;		/* slot itself is in this context */
-	Buffer		tts_buffer;		/* tuple's buffer, or InvalidBuffer */
-	int			tts_nvalid;		/* # of valid values in tts_values */
-	Datum	   *tts_values;		/* current per-attribute values */
-	bool	   *tts_isnull;		/* current per-attribute isnull flags */
-	MinimalTuple tts_mintuple;	/* minimal tuple, or NULL if none */
-	HeapTupleData tts_minhdr;	/* workspace for minimal-tuple-only case */
-	long		tts_off;		/* saved state for slot_deform_tuple */
+typedef struct TupleTableSlot {
+    NodeTag       type;
+    bool          tts_isempty;         /* true = slot is empty */
+    bool          tts_shouldFree;      /* should pfree tts_tuple? */
+    bool          tts_shouldFreeMin;   /* should pfree tts_mintuple? */
+    bool          tts_slow;            /* saved state for slot_deform_tuple */
+    HeapTuple     tts_tuple;           /* physical tuple, or NULL if virtual */
+    TupleDesc     tts_tupleDescriptor; /* slot's tuple descriptor */
+    MemoryContext tts_mcxt;            /* slot itself is in this context */
+    Buffer        tts_buffer;          /* tuple's buffer, or InvalidBuffer */
+    int           tts_nvalid;          /* # of valid values in tts_values */
+    Datum        *tts_values;          /* current per-attribute values */
+    bool         *tts_isnull;          /* current per-attribute isnull flags */
+    MinimalTuple  tts_mintuple;        /* minimal tuple, or NULL if none */
+    HeapTupleData tts_minhdr;          /* workspace for minimal-tuple-only case */
+    long          tts_off;             /* saved state for slot_deform_tuple */
 } TupleTableSlot;
 
-#define TTS_HAS_PHYSICAL_TUPLE(slot)  \
-	((slot)->tts_tuple != NULL && (slot)->tts_tuple != &((slot)->tts_minhdr))
+#define TTS_HAS_PHYSICAL_TUPLE(slot) ((slot)->tts_tuple != NULL && (slot)->tts_tuple != &((slot)->tts_minhdr))
 
 /*
  * TupIsNull -- is a TupleTableSlot empty?
  */
-#define TupIsNull(slot) \
-	((slot) == NULL || (slot)->tts_isempty)
+#define TupIsNull(slot) ((slot) == NULL || (slot)->tts_isempty)
 
 /* in executor/execTuples.c */
 extern TupleTableSlot *MakeTupleTableSlot(void);
 extern TupleTableSlot *ExecAllocTableSlot(List **tupleTable);
-extern void ExecResetTupleTable(List *tupleTable, bool shouldFree);
+extern void            ExecResetTupleTable(List *tupleTable, bool shouldFree);
 extern TupleTableSlot *MakeSingleTupleTableSlot(TupleDesc tupdesc);
-extern void ExecDropSingleTupleTableSlot(TupleTableSlot *slot);
-extern void ExecSetSlotDescriptor(TupleTableSlot *slot, TupleDesc tupdesc);
-extern TupleTableSlot *ExecStoreTuple(HeapTuple tuple,
-			   TupleTableSlot *slot,
-			   Buffer buffer,
-			   bool shouldFree);
-extern TupleTableSlot *ExecStoreMinimalTuple(MinimalTuple mtup,
-					  TupleTableSlot *slot,
-					  bool shouldFree);
+extern void            ExecDropSingleTupleTableSlot(TupleTableSlot *slot);
+extern void            ExecSetSlotDescriptor(TupleTableSlot *slot, TupleDesc tupdesc);
+extern TupleTableSlot *ExecStoreTuple(HeapTuple tuple, TupleTableSlot *slot, Buffer buffer, bool shouldFree);
+extern TupleTableSlot *ExecStoreMinimalTuple(MinimalTuple mtup, TupleTableSlot *slot, bool shouldFree);
 extern TupleTableSlot *ExecClearTuple(TupleTableSlot *slot);
 extern TupleTableSlot *ExecStoreVirtualTuple(TupleTableSlot *slot);
 extern TupleTableSlot *ExecStoreAllNullTuple(TupleTableSlot *slot);
-extern HeapTuple ExecCopySlotTuple(TupleTableSlot *slot);
-extern MinimalTuple ExecCopySlotMinimalTuple(TupleTableSlot *slot);
-extern HeapTuple ExecFetchSlotTuple(TupleTableSlot *slot);
-extern MinimalTuple ExecFetchSlotMinimalTuple(TupleTableSlot *slot);
-extern Datum ExecFetchSlotTupleDatum(TupleTableSlot *slot);
-extern HeapTuple ExecMaterializeSlot(TupleTableSlot *slot);
-extern TupleTableSlot *ExecCopySlot(TupleTableSlot *dstslot,
-			 TupleTableSlot *srcslot);
+extern HeapTuple       ExecCopySlotTuple(TupleTableSlot *slot);
+extern MinimalTuple    ExecCopySlotMinimalTuple(TupleTableSlot *slot);
+extern HeapTuple       ExecFetchSlotTuple(TupleTableSlot *slot);
+extern MinimalTuple    ExecFetchSlotMinimalTuple(TupleTableSlot *slot);
+extern Datum           ExecFetchSlotTupleDatum(TupleTableSlot *slot);
+extern HeapTuple       ExecMaterializeSlot(TupleTableSlot *slot);
+extern TupleTableSlot *ExecCopySlot(TupleTableSlot *dstslot, TupleTableSlot *srcslot);
 extern TupleTableSlot *ExecMakeSlotContentsReadOnly(TupleTableSlot *slot);
 
 /* in access/common/heaptuple.c */
 extern Datum slot_getattr(TupleTableSlot *slot, int attnum, bool *isnull);
-extern void slot_getallattrs(TupleTableSlot *slot);
-extern void slot_getsomeattrs(TupleTableSlot *slot, int attnum);
-extern bool slot_attisnull(TupleTableSlot *slot, int attnum);
+extern void  slot_getallattrs(TupleTableSlot *slot);
+extern void  slot_getsomeattrs(TupleTableSlot *slot, int attnum);
+extern bool  slot_attisnull(TupleTableSlot *slot, int attnum);
 
-#endif   /* TUPTABLE_H */
+#endif /* TUPTABLE_H */

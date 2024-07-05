@@ -7,4 +7,4 @@ template class CompactIntsKey<16>;
 template class CompactIntsKey<24>;
 template class CompactIntsKey<32>;
 
-}  // namespace noisepage::storage::index
+} // namespace noisepage::storage::index

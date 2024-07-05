@@ -10,17 +10,20 @@ namespace noisepage::selfdriving::pilot {
  * For now only need the column name, but we may augment other information in the future
  */
 struct IndexColumn {
-  /**
-   * Construct an IndexColumn
-   * @param column_name name of the column
-   */
-  explicit IndexColumn(std::string column_name) : column_name_(std::move(column_name)) {}
+    /**
+     * Construct an IndexColumn
+     * @param column_name name of the column
+     */
+    explicit IndexColumn(std::string column_name)
+        : column_name_(std::move(column_name)) {}
 
-  /** @return Name of the column */
-  const std::string &GetColumnName() const { return column_name_; }
+    /** @return Name of the column */
+    const std::string &GetColumnName() const {
+        return column_name_;
+    }
 
- private:
-  std::string column_name_;  // Column name to build index with
+private:
+    std::string column_name_; // Column name to build index with
 };
 
-}  // namespace noisepage::selfdriving::pilot
+} // namespace noisepage::selfdriving::pilot

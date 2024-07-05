@@ -16,20 +16,19 @@
 #include "access/xlogdefs.h"
 #include "utils/guc.h"
 
-#define SyncRepRequested() \
-	(max_wal_senders > 0 && synchronous_commit > SYNCHRONOUS_COMMIT_LOCAL_FLUSH)
+#define SyncRepRequested() (max_wal_senders > 0 && synchronous_commit > SYNCHRONOUS_COMMIT_LOCAL_FLUSH)
 
 /* SyncRepWaitMode */
-#define SYNC_REP_NO_WAIT		-1
-#define SYNC_REP_WAIT_WRITE		0
-#define SYNC_REP_WAIT_FLUSH		1
+#define SYNC_REP_NO_WAIT -1
+#define SYNC_REP_WAIT_WRITE 0
+#define SYNC_REP_WAIT_FLUSH 1
 
-#define NUM_SYNC_REP_WAIT_MODE	2
+#define NUM_SYNC_REP_WAIT_MODE 2
 
 /* syncRepState */
-#define SYNC_REP_NOT_WAITING		0
-#define SYNC_REP_WAITING			1
-#define SYNC_REP_WAIT_COMPLETE		2
+#define SYNC_REP_NOT_WAITING 0
+#define SYNC_REP_WAITING 1
+#define SYNC_REP_WAIT_COMPLETE 2
 
 /* user-settable parameters for synchronous replication */
 extern char *SyncRepStandbyNames;
@@ -54,4 +53,4 @@ extern struct WalSnd *SyncRepGetSynchronousStandby(void);
 extern bool check_synchronous_standby_names(char **newval, void **extra, GucSource source);
 extern void assign_synchronous_commit(int newval, void *extra);
 
-#endif   /* _SYNCREP_H */
+#endif /* _SYNCREP_H */

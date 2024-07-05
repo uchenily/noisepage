@@ -5,8 +5,8 @@
 namespace noisepage::parser {
 
 std::string ExpressionTypeToShortString(ExpressionType type) {
-  switch (type) {
-      // clang-format off
+    switch (type) {
+        // clang-format off
     case ExpressionType::OPERATOR_PLUS:                     return "+";
     case ExpressionType::OPERATOR_MINUS:                    return "-";
     case ExpressionType::OPERATOR_MULTIPLY:                 return "*";
@@ -31,8 +31,8 @@ std::string ExpressionTypeToShortString(ExpressionType type) {
     case ExpressionType::AGGREGATE_TOP_K:                   return "TOP_K";
     case ExpressionType::AGGREGATE_HISTOGRAM:               return "HISTOGRAM";
     default: return ExpressionTypeToString(type);
-      // clang-format on
-  }
+        // clang-format on
+    }
 }
 
-}  // namespace noisepage::parser
+} // namespace noisepage::parser

@@ -1,10 +1,10 @@
 # SQL Operators Directory
 
 This directory contains implementations of common SQL **operators** such as comparisons, arithmetic,
-bitwise, and casting operators. SQL operators are NOT aware of SQL NULL semantics. That logic must 
-be handled at a higher-level: either by SQL functions in `src/include/sql/functions` (used by 
+bitwise, and casting operators. SQL operators are NOT aware of SQL NULL semantics. That logic must
+be handled at a higher-level: either by SQL functions in `src/include/sql/functions` (used by
 tuple-at-a-time code) or in vector-based operations in `src/include/sql/vector_operations`. In a
-sense, operators sit "beneath" tuple-at-a-time and vector-at-a-time functions in the architectural 
+sense, operators sit "beneath" tuple-at-a-time and vector-at-a-time functions in the architectural
 stack.
 
 All operators are implemented as C++ function objects. Function objects are any object that implement

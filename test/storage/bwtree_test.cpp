@@ -18,8 +18,8 @@ namespace noisepage {
  * same data structure for about 2 years, and we know its issues.
  */
 struct BwTreeTests : public TerrierTest {
-  const uint32_t num_threads_ =
-      MultiThreadTestUtil::HardwareConcurrency() + (MultiThreadTestUtil::HardwareConcurrency() % 2);
+    const uint32_t num_threads_
+        = MultiThreadTestUtil::HardwareConcurrency() + (MultiThreadTestUtil::HardwareConcurrency() % 2);
 };
 
 /**
@@ -33,58 +33,60 @@ struct BwTreeTests : public TerrierTest {
  */
 // NOLINTNEXTLINE
 TEST_F(BwTreeTests, DISABLED_ReproduceNewOrderMemoryLeak) {
-  NOISEPAGE_ASSERT(num_threads_ % 2 == 0,
-                   "This test requires an even number of threads. This should have been handled when it was assigned.");
+    NOISEPAGE_ASSERT(
+        num_threads_ % 2 == 0,
+        "This test requires an even number of threads. This should have been handled when it was assigned.");
 
-  // This defines the key space (0 ~ (1M - 1))
-  const uint32_t key_num = 1024 * 1024 * num_threads_;
-  common::WorkerPool thread_pool(num_threads_, {});
-  thread_pool.Startup();
-  auto *const tree = new third_party::bwtree::BwTree<int64_t, int64_t>;
+    // This defines the key space (0 ~ (1M - 1))
+    const uint32_t     key_num = 1024 * 1024 * num_threads_;
+    common::WorkerPool thread_pool(num_threads_, {});
+    thread_pool.Startup();
+    auto *const tree = new third_party::bwtree::BwTree<int64_t, int64_t>;
 
-  std::vector<int64_t> keys;
-  keys.reserve(key_num);
+    std::vector<int64_t> keys;
+    keys.reserve(key_num);
 
-  for (int64_t i = 0; i < key_num; i++) {
-    keys.emplace_back(i);
-  }
-  std::shuffle(keys.begin(), keys.end(), std::mt19937{std::random_device{}()});  // NOLINT
-
-  const uint32_t chunk_size = 1024 * 1024;
-
-  auto workload = [&](uint32_t id) {
-    const uint32_t chunk_offset = chunk_size * id;
-
-    if ((id % 2) == 0) {
-      // Insert random keys
-      for (uint32_t i = 0; i < chunk_size && chunk_offset + i < key_num; i++) {
-        const auto key = keys[chunk_offset + i];
-        tree->Insert(key, key);
-      }
-    } else {
-      std::vector<int64_t> scan_results;
-      // Do ascending limit scans and delete the smallest element found in the range
-      for (uint32_t i = 0; i < chunk_size - 1 && chunk_offset + i + 1 < key_num; i++) {
-        const auto low_key = std::min(keys[chunk_offset + i], keys[chunk_offset + i + 1]);
-        const auto high_key = std::max(keys[chunk_offset + i], keys[chunk_offset + i + 1]);
-
-        const auto scan_limit = 1;
-        scan_results.clear();
-
-        for (auto scan_itr = tree->Begin(low_key); scan_results.size() < scan_limit && !scan_itr.IsEnd() &&
-                                                   (tree->KeyCmpLessEqual(scan_itr->first, high_key));
-             scan_itr++) {
-          scan_results.emplace_back(scan_itr->second);
-        }
-
-        if (!scan_results.empty()) tree->Delete(scan_results[0], scan_results[0]);
-      }
+    for (int64_t i = 0; i < key_num; i++) {
+        keys.emplace_back(i);
     }
-  };
+    std::shuffle(keys.begin(), keys.end(), std::mt19937{std::random_device{}()}); // NOLINT
 
-  MultiThreadTestUtil::RunThreadsUntilFinish(&thread_pool, num_threads_, workload);
+    const uint32_t chunk_size = 1024 * 1024;
 
-  delete tree;
+    auto workload = [&](uint32_t id) {
+        const uint32_t chunk_offset = chunk_size * id;
+
+        if ((id % 2) == 0) {
+            // Insert random keys
+            for (uint32_t i = 0; i < chunk_size && chunk_offset + i < key_num; i++) {
+                const auto key = keys[chunk_offset + i];
+                tree->Insert(key, key);
+            }
+        } else {
+            std::vector<int64_t> scan_results;
+            // Do ascending limit scans and delete the smallest element found in the range
+            for (uint32_t i = 0; i < chunk_size - 1 && chunk_offset + i + 1 < key_num; i++) {
+                const auto low_key = std::min(keys[chunk_offset + i], keys[chunk_offset + i + 1]);
+                const auto high_key = std::max(keys[chunk_offset + i], keys[chunk_offset + i + 1]);
+
+                const auto scan_limit = 1;
+                scan_results.clear();
+
+                for (auto scan_itr = tree->Begin(low_key); scan_results.size() < scan_limit && !scan_itr.IsEnd()
+                                                           && (tree->KeyCmpLessEqual(scan_itr->first, high_key));
+                     scan_itr++) {
+                    scan_results.emplace_back(scan_itr->second);
+                }
+
+                if (!scan_results.empty())
+                    tree->Delete(scan_results[0], scan_results[0]);
+            }
+        }
+    };
+
+    MultiThreadTestUtil::RunThreadsUntilFinish(&thread_pool, num_threads_, workload);
+
+    delete tree;
 }
 
 /**
@@ -93,31 +95,31 @@ TEST_F(BwTreeTests, DISABLED_ReproduceNewOrderMemoryLeak) {
  */
 // NOLINTNEXTLINE
 TEST_F(BwTreeTests, DISABLED_BloomFilter) {
-  std::vector<uint32_t *> loose_pointers;
-  const uint32_t *buffer[256];
+    std::vector<uint32_t *> loose_pointers;
+    const uint32_t         *buffer[256];
 
-  third_party::bwtree::BloomFilter<uint32_t> bf{buffer};
+    third_party::bwtree::BloomFilter<uint32_t> bf{buffer};
 
-  // Generate input and verify that it's not present in the BloomFilter
-  for (uint32_t i = 0; i < 256; i++) {
-    loose_pointers.emplace_back(new uint32_t{i});
-    EXPECT_FALSE(bf.Exists(i));
-  }
+    // Generate input and verify that it's not present in the BloomFilter
+    for (uint32_t i = 0; i < 256; i++) {
+        loose_pointers.emplace_back(new uint32_t{i});
+        EXPECT_FALSE(bf.Exists(i));
+    }
 
-  // Insert into BloomFilter
-  for (uint32_t i = 0; i < 256; i++) {
-    bf.Insert(*loose_pointers[i]);
-  }
+    // Insert into BloomFilter
+    for (uint32_t i = 0; i < 256; i++) {
+        bf.Insert(*loose_pointers[i]);
+    }
 
-  // Verify present in BloomFilter
-  for (uint32_t i = 0; i < 256; i++) {
-    EXPECT_TRUE(bf.Exists(i));
-  }
+    // Verify present in BloomFilter
+    for (uint32_t i = 0; i < 256; i++) {
+        EXPECT_TRUE(bf.Exists(i));
+    }
 
-  // Clean up
-  for (const auto i : loose_pointers) {
-    delete i;
-  }
+    // Clean up
+    for (const auto i : loose_pointers) {
+        delete i;
+    }
 }
 
 /**
@@ -125,26 +127,26 @@ TEST_F(BwTreeTests, DISABLED_BloomFilter) {
  */
 // NOLINTNEXTLINE
 TEST_F(BwTreeTests, DISABLED_SortedSmallSet) {
-  const uint32_t num_inserts = 100;
-  auto *buffer = new uint32_t[num_inserts];
+    const uint32_t num_inserts = 100;
+    auto          *buffer = new uint32_t[num_inserts];
 
-  // Generate randomly permuted input
-  std::vector<uint32_t> inserts;
-  for (uint32_t i = 0; i < num_inserts; i++) {
-    inserts.push_back(i);
-  }
-  std::random_device rd;
-  std::shuffle(inserts.begin(), inserts.end(), rd);
+    // Generate randomly permuted input
+    std::vector<uint32_t> inserts;
+    for (uint32_t i = 0; i < num_inserts; i++) {
+        inserts.push_back(i);
+    }
+    std::random_device rd;
+    std::shuffle(inserts.begin(), inserts.end(), rd);
 
-  // Insert into a SortedSmallSet and verify that it's sorted at all times
-  third_party::bwtree::SortedSmallSet<uint32_t> sss{buffer};
-  for (const auto i : inserts) {
-    sss.Insert(i);
-    EXPECT_TRUE(std::is_sorted(sss.GetBegin(), sss.GetEnd()));
-  }
+    // Insert into a SortedSmallSet and verify that it's sorted at all times
+    third_party::bwtree::SortedSmallSet<uint32_t> sss{buffer};
+    for (const auto i : inserts) {
+        sss.Insert(i);
+        EXPECT_TRUE(std::is_sorted(sss.GetBegin(), sss.GetEnd()));
+    }
 
-  // Clean up
-  delete[] buffer;
+    // Clean up
+    delete[] buffer;
 }
 
 /**
@@ -152,39 +154,39 @@ TEST_F(BwTreeTests, DISABLED_SortedSmallSet) {
  */
 // NOLINTNEXTLINE
 TEST_F(BwTreeTests, DISABLED_ForwardIterator) {
-  auto *const tree = BwTreeTestUtil::GetEmptyTree();
-  const int key_num = 1024 * 1024;
+    auto *const tree = BwTreeTestUtil::GetEmptyTree();
+    const int   key_num = 1024 * 1024;
 
-  // First insert from 0 to 1 million
-  for (int i = 0; i < key_num; i++) {
-    tree->Insert(i, i);
-  }
+    // First insert from 0 to 1 million
+    for (int i = 0; i < key_num; i++) {
+        tree->Insert(i, i);
+    }
 
-  auto it = tree->Begin();
+    auto it = tree->Begin();
 
-  int64_t i = 0;
-  while (!it.IsEnd()) {
-    EXPECT_EQ(it->first, it->second);
-    EXPECT_EQ(it->first, i);
+    int64_t i = 0;
+    while (!it.IsEnd()) {
+        EXPECT_EQ(it->first, it->second);
+        EXPECT_EQ(it->first, i);
 
-    i++;
-    it++;
-  }
+        i++;
+        it++;
+    }
 
-  EXPECT_EQ(i, key_num);
+    EXPECT_EQ(i, key_num);
 
-  auto it2 = tree->Begin(key_num - 1);
-  auto it3 = it2;
+    auto it2 = tree->Begin(key_num - 1);
+    auto it3 = it2;
 
-  it2++;
-  EXPECT_TRUE(it2.IsEnd());
+    it2++;
+    EXPECT_TRUE(it2.IsEnd());
 
-  EXPECT_EQ(it3->first, key_num - 1);
+    EXPECT_EQ(it3->first, key_num - 1);
 
-  auto it4 = tree->Begin(key_num + 1);
-  EXPECT_TRUE(it4.IsEnd());
+    auto it4 = tree->Begin(key_num + 1);
+    EXPECT_TRUE(it4.IsEnd());
 
-  delete tree;
+    delete tree;
 }
 
 /**
@@ -192,34 +194,34 @@ TEST_F(BwTreeTests, DISABLED_ForwardIterator) {
  */
 // NOLINTNEXTLINE
 TEST_F(BwTreeTests, DISABLED_ReverseIterator) {
-  auto *const tree = BwTreeTestUtil::GetEmptyTree();
-  const int key_num = 1024 * 1024;
+    auto *const tree = BwTreeTestUtil::GetEmptyTree();
+    const int   key_num = 1024 * 1024;
 
-  // First insert from 0 to 1 million
-  for (int i = 0; i < key_num; i++) {
-    tree->Insert(i, i);
-  }
+    // First insert from 0 to 1 million
+    for (int i = 0; i < key_num; i++) {
+        tree->Insert(i, i);
+    }
 
-  auto it = tree->Begin(key_num - 1);
+    auto it = tree->Begin(key_num - 1);
 
-  EXPECT_TRUE(!it.IsEnd());
-  EXPECT_TRUE(!it.IsBegin());
+    EXPECT_TRUE(!it.IsEnd());
+    EXPECT_TRUE(!it.IsBegin());
 
-  // This does not test Begin()
-  int64_t key = key_num - 1;
-  while (!it.IsBegin()) {
+    // This does not test Begin()
+    int64_t key = key_num - 1;
+    while (!it.IsBegin()) {
+        EXPECT_EQ(it->first, it->second);
+        EXPECT_EQ(it->first, key);
+        key--;
+        it--;
+    }
+
+    // Test for Begin()
     EXPECT_EQ(it->first, it->second);
     EXPECT_EQ(it->first, key);
-    key--;
-    it--;
-  }
+    EXPECT_EQ(key, 0);
 
-  // Test for Begin()
-  EXPECT_EQ(it->first, it->second);
-  EXPECT_EQ(it->first, key);
-  EXPECT_EQ(key, 0);
-
-  delete tree;
+    delete tree;
 }
 
 /**
@@ -227,42 +229,43 @@ TEST_F(BwTreeTests, DISABLED_ReverseIterator) {
  */
 // NOLINTNEXTLINE
 TEST_F(BwTreeTests, DISABLED_ConcurrentRandomInsert) {
-  // This defines the key space (0 ~ (1M - 1))
-  const uint32_t key_num = 1024 * 1024;
-  std::atomic<size_t> insert_success_counter = 0;
+    // This defines the key space (0 ~ (1M - 1))
+    const uint32_t      key_num = 1024 * 1024;
+    std::atomic<size_t> insert_success_counter = 0;
 
-  common::WorkerPool thread_pool(num_threads_, {});
-  thread_pool.Startup();
-  auto *const tree = BwTreeTestUtil::GetEmptyTree();
+    common::WorkerPool thread_pool(num_threads_, {});
+    thread_pool.Startup();
+    auto *const tree = BwTreeTestUtil::GetEmptyTree();
 
-  // Inserts in a 1M key space randomly until all keys has been inserted
-  auto workload = [&](uint32_t id) {
-    const uint32_t gcid = id + 1;
-    tree->AssignGCID(gcid);
-    std::default_random_engine thread_generator(id);
-    std::uniform_int_distribution<int> uniform_dist(0, key_num - 1);
+    // Inserts in a 1M key space randomly until all keys has been inserted
+    auto workload = [&](uint32_t id) {
+        const uint32_t gcid = id + 1;
+        tree->AssignGCID(gcid);
+        std::default_random_engine         thread_generator(id);
+        std::uniform_int_distribution<int> uniform_dist(0, key_num - 1);
 
-    while (insert_success_counter.load() < key_num) {
-      int key = uniform_dist(thread_generator);
+        while (insert_success_counter.load() < key_num) {
+            int key = uniform_dist(thread_generator);
 
-      if (tree->Insert(key, key)) insert_success_counter.fetch_add(1);
+            if (tree->Insert(key, key))
+                insert_success_counter.fetch_add(1);
+        }
+        tree->UnregisterThread(gcid);
+    };
+
+    tree->UpdateThreadLocal(num_threads_ + 1);
+    MultiThreadTestUtil::RunThreadsUntilFinish(&thread_pool, num_threads_, workload);
+    tree->UpdateThreadLocal(1);
+
+    // Verifies whether random insert is correct
+    for (uint32_t i = 0; i < key_num; i++) {
+        auto s = tree->GetValue(i);
+
+        EXPECT_EQ(s.size(), 1);
+        EXPECT_EQ(*s.begin(), i);
     }
-    tree->UnregisterThread(gcid);
-  };
 
-  tree->UpdateThreadLocal(num_threads_ + 1);
-  MultiThreadTestUtil::RunThreadsUntilFinish(&thread_pool, num_threads_, workload);
-  tree->UpdateThreadLocal(1);
-
-  // Verifies whether random insert is correct
-  for (uint32_t i = 0; i < key_num; i++) {
-    auto s = tree->GetValue(i);
-
-    EXPECT_EQ(s.size(), 1);
-    EXPECT_EQ(*s.begin(), i);
-  }
-
-  delete tree;
+    delete tree;
 }
 
 /**
@@ -275,46 +278,47 @@ TEST_F(BwTreeTests, DISABLED_ConcurrentRandomInsert) {
  */
 // NOLINTNEXTLINE
 TEST_F(BwTreeTests, DISABLED_ConcurrentMixed) {
-  NOISEPAGE_ASSERT(num_threads_ % 2 == 0,
-                   "This test requires an even number of threads. This should have been handled when it was assigned.");
+    NOISEPAGE_ASSERT(
+        num_threads_ % 2 == 0,
+        "This test requires an even number of threads. This should have been handled when it was assigned.");
 
-  // This defines the key space (0 ~ (1M - 1))
-  const uint32_t key_num = 1024 * 1024;
+    // This defines the key space (0 ~ (1M - 1))
+    const uint32_t key_num = 1024 * 1024;
 
-  common::WorkerPool thread_pool(num_threads_, {});
-  thread_pool.Startup();
-  auto *const tree = BwTreeTestUtil::GetEmptyTree();
+    common::WorkerPool thread_pool(num_threads_, {});
+    thread_pool.Startup();
+    auto *const tree = BwTreeTestUtil::GetEmptyTree();
 
-  auto workload = [&](uint32_t id) {
-    const uint32_t gcid = id + 1;
-    tree->AssignGCID(gcid);
-    if ((id % 2) == 0) {
-      for (uint32_t i = 0; i < key_num; i++) {
-        int key = num_threads_ * i + id;  // NOLINT
+    auto workload = [&](uint32_t id) {
+        const uint32_t gcid = id + 1;
+        tree->AssignGCID(gcid);
+        if ((id % 2) == 0) {
+            for (uint32_t i = 0; i < key_num; i++) {
+                int key = num_threads_ * i + id; // NOLINT
 
-        tree->Insert(key, key);
-      }
-    } else {
-      for (uint32_t i = 0; i < key_num; i++) {
-        int key = num_threads_ * i + id - 1;  // NOLINT
+                tree->Insert(key, key);
+            }
+        } else {
+            for (uint32_t i = 0; i < key_num; i++) {
+                int key = num_threads_ * i + id - 1; // NOLINT
 
-        while (!tree->Delete(key, key)) {
+                while (!tree->Delete(key, key)) {
+                }
+            }
         }
-      }
+        tree->UnregisterThread(gcid);
+    };
+
+    tree->UpdateThreadLocal(num_threads_ + 1);
+    MultiThreadTestUtil::RunThreadsUntilFinish(&thread_pool, num_threads_, workload);
+    tree->UpdateThreadLocal(1);
+
+    // Verifies that all values are deleted after mixed test
+    for (uint32_t i = 0; i < key_num * num_threads_; i++) {
+        EXPECT_EQ(tree->GetValue(i).size(), 0);
     }
-    tree->UnregisterThread(gcid);
-  };
 
-  tree->UpdateThreadLocal(num_threads_ + 1);
-  MultiThreadTestUtil::RunThreadsUntilFinish(&thread_pool, num_threads_, workload);
-  tree->UpdateThreadLocal(1);
-
-  // Verifies that all values are deleted after mixed test
-  for (uint32_t i = 0; i < key_num * num_threads_; i++) {
-    EXPECT_EQ(tree->GetValue(i).size(), 0);
-  }
-
-  delete tree;
+    delete tree;
 }
 
 /**
@@ -325,159 +329,159 @@ TEST_F(BwTreeTests, DISABLED_ConcurrentMixed) {
  */
 // NOLINTNEXTLINE
 TEST_F(BwTreeTests, DISABLED_Interleaved) {
-  const uint32_t basic_test_key_num = 128 * 1024;
+    const uint32_t basic_test_key_num = 128 * 1024;
 
-  common::WorkerPool thread_pool(num_threads_, {});
-  thread_pool.Startup();
-  auto *const tree = BwTreeTestUtil::GetEmptyTree();
+    common::WorkerPool thread_pool(num_threads_, {});
+    thread_pool.Startup();
+    auto *const tree = BwTreeTestUtil::GetEmptyTree();
 
-  /*
-   * InsertTest1() - Each threads inserts in its own consecutive key subspace
-   *
-   * The intervals of each thread does not intersect, therefore contention
-   * is very small and this test is supposed to be very fast
-   *
-   * |---- thread 0 ----|---- thread 1----|----thread 2----| .... |---- thread n----|
-   */
-  auto insert_test1 = [&](uint32_t id) {
-    const uint32_t gcid = id + 1;
-    tree->AssignGCID(gcid);
-    for (uint32_t i = id * basic_test_key_num; i < static_cast<uint32_t>(id + 1) * basic_test_key_num; i++) {
-      tree->Insert(i, i + 1);
-      tree->Insert(i, i + 2);
-      tree->Insert(i, i + 3);
-      tree->Insert(i, i + 4);
-    }
-    tree->UnregisterThread(gcid);
-  };
+    /*
+     * InsertTest1() - Each threads inserts in its own consecutive key subspace
+     *
+     * The intervals of each thread does not intersect, therefore contention
+     * is very small and this test is supposed to be very fast
+     *
+     * |---- thread 0 ----|---- thread 1----|----thread 2----| .... |---- thread n----|
+     */
+    auto insert_test1 = [&](uint32_t id) {
+        const uint32_t gcid = id + 1;
+        tree->AssignGCID(gcid);
+        for (uint32_t i = id * basic_test_key_num; i < static_cast<uint32_t>(id + 1) * basic_test_key_num; i++) {
+            tree->Insert(i, i + 1);
+            tree->Insert(i, i + 2);
+            tree->Insert(i, i + 3);
+            tree->Insert(i, i + 4);
+        }
+        tree->UnregisterThread(gcid);
+    };
 
-  /*
-   * DeleteTest1() - Same pattern as InsertTest1()
-   */
-  auto delete_test1 = [&](uint32_t id) {
-    const uint32_t gcid = id + 1;
-    tree->AssignGCID(gcid);
-    for (uint32_t i = id * basic_test_key_num; i < static_cast<uint32_t>(id + 1) * basic_test_key_num; i++) {
-      tree->Delete(i, i + 1);
-      tree->Delete(i, i + 2);
-      tree->Delete(i, i + 3);
-      tree->Delete(i, i + 4);
-    }
-    tree->UnregisterThread(gcid);
-  };
+    /*
+     * DeleteTest1() - Same pattern as InsertTest1()
+     */
+    auto delete_test1 = [&](uint32_t id) {
+        const uint32_t gcid = id + 1;
+        tree->AssignGCID(gcid);
+        for (uint32_t i = id * basic_test_key_num; i < static_cast<uint32_t>(id + 1) * basic_test_key_num; i++) {
+            tree->Delete(i, i + 1);
+            tree->Delete(i, i + 2);
+            tree->Delete(i, i + 3);
+            tree->Delete(i, i + 4);
+        }
+        tree->UnregisterThread(gcid);
+    };
 
-  /*
-   * InsertTest2() - All threads collectively insert on the key space
-   *
-   * | t0 t1 t2 t3 .. tn | t0 t1 t2 t3 .. tn | t0 t1 .. | .. |  ... tn |
-   *
-   * This test is supposed to be slower since the contention is very high
-   * between different threads
-   */
-  auto insert_test2 = [&](uint32_t id) {
-    const uint32_t gcid = id + 1;
-    tree->AssignGCID(gcid);
-    for (uint32_t i = 0; i < basic_test_key_num; i++) {
-      uint32_t key = num_threads_ * i + id;
+    /*
+     * InsertTest2() - All threads collectively insert on the key space
+     *
+     * | t0 t1 t2 t3 .. tn | t0 t1 t2 t3 .. tn | t0 t1 .. | .. |  ... tn |
+     *
+     * This test is supposed to be slower since the contention is very high
+     * between different threads
+     */
+    auto insert_test2 = [&](uint32_t id) {
+        const uint32_t gcid = id + 1;
+        tree->AssignGCID(gcid);
+        for (uint32_t i = 0; i < basic_test_key_num; i++) {
+            uint32_t key = num_threads_ * i + id;
 
-      tree->Insert(key, key + 1);
-      tree->Insert(key, key + 2);
-      tree->Insert(key, key + 3);
-      tree->Insert(key, key + 4);
-    }
-    tree->UnregisterThread(gcid);
-  };
+            tree->Insert(key, key + 1);
+            tree->Insert(key, key + 2);
+            tree->Insert(key, key + 3);
+            tree->Insert(key, key + 4);
+        }
+        tree->UnregisterThread(gcid);
+    };
 
-  /*
-   * DeleteTest2() - The same pattern as InsertTest2()
-   */
-  auto delete_test2 = [&](uint32_t id) {
-    const uint32_t gcid = id + 1;
-    tree->AssignGCID(gcid);
-    for (uint32_t i = 0; i < basic_test_key_num; i++) {
-      uint32_t key = num_threads_ * i + id;
+    /*
+     * DeleteTest2() - The same pattern as InsertTest2()
+     */
+    auto delete_test2 = [&](uint32_t id) {
+        const uint32_t gcid = id + 1;
+        tree->AssignGCID(gcid);
+        for (uint32_t i = 0; i < basic_test_key_num; i++) {
+            uint32_t key = num_threads_ * i + id;
 
-      tree->Delete(key, key + 1);
-      tree->Delete(key, key + 2);
-      tree->Delete(key, key + 3);
-      tree->Delete(key, key + 4);
-    }
-    tree->UnregisterThread(gcid);
-  };
+            tree->Delete(key, key + 1);
+            tree->Delete(key, key + 2);
+            tree->Delete(key, key + 3);
+            tree->Delete(key, key + 4);
+        }
+        tree->UnregisterThread(gcid);
+    };
 
-  /*
-   * DeleteGetValueTest() - Verifies all values have been deleted
-   *
-   * This function verifies on key_num * thread_num key space
-   */
-  auto delete_get_value_test = [&]() {
-    for (uint32_t i = 0; i < basic_test_key_num * num_threads_; i++) {
-      auto value_set = tree->GetValue(i);
+    /*
+     * DeleteGetValueTest() - Verifies all values have been deleted
+     *
+     * This function verifies on key_num * thread_num key space
+     */
+    auto delete_get_value_test = [&]() {
+        for (uint32_t i = 0; i < basic_test_key_num * num_threads_; i++) {
+            auto value_set = tree->GetValue(i);
 
-      EXPECT_EQ(value_set.size(), 0);
-    }
-  };
+            EXPECT_EQ(value_set.size(), 0);
+        }
+    };
 
-  /*
-   * InsertGetValueTest() - Verifies all values have been inserted
-   */
-  auto insert_get_value_test = [&]() {
-    for (uint32_t i = 0; i < basic_test_key_num * num_threads_; i++) {
-      auto value_set = tree->GetValue(i);
+    /*
+     * InsertGetValueTest() - Verifies all values have been inserted
+     */
+    auto insert_get_value_test = [&]() {
+        for (uint32_t i = 0; i < basic_test_key_num * num_threads_; i++) {
+            auto value_set = tree->GetValue(i);
 
-      EXPECT_EQ(value_set.size(), 4);
-    }
-  };
+            EXPECT_EQ(value_set.size(), 4);
+        }
+    };
 
-  tree->UpdateThreadLocal(num_threads_ + 1);
-  MultiThreadTestUtil::RunThreadsUntilFinish(&thread_pool, num_threads_, insert_test2);
-  tree->UpdateThreadLocal(1);
+    tree->UpdateThreadLocal(num_threads_ + 1);
+    MultiThreadTestUtil::RunThreadsUntilFinish(&thread_pool, num_threads_, insert_test2);
+    tree->UpdateThreadLocal(1);
 
-  insert_get_value_test();
+    insert_get_value_test();
 
-  tree->UpdateThreadLocal(num_threads_ + 1);
-  MultiThreadTestUtil::RunThreadsUntilFinish(&thread_pool, num_threads_, delete_test1);
-  tree->UpdateThreadLocal(1);
+    tree->UpdateThreadLocal(num_threads_ + 1);
+    MultiThreadTestUtil::RunThreadsUntilFinish(&thread_pool, num_threads_, delete_test1);
+    tree->UpdateThreadLocal(1);
 
-  delete_get_value_test();
+    delete_get_value_test();
 
-  tree->UpdateThreadLocal(num_threads_ + 1);
-  MultiThreadTestUtil::RunThreadsUntilFinish(&thread_pool, num_threads_, insert_test1);
-  tree->UpdateThreadLocal(1);
+    tree->UpdateThreadLocal(num_threads_ + 1);
+    MultiThreadTestUtil::RunThreadsUntilFinish(&thread_pool, num_threads_, insert_test1);
+    tree->UpdateThreadLocal(1);
 
-  insert_get_value_test();
+    insert_get_value_test();
 
-  tree->UpdateThreadLocal(num_threads_ + 1);
-  MultiThreadTestUtil::RunThreadsUntilFinish(&thread_pool, num_threads_, delete_test2);
-  tree->UpdateThreadLocal(1);
+    tree->UpdateThreadLocal(num_threads_ + 1);
+    MultiThreadTestUtil::RunThreadsUntilFinish(&thread_pool, num_threads_, delete_test2);
+    tree->UpdateThreadLocal(1);
 
-  delete_get_value_test();
+    delete_get_value_test();
 
-  tree->UpdateThreadLocal(num_threads_ + 1);
-  MultiThreadTestUtil::RunThreadsUntilFinish(&thread_pool, num_threads_, insert_test1);
-  tree->UpdateThreadLocal(1);
+    tree->UpdateThreadLocal(num_threads_ + 1);
+    MultiThreadTestUtil::RunThreadsUntilFinish(&thread_pool, num_threads_, insert_test1);
+    tree->UpdateThreadLocal(1);
 
-  insert_get_value_test();
+    insert_get_value_test();
 
-  tree->UpdateThreadLocal(num_threads_ + 1);
-  MultiThreadTestUtil::RunThreadsUntilFinish(&thread_pool, num_threads_, delete_test1);
-  tree->UpdateThreadLocal(1);
+    tree->UpdateThreadLocal(num_threads_ + 1);
+    MultiThreadTestUtil::RunThreadsUntilFinish(&thread_pool, num_threads_, delete_test1);
+    tree->UpdateThreadLocal(1);
 
-  delete_get_value_test();
+    delete_get_value_test();
 
-  tree->UpdateThreadLocal(num_threads_ + 1);
-  MultiThreadTestUtil::RunThreadsUntilFinish(&thread_pool, num_threads_, insert_test2);
-  tree->UpdateThreadLocal(1);
+    tree->UpdateThreadLocal(num_threads_ + 1);
+    MultiThreadTestUtil::RunThreadsUntilFinish(&thread_pool, num_threads_, insert_test2);
+    tree->UpdateThreadLocal(1);
 
-  insert_get_value_test();
+    insert_get_value_test();
 
-  tree->UpdateThreadLocal(num_threads_ + 1);
-  MultiThreadTestUtil::RunThreadsUntilFinish(&thread_pool, num_threads_, delete_test2);
-  tree->UpdateThreadLocal(1);
+    tree->UpdateThreadLocal(num_threads_ + 1);
+    MultiThreadTestUtil::RunThreadsUntilFinish(&thread_pool, num_threads_, delete_test2);
+    tree->UpdateThreadLocal(1);
 
-  delete_get_value_test();
+    delete_get_value_test();
 
-  delete tree;
+    delete tree;
 }
 
 /**
@@ -487,31 +491,31 @@ TEST_F(BwTreeTests, DISABLED_Interleaved) {
  */
 // NOLINTNEXTLINE
 TEST_F(BwTreeTests, DISABLED_EpochManager) {
-  common::WorkerPool thread_pool(num_threads_, {});
-  thread_pool.Startup();
-  auto *const tree = BwTreeTestUtil::GetEmptyTree();
+    common::WorkerPool thread_pool(num_threads_, {});
+    thread_pool.Startup();
+    auto *const tree = BwTreeTestUtil::GetEmptyTree();
 
-  auto workload = [&](uint32_t id) {
-    const uint32_t gcid = id + 1;
-    tree->AssignGCID(gcid);
-    const uint32_t iterations = 100;
-    for (uint32_t i = 0; i < iterations; i++) {
-      auto node = tree->epoch_manager.JoinEpoch();
+    auto workload = [&](uint32_t id) {
+        const uint32_t gcid = id + 1;
+        tree->AssignGCID(gcid);
+        const uint32_t iterations = 100;
+        for (uint32_t i = 0; i < iterations; i++) {
+            auto node = tree->epoch_manager.JoinEpoch();
 
-      std::default_random_engine thread_generator(id);
-      std::uniform_int_distribution<int> uniform_dist(0, 100);
-      std::this_thread::sleep_for(std::chrono::milliseconds{uniform_dist(thread_generator)});
+            std::default_random_engine         thread_generator(id);
+            std::uniform_int_distribution<int> uniform_dist(0, 100);
+            std::this_thread::sleep_for(std::chrono::milliseconds{uniform_dist(thread_generator)});
 
-      tree->epoch_manager.LeaveEpoch(node);
-    }
-    tree->UnregisterThread(gcid);
-  };
+            tree->epoch_manager.LeaveEpoch(node);
+        }
+        tree->UnregisterThread(gcid);
+    };
 
-  tree->UpdateThreadLocal(num_threads_ + 1);
-  MultiThreadTestUtil::RunThreadsUntilFinish(&thread_pool, num_threads_, workload);
-  tree->UpdateThreadLocal(1);
+    tree->UpdateThreadLocal(num_threads_ + 1);
+    MultiThreadTestUtil::RunThreadsUntilFinish(&thread_pool, num_threads_, workload);
+    tree->UpdateThreadLocal(1);
 
-  delete tree;
+    delete tree;
 }
 
-}  // namespace noisepage
+} // namespace noisepage

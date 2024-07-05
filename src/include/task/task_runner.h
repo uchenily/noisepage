@@ -18,29 +18,29 @@ class TaskManager;
  * running any jobs submitted to the task manager.
  */
 class TaskRunner : public common::DedicatedThreadTask {
- public:
-  /**
-   * Constructs a new TaskRunner instance
-   * @param query_exec_util Dedicated query execution utility for the runner to use
-   * @param manager TaskManager that owns this TaskRunner
-   */
-  TaskRunner(std::unique_ptr<util::QueryExecUtil> query_exec_util, common::ManagedPointer<task::TaskManager> manager);
+public:
+    /**
+     * Constructs a new TaskRunner instance
+     * @param query_exec_util Dedicated query execution utility for the runner to use
+     * @param manager TaskManager that owns this TaskRunner
+     */
+    TaskRunner(std::unique_ptr<util::QueryExecUtil> query_exec_util, common::ManagedPointer<task::TaskManager> manager);
 
-  /**
-   * Runs the task loop.
-   */
-  void RunTask() override;
+    /**
+     * Runs the task loop.
+     */
+    void RunTask() override;
 
-  /**
-   * Terminate running of the task loop
-   */
-  void Terminate() override;
+    /**
+     * Terminate running of the task loop
+     */
+    void Terminate() override;
 
- private:
-  /** Kill flag for indicating that TaskRunner should be shut down */
-  bool kill_ = false;
-  std::unique_ptr<util::QueryExecUtil> query_exec_util_;
-  common::ManagedPointer<task::TaskManager> task_manager_;
+private:
+    /** Kill flag for indicating that TaskRunner should be shut down */
+    bool                                      kill_ = false;
+    std::unique_ptr<util::QueryExecUtil>      query_exec_util_;
+    common::ManagedPointer<task::TaskManager> task_manager_;
 };
 
-}  // namespace noisepage::task
+} // namespace noisepage::task

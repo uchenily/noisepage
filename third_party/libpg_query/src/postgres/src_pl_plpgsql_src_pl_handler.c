@@ -32,46 +32,25 @@
 #include "utils/lsyscache.h"
 #include "utils/syscache.h"
 
-
-//static bool plpgsql_extra_checks_check_hook(char **newvalue, void **extra, GucSource source);
-//static void plpgsql_extra_warnings_assign_hook(const char *newvalue, void *extra);
-//static void plpgsql_extra_errors_assign_hook(const char *newvalue, void *extra);
+// static bool plpgsql_extra_checks_check_hook(char **newvalue, void **extra, GucSource source);
+// static void plpgsql_extra_warnings_assign_hook(const char *newvalue, void *extra);
+// static void plpgsql_extra_errors_assign_hook(const char *newvalue, void *extra);
 
 ;
 
 /* Custom GUC variable */
 
+__thread int plpgsql_variable_conflict = PLPGSQL_RESOLVE_ERROR;
 
-__thread int			plpgsql_variable_conflict = PLPGSQL_RESOLVE_ERROR;
-
-
-__thread bool		plpgsql_print_strict_params = false;
-
-
-
-
-
-
-
-
+__thread bool plpgsql_print_strict_params = false;
 
 /* Hook for plugins */
-
-
-
-
-
-
-
-
-
 
 /*
  * _PG_init()			- library load-time initialization
  *
  * DO NOT make this static nor change its name!
  */
-
 
 /* ----------
  * plpgsql_call_handler
@@ -82,8 +61,6 @@ __thread bool		plpgsql_print_strict_params = false;
  */
 ;
 
-
-
 /* ----------
  * plpgsql_inline_handler
  *
@@ -91,8 +68,6 @@ __thread bool		plpgsql_print_strict_params = false;
  * ----------
  */
 ;
-
-
 
 /* ----------
  * plpgsql_validator
@@ -102,5 +77,3 @@ __thread bool		plpgsql_print_strict_params = false;
  * ----------
  */
 ;
-
-

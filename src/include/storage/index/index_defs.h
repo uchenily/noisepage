@@ -17,15 +17,16 @@ enum class IndexKeyKind : uint8_t { COMPACTINTSKEY, GENERICKEY, HASHKEY };
 /**
  * Types that can be used in simple keys, i.e. CompactIntsKey and HashKey
  */
-constexpr std::array<execution::sql::SqlTypeId, 4> NUMERIC_KEY_TYPES{
-    execution::sql::SqlTypeId::TinyInt, execution::sql::SqlTypeId::SmallInt, execution::sql::SqlTypeId::Integer,
-    execution::sql::SqlTypeId::BigInt};
+constexpr std::array<execution::sql::SqlTypeId, 4> NUMERIC_KEY_TYPES{execution::sql::SqlTypeId::TinyInt,
+                                                                     execution::sql::SqlTypeId::SmallInt,
+                                                                     execution::sql::SqlTypeId::Integer,
+                                                                     execution::sql::SqlTypeId::BigInt};
 
 enum class ScanType : uint8_t {
-  Closed,   /* [low, high] range scan */
-  OpenLow,  /* [begin(), high] range scan */
-  OpenHigh, /* [low, end()] range scan */
-  OpenBoth  /* [begin(), end()] range scan */
+    Closed,   /* [low, high] range scan */
+    OpenLow,  /* [begin(), high] range scan */
+    OpenHigh, /* [low, end()] range scan */
+    OpenBoth  /* [begin(), end()] range scan */
 };
 
-}  // namespace noisepage::storage::index
+} // namespace noisepage::storage::index

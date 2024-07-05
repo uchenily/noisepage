@@ -22,18 +22,18 @@
  * corresponding names with ".ready" or ".done" appended.
  * ----------
  */
-#define MIN_XFN_CHARS	16
-#define MAX_XFN_CHARS	40
+#define MIN_XFN_CHARS 16
+#define MAX_XFN_CHARS 40
 #define VALID_XFN_CHARS "0123456789ABCDEF.history.backup.partial"
 
 /* ----------
  * Functions called from postmaster
  * ----------
  */
-extern int	pgarch_start(void);
+extern int pgarch_start(void);
 
 #ifdef EXEC_BACKEND
 extern void PgArchiverMain(int argc, char *argv[]) pg_attribute_noreturn();
 #endif
 
-#endif   /* _PGARCH_H */
+#endif /* _PGARCH_H */

@@ -13,4 +13,4 @@ std::map<settings::Param, std::vector<std::pair<int32_t, int32_t>>> ChangeKnobVa
 
 std::map<settings::Param, std::vector<std::pair<int64_t, int64_t>>> ChangeKnobValueConfig::int64_change_value_map = {};
 
-}  // namespace noisepage::selfdriving::pilot
+} // namespace noisepage::selfdriving::pilot

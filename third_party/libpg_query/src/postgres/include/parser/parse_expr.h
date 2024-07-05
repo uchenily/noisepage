@@ -16,11 +16,11 @@
 #include "parser/parse_node.h"
 
 /* GUC parameters */
-extern __thread  bool operator_precedence_warning;
-extern bool Transform_null_equals;
+extern __thread bool operator_precedence_warning;
+extern bool          Transform_null_equals;
 
 extern Node *transformExpr(ParseState *pstate, Node *expr, ParseExprKind exprKind);
 
 extern const char *ParseExprKindName(ParseExprKind exprKind);
 
-#endif   /* PARSE_EXPR_H */
+#endif /* PARSE_EXPR_H */

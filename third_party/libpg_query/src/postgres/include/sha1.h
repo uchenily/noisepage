@@ -38,24 +38,20 @@
 #ifndef _NETINET6_SHA1_H_
 #define _NETINET6_SHA1_H_
 
-struct sha1_ctxt
-{
-	union
-	{
-		uint8		b8[20];
-		uint32		b32[5];
-	}			h;
-	union
-	{
-		uint8		b8[8];
-		uint64		b64[1];
-	}			c;
-	union
-	{
-		uint8		b8[64];
-		uint32		b32[16];
-	}			m;
-	uint8		count;
+struct sha1_ctxt {
+    union {
+        uint8  b8[20];
+        uint32 b32[5];
+    } h;
+    union {
+        uint8  b8[8];
+        uint64 b64[1];
+    } c;
+    union {
+        uint8  b8[64];
+        uint32 b32[16];
+    } m;
+    uint8 count;
 };
 
 extern void sha1_init(struct sha1_ctxt *);
@@ -66,10 +62,10 @@ extern void sha1_result(struct sha1_ctxt *, uint8 *);
 /* compatibilty with other SHA1 source codes */
 typedef struct sha1_ctxt SHA1_CTX;
 
-#define SHA1Init(x)		sha1_init((x))
+#define SHA1Init(x) sha1_init((x))
 #define SHA1Update(x, y, z) sha1_loop((x), (y), (z))
-#define SHA1Final(x, y)		sha1_result((y), (x))
+#define SHA1Final(x, y) sha1_result((y), (x))
 
-#define SHA1_RESULTLEN	(160/8)
+#define SHA1_RESULTLEN (160 / 8)
 
-#endif   /* _NETINET6_SHA1_H_ */
+#endif /* _NETINET6_SHA1_H_ */

@@ -29,6 +29,7 @@
 #include "optimizer/tlist.h"
 #include "optimizer/var.h"
 #include "parser/analyze.h"
+#include "parser/parse_agg.h"
 #include "parser/parse_clause.h"
 #include "parser/parse_coerce.h"
 #include "parser/parse_collate.h"
@@ -38,35 +39,31 @@
 #include "parser/parse_relation.h"
 #include "parser/parse_target.h"
 #include "parser/parse_type.h"
-#include "parser/parse_agg.h"
 #include "utils/builtins.h"
 #include "utils/lsyscache.h"
 #include "utils/xml.h"
 
-
 /* GUC parameters */
-__thread bool		operator_precedence_warning = false;
-
-
+__thread bool operator_precedence_warning = false;
 
 /*
  * Node-type groups for operator precedence warnings
  * We use zero for everything not otherwise classified
  */
-#define PREC_GROUP_POSTFIX_IS	1		/* postfix IS tests (NullTest, etc) */
-#define PREC_GROUP_INFIX_IS		2		/* infix IS (IS DISTINCT FROM, etc) */
-#define PREC_GROUP_LESS			3		/* < > */
-#define PREC_GROUP_EQUAL		4		/* = */
-#define PREC_GROUP_LESS_EQUAL	5		/* <= >= <> */
-#define PREC_GROUP_LIKE			6		/* LIKE ILIKE SIMILAR */
-#define PREC_GROUP_BETWEEN		7		/* BETWEEN */
-#define PREC_GROUP_IN			8		/* IN */
-#define PREC_GROUP_NOT_LIKE		9		/* NOT LIKE/ILIKE/SIMILAR */
-#define PREC_GROUP_NOT_BETWEEN	10		/* NOT BETWEEN */
-#define PREC_GROUP_NOT_IN		11		/* NOT IN */
-#define PREC_GROUP_POSTFIX_OP	12		/* generic postfix operators */
-#define PREC_GROUP_INFIX_OP		13		/* generic infix operators */
-#define PREC_GROUP_PREFIX_OP	14		/* generic prefix operators */
+#define PREC_GROUP_POSTFIX_IS 1   /* postfix IS tests (NullTest, etc) */
+#define PREC_GROUP_INFIX_IS 2     /* infix IS (IS DISTINCT FROM, etc) */
+#define PREC_GROUP_LESS 3         /* < > */
+#define PREC_GROUP_EQUAL 4        /* = */
+#define PREC_GROUP_LESS_EQUAL 5   /* <= >= <> */
+#define PREC_GROUP_LIKE 6         /* LIKE ILIKE SIMILAR */
+#define PREC_GROUP_BETWEEN 7      /* BETWEEN */
+#define PREC_GROUP_IN 8           /* IN */
+#define PREC_GROUP_NOT_LIKE 9     /* NOT LIKE/ILIKE/SIMILAR */
+#define PREC_GROUP_NOT_BETWEEN 10 /* NOT BETWEEN */
+#define PREC_GROUP_NOT_IN 11      /* NOT IN */
+#define PREC_GROUP_POSTFIX_OP 12  /* generic postfix operators */
+#define PREC_GROUP_INFIX_OP 13    /* generic infix operators */
+#define PREC_GROUP_PREFIX_OP 14   /* generic prefix operators */
 
 /*
  * Map precedence groupings to old precedence ordering
@@ -88,51 +85,48 @@ __thread bool		operator_precedence_warning = false;
  * precedence handling of those productions in the old grammar.
  */
 
-
-
-//static Node *transformExprRecurse(ParseState *pstate, Node *expr);
-//static Node *transformParamRef(ParseState *pstate, ParamRef *pref);
-//static Node *transformAExprOp(ParseState *pstate, A_Expr *a);
-//static Node *transformAExprOpAny(ParseState *pstate, A_Expr *a);
-//static Node *transformAExprOpAll(ParseState *pstate, A_Expr *a);
-//static Node *transformAExprDistinct(ParseState *pstate, A_Expr *a);
-//static Node *transformAExprNullIf(ParseState *pstate, A_Expr *a);
-//static Node *transformAExprOf(ParseState *pstate, A_Expr *a);
-//static Node *transformAExprIn(ParseState *pstate, A_Expr *a);
-//static Node *transformAExprBetween(ParseState *pstate, A_Expr *a);
-//static Node *transformBoolExpr(ParseState *pstate, BoolExpr *a);
-//static Node *transformFuncCall(ParseState *pstate, FuncCall *fn);
-//static Node *transformMultiAssignRef(ParseState *pstate, MultiAssignRef *maref);
-//static Node *transformCaseExpr(ParseState *pstate, CaseExpr *c);
-//static Node *transformSubLink(ParseState *pstate, SubLink *sublink);
-//static Node *transformArrayExpr(ParseState *pstate, A_ArrayExpr *a,
+// static Node *transformExprRecurse(ParseState *pstate, Node *expr);
+// static Node *transformParamRef(ParseState *pstate, ParamRef *pref);
+// static Node *transformAExprOp(ParseState *pstate, A_Expr *a);
+// static Node *transformAExprOpAny(ParseState *pstate, A_Expr *a);
+// static Node *transformAExprOpAll(ParseState *pstate, A_Expr *a);
+// static Node *transformAExprDistinct(ParseState *pstate, A_Expr *a);
+// static Node *transformAExprNullIf(ParseState *pstate, A_Expr *a);
+// static Node *transformAExprOf(ParseState *pstate, A_Expr *a);
+// static Node *transformAExprIn(ParseState *pstate, A_Expr *a);
+// static Node *transformAExprBetween(ParseState *pstate, A_Expr *a);
+// static Node *transformBoolExpr(ParseState *pstate, BoolExpr *a);
+// static Node *transformFuncCall(ParseState *pstate, FuncCall *fn);
+// static Node *transformMultiAssignRef(ParseState *pstate, MultiAssignRef *maref);
+// static Node *transformCaseExpr(ParseState *pstate, CaseExpr *c);
+// static Node *transformSubLink(ParseState *pstate, SubLink *sublink);
+// static Node *transformArrayExpr(ParseState *pstate, A_ArrayExpr *a,
 //				   Oid array_type, Oid element_type, int32 typmod);
-//static Node *transformRowExpr(ParseState *pstate, RowExpr *r);
-//static Node *transformCoalesceExpr(ParseState *pstate, CoalesceExpr *c);
-//static Node *transformMinMaxExpr(ParseState *pstate, MinMaxExpr *m);
-//static Node *transformXmlExpr(ParseState *pstate, XmlExpr *x);
-//static Node *transformXmlSerialize(ParseState *pstate, XmlSerialize *xs);
-//static Node *transformBooleanTest(ParseState *pstate, BooleanTest *b);
-//static Node *transformCurrentOfExpr(ParseState *pstate, CurrentOfExpr *cexpr);
-//static Node *transformColumnRef(ParseState *pstate, ColumnRef *cref);
-//static Node *transformWholeRowRef(ParseState *pstate, RangeTblEntry *rte,
+// static Node *transformRowExpr(ParseState *pstate, RowExpr *r);
+// static Node *transformCoalesceExpr(ParseState *pstate, CoalesceExpr *c);
+// static Node *transformMinMaxExpr(ParseState *pstate, MinMaxExpr *m);
+// static Node *transformXmlExpr(ParseState *pstate, XmlExpr *x);
+// static Node *transformXmlSerialize(ParseState *pstate, XmlSerialize *xs);
+// static Node *transformBooleanTest(ParseState *pstate, BooleanTest *b);
+// static Node *transformCurrentOfExpr(ParseState *pstate, CurrentOfExpr *cexpr);
+// static Node *transformColumnRef(ParseState *pstate, ColumnRef *cref);
+// static Node *transformWholeRowRef(ParseState *pstate, RangeTblEntry *rte,
 //					 int location);
-//static Node *transformIndirection(ParseState *pstate, Node *basenode,
+// static Node *transformIndirection(ParseState *pstate, Node *basenode,
 //					 List *indirection);
-//static Node *transformTypeCast(ParseState *pstate, TypeCast *tc);
-//static Node *transformCollateClause(ParseState *pstate, CollateClause *c);
-//static Node *make_row_comparison_op(ParseState *pstate, List *opname,
+// static Node *transformTypeCast(ParseState *pstate, TypeCast *tc);
+// static Node *transformCollateClause(ParseState *pstate, CollateClause *c);
+// static Node *make_row_comparison_op(ParseState *pstate, List *opname,
 //					   List *largs, List *rargs, int location);
-//static Node *make_row_distinct_op(ParseState *pstate, List *opname,
+// static Node *make_row_distinct_op(ParseState *pstate, List *opname,
 //					 RowExpr *lrow, RowExpr *rrow, int location);
-//static Expr *make_distinct_op(ParseState *pstate, List *opname,
+// static Expr *make_distinct_op(ParseState *pstate, List *opname,
 //				 Node *ltree, Node *rtree, int location);
-//static int	operator_precedence_group(Node *node, const char **nodename);
-//static void emit_precedence_warnings(ParseState *pstate,
+// static int	operator_precedence_group(Node *node, const char **nodename);
+// static void emit_precedence_warnings(ParseState *pstate,
 //						 int opgroup, const char *opname,
 //						 Node *lchild, Node *rchild,
 //						 int location);
-
 
 /*
  * transformExpr -
@@ -141,9 +135,6 @@ __thread bool		operator_precedence_warning = false;
  *	  expression trees with fully determined semantics.
  */
 
-
-
-
 /*
  * helper routine for delivering "column does not exist" error message
  *
@@ -151,50 +142,18 @@ __thread bool		operator_precedence_warning = false;
  * selection from an arbitrary node needs it.)
  */
 
-
-
-
 /*
  * Transform a ColumnRef.
  *
  * If you find yourself changing this code, see also ExpandColumnRefStar.
  */
 
-
-
-
 /* Test whether an a_expr is a plain NULL constant or not */
-
-
-
-
-
-
-
-
-
-
-
 
 /*
  * Checking an expression for match to a list of type names. Will result
  * in a boolean constant node.
  */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /*
  * transformArrayExpr
@@ -204,25 +163,9 @@ __thread bool		operator_precedence_warning = false;
  * for the elements using select_common_type().
  */
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /*
  * Construct a whole-row reference to represent the notation "relation.*".
  */
-
 
 /*
  * Handle an explicit CAST construct.
@@ -231,13 +174,11 @@ __thread bool		operator_precedence_warning = false;
  * coercion function(s).
  */
 
-
 /*
  * Handle an explicit COLLATE clause.
  *
  * Transform the argument, and look up the collation name.
  */
-
 
 /*
  * Transform a "row compare-op row" construct
@@ -252,18 +193,15 @@ __thread bool		operator_precedence_warning = false;
  * behavior of the operators (ie, they behave as =, <>, or < <= > >=).
  */
 
-
 /*
  * Transform a "row IS DISTINCT FROM row" construct
  *
  * The input RowExprs are already transformed
  */
 
-
 /*
  * make the node for an IS DISTINCT FROM operator
  */
-
 
 /*
  * Identify node's group for operator precedence warnings
@@ -274,7 +212,6 @@ __thread bool		operator_precedence_warning = false;
  * than everything that changed precedence; we need never issue warnings
  * related to such nodes.
  */
-
 
 /*
  * helper routine for delivering 9.4-to-9.5 operator precedence warnings
@@ -289,7 +226,6 @@ __thread bool		operator_precedence_warning = false;
  * In any case, operator_precedence_group() expects untransformed input.
  */
 
-
 /*
  * Produce a string identifying an expression by kind.
  *
@@ -297,4 +233,3 @@ __thread bool		operator_precedence_warning = false;
  * doesn't work well, check call sites to see whether custom error message
  * strings are required.
  */
-

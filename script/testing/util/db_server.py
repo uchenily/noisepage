@@ -291,9 +291,9 @@ def get_binary_directory(build_type):
 
 
 def construct_server_args_string(server_args, bin_dir):
-    """ 
+    """
     Construct the arguments string to pass to the DBMS server.
-    
+
     Parameters
     ----------
     server_args : dict
@@ -340,9 +340,9 @@ def construct_server_argument(attr, value, meta):
 
     # The preprocessing steps required for individual argument values
     # NOTE(Kyle): The order of preprocessors is important here because,
-    # as one example, resolve_relative_paths looks for a relative path 
+    # as one example, resolve_relative_paths looks for a relative path
     # designation (i.e. './') at the front of the value, while handle_flags
-    # will append the necessary '=' for non-flag arguments, which would 
+    # will append the necessary '=' for non-flag arguments, which would
     # obviously confound relative path expansion if applied first.
     VALUE_PREPROCESSORS = [
         resolve_relative_paths,
@@ -378,18 +378,18 @@ class AllTypes:
 def applies_to(*target_types):
     """
     A decorator that produces a no-op function in the event that the 'target'
-    (i.e. first) argument provided to a preprocessing function is not an 
+    (i.e. first) argument provided to a preprocessing function is not an
     instance of one of the types specified in the decorator arguments.
 
     This function should not be invoked directly; it is intended to be used
-    as a decorator for preprocessor functions to deal with the fact that 
+    as a decorator for preprocessor functions to deal with the fact that
     certain preprocessing operations are only applicable to certain types.
     """
 
     def wrap_outer(f):
         def wrap_inner(target, meta):
-            # The argument is a targeted type if the catch-all type AllTypes 
-            # is provided as an argument to the decorator OR the argument is 
+            # The argument is a targeted type if the catch-all type AllTypes
+            # is provided as an argument to the decorator OR the argument is
             # an instance of any of the types provided as an argument
             arg_is_targeted_type = AllTypes in target_types or any(isinstance(target, ty) for ty in target_types)
             return f(target, meta) if arg_is_targeted_type else target
@@ -418,14 +418,14 @@ def applies_to(*target_types):
 def lower_booleans(value: str, meta: Dict) -> str:
     """
     Lower boolean string values to the format expected by the DBMS server.
-    
-    e.g. 
+
+    e.g.
         `True` -> `true`
         `False` -> `false`
-    
+
     Arguments
     ---------
-    value : str 
+    value : str
         The DBMS server argument value
     meta : Dict
         Dictionary of meta-information available to all preprocessors
@@ -458,7 +458,7 @@ def resolve_relative_paths(value: str, meta: Dict) -> str:
 
     Arguments
     ---------
-    value : str 
+    value : str
         The DBMS server argument value
     meta : Dict
         Dictionary of meta-information available to all preprocessors
@@ -493,12 +493,12 @@ def handle_flags(value: str, meta: Dict) -> str:
     `-attribute=value` and instead want to format it as `-attribute` alone.
     This preprocessor encapsulates the logic for this transformation.
 
-    TODO(Kyle): Do we actually support any arguments like this? 
+    TODO(Kyle): Do we actually support any arguments like this?
     I can't seem to come up with any actual examples...
 
     Arguments
     ---------
-    value : str 
+    value : str
         The DBMS server argument value
     meta : Dict
         Dictionary of meta-information available to all preprocessors

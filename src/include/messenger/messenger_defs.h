@@ -18,9 +18,9 @@ using CallbackFn = std::function<void(common::ManagedPointer<Messenger> messenge
 
 /** Predefined convenience callbacks. */
 class CallbackFns {
- public:
-  /** A noop version of CallbackFn, provided for convenience. */
-  static void Noop(common::ManagedPointer<Messenger> messenger, const ZmqMessage &msg) {}
+public:
+    /** A noop version of CallbackFn, provided for convenience. */
+    static void Noop(common::ManagedPointer<Messenger> messenger, const ZmqMessage &msg) {}
 };
 
 /** The ID of a messenger callback. */
@@ -32,4 +32,4 @@ STRONG_TYPEDEF_HEADER(message_id_t, uint64_t);
 /** The ID of a messenger incoming listening router. */
 STRONG_TYPEDEF_HEADER(router_id_t, uint64_t);
 
-}  // namespace noisepage::messenger
+} // namespace noisepage::messenger

@@ -24,7 +24,7 @@ A further breakdown of the contents of the `src/` directory:
 
 - The `moglib` directory contains modified APIs from Wan's mogjdbc library; we use this to handle some aspects of database interaction.
 - `GenerateTrace.java` is a utility that converts an input file consisting of SQL statements to the trace file format used in tracefile integration tests (see below).
-- `TracefileTest.java` takes in path to a trace file from an environment variable (`NOISEPAGE_TRACE_FILE`) and dynamically generates a test case for each query. 
+- `TracefileTest.java` takes in path to a trace file from an environment variable (`NOISEPAGE_TRACE_FILE`) and dynamically generates a test case for each query.
 - `TrafficCopTest.java` and `WireTest.java` are non-tracefile integration tests.
 - `TestUtility.java` provides a list of utility methods; it contains supporting functions shared across tests.
 
@@ -62,7 +62,7 @@ The complete format for the command looks like:
 ant filter-trace -Dpath=INPUT_FILE_PATH -Ddb-url=JDBC_URL -Ddb-user=DB_USERNAME -Ddb-password=DB_PASSWORD -Dskip-list=DESIRED_SKIP_LIST -Doutput-name=OUTPUT_FILENAME
 ```
 
-Upon running this command, an output trace file should be produced called `mytrace_new` (where `mytrace` is the name of the input tracefile. The simply rename `mytrace_name.txt` to contain `mytrace_new.test` for it to be included in 
+Upon running this command, an output trace file should be produced called `mytrace_new` (where `mytrace` is the name of the input tracefile. The simply rename `mytrace_name.txt` to contain `mytrace_new.test` for it to be included in
 future JUnit test runs.
 
 **Example**
@@ -94,7 +94,7 @@ The following section describes usage of the `GenerateTrace.java` program.
 The procedure for running the `GenerateTrace.java` program is as follows:
 
 1. Establish a local Postgres database and start the database server. The procedure to accomplish this depends on the particulars of your development environment. If you are using a CMU DB development machine, see the _PostgreSQL on CMU DB Development Machines_ section below.
-2. Write your own SQL input file. The format of this file consists of SQL statements, one per line. Comments (denoted by `#`)) are permitted. 
+2. Write your own SQL input file. The format of this file consists of SQL statements, one per line. Comments (denoted by `#`)) are permitted.
 3. Compile the test infrastructure: `ant compile`
 4. Run the filter trace program: `ant filter-trace`. The program expects 6 arguments:
   - `path`: The path to the input file
@@ -111,7 +111,7 @@ ant generate-trace -Dpath=INPUT_PATH -Ddb-url=JDBC_URL -Ddb-user=DB_USERNAME -Dd
 
 Upon running the above commnd, an output file should be produced which is in the traceile format. Provided the extension for the output file is `.test` (e.g. `select.test`) it will be included in future automated tracefile test invocations.
 
-**Example** 
+**Example**
 
 Suppose we want to run `GenerateTrace.java` with the following configuration:
 
@@ -134,7 +134,7 @@ ant generate-trace -Dpath=sql/select.sql -Ddb-url=jdbc:postgresql://localhost/my
 - Use the format `Num of outputs` to specify the expected number of outputs; if a number is specified, then in the test runner (`TracefileTest.java`) the size of the result set is checked.
 - Use the format `Include Outputs` to specify that you want to store the exact query result instead of its hash value
 
-Example input line for `GenerateTrace.java`: 
+Example input line for `GenerateTrace.java`:
 
 ```
 # Num of outputs: 2
@@ -264,9 +264,9 @@ $ sudo -u postgres psql
 postgres=# CREATE DATABASE test;
 postgres=# \l
                                   List of databases
-   Name    |  Owner   | Encoding |   Collate   |    Ctype    |   Access privileges   
+   Name    |  Owner   | Encoding |   Collate   |    Ctype    |   Access privileges
 -----------+----------+----------+-------------+-------------+-----------------------
- postgres  | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | 
+ postgres  | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 |
  template0 | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =c/postgres          +
            |          |          |             |             | postgres=CTc/postgres
  template1 | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =c/postgres          +
@@ -281,12 +281,12 @@ We can test this setup with `psql`:
 
 ```bash
 $ psql -h localhost -U admin -d test
-Password for user admin: 
+Password for user admin:
 psql (12.5 (Ubuntu 12.5-0ubuntu0.20.04.1), server 12.6 (Ubuntu 12.6-0ubuntu0.20.04.1))
 SSL connection (protocol: TLSv1.3, cipher: TLS_AES_256_GCM_SHA384, bits: 256, compression: off)
 Type "help" for help.
 
-test=> 
+test=>
 ```
 
 Now the parameters we specify for `GenerateTrace.java` or `FilterTrace.java` are:

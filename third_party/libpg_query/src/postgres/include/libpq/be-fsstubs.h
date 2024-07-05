@@ -55,14 +55,13 @@ extern bool lo_compat_privileges;
  * Probably these should have had the underscore-free names,
  * but too late now...
  */
-extern int	lo_read(int fd, char *buf, int len);
-extern int	lo_write(int fd, const char *buf, int len);
+extern int lo_read(int fd, char *buf, int len);
+extern int lo_write(int fd, const char *buf, int len);
 
 /*
  * Cleanup LOs at xact commit/abort
  */
 extern void AtEOXact_LargeObject(bool isCommit);
-extern void AtEOSubXact_LargeObject(bool isCommit, SubTransactionId mySubid,
-						SubTransactionId parentSubid);
+extern void AtEOSubXact_LargeObject(bool isCommit, SubTransactionId mySubid, SubTransactionId parentSubid);
 
-#endif   /* BE_FSSTUBS_H */
+#endif /* BE_FSSTUBS_H */

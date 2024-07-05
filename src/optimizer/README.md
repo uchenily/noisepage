@@ -17,12 +17,12 @@ The entrance of the optimizer is `Optimizer::BuildPelotonPlanTree()` in [`optimi
 ## Parse Tree Transformation
 
 The first step in the optimizer is to transform a peloton parse tree into a logical operator tree which follows relational algreba. This is implemented in [`query_to_operator_transformer.cpp`](https://github.com/chenboy/peloton/blob/optimizer_doc/src/optimizer/query_to_operator_transformer.cpp). Most of the transformations are trivial since the parse tree is mostly structurally similar to a relational algreba tree. There are two things worth mentioning:
-* First, we extract conjunction expressions into a vector of expressions, annotate them with the table aliases occurred in the expression, and uses a separate predicate operators to store them. This will allow us to implement rule-based predicate push-down much easier. 
+* First, we extract conjunction expressions into a vector of expressions, annotate them with the table aliases occurred in the expression, and uses a separate predicate operators to store them. This will allow us to implement rule-based predicate push-down much easier.
 * Second, we transform correlated subqueries into `dependent join` and `mark join` intrudoced in [this paper](http://btw2017.informatik.uni-stuttgart.de/slidesandpapers/F1-10-37/paper_web.pdf) from Hyper, in the unnesting phase we'll transform dependent join into regular join operators.
 
 ## Rewrite Phase
 
-The rewrite phase includes heuristic-based optimization passes that will be run once. For extensibility, we implement these passes as rule-based optimization. These passes assume the transformed tree is always better than the original tree so when a rule is applied, the new pattern will always replace the old one. 
+The rewrite phase includes heuristic-based optimization passes that will be run once. For extensibility, we implement these passes as rule-based optimization. These passes assume the transformed tree is always better than the original tree so when a rule is applied, the new pattern will always replace the old one.
 
 We implemented two different rewrite frameworks, top-down rewrite and bottom-up rewrite in [`optimizer_task.cpp`](https://github.com/chenboy/peloton/blob/optimizer_doc/src/optimizer/optimizer_task.cpp). Both of them are designed for a single optimization pass. Basically, a top-down pass will start from the root operator, apply a set of rewrite rules until saturated, then move to lower level to apply rules for those operators, whereas a bottom-up pass will first recursively apply rules for current operator's children, then apply rules for the current operator. If any rule triggers for an operator in a bottom-up pass, we'll apply rules for its child again, since the children may have changed so rewrite rules may be applicable to them.
 
@@ -36,7 +36,7 @@ Unnesting is a bottom-up pass that eliminates dependent join. It uses a bunch of
 
 ## Cascade Style Optimization
 
-After the rewrite phase we'll get a logical operator tree, the next step is to feed the logical operator tree into a Cascade style query optimizer to generate the lowest cost operator tree. The implementation basically follows the [Columbia Optimizer paper](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.54.1153&rep=rep1&type=pdf), we'll add more details in the documentation, for now please just take the paper as reference. The tasks are implemented in [`optimizer_task.cpp`](https://github.com/chenboy/peloton/blob/optimizer_doc/src/optimizer/optimizer_task.cpp). 
+After the rewrite phase we'll get a logical operator tree, the next step is to feed the logical operator tree into a Cascade style query optimizer to generate the lowest cost operator tree. The implementation basically follows the [Columbia Optimizer paper](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.54.1153&rep=rep1&type=pdf), we'll add more details in the documentation, for now please just take the paper as reference. The tasks are implemented in [`optimizer_task.cpp`](https://github.com/chenboy/peloton/blob/optimizer_doc/src/optimizer/optimizer_task.cpp).
 
 There's one task `DeriveStats` that is not mentioned in the Columnbia paper. We follow the [Orca paper](http://15721.courses.cs.cmu.edu/spring2018/papers/15-optimizer1/p337-soliman.pdf) to derive stats for each group on the fly. When a new group is generated, we'll recursively collect stats for the column used in the root operator's predicate (When a new group is generated, there's only one expression in the group, thus only one root operator), compute stats for the root group and cache those stats in the group so that we only derive stats for columns we need, which is efficient for both time and space.
 
@@ -51,7 +51,7 @@ We'll first derive the output column, which are a vector of expressions, for the
 ## WIP
 
 There are still a lot of interesting work needed to be implemented, including:
-* Join order enumeration. 
+* Join order enumeration.
 * Expression rewrite, my current thought is it should be done in the binder after annotating expressions or in the optimizer before predicate push-down.
 * Implement sampling-based stats derivation and cost calculation
 * Support unnesting arbitary queries so that we can support a wider range of queries in TPC-H. This would need the codegen engine to support `semi join`, `anti-semi join`, `mark join`, `single join`.

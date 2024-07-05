@@ -30,33 +30,34 @@ class RawBlock;
  * designed to be lightweight on the cold->hot transition so we can afford to be wrong in the observation phase.
  */
 class AccessObserver {
- public:
-  /**
-   * Constructs a new AccessObserver that will send its observations to the given block compactor
-   * @param compactor the compactor to use after identifying a cold block
-   */
-  explicit AccessObserver(BlockCompactor *compactor) : compactor_(compactor) {}
+public:
+    /**
+     * Constructs a new AccessObserver that will send its observations to the given block compactor
+     * @param compactor the compactor to use after identifying a cold block
+     */
+    explicit AccessObserver(BlockCompactor *compactor)
+        : compactor_(compactor) {}
 
-  /**
-   * Signals to the AccessObserver that a new GC run has begun. This is useful as a measurement of time to the
-   * AccessObserver as it uses the number of GC invocations as an approximate clock.
-   */
-  void ObserveGCInvocation();
-  /**
-   * Observe a write to the given tuple slot from the given data table.
-   *
-   * Notice that not all writes will be captured in this case. For example, an aborted transaction might not show up
-   * here. All committed transactions are guaranteed to show up here.
-   * @param block The block that was written to
-   */
-  void ObserveWrite(RawBlock *block);
+    /**
+     * Signals to the AccessObserver that a new GC run has begun. This is useful as a measurement of time to the
+     * AccessObserver as it uses the number of GC invocations as an approximate clock.
+     */
+    void ObserveGCInvocation();
+    /**
+     * Observe a write to the given tuple slot from the given data table.
+     *
+     * Notice that not all writes will be captured in this case. For example, an aborted transaction might not show up
+     * here. All committed transactions are guaranteed to show up here.
+     * @param block The block that was written to
+     */
+    void ObserveWrite(RawBlock *block);
 
- private:
-  uint64_t gc_epoch_ = 0;  // estimate time using the number of times GC has run
-  // Here RawBlock * should suffice as a unique identifier of the block. Although a block can be
-  // reused, that process should only be triggered through compaction, which happens only if the
-  // reference to said block is identified as cold and leaves the table.
-  std::unordered_map<RawBlock *, uint64_t> last_touched_;
-  BlockCompactor *compactor_;
+private:
+    uint64_t gc_epoch_ = 0; // estimate time using the number of times GC has run
+    // Here RawBlock * should suffice as a unique identifier of the block. Although a block can be
+    // reused, that process should only be triggered through compaction, which happens only if the
+    // reference to said block is identified as cold and leaves the table.
+    std::unordered_map<RawBlock *, uint64_t> last_touched_;
+    BlockCompactor                          *compactor_;
 };
-}  // namespace noisepage::storage
+} // namespace noisepage::storage

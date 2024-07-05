@@ -5,10 +5,10 @@ namespace noisepage::common {
 common::SanctionedSharedPtr<spdlog::logger>::Ptr common_logger = nullptr;
 
 void InitCommonLogger() {
-  if (common_logger == nullptr) {
-    common_logger = std::make_shared<spdlog::logger>("common_logger", ::default_sink);  // NOLINT
-    spdlog::register_logger(common_logger);
-  }
+    if (common_logger == nullptr) {
+        common_logger = std::make_shared<spdlog::logger>("common_logger", ::default_sink); // NOLINT
+        spdlog::register_logger(common_logger);
+    }
 }
 #endif
-}  // namespace noisepage::common
+} // namespace noisepage::common

@@ -41,15 +41,15 @@ def parse_oltpbench_data(results_dir):
 
 
 def parse_microbenchmark_data(artifact_processor_comparison):
-    """ 
+    """
     Collect the information needed to send to the performance storage service
     from the files produced by the microbenchmark
 
     Args:
-        artifact_processor_comparison (dict): The comparison object generated 
+        artifact_processor_comparison (dict): The comparison object generated
                                                 by the artifact processor
 
-    Returns: 
+    Returns:
         metadata (dict): The metadata of the microbenchmark test
         test_suite (str): The name of the test suite
         test_name (str): The name of the specific benchmark test
@@ -140,7 +140,7 @@ def parse_oltpbench_files(results_dir):
 
 
 def parse_microbenchmark_comparison(artifact_processor_comparison):
-    """ Extract the relevant information from the artifact_processor_comparison 
+    """ Extract the relevant information from the artifact_processor_comparison
     and parse out the test name and suite"""
     metrics_fields = [
         'throughput', 'stdev_throughput', 'tolerance', 'status', 'iterations',

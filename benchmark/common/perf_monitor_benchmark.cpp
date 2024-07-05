@@ -14,14 +14,14 @@ class PerfMonitorBenchmark : public benchmark::Fixture {};
  */
 // NOLINTNEXTLINE
 BENCHMARK_DEFINE_F(PerfMonitorBenchmark, Basic)(benchmark::State &state) {
-  common::PerfMonitor<false> monitor;
-  // NOLINTNEXTLINE
-  for (auto _ : state) {
-    monitor.Start();
-    monitor.Stop();
-    monitor.Counters();
-  }
-  state.SetItemsProcessed(state.iterations());
+    common::PerfMonitor<false> monitor;
+    // NOLINTNEXTLINE
+    for (auto _ : state) {
+        monitor.Start();
+        monitor.Stop();
+        monitor.Counters();
+    }
+    state.SetItemsProcessed(state.iterations());
 }
 
 /**
@@ -29,17 +29,17 @@ BENCHMARK_DEFINE_F(PerfMonitorBenchmark, Basic)(benchmark::State &state) {
  */
 // NOLINTNEXTLINE
 BENCHMARK_DEFINE_F(PerfMonitorBenchmark, Inherit)(benchmark::State &state) {
-  common::PerfMonitor<true> monitor;
-  // NOLINTNEXTLINE
-  for (auto _ : state) {
-    monitor.Start();
-    monitor.Stop();
-    monitor.Counters();
-  }
-  state.SetItemsProcessed(state.iterations());
+    common::PerfMonitor<true> monitor;
+    // NOLINTNEXTLINE
+    for (auto _ : state) {
+        monitor.Start();
+        monitor.Stop();
+        monitor.Counters();
+    }
+    state.SetItemsProcessed(state.iterations());
 }
 
 BENCHMARK_REGISTER_F(PerfMonitorBenchmark, Basic);
 
 BENCHMARK_REGISTER_F(PerfMonitorBenchmark, Inherit);
-}  // namespace noisepage
+} // namespace noisepage

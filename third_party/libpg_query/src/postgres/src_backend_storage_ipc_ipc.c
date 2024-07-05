@@ -27,8 +27,8 @@
 #include "postgres.h"
 
 #include <signal.h>
-#include <unistd.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 #include "miscadmin.h"
 #ifdef PROFILE_PID_DIR
@@ -38,24 +38,20 @@
 #include "storage/ipc.h"
 #include "tcop/tcopprot.h"
 
-
 /*
  * This flag is set during proc_exit() to change ereport()'s behavior,
  * so that an ereport() from an on_proc_exit routine cannot get us out
  * of the exit procedure.  We do NOT want to go back to the idle loop...
  */
-__thread bool		proc_exit_inprogress = false;
-
+__thread bool proc_exit_inprogress = false;
 
 /*
  * This flag tracks whether we've called atexit() in the current process
  * (or in the parent postmaster).
  */
 
-
 /* local functions */
-//static void proc_exit_prepare(int code);
-
+// static void proc_exit_prepare(int code);
 
 /* ----------------------------------------------------------------
  *						exit() handling stuff
@@ -73,20 +69,10 @@ __thread bool		proc_exit_inprogress = false;
 
 #define MAX_ON_EXITS 20
 
-struct ONEXIT
-{
-	pg_on_exit_callback function;
-	Datum		arg;
+struct ONEXIT {
+    pg_on_exit_callback function;
+    Datum               arg;
 };
-
-
-
-
-
-
-
-
-
 
 /* ----------------------------------------------------------------
  *		proc_exit
@@ -103,15 +89,16 @@ struct ONEXIT
  *		an atexit callback that will make sure cleanup happens.
  * ----------------------------------------------------------------
  */
-void proc_exit(int code) { printf("Terminating process due to FATAL error\n"); exit(1); }
-
+void proc_exit(int code) {
+    printf("Terminating process due to FATAL error\n");
+    exit(1);
+}
 
 /*
  * Code shared between proc_exit and the atexit handler.  Note that in
  * normal exit through proc_exit, this will actually be called twice ...
  * but the second call will have nothing to do.
  */
-
 
 /* ------------------
  * Run all of the on_shmem_exit routines --- but don't actually exit.
@@ -121,7 +108,6 @@ void proc_exit(int code) { printf("Terminating process due to FATAL error\n"); e
  * infinite loop in case of error.
  * ------------------
  */
-
 
 /* ----------------------------------------------------------------
  *		atexit_callback
@@ -134,7 +120,6 @@ void proc_exit(int code) { printf("Terminating process due to FATAL error\n"); e
  * ----------------------------------------------------------------
  */
 
-
 /* ----------------------------------------------------------------
  *		on_proc_exit
  *
@@ -142,7 +127,6 @@ void proc_exit(int code) { printf("Terminating process due to FATAL error\n"); e
  *		functions invoked by proc_exit().   -cim 2/6/90
  * ----------------------------------------------------------------
  */
-
 
 /* ----------------------------------------------------------------
  *		before_shmem_exit
@@ -153,7 +137,6 @@ void proc_exit(int code) { printf("Terminating process due to FATAL error\n"); e
  * ----------------------------------------------------------------
  */
 
-
 /* ----------------------------------------------------------------
  *		on_shmem_exit
  *
@@ -162,7 +145,6 @@ void proc_exit(int code) { printf("Terminating process due to FATAL error\n"); e
  *		callbacks and before on_proc_exit callbacks.
  * ----------------------------------------------------------------
  */
-
 
 /* ----------------------------------------------------------------
  *		cancel_before_shmem_exit
@@ -174,7 +156,6 @@ void proc_exit(int code) { printf("Terminating process due to FATAL error\n"); e
  * ----------------------------------------------------------------
  */
 
-
 /* ----------------------------------------------------------------
  *		on_exit_reset
  *
@@ -184,4 +165,3 @@ void proc_exit(int code) { printf("Terminating process due to FATAL error\n"); e
  *		on-exit routines when it exits...
  * ----------------------------------------------------------------
  */
-

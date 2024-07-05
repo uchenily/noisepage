@@ -12,7 +12,7 @@
 #ifndef XLOG_DEFS_H
 #define XLOG_DEFS_H
 
-#include <fcntl.h>				/* need open() flags */
+#include <fcntl.h> /* need open() flags */
 
 /*
  * Pointer to a location in the XLOG.  These pointers are 64 bits wide,
@@ -25,8 +25,8 @@ typedef uint64 XLogRecPtr;
  * WAL segment, initializing the first WAL page at XLOG_SEG_SIZE, so no XLOG
  * record can begin at zero.
  */
-#define InvalidXLogRecPtr	0
-#define XLogRecPtrIsInvalid(r)	((r) == InvalidXLogRecPtr)
+#define InvalidXLogRecPtr 0
+#define XLogRecPtrIsInvalid(r) ((r) == InvalidXLogRecPtr)
 
 /*
  * XLogSegNo - physical log file sequence number.
@@ -60,9 +60,9 @@ typedef uint16 RepOriginId;
  *	need O_SYNC/O_DSYNC.
  */
 #ifdef O_DIRECT
-#define PG_O_DIRECT				O_DIRECT
+#define PG_O_DIRECT O_DIRECT
 #else
-#define PG_O_DIRECT				0
+#define PG_O_DIRECT 0
 #endif
 
 /*
@@ -72,31 +72,31 @@ typedef uint16 RepOriginId;
  * configure determined whether fdatasync() is.
  */
 #if defined(O_SYNC)
-#define OPEN_SYNC_FLAG		O_SYNC
+#define OPEN_SYNC_FLAG O_SYNC
 #elif defined(O_FSYNC)
-#define OPEN_SYNC_FLAG		O_FSYNC
+#define OPEN_SYNC_FLAG O_FSYNC
 #endif
 
 #if defined(O_DSYNC)
 #if defined(OPEN_SYNC_FLAG)
 /* O_DSYNC is distinct? */
 #if O_DSYNC != OPEN_SYNC_FLAG
-#define OPEN_DATASYNC_FLAG		O_DSYNC
+#define OPEN_DATASYNC_FLAG O_DSYNC
 #endif
-#else							/* !defined(OPEN_SYNC_FLAG) */
+#else /* !defined(OPEN_SYNC_FLAG) */
 /* Win32 only has O_DSYNC */
-#define OPEN_DATASYNC_FLAG		O_DSYNC
+#define OPEN_DATASYNC_FLAG O_DSYNC
 #endif
 #endif
 
 #if defined(PLATFORM_DEFAULT_SYNC_METHOD)
-#define DEFAULT_SYNC_METHOD		PLATFORM_DEFAULT_SYNC_METHOD
+#define DEFAULT_SYNC_METHOD PLATFORM_DEFAULT_SYNC_METHOD
 #elif defined(OPEN_DATASYNC_FLAG)
-#define DEFAULT_SYNC_METHOD		SYNC_METHOD_OPEN_DSYNC
+#define DEFAULT_SYNC_METHOD SYNC_METHOD_OPEN_DSYNC
 #elif defined(HAVE_FDATASYNC)
-#define DEFAULT_SYNC_METHOD		SYNC_METHOD_FDATASYNC
+#define DEFAULT_SYNC_METHOD SYNC_METHOD_FDATASYNC
 #else
-#define DEFAULT_SYNC_METHOD		SYNC_METHOD_FSYNC
+#define DEFAULT_SYNC_METHOD SYNC_METHOD_FSYNC
 #endif
 
-#endif   /* XLOG_DEFS_H */
+#endif /* XLOG_DEFS_H */

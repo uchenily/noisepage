@@ -24,13 +24,15 @@ template <typename> struct NotEqual;
  */
 template <typename T>
 struct Equal {
-  /** The symmetric operation for equality is itself. */
-  using SymmetricOp = Equal<T>;
+    /** The symmetric operation for equality is itself. */
+    using SymmetricOp = Equal<T>;
 
-  /**
-   * @return True if left == right; false otherwise.
-   */
-  constexpr bool operator()(T left, T right) const { return left == right; }
+    /**
+     * @return True if left == right; false otherwise.
+     */
+    constexpr bool operator()(T left, T right) const {
+        return left == right;
+    }
 };
 
 /**
@@ -38,13 +40,15 @@ struct Equal {
  */
 template <typename T>
 struct GreaterThan {
-  /** The symmetric operation for greater than is less than. */
-  using SymmetricOp = LessThan<T>;
+    /** The symmetric operation for greater than is less than. */
+    using SymmetricOp = LessThan<T>;
 
-  /**
-   * @return True if left > right; false otherwise.
-   */
-  constexpr bool operator()(T left, T right) const { return left > right; }
+    /**
+     * @return True if left > right; false otherwise.
+     */
+    constexpr bool operator()(T left, T right) const {
+        return left > right;
+    }
 };
 
 /**
@@ -52,13 +56,15 @@ struct GreaterThan {
  */
 template <typename T>
 struct GreaterThanEqual {
-  /** The symmetric operation for greater than equal is less than equal. */
-  using SymmetricOp = LessThanEqual<T>;
+    /** The symmetric operation for greater than equal is less than equal. */
+    using SymmetricOp = LessThanEqual<T>;
 
-  /**
-   * @return True if left >= right; false otherwise.
-   */
-  constexpr bool operator()(T left, T right) const { return left >= right; }
+    /**
+     * @return True if left >= right; false otherwise.
+     */
+    constexpr bool operator()(T left, T right) const {
+        return left >= right;
+    }
 };
 
 /**
@@ -66,13 +72,15 @@ struct GreaterThanEqual {
  */
 template <typename T>
 struct LessThan {
-  /** The symmetric operation for less than is greater than. */
-  using SymmetricOp = GreaterThan<T>;
+    /** The symmetric operation for less than is greater than. */
+    using SymmetricOp = GreaterThan<T>;
 
-  /**
-   * @return True if left < right; false otherwise.
-   */
-  constexpr bool operator()(T left, T right) const { return left < right; }
+    /**
+     * @return True if left < right; false otherwise.
+     */
+    constexpr bool operator()(T left, T right) const {
+        return left < right;
+    }
 };
 
 /**
@@ -80,13 +88,15 @@ struct LessThan {
  */
 template <typename T>
 struct LessThanEqual {
-  /** The symmetric operation for less than equal is greater than equal. */
-  using SymmetricOp = GreaterThanEqual<T>;
+    /** The symmetric operation for less than equal is greater than equal. */
+    using SymmetricOp = GreaterThanEqual<T>;
 
-  /**
-   * @return True if left <= right; false otherwise.
-   */
-  constexpr bool operator()(T left, T right) const { return left <= right; }
+    /**
+     * @return True if left <= right; false otherwise.
+     */
+    constexpr bool operator()(T left, T right) const {
+        return left <= right;
+    }
 };
 
 /**
@@ -94,13 +104,15 @@ struct LessThanEqual {
  */
 template <typename T>
 struct NotEqual {
-  /** The symmetric operation for not equal is not equal. */
-  using SymmetricOp = NotEqual<T>;
+    /** The symmetric operation for not equal is not equal. */
+    using SymmetricOp = NotEqual<T>;
 
-  /**
-   * @return True if left != right; false otherwise.
-   */
-  constexpr bool operator()(T left, T right) const { return left != right; }
+    /**
+     * @return True if left != right; false otherwise.
+     */
+    constexpr bool operator()(T left, T right) const {
+        return left != right;
+    }
 };
 
-}  // namespace noisepage::execution::sql
+} // namespace noisepage::execution::sql

@@ -8,7 +8,7 @@ namespace noisepage::network {
 extern common::SanctionedSharedPtr<spdlog::logger>::Ptr network_logger;
 
 void InitNetworkLogger();
-}  // namespace noisepage::network
+} // namespace noisepage::network
 
 #define NETWORK_LOG_TRACE(...) ::noisepage::network::network_logger->trace(__VA_ARGS__)
 #define NETWORK_LOG_DEBUG(...) ::noisepage::network::network_logger->debug(__VA_ARGS__)
@@ -18,10 +18,10 @@ void InitNetworkLogger();
 
 #else
 
-#define NETWORK_LOG_TRACE(...) ((void)0)
-#define NETWORK_LOG_DEBUG(...) ((void)0)
-#define NETWORK_LOG_INFO(...) ((void)0)
-#define NETWORK_LOG_WARN(...) ((void)0)
-#define NETWORK_LOG_ERROR(...) ((void)0)
+#define NETWORK_LOG_TRACE(...) ((void) 0)
+#define NETWORK_LOG_DEBUG(...) ((void) 0)
+#define NETWORK_LOG_INFO(...) ((void) 0)
+#define NETWORK_LOG_WARN(...) ((void) 0)
+#define NETWORK_LOG_ERROR(...) ((void) 0)
 
 #endif

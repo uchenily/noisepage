@@ -12,135 +12,144 @@ namespace noisepage::parser {
  * CaseExpression represents a SQL WHEN ... THEN ... statement.
  */
 class CaseExpression : public AbstractExpression {
- public:
-  /** WHEN ... THEN ... clauses. */
-  struct WhenClause {
-    /** The condition to be checked for this case expression. */
-    std::unique_ptr<AbstractExpression> condition_;
-    /** The value that this expression should have if the corresponding condition is true. */
-    std::unique_ptr<AbstractExpression> then_;
+public:
+    /** WHEN ... THEN ... clauses. */
+    struct WhenClause {
+        /** The condition to be checked for this case expression. */
+        std::unique_ptr<AbstractExpression> condition_;
+        /** The value that this expression should have if the corresponding condition is true. */
+        std::unique_ptr<AbstractExpression> then_;
+
+        /**
+         * Equality check
+         * @param rhs the other WhenClause to compare to
+         * @return if the two are equal
+         */
+        bool operator==(const WhenClause &rhs) const {
+            return *condition_ == *rhs.condition_ && *then_ == *rhs.then_;
+        }
+
+        /**
+         * Inequality check
+         * @param rhs the other WhenClause to compare toz
+         * @return if the two are not equal
+         */
+        bool operator!=(const WhenClause &rhs) const {
+            return !operator==(rhs);
+        }
+
+        /**
+         * Hash the current WhenClause.
+         * @return hash of WhenClause
+         */
+        common::hash_t Hash() const;
+
+        /**
+         * Derived expressions should call this base method
+         * @return expression serialized to json
+         */
+        nlohmann::json ToJson() const;
+
+        /**
+         * Derived expressions should call this base method
+         * @param j json to deserialize
+         */
+        std::vector<std::unique_ptr<AbstractExpression>> FromJson(const nlohmann::json &j);
+    };
 
     /**
-     * Equality check
-     * @param rhs the other WhenClause to compare to
-     * @return if the two are equal
+     * Instantiate a new case expression.
+     * @param return_value_type return value of the case expression
+     * @param when_clauses list of WhenClauses
+     * @param default_expr default expression for this case
      */
-    bool operator==(const WhenClause &rhs) const { return *condition_ == *rhs.condition_ && *then_ == *rhs.then_; }
+    CaseExpression(const execution::sql::SqlTypeId     return_value_type,
+                   std::vector<WhenClause>           &&when_clauses,
+                   std::unique_ptr<AbstractExpression> default_expr)
+        : AbstractExpression(ExpressionType::OPERATOR_CASE_EXPR, return_value_type, {})
+        , when_clauses_(std::move(when_clauses))
+        , default_expr_(std::move(default_expr)) {}
+
+    /** Default constructor for deserialization. */
+    CaseExpression() = default;
 
     /**
-     * Inequality check
-     * @param rhs the other WhenClause to compare toz
-     * @return if the two are not equal
+     * Hashe the current case expression.
+     * @return hash of CaseExpression
      */
-    bool operator!=(const WhenClause &rhs) const { return !operator==(rhs); }
+    common::hash_t Hash() const override;
 
     /**
-     * Hash the current WhenClause.
-     * @return hash of WhenClause
+     * Logical equality check.
+     * @param rhs other
+     * @return true if the two expressions are logically equal
      */
-    common::hash_t Hash() const;
+    bool operator==(const AbstractExpression &rhs) const override;
 
     /**
-     * Derived expressions should call this base method
-     * @return expression serialized to json
+     * Copies this CaseExpression
+     * @returns copy of this
      */
-    nlohmann::json ToJson() const;
+    std::unique_ptr<AbstractExpression> Copy() const override;
 
     /**
-     * Derived expressions should call this base method
-     * @param j json to deserialize
+     * Creates a copy of the current AbstractExpression with new children implanted.
+     * The children should not be owned by any other AbstractExpression.
+     * @param children New children to be owned by the copy
+     * @returns copy of this
      */
-    std::vector<std::unique_ptr<AbstractExpression>> FromJson(const nlohmann::json &j);
-  };
+    std::unique_ptr<AbstractExpression>
+    CopyWithChildren(std::vector<std::unique_ptr<AbstractExpression>> &&children) const override {
+        NOISEPAGE_ASSERT(children.empty(), "CaseExpression should have no children");
+        return Copy();
+    }
 
-  /**
-   * Instantiate a new case expression.
-   * @param return_value_type return value of the case expression
-   * @param when_clauses list of WhenClauses
-   * @param default_expr default expression for this case
-   */
-  CaseExpression(const execution::sql::SqlTypeId return_value_type, std::vector<WhenClause> &&when_clauses,
-                 std::unique_ptr<AbstractExpression> default_expr)
-      : AbstractExpression(ExpressionType::OPERATOR_CASE_EXPR, return_value_type, {}),
-        when_clauses_(std::move(when_clauses)),
-        default_expr_(std::move(default_expr)) {}
+    /**
+     * @return the number of WhenClauses
+     */
+    size_t GetWhenClauseSize() const {
+        return when_clauses_.size();
+    }
 
-  /** Default constructor for deserialization. */
-  CaseExpression() = default;
+    /**
+     * @param index index of WhenClause to get
+     * @return condition at that index
+     */
+    common::ManagedPointer<AbstractExpression> GetWhenClauseCondition(size_t index) const {
+        NOISEPAGE_ASSERT(index < when_clauses_.size(), "Index must be in bounds.");
+        return common::ManagedPointer(when_clauses_[index].condition_);
+    }
 
-  /**
-   * Hashe the current case expression.
-   * @return hash of CaseExpression
-   */
-  common::hash_t Hash() const override;
+    /**
+     * @param index index of WhenClause to get
+     * @return result at that index
+     */
+    common::ManagedPointer<AbstractExpression> GetWhenClauseResult(size_t index) const {
+        NOISEPAGE_ASSERT(index < when_clauses_.size(), "Index must be in bounds.");
+        return common::ManagedPointer(when_clauses_[index].then_);
+    }
 
-  /**
-   * Logical equality check.
-   * @param rhs other
-   * @return true if the two expressions are logically equal
-   */
-  bool operator==(const AbstractExpression &rhs) const override;
+    /** @return default clause, if it exists */
+    common::ManagedPointer<AbstractExpression> GetDefaultClause() const {
+        return common::ManagedPointer(default_expr_);
+    }
 
-  /**
-   * Copies this CaseExpression
-   * @returns copy of this
-   */
-  std::unique_ptr<AbstractExpression> Copy() const override;
+    void Accept(common::ManagedPointer<binder::SqlNodeVisitor> v) override;
 
-  /**
-   * Creates a copy of the current AbstractExpression with new children implanted.
-   * The children should not be owned by any other AbstractExpression.
-   * @param children New children to be owned by the copy
-   * @returns copy of this
-   */
-  std::unique_ptr<AbstractExpression> CopyWithChildren(
-      std::vector<std::unique_ptr<AbstractExpression>> &&children) const override {
-    NOISEPAGE_ASSERT(children.empty(), "CaseExpression should have no children");
-    return Copy();
-  }
+    /** @return expression serialized to json */
+    nlohmann::json ToJson() const override;
 
-  /**
-   * @return the number of WhenClauses
-   */
-  size_t GetWhenClauseSize() const { return when_clauses_.size(); }
+    /** @param j json to deserialize */
+    std::vector<std::unique_ptr<AbstractExpression>> FromJson(const nlohmann::json &j) override;
 
-  /**
-   * @param index index of WhenClause to get
-   * @return condition at that index
-   */
-  common::ManagedPointer<AbstractExpression> GetWhenClauseCondition(size_t index) const {
-    NOISEPAGE_ASSERT(index < when_clauses_.size(), "Index must be in bounds.");
-    return common::ManagedPointer(when_clauses_[index].condition_);
-  }
-
-  /**
-   * @param index index of WhenClause to get
-   * @return result at that index
-   */
-  common::ManagedPointer<AbstractExpression> GetWhenClauseResult(size_t index) const {
-    NOISEPAGE_ASSERT(index < when_clauses_.size(), "Index must be in bounds.");
-    return common::ManagedPointer(when_clauses_[index].then_);
-  }
-
-  /** @return default clause, if it exists */
-  common::ManagedPointer<AbstractExpression> GetDefaultClause() const { return common::ManagedPointer(default_expr_); }
-
-  void Accept(common::ManagedPointer<binder::SqlNodeVisitor> v) override;
-
-  /** @return expression serialized to json */
-  nlohmann::json ToJson() const override;
-
-  /** @param j json to deserialize */
-  std::vector<std::unique_ptr<AbstractExpression>> FromJson(const nlohmann::json &j) override;
-
- private:
-  /** List of condition and result cases: WHEN ... THEN ... */
-  std::vector<WhenClause> when_clauses_;
-  /** Default result case. */
-  std::unique_ptr<AbstractExpression> default_expr_;
+private:
+    /** List of condition and result cases: WHEN ... THEN ... */
+    std::vector<WhenClause> when_clauses_;
+    /** Default result case. */
+    std::unique_ptr<AbstractExpression> default_expr_;
 };
 
 DEFINE_JSON_HEADER_DECLARATIONS(CaseExpression::WhenClause);
 DEFINE_JSON_HEADER_DECLARATIONS(CaseExpression);
 
-}  // namespace noisepage::parser
+} // namespace noisepage::parser

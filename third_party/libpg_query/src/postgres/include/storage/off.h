@@ -23,10 +23,10 @@
  */
 typedef uint16 OffsetNumber;
 
-#define InvalidOffsetNumber		((OffsetNumber) 0)
-#define FirstOffsetNumber		((OffsetNumber) 1)
-#define MaxOffsetNumber			((OffsetNumber) (BLCKSZ / sizeof(ItemIdData)))
-#define OffsetNumberMask		(0xffff)		/* valid uint16 bits */
+#define InvalidOffsetNumber ((OffsetNumber) 0)
+#define FirstOffsetNumber ((OffsetNumber) 1)
+#define MaxOffsetNumber ((OffsetNumber) (BLCKSZ / sizeof(ItemIdData)))
+#define OffsetNumberMask (0xffff) /* valid uint16 bits */
 
 /* ----------------
  *		support macros
@@ -37,9 +37,8 @@ typedef uint16 OffsetNumber;
  * OffsetNumberIsValid
  *		True iff the offset number is valid.
  */
-#define OffsetNumberIsValid(offsetNumber) \
-	((bool) ((offsetNumber != InvalidOffsetNumber) && \
-			 (offsetNumber <= MaxOffsetNumber)))
+#define OffsetNumberIsValid(offsetNumber)                                                                              \
+    ((bool) ((offsetNumber != InvalidOffsetNumber) && (offsetNumber <= MaxOffsetNumber)))
 
 /*
  * OffsetNumberNext
@@ -50,9 +49,7 @@ typedef uint16 OffsetNumber;
  *		OffsetNumber to move back, and sometimes we do so to form a
  *		real C array index).
  */
-#define OffsetNumberNext(offsetNumber) \
-	((OffsetNumber) (1 + (offsetNumber)))
-#define OffsetNumberPrev(offsetNumber) \
-	((OffsetNumber) (-1 + (offsetNumber)))
+#define OffsetNumberNext(offsetNumber) ((OffsetNumber) (1 + (offsetNumber)))
+#define OffsetNumberPrev(offsetNumber) ((OffsetNumber) (-1 + (offsetNumber)))
 
-#endif   /* OFF_H */
+#endif /* OFF_H */

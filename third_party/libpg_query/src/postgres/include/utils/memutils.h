@@ -19,7 +19,6 @@
 
 #include "nodes/memnodes.h"
 
-
 /*
  * MaxAllocSize, MaxAllocHugeSize
  *		Quasi-arbitrary limits on size of allocations.
@@ -37,13 +36,13 @@
  * MemoryContextAllocHuge().  Both limits permit code to assume that it may
  * compute twice an allocation's size without overflow.
  */
-#define MaxAllocSize	((Size) 0x3fffffff)		/* 1 gigabyte - 1 */
+#define MaxAllocSize ((Size) 0x3fffffff) /* 1 gigabyte - 1 */
 
-#define AllocSizeIsValid(size)	((Size) (size) <= MaxAllocSize)
+#define AllocSizeIsValid(size) ((Size) (size) <= MaxAllocSize)
 
-#define MaxAllocHugeSize	((Size) -1 >> 1)	/* SIZE_MAX / 2 */
+#define MaxAllocHugeSize ((Size) -1 >> 1) /* SIZE_MAX / 2 */
 
-#define AllocHugeSizeIsValid(size)	((Size) (size) <= MaxAllocHugeSize)
+#define AllocHugeSizeIsValid(size) ((Size) (size) <= MaxAllocHugeSize)
 
 /*
  * All chunks allocated by any memory context manager are required to be
@@ -54,18 +53,16 @@
  * size is not absolutely essential, but it's expected to be needed by any
  * reasonable implementation.
  */
-typedef struct StandardChunkHeader
-{
-	MemoryContext context;		/* owning context */
-	Size		size;			/* size of data space allocated in chunk */
+typedef struct StandardChunkHeader {
+    MemoryContext context; /* owning context */
+    Size          size;    /* size of data space allocated in chunk */
 #ifdef MEMORY_CONTEXT_CHECKING
-	/* when debugging memory usage, also store actual requested size */
-	Size		requested_size;
+    /* when debugging memory usage, also store actual requested size */
+    Size requested_size;
 #endif
 } StandardChunkHeader;
 
-#define STANDARDCHUNKHEADERSIZE  MAXALIGN(sizeof(StandardChunkHeader))
-
+#define STANDARDCHUNKHEADERSIZE MAXALIGN(sizeof(StandardChunkHeader))
 
 /*
  * Standard top-level memory contexts.
@@ -73,13 +70,13 @@ typedef struct StandardChunkHeader
  * Only TopMemoryContext and ErrorContext are initialized by
  * MemoryContextInit() itself.
  */
-extern PGDLLIMPORT __thread  MemoryContext TopMemoryContext;
-extern PGDLLIMPORT __thread  MemoryContext ErrorContext;
-extern PGDLLIMPORT MemoryContext PostmasterContext;
-extern PGDLLIMPORT MemoryContext CacheMemoryContext;
-extern PGDLLIMPORT MemoryContext MessageContext;
-extern PGDLLIMPORT MemoryContext TopTransactionContext;
-extern PGDLLIMPORT MemoryContext CurTransactionContext;
+extern PGDLLIMPORT __thread MemoryContext TopMemoryContext;
+extern PGDLLIMPORT __thread MemoryContext ErrorContext;
+extern PGDLLIMPORT MemoryContext          PostmasterContext;
+extern PGDLLIMPORT MemoryContext          CacheMemoryContext;
+extern PGDLLIMPORT MemoryContext          MessageContext;
+extern PGDLLIMPORT MemoryContext          TopTransactionContext;
+extern PGDLLIMPORT MemoryContext          CurTransactionContext;
 
 /* This is a transient link to the active portal's memory context: */
 extern PGDLLIMPORT MemoryContext PortalContext;
@@ -87,25 +84,22 @@ extern PGDLLIMPORT MemoryContext PortalContext;
 /* Backwards compatibility macro */
 #define MemoryContextResetAndDeleteChildren(ctx) MemoryContextReset(ctx)
 
-
 /*
  * Memory-context-type-independent functions in mcxt.c
  */
-extern void MemoryContextInit(void);
-extern void MemoryContextReset(MemoryContext context);
-extern void MemoryContextDelete(MemoryContext context);
-extern void MemoryContextResetOnly(MemoryContext context);
-extern void MemoryContextResetChildren(MemoryContext context);
-extern void MemoryContextDeleteChildren(MemoryContext context);
-extern void MemoryContextSetParent(MemoryContext context,
-					   MemoryContext new_parent);
-extern Size GetMemoryChunkSpace(void *pointer);
+extern void          MemoryContextInit(void);
+extern void          MemoryContextReset(MemoryContext context);
+extern void          MemoryContextDelete(MemoryContext context);
+extern void          MemoryContextResetOnly(MemoryContext context);
+extern void          MemoryContextResetChildren(MemoryContext context);
+extern void          MemoryContextDeleteChildren(MemoryContext context);
+extern void          MemoryContextSetParent(MemoryContext context, MemoryContext new_parent);
+extern Size          GetMemoryChunkSpace(void *pointer);
 extern MemoryContext GetMemoryChunkContext(void *pointer);
 extern MemoryContext MemoryContextGetParent(MemoryContext context);
-extern bool MemoryContextIsEmpty(MemoryContext context);
-extern void MemoryContextStats(MemoryContext context);
-extern void MemoryContextAllowInCriticalSection(MemoryContext context,
-									bool allow);
+extern bool          MemoryContextIsEmpty(MemoryContext context);
+extern void          MemoryContextStats(MemoryContext context);
+extern void          MemoryContextAllowInCriticalSection(MemoryContext context, bool allow);
 
 #ifdef MEMORY_CONTEXT_CHECKING
 extern void MemoryContextCheck(MemoryContext context);
@@ -117,11 +111,8 @@ extern bool MemoryContextContains(MemoryContext context, void *pointer);
  * context creation.  It's intended to be called from context-type-
  * specific creation routines, and noplace else.
  */
-extern MemoryContext MemoryContextCreate(NodeTag tag, Size size,
-					MemoryContextMethods *methods,
-					MemoryContext parent,
-					const char *name);
-
+extern MemoryContext
+MemoryContextCreate(NodeTag tag, Size size, MemoryContextMethods *methods, MemoryContext parent, const char *name);
 
 /*
  * Memory-context-type-specific functions
@@ -129,26 +120,26 @@ extern MemoryContext MemoryContextCreate(NodeTag tag, Size size,
 
 /* aset.c */
 extern MemoryContext AllocSetContextCreate(MemoryContext parent,
-					  const char *name,
-					  Size minContextSize,
-					  Size initBlockSize,
-					  Size maxBlockSize);
+                                           const char   *name,
+                                           Size          minContextSize,
+                                           Size          initBlockSize,
+                                           Size          maxBlockSize);
 
 /*
  * Recommended default alloc parameters, suitable for "ordinary" contexts
  * that might hold quite a lot of data.
  */
-#define ALLOCSET_DEFAULT_MINSIZE   0
-#define ALLOCSET_DEFAULT_INITSIZE  (8 * 1024)
-#define ALLOCSET_DEFAULT_MAXSIZE   (8 * 1024 * 1024)
+#define ALLOCSET_DEFAULT_MINSIZE 0
+#define ALLOCSET_DEFAULT_INITSIZE (8 * 1024)
+#define ALLOCSET_DEFAULT_MAXSIZE (8 * 1024 * 1024)
 
 /*
  * Recommended alloc parameters for "small" contexts that are not expected
  * to contain much data (for example, a context to contain a query plan).
  */
-#define ALLOCSET_SMALL_MINSIZE	 0
-#define ALLOCSET_SMALL_INITSIZE  (1 * 1024)
-#define ALLOCSET_SMALL_MAXSIZE	 (8 * 1024)
+#define ALLOCSET_SMALL_MINSIZE 0
+#define ALLOCSET_SMALL_INITSIZE (1 * 1024)
+#define ALLOCSET_SMALL_MAXSIZE (8 * 1024)
 
 /*
  * Threshold above which a request in an AllocSet context is certain to be
@@ -156,6 +147,6 @@ extern MemoryContext AllocSetContextCreate(MemoryContext parent,
  * Few callers should be interested in this, but tuplesort/tuplestore need
  * to know it.
  */
-#define ALLOCSET_SEPARATE_THRESHOLD  8192
+#define ALLOCSET_SEPARATE_THRESHOLD 8192
 
-#endif   /* MEMUTILS_H */
+#endif /* MEMUTILS_H */

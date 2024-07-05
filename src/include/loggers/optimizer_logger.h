@@ -8,7 +8,7 @@ namespace noisepage::optimizer {
 extern common::SanctionedSharedPtr<spdlog::logger>::Ptr optimizer_logger;
 
 void InitOptimizerLogger();
-}  // namespace noisepage::optimizer
+} // namespace noisepage::optimizer
 
 #define OPTIMIZER_LOG_TRACE(...) ::noisepage::optimizer::optimizer_logger->trace(__VA_ARGS__)
 #define OPTIMIZER_LOG_DEBUG(...) ::noisepage::optimizer::optimizer_logger->debug(__VA_ARGS__)
@@ -18,10 +18,10 @@ void InitOptimizerLogger();
 
 #else
 
-#define OPTIMIZER_LOG_TRACE(...) ((void)0)
-#define OPTIMIZER_LOG_DEBUG(...) ((void)0)
-#define OPTIMIZER_LOG_INFO(...) ((void)0)
-#define OPTIMIZER_LOG_WARN(...) ((void)0)
-#define OPTIMIZER_LOG_ERROR(...) ((void)0)
+#define OPTIMIZER_LOG_TRACE(...) ((void) 0)
+#define OPTIMIZER_LOG_DEBUG(...) ((void) 0)
+#define OPTIMIZER_LOG_INFO(...) ((void) 0)
+#define OPTIMIZER_LOG_WARN(...) ((void) 0)
+#define OPTIMIZER_LOG_ERROR(...) ((void) 0)
 
 #endif

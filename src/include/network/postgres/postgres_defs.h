@@ -59,31 +59,31 @@ const std::unordered_map<std::string, std::string> PG_PARAMETER_STATUS_MAP = {
  * https://github.com/postgres/postgres/blob/master/src/include/catalog/pg_type.h#L273
  */
 enum class PostgresValueType : int32_t {
-  INVALID = 0,
-  BOOLEAN = 16,
-  TINYINT = 16,  // BOOLEAN is an alias for TINYINT
-  SMALLINT = 21,
-  INTEGER = 23,
-  VARBINARY = 17,
-  BIGINT = 20,
-  REAL = 700,
-  DOUBLE = 701,
-  TEXT = 25,
-  BPCHAR = 1042,
-  BPCHAR2 = 1014,
-  VARCHAR = 1015,
-  VARCHAR2 = 1043,
-  DATE = 1082,
-  TIMESTAMPS = 1114,
-  TIMESTAMPS2 = 1184,
-  TEXT_ARRAY = 1009,     // TEXTARRAYOID in postgres code
-  INT2_ARRAY = 1005,     // INT2ARRAYOID in postgres code
-  INT4_ARRAY = 1007,     // INT4ARRAYOID in postgres code
-  OID_ARRAY = 1028,      // OIDARRAYOID in postgres code
-  FLOADT4_ARRAY = 1021,  // FLOADT4ARRAYOID in postgres code
-  DECIMAL = 1700
+    INVALID = 0,
+    BOOLEAN = 16,
+    TINYINT = 16, // BOOLEAN is an alias for TINYINT
+    SMALLINT = 21,
+    INTEGER = 23,
+    VARBINARY = 17,
+    BIGINT = 20,
+    REAL = 700,
+    DOUBLE = 701,
+    TEXT = 25,
+    BPCHAR = 1042,
+    BPCHAR2 = 1014,
+    VARCHAR = 1015,
+    VARCHAR2 = 1043,
+    DATE = 1082,
+    TIMESTAMPS = 1114,
+    TIMESTAMPS2 = 1184,
+    TEXT_ARRAY = 1009,    // TEXTARRAYOID in postgres code
+    INT2_ARRAY = 1005,    // INT2ARRAYOID in postgres code
+    INT4_ARRAY = 1007,    // INT4ARRAYOID in postgres code
+    OID_ARRAY = 1028,     // OIDARRAYOID in postgres code
+    FLOADT4_ARRAY = 1021, // FLOADT4ARRAYOID in postgres code
+    DECIMAL = 1700
 };
 
-const uint32_t MAX_NAME_LENGTH = 63;  // Max length for internal name
+const uint32_t MAX_NAME_LENGTH = 63; // Max length for internal name
 
-}  // namespace noisepage::network
+} // namespace noisepage::network

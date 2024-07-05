@@ -8,7 +8,7 @@
 
 namespace noisepage::parser {
 class AbstractExpression;
-}  // namespace noisepage::parser
+} // namespace noisepage::parser
 
 namespace noisepage::planner {
 
@@ -33,82 +33,82 @@ constexpr int INVALID_TYPE_ID = 0;
 //===--------------------------------------------------------------------===//
 
 enum class PlanNodeType {
-  INVALID = INVALID_TYPE_ID,
+    INVALID = INVALID_TYPE_ID,
 
-  // Scan Nodes
-  SEQSCAN,
-  INDEXSCAN,
-  CSVSCAN,
+    // Scan Nodes
+    SEQSCAN,
+    INDEXSCAN,
+    CSVSCAN,
 
-  // Join Nodes
-  NESTLOOP,
-  HASHJOIN,
-  INDEXNLJOIN,
+    // Join Nodes
+    NESTLOOP,
+    HASHJOIN,
+    INDEXNLJOIN,
 
-  // Mutator Nodes
-  UPDATE,
-  INSERT,
-  DELETE,
+    // Mutator Nodes
+    UPDATE,
+    INSERT,
+    DELETE,
 
-  // DDL Nodes
-  CREATE_DATABASE,
-  CREATE_NAMESPACE,
-  CREATE_TABLE,
-  CREATE_INDEX,
-  CREATE_FUNC,
-  CREATE_TRIGGER,
-  CREATE_VIEW,
-  DROP_DATABASE,
-  DROP_NAMESPACE,
-  DROP_TABLE,
-  DROP_INDEX,
-  DROP_TRIGGER,
-  DROP_VIEW,
-  ANALYZE,
+    // DDL Nodes
+    CREATE_DATABASE,
+    CREATE_NAMESPACE,
+    CREATE_TABLE,
+    CREATE_INDEX,
+    CREATE_FUNC,
+    CREATE_TRIGGER,
+    CREATE_VIEW,
+    DROP_DATABASE,
+    DROP_NAMESPACE,
+    DROP_TABLE,
+    DROP_INDEX,
+    DROP_TRIGGER,
+    DROP_VIEW,
+    ANALYZE,
 
-  // Algebra Nodes
-  AGGREGATE,
-  ORDERBY,
-  PROJECTION,
-  LIMIT,
-  CTESCAN,
-  CTESCANLEADER,
-  DISTINCT,
-  HASH,
-  SETOP,
+    // Algebra Nodes
+    AGGREGATE,
+    ORDERBY,
+    PROJECTION,
+    LIMIT,
+    CTESCAN,
+    CTESCANLEADER,
+    DISTINCT,
+    HASH,
+    SETOP,
 
-  // Utility
-  EXPORT_EXTERNAL_FILE,
-  RESULT,
+    // Utility
+    EXPORT_EXTERNAL_FILE,
+    RESULT,
 
-  // Test
-  MOCK
+    // Test
+    MOCK
 };
 
 //===--------------------------------------------------------------------===//
 // Aggregate Stragegies
 //===--------------------------------------------------------------------===//
 enum class AggregateStrategyType {
-  INVALID = INVALID_TYPE_ID,
-  SORTED = 1,
-  HASH = 2,
-  PLAIN = 3  // no group-by
+    INVALID = INVALID_TYPE_ID,
+    SORTED = 1,
+    HASH = 2,
+    PLAIN = 3 // no group-by
 };
 
 //===--------------------------------------------------------------------===//
 // Logical Join Types
 //===--------------------------------------------------------------------===//
 enum class LogicalJoinType {
-  INVALID = INVALID_TYPE_ID,  // invalid join type
-  LEFT = 1,                   // left
-  RIGHT = 2,                  // right
-  INNER = 3,                  // inner
-  OUTER = 4,                  // outer
-  SEMI = 5,                   // returns a row ONLY if it has a join partner, no duplicates
-  ANTI = 6,                   // returns a row ONLY if it has NO join partner, no duplicates
-  LEFT_SEMI = 7,              // Left semi join
-  RIGHT_SEMI = 8,             // Right semi join
-  RIGHT_ANTI = 9              // Right anti join
+    INVALID = INVALID_TYPE_ID, // invalid join type
+    LEFT = 1,                  // left
+    RIGHT = 2,                 // right
+    INNER = 3,                 // inner
+    OUTER = 4,                 // outer
+    SEMI = 5,                  // returns a row ONLY if it has a join partner, no duplicates
+    ANTI = 6,                  // returns a row ONLY if it has NO join partner, no duplicates
+    LEFT_SEMI = 7,             // Left semi join
+    RIGHT_SEMI = 8,            // Right semi join
+    RIGHT_ANTI = 9             // Right anti join
 };
 
 /**
@@ -143,14 +143,14 @@ enum class SetOpType { INVALID = INVALID_TYPE_ID, INTERSECT = 1, INTERSECT_ALL =
 using IndexExpression = common::ManagedPointer<parser::AbstractExpression>;
 /** Type of index scan. */
 enum class IndexScanType : uint8_t {
-  Exact,
-  AscendingClosed,
-  AscendingOpenHigh,
-  AscendingOpenLow,
-  AscendingOpenBoth,
+    Exact,
+    AscendingClosed,
+    AscendingOpenHigh,
+    AscendingOpenLow,
+    AscendingOpenBoth,
 
-  Descending,
-  DescendingLimit
+    Descending,
+    DescendingLimit
 };
 
-}  // namespace noisepage::planner
+} // namespace noisepage::planner

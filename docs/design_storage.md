@@ -32,7 +32,7 @@ Here a `Miniblock` is how we store an entire column. The internal layout is as f
 -------------------------------------------------------------------------------
 ```
 
-Note that everything is padded to align to its own size, and every `Miniblock` is aligned to 8 bytes. Be aware that we use least-significant byte order (LSB) within each byte if the bitmap. 
+Note that everything is padded to align to its own size, and every `Miniblock` is aligned to 8 bytes. Be aware that we use least-significant byte order (LSB) within each byte if the bitmap.
 
 ## Storage Layer Overview
 The storage engine is designed to have physical-level storage concepts only (bytes, pointers, etc.), and generally has no
@@ -97,7 +97,7 @@ The padding between the 4-byte size and 8 byte pointer is used to store the firs
 To create a `VarlenEntry`, use the static factory methods `VarlenEntry::Create` and `VarlenEntry::CreateInline`. The caller is responsible for checking which one should be used by comparing the size of the varlen with `InlineThreshold()`. The reason why we don't incorporate this checkin within the constructor is because, depending on whether the entry is inlined, the object either takes over ownership (if not inlined) or does not
 (if inlined), and having a split constructor forces programmers to think about this.
 
-A sign bit from the size field is used to keep track of whether the GC is allowed to deallocate the varlen entry's pointer value. A varlen entry could point to Arrow varlen buffer or a compressed block's dictionary, which cannot be freed by themselves. Simply call `NeedReclaim` to see if it needs to be reclaimed by the GC as a stand-alone entry. 
+A sign bit from the size field is used to keep track of whether the GC is allowed to deallocate the varlen entry's pointer value. A varlen entry could point to Arrow varlen buffer or a compressed block's dictionary, which cannot be freed by themselves. Simply call `NeedReclaim` to see if it needs to be reclaimed by the GC as a stand-alone entry.
 
 ### DataTable
 ------

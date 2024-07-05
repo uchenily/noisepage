@@ -27,7 +27,7 @@ The structure of the catalog tables is generally taken from Postgres. Detailed i
 - An `AttrDefHandle` provides access to pg_attrdef. pg_attrdef is per database and records default values (where defined) for attributes (i.e. columns).
 - A `ClassHandle` provides access to pg_class. pg_class is per database, and has a row for anything that is table like, e.g. tables, indexes, etc.
 
-- A `TableHandle` provides a view equivalent to pg_tables, a simpler view of tables. The API here is different since there are multiple underlying tables. 
+- A `TableHandle` provides a view equivalent to pg_tables, a simpler view of tables. The API here is different since there are multiple underlying tables.
 
 ***
 
@@ -41,7 +41,7 @@ Overview of which views are implemented
 
 ***
 
-Google docs spreadsheets, defining the mapping from Postgres to Terrier. Should be able to add comments (but not edit directly). 
+Google docs spreadsheets, defining the mapping from Postgres to Terrier. Should be able to add comments (but not edit directly).
 
 [pg_class](https://docs.google.com/spreadsheets/d/1HfBNyG1prdhDNMy9c6xvXa-wlkmnKSuPKjCommJtX5Q/edit?usp=sharing)
 

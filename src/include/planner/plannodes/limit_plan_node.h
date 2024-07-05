@@ -15,112 +15,123 @@ namespace noisepage::planner {
  * Plan node for a limit operator
  */
 class LimitPlanNode : public AbstractPlanNode {
- public:
-  /**
-   * Builder for limit plan node
-   */
-  class Builder : public AbstractPlanNode::Builder<Builder> {
-   public:
-    Builder() = default;
-
+public:
     /**
-     * Don't allow builder to be copied or moved
+     * Builder for limit plan node
      */
-    DISALLOW_COPY_AND_MOVE(Builder);
+    class Builder : public AbstractPlanNode::Builder<Builder> {
+    public:
+        Builder() = default;
 
+        /**
+         * Don't allow builder to be copied or moved
+         */
+        DISALLOW_COPY_AND_MOVE(Builder);
+
+        /**
+         * @param limit number of tuples to limit to
+         * @return object
+         */
+        Builder &SetLimit(size_t limit) {
+            limit_ = limit;
+            return *this;
+        }
+
+        /**
+         * @param offset offset for where to limit from
+         * @return builder object
+         */
+        Builder &SetOffset(size_t offset) {
+            offset_ = offset;
+            return *this;
+        }
+
+        /**
+         * Build the limit plan node
+         * @return plan node
+         */
+        std::unique_ptr<LimitPlanNode> Build();
+
+    protected:
+        /**
+         * Limit for plan
+         */
+        size_t limit_;
+        /**
+         * offset for plan
+         */
+        size_t offset_;
+    };
+
+private:
     /**
+     * @param children child plan nodes
+     * @param output_schema Schema representing the structure of the output of this plan node
      * @param limit number of tuples to limit to
-     * @return object
+     * @param offset offset at which to limit from
+     * @param plan_node_id Plan node id
      */
-    Builder &SetLimit(size_t limit) {
-      limit_ = limit;
-      return *this;
+    LimitPlanNode(std::vector<std::unique_ptr<AbstractPlanNode>> &&children,
+                  std::unique_ptr<OutputSchema>                    output_schema,
+                  size_t                                           limit,
+                  size_t                                           offset,
+                  plan_node_id_t                                   plan_node_id);
+
+public:
+    /**
+     * Constructor used for JSON serialization
+     */
+    LimitPlanNode() = default;
+
+    DISALLOW_COPY_AND_MOVE(LimitPlanNode)
+
+    /**
+     * @return the type of this plan node
+     */
+    PlanNodeType GetPlanNodeType() const override {
+        return PlanNodeType::LIMIT;
     }
 
     /**
-     * @param offset offset for where to limit from
-     * @return builder object
+     * @return number to limit to
      */
-    Builder &SetOffset(size_t offset) {
-      offset_ = offset;
-      return *this;
+    size_t GetLimit() const {
+        return limit_;
     }
 
     /**
-     * Build the limit plan node
-     * @return plan node
+     * @return offset for where to limit from
      */
-    std::unique_ptr<LimitPlanNode> Build();
+    size_t GetOffset() const {
+        return offset_;
+    }
 
-   protected:
     /**
-     * Limit for plan
+     * @return the hashed value of this plan node
+     */
+    common::hash_t Hash() const override;
+
+    bool operator==(const AbstractPlanNode &rhs) const override;
+
+    void Accept(common::ManagedPointer<PlanVisitor> v) const override {
+        v->Visit(this);
+    }
+
+    nlohmann::json                                           ToJson() const override;
+    std::vector<std::unique_ptr<parser::AbstractExpression>> FromJson(const nlohmann::json &j) override;
+
+private:
+    /**
+     * The limit
      */
     size_t limit_;
+
     /**
-     * offset for plan
+     * The offset
      */
     size_t offset_;
-  };
-
- private:
-  /**
-   * @param children child plan nodes
-   * @param output_schema Schema representing the structure of the output of this plan node
-   * @param limit number of tuples to limit to
-   * @param offset offset at which to limit from
-   * @param plan_node_id Plan node id
-   */
-  LimitPlanNode(std::vector<std::unique_ptr<AbstractPlanNode>> &&children, std::unique_ptr<OutputSchema> output_schema,
-                size_t limit, size_t offset, plan_node_id_t plan_node_id);
-
- public:
-  /**
-   * Constructor used for JSON serialization
-   */
-  LimitPlanNode() = default;
-
-  DISALLOW_COPY_AND_MOVE(LimitPlanNode)
-
-  /**
-   * @return the type of this plan node
-   */
-  PlanNodeType GetPlanNodeType() const override { return PlanNodeType::LIMIT; }
-
-  /**
-   * @return number to limit to
-   */
-  size_t GetLimit() const { return limit_; }
-
-  /**
-   * @return offset for where to limit from
-   */
-  size_t GetOffset() const { return offset_; }
-
-  /**
-   * @return the hashed value of this plan node
-   */
-  common::hash_t Hash() const override;
-
-  bool operator==(const AbstractPlanNode &rhs) const override;
-
-  void Accept(common::ManagedPointer<PlanVisitor> v) const override { v->Visit(this); }
-
-  nlohmann::json ToJson() const override;
-  std::vector<std::unique_ptr<parser::AbstractExpression>> FromJson(const nlohmann::json &j) override;
-
- private:
-  /**
-   * The limit
-   */
-  size_t limit_;
-
-  /**
-   * The offset
-   */
-  size_t offset_;
 };
 
 DEFINE_JSON_HEADER_DECLARATIONS(LimitPlanNode);
 
-}  // namespace noisepage::planner
+} // namespace noisepage::planner

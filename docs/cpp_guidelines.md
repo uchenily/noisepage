@@ -18,9 +18,9 @@ NoisePage is developed in `C++17`.
 
 ### C++ Crash Course
 
-C++ provides a lot of leeway in DBMS development compared to other high-level languages. For instance, it supports both manual and automated memory management, varied styles of programming, stronger type checking, different kinds of polymorphism etc. 
+C++ provides a lot of leeway in DBMS development compared to other high-level languages. For instance, it supports both manual and automated memory management, varied styles of programming, stronger type checking, different kinds of polymorphism etc.
 
-Here's a list of useful references : 
+Here's a list of useful references :
 
 * [cppreference](http://en.cppreference.com/w/cpp) is an online reference of the powerful `Standard Template Library` (STL).
 * [C++ FAQ](https://isocpp.org/faq) covers a lots of topics.
@@ -35,10 +35,10 @@ Here's a list of modern features that you might want to make use of:
 * `static_assert` and/or `type_traits` such as `std::enable_if`, `std::is_same`.
 
 ### C++ Project Structure
- 
+
 #### Directory Structure
 
-Organize source code files into relevant folders based on their functionality. Separate binary files from source files, and production code from testing code. 
+Organize source code files into relevant folders based on their functionality. Separate binary files from source files, and production code from testing code.
 
 **Code directories**
   * `src`: This is where the bulk of the code for NoisePage lives. Anything that you expect to be compiled into the release should be here.
@@ -102,7 +102,7 @@ For example, to manually compile NoisePage, this is what you would do:
 5. Invoke the build system: `ninja noisepage`, more generally `ninja <NAME OF TARGET>` for any valid target.
    - This is the Run / play button in CLion.
 
-We have configured the build system so that it will produce a `compile_commands.json` file. This contains the exact compiler invocations that will be used. You can check this file if you're curious. This file is also used by tools like `clang-tidy` to check for correctness. If you are not sure what a compiler flag does, look it up on Google or on the `man` page for `gcc` or `clang`. 
+We have configured the build system so that it will produce a `compile_commands.json` file. This contains the exact compiler invocations that will be used. You can check this file if you're curious. This file is also used by tools like `clang-tidy` to check for correctness. If you are not sure what a compiler flag does, look it up on Google or on the `man` page for `gcc` or `clang`.
 
 ## Debugging
 
@@ -116,9 +116,9 @@ If you need to do complex debugging, you may want to check out the following lin
 
 ## Testing
 
-Unit tests are critical for ensuring the correct functionality of your modules and reduce time spent on debugging. It can help prevent regressions. We use [googletest](https://github.com/google/googletest), a nice unit-testing framework for C++ projects. 
+Unit tests are critical for ensuring the correct functionality of your modules and reduce time spent on debugging. It can help prevent regressions. We use [googletest](https://github.com/google/googletest), a nice unit-testing framework for C++ projects.
 
-You should write unit test cases for each class/algorithm that you have added or modified. See the testing section for detail. Try to come up with test cases that make sure that the module exhibits the desired behavior. Some developers even suggest writing the unit tests before implementing the code. Make sure that you include corner cases, and try to find off-by-one errors. 
+You should write unit test cases for each class/algorithm that you have added or modified. See the testing section for detail. Try to come up with test cases that make sure that the module exhibits the desired behavior. Some developers even suggest writing the unit tests before implementing the code. Make sure that you include corner cases, and try to find off-by-one errors.
 
 ## Profiling
 

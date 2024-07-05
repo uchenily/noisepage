@@ -12,31 +12,31 @@ namespace noisepage::parser {
  * TODO(WAN): check with Ling if this is happening. I believe we gave up on the binder translating to new objects.
  */
 class DefaultValueExpression : public AbstractExpression {
- public:
-  /** Instantiates a new default value expression. */
-  DefaultValueExpression()
-      : AbstractExpression(ExpressionType::VALUE_DEFAULT, execution::sql::SqlTypeId::Invalid, {}) {}
+public:
+    /** Instantiates a new default value expression. */
+    DefaultValueExpression()
+        : AbstractExpression(ExpressionType::VALUE_DEFAULT, execution::sql::SqlTypeId::Invalid, {}) {}
 
-  /**
-   * Copies this DefaultValueExpression
-   * @returns copy of this
-   */
-  std::unique_ptr<AbstractExpression> Copy() const override;
+    /**
+     * Copies this DefaultValueExpression
+     * @returns copy of this
+     */
+    std::unique_ptr<AbstractExpression> Copy() const override;
 
-  /**
-   * Copies this DefaultValueExpression with new children
-   * @param children Children of new DefaultValueExpression
-   * @returns copy of this with new children
-   */
-  std::unique_ptr<AbstractExpression> CopyWithChildren(
-      std::vector<std::unique_ptr<AbstractExpression>> &&children) const override {
-    NOISEPAGE_ASSERT(children.empty(), "DefaultValueExpression should have 0 children");
-    return Copy();
-  }
+    /**
+     * Copies this DefaultValueExpression with new children
+     * @param children Children of new DefaultValueExpression
+     * @returns copy of this with new children
+     */
+    std::unique_ptr<AbstractExpression>
+    CopyWithChildren(std::vector<std::unique_ptr<AbstractExpression>> &&children) const override {
+        NOISEPAGE_ASSERT(children.empty(), "DefaultValueExpression should have 0 children");
+        return Copy();
+    }
 
-  void Accept(common::ManagedPointer<binder::SqlNodeVisitor> v) override;
+    void Accept(common::ManagedPointer<binder::SqlNodeVisitor> v) override;
 };
 
 DEFINE_JSON_HEADER_DECLARATIONS(DefaultValueExpression);
 
-}  // namespace noisepage::parser
+} // namespace noisepage::parser

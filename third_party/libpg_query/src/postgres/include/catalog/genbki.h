@@ -20,7 +20,7 @@
 #define GENBKI_H
 
 /* Introduces a catalog's structure definition */
-#define CATALOG(name,oid)	typedef struct CppConcat(FormData_,name)
+#define CATALOG(name, oid) typedef struct CppConcat(FormData_, name)
 
 /* Options that may appear after CATALOG (on the same line) */
 #define BKI_BOOTSTRAP
@@ -43,8 +43,8 @@
 
 /* Declarations that provide the initial content of a catalog */
 /* In C, these need to expand into some harmless, repeatable declaration */
-#define DATA(x)   extern int no_such_variable
-#define DESCR(x)  extern int no_such_variable
+#define DATA(x) extern int no_such_variable
+#define DESCR(x) extern int no_such_variable
 #define SHDESCR(x) extern int no_such_variable
 
-#endif   /* GENBKI_H */
+#endif /* GENBKI_H */

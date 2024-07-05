@@ -118,10 +118,9 @@
  * Embed this in structs that need to be part of a doubly linked list.
  */
 typedef struct dlist_node dlist_node;
-struct dlist_node
-{
-	dlist_node *prev;
-	dlist_node *next;
+struct dlist_node {
+    dlist_node *prev;
+    dlist_node *next;
 };
 
 /*
@@ -132,18 +131,16 @@ struct dlist_node
  * An empty list can also be represented as a pair of NULL pointers, making
  * initialization easier.
  */
-typedef struct dlist_head
-{
-	/*
-	 * head.next either points to the first element of the list; to &head if
-	 * it's a circular empty list; or to NULL if empty and not circular.
-	 *
-	 * head.prev either points to the last element of the list; to &head if
-	 * it's a circular empty list; or to NULL if empty and not circular.
-	 */
-	dlist_node	head;
+typedef struct dlist_head {
+    /*
+     * head.next either points to the first element of the list; to &head if
+     * it's a circular empty list; or to NULL if empty and not circular.
+     *
+     * head.prev either points to the last element of the list; to &head if
+     * it's a circular empty list; or to NULL if empty and not circular.
+     */
+    dlist_node head;
 } dlist_head;
-
 
 /*
  * Doubly linked list iterator.
@@ -156,10 +153,9 @@ typedef struct dlist_head
  * NB: We use an extra "end" field here to avoid multiple evaluations of
  * arguments in the dlist_foreach() macro.
  */
-typedef struct dlist_iter
-{
-	dlist_node *cur;			/* current element */
-	dlist_node *end;			/* last node we'll iterate to */
+typedef struct dlist_iter {
+    dlist_node *cur; /* current element */
+    dlist_node *end; /* last node we'll iterate to */
 } dlist_iter;
 
 /*
@@ -175,11 +171,10 @@ typedef struct dlist_iter
  * NB: We need a separate type for mutable iterations so that we can store
  * the 'next' node of the current node in case it gets deleted or modified.
  */
-typedef struct dlist_mutable_iter
-{
-	dlist_node *cur;			/* current element */
-	dlist_node *next;			/* next node we'll iterate to */
-	dlist_node *end;			/* last node we'll iterate to */
+typedef struct dlist_mutable_iter {
+    dlist_node *cur;  /* current element */
+    dlist_node *next; /* next node we'll iterate to */
+    dlist_node *end;  /* last node we'll iterate to */
 } dlist_mutable_iter;
 
 /*
@@ -188,9 +183,8 @@ typedef struct dlist_mutable_iter
  * Embed this in structs that need to be part of a singly linked list.
  */
 typedef struct slist_node slist_node;
-struct slist_node
-{
-	slist_node *next;
+struct slist_node {
+    slist_node *next;
 };
 
 /*
@@ -200,9 +194,8 @@ struct slist_node
  * lists; we just set head.next to NULL if empty.  This doesn't incur any
  * additional branches in the usual manipulations.
  */
-typedef struct slist_head
-{
-	slist_node	head;
+typedef struct slist_head {
+    slist_node head;
 } slist_head;
 
 /*
@@ -221,9 +214,8 @@ typedef struct slist_head
  * NB: this wouldn't really need to be an extra struct, we could use an
  * slist_node * directly. We prefer a separate type for consistency.
  */
-typedef struct slist_iter
-{
-	slist_node *cur;
+typedef struct slist_iter {
+    slist_node *cur;
 } slist_iter;
 
 /*
@@ -236,18 +228,21 @@ typedef struct slist_iter
  * node via slist_delete_current() (*not* slist_delete()).  Insertion or
  * deletion of nodes adjacent to the current node would misbehave.
  */
-typedef struct slist_mutable_iter
-{
-	slist_node *cur;			/* current element */
-	slist_node *next;			/* next node we'll iterate to */
-	slist_node *prev;			/* prev node, for deletions */
+typedef struct slist_mutable_iter {
+    slist_node *cur;  /* current element */
+    slist_node *next; /* next node we'll iterate to */
+    slist_node *prev; /* prev node, for deletions */
 } slist_mutable_iter;
 
-
 /* Static initializers */
-#define DLIST_STATIC_INIT(name) {{&(name).head, &(name).head}}
-#define SLIST_STATIC_INIT(name) {{NULL}}
-
+#define DLIST_STATIC_INIT(name)                                                                                        \
+    {                                                                                                                  \
+        { &(name).head, &(name).head }                                                                                 \
+    }
+#define SLIST_STATIC_INIT(name)                                                                                        \
+    {                                                                                                                  \
+        { NULL }                                                                                                       \
+    }
 
 /* Prototypes for functions too big to be inline */
 
@@ -264,10 +259,9 @@ extern void slist_check(slist_head *head);
  * in which functions the only point of passing the list head pointer is to be
  * able to run these checks.
  */
-#define dlist_check(head)	((void) (head))
-#define slist_check(head)	((void) (head))
-#endif   /* ILIST_DEBUG */
-
+#define dlist_check(head) ((void) (head))
+#define slist_check(head) ((void) (head))
+#endif /* ILIST_DEBUG */
 
 /*
  * We want the functions below to be inline; but if the compiler doesn't
@@ -275,17 +269,17 @@ extern void slist_check(slist_head *head);
  * STATIC_IF_INLINE in c.h.
  */
 #ifndef PG_USE_INLINE
-extern void dlist_init(dlist_head *head);
-extern bool dlist_is_empty(dlist_head *head);
-extern void dlist_push_head(dlist_head *head, dlist_node *node);
-extern void dlist_push_tail(dlist_head *head, dlist_node *node);
-extern void dlist_insert_after(dlist_node *after, dlist_node *node);
-extern void dlist_insert_before(dlist_node *before, dlist_node *node);
-extern void dlist_delete(dlist_node *node);
+extern void        dlist_init(dlist_head *head);
+extern bool        dlist_is_empty(dlist_head *head);
+extern void        dlist_push_head(dlist_head *head, dlist_node *node);
+extern void        dlist_push_tail(dlist_head *head, dlist_node *node);
+extern void        dlist_insert_after(dlist_node *after, dlist_node *node);
+extern void        dlist_insert_before(dlist_node *before, dlist_node *node);
+extern void        dlist_delete(dlist_node *node);
 extern dlist_node *dlist_pop_head_node(dlist_head *head);
-extern void dlist_move_head(dlist_head *head, dlist_node *node);
-extern bool dlist_has_next(dlist_head *head, dlist_node *node);
-extern bool dlist_has_prev(dlist_head *head, dlist_node *node);
+extern void        dlist_move_head(dlist_head *head, dlist_node *node);
+extern bool        dlist_has_next(dlist_head *head, dlist_node *node);
+extern bool        dlist_has_prev(dlist_head *head, dlist_node *node);
 extern dlist_node *dlist_next_node(dlist_head *head, dlist_node *node);
 extern dlist_node *dlist_prev_node(dlist_head *head, dlist_node *node);
 extern dlist_node *dlist_head_node(dlist_head *head);
@@ -294,17 +288,15 @@ extern dlist_node *dlist_tail_node(dlist_head *head);
 /* dlist macro support functions */
 extern void *dlist_tail_element_off(dlist_head *head, size_t off);
 extern void *dlist_head_element_off(dlist_head *head, size_t off);
-#endif   /* !PG_USE_INLINE */
+#endif /* !PG_USE_INLINE */
 
 #if defined(PG_USE_INLINE) || defined(ILIST_INCLUDE_DEFINITIONS)
 /*
  * Initialize a doubly linked list.
  * Previous state will be thrown away without any cleanup.
  */
-STATIC_IF_INLINE void
-dlist_init(dlist_head *head)
-{
-	head->head.next = head->head.prev = &head->head;
+STATIC_IF_INLINE void dlist_init(dlist_head *head) {
+    head->head.next = head->head.prev = &head->head;
 }
 
 /*
@@ -312,94 +304,80 @@ dlist_init(dlist_head *head)
  *
  * An empty list has either its first 'next' pointer set to NULL, or to itself.
  */
-STATIC_IF_INLINE bool
-dlist_is_empty(dlist_head *head)
-{
-	dlist_check(head);
+STATIC_IF_INLINE bool dlist_is_empty(dlist_head *head) {
+    dlist_check(head);
 
-	return head->head.next == NULL || head->head.next == &(head->head);
+    return head->head.next == NULL || head->head.next == &(head->head);
 }
 
 /*
  * Insert a node at the beginning of the list.
  */
-STATIC_IF_INLINE void
-dlist_push_head(dlist_head *head, dlist_node *node)
-{
-	if (head->head.next == NULL)	/* convert NULL header to circular */
-		dlist_init(head);
+STATIC_IF_INLINE void dlist_push_head(dlist_head *head, dlist_node *node) {
+    if (head->head.next == NULL) /* convert NULL header to circular */
+        dlist_init(head);
 
-	node->next = head->head.next;
-	node->prev = &head->head;
-	node->next->prev = node;
-	head->head.next = node;
+    node->next = head->head.next;
+    node->prev = &head->head;
+    node->next->prev = node;
+    head->head.next = node;
 
-	dlist_check(head);
+    dlist_check(head);
 }
 
 /*
  * Insert a node at the end of the list.
  */
-STATIC_IF_INLINE void
-dlist_push_tail(dlist_head *head, dlist_node *node)
-{
-	if (head->head.next == NULL)	/* convert NULL header to circular */
-		dlist_init(head);
+STATIC_IF_INLINE void dlist_push_tail(dlist_head *head, dlist_node *node) {
+    if (head->head.next == NULL) /* convert NULL header to circular */
+        dlist_init(head);
 
-	node->next = &head->head;
-	node->prev = head->head.prev;
-	node->prev->next = node;
-	head->head.prev = node;
+    node->next = &head->head;
+    node->prev = head->head.prev;
+    node->prev->next = node;
+    head->head.prev = node;
 
-	dlist_check(head);
+    dlist_check(head);
 }
 
 /*
  * Insert a node after another *in the same list*
  */
-STATIC_IF_INLINE void
-dlist_insert_after(dlist_node *after, dlist_node *node)
-{
-	node->prev = after;
-	node->next = after->next;
-	after->next = node;
-	node->next->prev = node;
+STATIC_IF_INLINE void dlist_insert_after(dlist_node *after, dlist_node *node) {
+    node->prev = after;
+    node->next = after->next;
+    after->next = node;
+    node->next->prev = node;
 }
 
 /*
  * Insert a node before another *in the same list*
  */
-STATIC_IF_INLINE void
-dlist_insert_before(dlist_node *before, dlist_node *node)
-{
-	node->prev = before->prev;
-	node->next = before;
-	before->prev = node;
-	node->prev->next = node;
+STATIC_IF_INLINE void dlist_insert_before(dlist_node *before, dlist_node *node) {
+    node->prev = before->prev;
+    node->next = before;
+    before->prev = node;
+    node->prev->next = node;
 }
 
 /*
  * Delete 'node' from its list (it must be in one).
  */
-STATIC_IF_INLINE void
-dlist_delete(dlist_node *node)
-{
-	node->prev->next = node->next;
-	node->next->prev = node->prev;
+STATIC_IF_INLINE void dlist_delete(dlist_node *node) {
+    node->prev->next = node->next;
+    node->next->prev = node->prev;
 }
 
 /*
  * Remove and return the first node from a list (there must be one).
  */
-STATIC_IF_INLINE dlist_node *
-dlist_pop_head_node(dlist_head *head)
-{
-	dlist_node *node;
+STATIC_IF_INLINE dlist_node *dlist_pop_head_node(dlist_head *head) {
+    dlist_node *node;
 
-	Assert(!dlist_is_empty(head));
-	node = head->head.next;
-	dlist_delete(node);
-	return node;
+    Assert(!dlist_is_empty(head));
+    node = head->head.next;
+    dlist_delete(node);
+    return node;
 }
 
 /*
@@ -408,93 +386,75 @@ dlist_pop_head_node(dlist_head *head)
  *
  * Undefined behaviour if 'node' is not already part of the list.
  */
-STATIC_IF_INLINE void
-dlist_move_head(dlist_head *head, dlist_node *node)
-{
-	/* fast path if it's already at the head */
-	if (head->head.next == node)
-		return;
+STATIC_IF_INLINE void dlist_move_head(dlist_head *head, dlist_node *node) {
+    /* fast path if it's already at the head */
+    if (head->head.next == node)
+        return;
 
-	dlist_delete(node);
-	dlist_push_head(head, node);
+    dlist_delete(node);
+    dlist_push_head(head, node);
 
-	dlist_check(head);
+    dlist_check(head);
 }
 
 /*
  * Check whether 'node' has a following node.
  * Caution: unreliable if 'node' is not in the list.
  */
-STATIC_IF_INLINE bool
-dlist_has_next(dlist_head *head, dlist_node *node)
-{
-	return node->next != &head->head;
+STATIC_IF_INLINE bool dlist_has_next(dlist_head *head, dlist_node *node) {
+    return node->next != &head->head;
 }
 
 /*
  * Check whether 'node' has a preceding node.
  * Caution: unreliable if 'node' is not in the list.
  */
-STATIC_IF_INLINE bool
-dlist_has_prev(dlist_head *head, dlist_node *node)
-{
-	return node->prev != &head->head;
+STATIC_IF_INLINE bool dlist_has_prev(dlist_head *head, dlist_node *node) {
+    return node->prev != &head->head;
 }
 
 /*
  * Return the next node in the list (there must be one).
  */
-STATIC_IF_INLINE dlist_node *
-dlist_next_node(dlist_head *head, dlist_node *node)
-{
-	Assert(dlist_has_next(head, node));
-	return node->next;
+STATIC_IF_INLINE dlist_node *dlist_next_node(dlist_head *head, dlist_node *node) {
+    Assert(dlist_has_next(head, node));
+    return node->next;
 }
 
 /*
  * Return previous node in the list (there must be one).
  */
-STATIC_IF_INLINE dlist_node *
-dlist_prev_node(dlist_head *head, dlist_node *node)
-{
-	Assert(dlist_has_prev(head, node));
-	return node->prev;
+STATIC_IF_INLINE dlist_node *dlist_prev_node(dlist_head *head, dlist_node *node) {
+    Assert(dlist_has_prev(head, node));
+    return node->prev;
 }
 
 /* internal support function to get address of head element's struct */
-STATIC_IF_INLINE void *
-dlist_head_element_off(dlist_head *head, size_t off)
-{
-	Assert(!dlist_is_empty(head));
-	return (char *) head->head.next - off;
+STATIC_IF_INLINE void *dlist_head_element_off(dlist_head *head, size_t off) {
+    Assert(!dlist_is_empty(head));
+    return (char *) head->head.next - off;
 }
 
 /*
  * Return the first node in the list (there must be one).
  */
-STATIC_IF_INLINE dlist_node *
-dlist_head_node(dlist_head *head)
-{
-	return (dlist_node *) dlist_head_element_off(head, 0);
+STATIC_IF_INLINE dlist_node *dlist_head_node(dlist_head *head) {
+    return (dlist_node *) dlist_head_element_off(head, 0);
 }
 
 /* internal support function to get address of tail element's struct */
-STATIC_IF_INLINE void *
-dlist_tail_element_off(dlist_head *head, size_t off)
-{
-	Assert(!dlist_is_empty(head));
-	return (char *) head->head.prev - off;
+STATIC_IF_INLINE void *dlist_tail_element_off(dlist_head *head, size_t off) {
+    Assert(!dlist_is_empty(head));
+    return (char *) head->head.prev - off;
 }
 
 /*
  * Return the last node in the list (there must be one).
  */
-STATIC_IF_INLINE dlist_node *
-dlist_tail_node(dlist_head *head)
-{
-	return (dlist_node *) dlist_tail_element_off(head, 0);
+STATIC_IF_INLINE dlist_node *dlist_tail_node(dlist_head *head) {
+    return (dlist_node *) dlist_tail_element_off(head, 0);
 }
-#endif   /* PG_USE_INLINE || ILIST_INCLUDE_DEFINITIONS */
+#endif /* PG_USE_INLINE || ILIST_INCLUDE_DEFINITIONS */
 
 /*
  * Return the containing struct of 'type' where 'membername' is the dlist_node
@@ -502,28 +462,28 @@ dlist_tail_node(dlist_head *head)
  *
  * This is used to convert a dlist_node * back to its containing struct.
  */
-#define dlist_container(type, membername, ptr)								\
-	(AssertVariableIsOfTypeMacro(ptr, dlist_node *),						\
-	 AssertVariableIsOfTypeMacro(((type *) NULL)->membername, dlist_node),	\
-	 ((type *) ((char *) (ptr) - offsetof(type, membername))))
+#define dlist_container(type, membername, ptr)                                                                         \
+    (AssertVariableIsOfTypeMacro(ptr, dlist_node *),                                                                   \
+     AssertVariableIsOfTypeMacro(((type *) NULL)->membername, dlist_node),                                             \
+     ((type *) ((char *) (ptr) -offsetof(type, membername))))
 
 /*
  * Return the address of the first element in the list.
  *
  * The list must not be empty.
  */
-#define dlist_head_element(type, membername, lhead)							\
-	(AssertVariableIsOfTypeMacro(((type *) NULL)->membername, dlist_node),	\
-	 (type *) dlist_head_element_off(lhead, offsetof(type, membername)))
+#define dlist_head_element(type, membername, lhead)                                                                    \
+    (AssertVariableIsOfTypeMacro(((type *) NULL)->membername, dlist_node),                                             \
+     (type *) dlist_head_element_off(lhead, offsetof(type, membername)))
 
 /*
  * Return the address of the last element in the list.
  *
  * The list must not be empty.
  */
-#define dlist_tail_element(type, membername, lhead)							\
-	(AssertVariableIsOfTypeMacro(((type *) NULL)->membername, dlist_node),	\
-	 ((type *) dlist_tail_element_off(lhead, offsetof(type, membername))))
+#define dlist_tail_element(type, membername, lhead)                                                                    \
+    (AssertVariableIsOfTypeMacro(((type *) NULL)->membername, dlist_node),                                             \
+     ((type *) dlist_tail_element_off(lhead, offsetof(type, membername))))
 
 /*
  * Iterate through the list pointed at by 'lhead' storing the state in 'iter'.
@@ -532,13 +492,13 @@ dlist_tail_node(dlist_head *head)
  *
  * It is *not* allowed to manipulate the list during iteration.
  */
-#define dlist_foreach(iter, lhead)											\
-	for (AssertVariableIsOfTypeMacro(iter, dlist_iter),						\
-		 AssertVariableIsOfTypeMacro(lhead, dlist_head *),					\
-		 (iter).end = &(lhead)->head,										\
-		 (iter).cur = (iter).end->next ? (iter).end->next : (iter).end;		\
-		 (iter).cur != (iter).end;											\
-		 (iter).cur = (iter).cur->next)
+#define dlist_foreach(iter, lhead)                                                                                     \
+    for (AssertVariableIsOfTypeMacro(iter, dlist_iter),                                                                \
+         AssertVariableIsOfTypeMacro(lhead, dlist_head *),                                                             \
+         (iter).end = &(lhead)->head,                                                                                  \
+         (iter).cur = (iter).end->next ? (iter).end->next : (iter).end;                                                \
+         (iter).cur != (iter).end;                                                                                     \
+         (iter).cur = (iter).cur->next)
 
 /*
  * Iterate through the list pointed at by 'lhead' storing the state in 'iter'.
@@ -549,28 +509,27 @@ dlist_tail_node(dlist_head *head)
  * point of iteration. It is fine to delete the current node, but it is *not*
  * fine to insert or delete adjacent nodes.
  */
-#define dlist_foreach_modify(iter, lhead)									\
-	for (AssertVariableIsOfTypeMacro(iter, dlist_mutable_iter),				\
-		 AssertVariableIsOfTypeMacro(lhead, dlist_head *),					\
-		 (iter).end = &(lhead)->head,										\
-		 (iter).cur = (iter).end->next ? (iter).end->next : (iter).end,		\
-		 (iter).next = (iter).cur->next;									\
-		 (iter).cur != (iter).end;											\
-		 (iter).cur = (iter).next, (iter).next = (iter).cur->next)
+#define dlist_foreach_modify(iter, lhead)                                                                              \
+    for (AssertVariableIsOfTypeMacro(iter, dlist_mutable_iter),                                                        \
+         AssertVariableIsOfTypeMacro(lhead, dlist_head *),                                                             \
+         (iter).end = &(lhead)->head,                                                                                  \
+         (iter).cur = (iter).end->next ? (iter).end->next : (iter).end,                                                \
+         (iter).next = (iter).cur->next;                                                                               \
+         (iter).cur != (iter).end;                                                                                     \
+         (iter).cur = (iter).next, (iter).next = (iter).cur->next)
 
 /*
  * Iterate through the list in reverse order.
  *
  * It is *not* allowed to manipulate the list during iteration.
  */
-#define dlist_reverse_foreach(iter, lhead)									\
-	for (AssertVariableIsOfTypeMacro(iter, dlist_iter),						\
-		 AssertVariableIsOfTypeMacro(lhead, dlist_head *),					\
-		 (iter).end = &(lhead)->head,										\
-		 (iter).cur = (iter).end->prev ? (iter).end->prev : (iter).end;		\
-		 (iter).cur != (iter).end;											\
-		 (iter).cur = (iter).cur->prev)
-
+#define dlist_reverse_foreach(iter, lhead)                                                                             \
+    for (AssertVariableIsOfTypeMacro(iter, dlist_iter),                                                                \
+         AssertVariableIsOfTypeMacro(lhead, dlist_head *),                                                             \
+         (iter).end = &(lhead)->head,                                                                                  \
+         (iter).cur = (iter).end->prev ? (iter).end->prev : (iter).end;                                                \
+         (iter).cur != (iter).end;                                                                                     \
+         (iter).cur = (iter).cur->prev)
 
 /*
  * We want the functions below to be inline; but if the compiler doesn't
@@ -578,15 +537,15 @@ dlist_tail_node(dlist_head *head)
  * STATIC_IF_INLINE in c.h.
  */
 #ifndef PG_USE_INLINE
-extern void slist_init(slist_head *head);
-extern bool slist_is_empty(slist_head *head);
-extern void slist_push_head(slist_head *head, slist_node *node);
-extern void slist_insert_after(slist_node *after, slist_node *node);
+extern void        slist_init(slist_head *head);
+extern bool        slist_is_empty(slist_head *head);
+extern void        slist_push_head(slist_head *head, slist_node *node);
+extern void        slist_insert_after(slist_node *after, slist_node *node);
 extern slist_node *slist_pop_head_node(slist_head *head);
-extern bool slist_has_next(slist_head *head, slist_node *node);
+extern bool        slist_has_next(slist_head *head, slist_node *node);
 extern slist_node *slist_next_node(slist_head *head, slist_node *node);
 extern slist_node *slist_head_node(slist_head *head);
-extern void slist_delete_current(slist_mutable_iter *iter);
+extern void        slist_delete_current(slist_mutable_iter *iter);
 
 /* slist macro support function */
 extern void *slist_head_element_off(slist_head *head, size_t off);
@@ -597,96 +556,78 @@ extern void *slist_head_element_off(slist_head *head, size_t off);
  * Initialize a singly linked list.
  * Previous state will be thrown away without any cleanup.
  */
-STATIC_IF_INLINE void
-slist_init(slist_head *head)
-{
-	head->head.next = NULL;
+STATIC_IF_INLINE void slist_init(slist_head *head) {
+    head->head.next = NULL;
 }
 
 /*
  * Is the list empty?
  */
-STATIC_IF_INLINE bool
-slist_is_empty(slist_head *head)
-{
-	slist_check(head);
+STATIC_IF_INLINE bool slist_is_empty(slist_head *head) {
+    slist_check(head);
 
-	return head->head.next == NULL;
+    return head->head.next == NULL;
 }
 
 /*
  * Insert a node at the beginning of the list.
  */
-STATIC_IF_INLINE void
-slist_push_head(slist_head *head, slist_node *node)
-{
-	node->next = head->head.next;
-	head->head.next = node;
+STATIC_IF_INLINE void slist_push_head(slist_head *head, slist_node *node) {
+    node->next = head->head.next;
+    head->head.next = node;
 
-	slist_check(head);
+    slist_check(head);
 }
 
 /*
  * Insert a node after another *in the same list*
  */
-STATIC_IF_INLINE void
-slist_insert_after(slist_node *after, slist_node *node)
-{
-	node->next = after->next;
-	after->next = node;
+STATIC_IF_INLINE void slist_insert_after(slist_node *after, slist_node *node) {
+    node->next = after->next;
+    after->next = node;
 }
 
 /*
  * Remove and return the first node from a list (there must be one).
  */
-STATIC_IF_INLINE slist_node *
-slist_pop_head_node(slist_head *head)
-{
-	slist_node *node;
+STATIC_IF_INLINE slist_node *slist_pop_head_node(slist_head *head) {
+    slist_node *node;
 
-	Assert(!slist_is_empty(head));
-	node = head->head.next;
-	head->head.next = node->next;
-	slist_check(head);
-	return node;
+    Assert(!slist_is_empty(head));
+    node = head->head.next;
+    head->head.next = node->next;
+    slist_check(head);
+    return node;
 }
 
 /*
  * Check whether 'node' has a following node.
  */
-STATIC_IF_INLINE bool
-slist_has_next(slist_head *head, slist_node *node)
-{
-	slist_check(head);
+STATIC_IF_INLINE bool slist_has_next(slist_head *head, slist_node *node) {
+    slist_check(head);
 
-	return node->next != NULL;
+    return node->next != NULL;
 }
 
 /*
  * Return the next node in the list (there must be one).
  */
-STATIC_IF_INLINE slist_node *
-slist_next_node(slist_head *head, slist_node *node)
-{
-	Assert(slist_has_next(head, node));
-	return node->next;
+STATIC_IF_INLINE slist_node *slist_next_node(slist_head *head, slist_node *node) {
+    Assert(slist_has_next(head, node));
+    return node->next;
 }
 
 /* internal support function to get address of head element's struct */
-STATIC_IF_INLINE void *
-slist_head_element_off(slist_head *head, size_t off)
-{
-	Assert(!slist_is_empty(head));
-	return (char *) head->head.next - off;
+STATIC_IF_INLINE void *slist_head_element_off(slist_head *head, size_t off) {
+    Assert(!slist_is_empty(head));
+    return (char *) head->head.next - off;
 }
 
 /*
  * Return the first node in the list (there must be one).
  */
-STATIC_IF_INLINE slist_node *
-slist_head_node(slist_head *head)
-{
-	return (slist_node *) slist_head_element_off(head, 0);
+STATIC_IF_INLINE slist_node *slist_head_node(slist_head *head) {
+    return (slist_node *) slist_head_element_off(head, 0);
 }
 
 /*
@@ -695,23 +636,21 @@ slist_head_node(slist_head *head)
  * Caution: this modifies iter->cur, so don't use that again in the current
  * loop iteration.
  */
-STATIC_IF_INLINE void
-slist_delete_current(slist_mutable_iter *iter)
-{
-	/*
-	 * Update previous element's forward link.  If the iteration is at the
-	 * first list element, iter->prev will point to the list header's "head"
-	 * field, so we don't need a special case for that.
-	 */
-	iter->prev->next = iter->next;
+STATIC_IF_INLINE void slist_delete_current(slist_mutable_iter *iter) {
+    /*
+     * Update previous element's forward link.  If the iteration is at the
+     * first list element, iter->prev will point to the list header's "head"
+     * field, so we don't need a special case for that.
+     */
+    iter->prev->next = iter->next;
 
-	/*
-	 * Reset cur to prev, so that prev will continue to point to the prior
-	 * valid list element after slist_foreach_modify() advances to the next.
-	 */
-	iter->cur = iter->prev;
+    /*
+     * Reset cur to prev, so that prev will continue to point to the prior
+     * valid list element after slist_foreach_modify() advances to the next.
+     */
+    iter->cur = iter->prev;
 }
-#endif   /* PG_USE_INLINE || ILIST_INCLUDE_DEFINITIONS */
+#endif /* PG_USE_INLINE || ILIST_INCLUDE_DEFINITIONS */
 
 /*
  * Return the containing struct of 'type' where 'membername' is the slist_node
@@ -719,19 +658,19 @@ slist_delete_current(slist_mutable_iter *iter)
  *
  * This is used to convert a slist_node * back to its containing struct.
  */
-#define slist_container(type, membername, ptr)								\
-	(AssertVariableIsOfTypeMacro(ptr, slist_node *),						\
-	 AssertVariableIsOfTypeMacro(((type *) NULL)->membername, slist_node),	\
-	 ((type *) ((char *) (ptr) - offsetof(type, membername))))
+#define slist_container(type, membername, ptr)                                                                         \
+    (AssertVariableIsOfTypeMacro(ptr, slist_node *),                                                                   \
+     AssertVariableIsOfTypeMacro(((type *) NULL)->membername, slist_node),                                             \
+     ((type *) ((char *) (ptr) -offsetof(type, membername))))
 
 /*
  * Return the address of the first element in the list.
  *
  * The list must not be empty.
  */
-#define slist_head_element(type, membername, lhead)							\
-	(AssertVariableIsOfTypeMacro(((type *) NULL)->membername, slist_node),	\
-	 (type *) slist_head_element_off(lhead, offsetof(type, membername)))
+#define slist_head_element(type, membername, lhead)                                                                    \
+    (AssertVariableIsOfTypeMacro(((type *) NULL)->membername, slist_node),                                             \
+     (type *) slist_head_element_off(lhead, offsetof(type, membername)))
 
 /*
  * Iterate through the list pointed at by 'lhead' storing the state in 'iter'.
@@ -745,12 +684,12 @@ slist_delete_current(slist_mutable_iter *iter)
  * the user frees the current node's storage, continuing the iteration is
  * not safe.)
  */
-#define slist_foreach(iter, lhead)											\
-	for (AssertVariableIsOfTypeMacro(iter, slist_iter),						\
-		 AssertVariableIsOfTypeMacro(lhead, slist_head *),					\
-		 (iter).cur = (lhead)->head.next;									\
-		 (iter).cur != NULL;												\
-		 (iter).cur = (iter).cur->next)
+#define slist_foreach(iter, lhead)                                                                                     \
+    for (AssertVariableIsOfTypeMacro(iter, slist_iter),                                                                \
+         AssertVariableIsOfTypeMacro(lhead, slist_head *),                                                             \
+         (iter).cur = (lhead)->head.next;                                                                              \
+         (iter).cur != NULL;                                                                                           \
+         (iter).cur = (iter).cur->next)
 
 /*
  * Iterate through the list pointed at by 'lhead' storing the state in 'iter'.
@@ -761,15 +700,13 @@ slist_delete_current(slist_mutable_iter *iter)
  * node via slist_delete_current() (*not* slist_delete()).  Insertion or
  * deletion of nodes adjacent to the current node would misbehave.
  */
-#define slist_foreach_modify(iter, lhead)									\
-	for (AssertVariableIsOfTypeMacro(iter, slist_mutable_iter),				\
-		 AssertVariableIsOfTypeMacro(lhead, slist_head *),					\
-		 (iter).prev = &(lhead)->head,										\
-		 (iter).cur = (iter).prev->next,									\
-		 (iter).next = (iter).cur ? (iter).cur->next : NULL;				\
-		 (iter).cur != NULL;												\
-		 (iter).prev = (iter).cur,											\
-		 (iter).cur = (iter).next,											\
-		 (iter).next = (iter).next ? (iter).next->next : NULL)
+#define slist_foreach_modify(iter, lhead)                                                                              \
+    for (AssertVariableIsOfTypeMacro(iter, slist_mutable_iter),                                                        \
+         AssertVariableIsOfTypeMacro(lhead, slist_head *),                                                             \
+         (iter).prev = &(lhead)->head,                                                                                 \
+         (iter).cur = (iter).prev->next,                                                                               \
+         (iter).next = (iter).cur ? (iter).cur->next : NULL;                                                           \
+         (iter).cur != NULL;                                                                                           \
+         (iter).prev = (iter).cur, (iter).cur = (iter).next, (iter).next = (iter).next ? (iter).next->next : NULL)
 
-#endif   /* ILIST_H */
+#endif /* ILIST_H */

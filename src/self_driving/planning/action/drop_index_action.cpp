@@ -4,6 +4,8 @@
 
 namespace noisepage::selfdriving::pilot {
 
-void DropIndexAction::ModifyActionState(ActionState *action_state) { action_state->RemoveIndex(index_name_, id_); }
+void DropIndexAction::ModifyActionState(ActionState *action_state) {
+    action_state->RemoveIndex(index_name_, id_);
+}
 
-}  // namespace noisepage::selfdriving::pilot
+} // namespace noisepage::selfdriving::pilot

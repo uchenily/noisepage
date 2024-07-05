@@ -28,18 +28,16 @@
  * represented in col_privs (this is a list of untransformed AccessPriv nodes).
  * Column privileges are only valid for objtype ACL_OBJECT_RELATION.
  */
-typedef struct
-{
-	bool		is_grant;
-	GrantObjectType objtype;
-	List	   *objects;
-	bool		all_privs;
-	AclMode		privileges;
-	List	   *col_privs;
-	List	   *grantees;
-	bool		grant_option;
-	DropBehavior behavior;
+typedef struct {
+    bool            is_grant;
+    GrantObjectType objtype;
+    List           *objects;
+    bool            all_privs;
+    AclMode         privileges;
+    List           *col_privs;
+    List           *grantees;
+    bool            grant_option;
+    DropBehavior    behavior;
 } InternalGrant;
 
-
-#endif   /* ACLCHK_INTERNAL_H */
+#endif /* ACLCHK_INTERNAL_H */

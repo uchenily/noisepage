@@ -1,7 +1,7 @@
 #pragma once
 
 #if 0
-#include <charconv>  // TODO(WAN): charconv missing on Ubuntu 18.04
+#include <charconv> // TODO(WAN): charconv missing on Ubuntu 18.04
 #include <memory>
 #include <string>
 #include <vector>

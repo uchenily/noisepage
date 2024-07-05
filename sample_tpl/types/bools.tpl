@@ -24,7 +24,7 @@ fun main() -> int {
   if (true <= true) { // TRUE
       ret = ret + 1
   }
-  
+
   // ----------------------
   // TRUE <=> FALSE
   // ----------------------
@@ -46,6 +46,6 @@ fun main() -> int {
   if (true <= false) { // FALSE
       return -1
   }
-  
+
   return ret
 }

@@ -1,9 +1,9 @@
 # Source Code Tools Data Files
 
-This directory contains data files that we use for our various source code tools to check for 
+This directory contains data files that we use for our various source code tools to check for
 improper code or to suppress warnings (e.g., memory leaks).
 
-If you add a file to this directory, please add comment to explain what it does and how to extend 
+If you add a file to this directory, please add comment to explain what it does and how to extend
 it.
 
 * `bad_words.txt` -- Keywords that cannot appear in the source code.

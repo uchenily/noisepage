@@ -49,53 +49,49 @@
 /*
  * Pass this flag to have your worker be able to connect to shared memory.
  */
-#define BGWORKER_SHMEM_ACCESS						0x0001
+#define BGWORKER_SHMEM_ACCESS 0x0001
 
 /*
  * This flag means the bgworker requires a database connection.  The connection
  * is not established automatically; the worker must establish it later.
  * It requires that BGWORKER_SHMEM_ACCESS was passed too.
  */
-#define BGWORKER_BACKEND_DATABASE_CONNECTION		0x0002
+#define BGWORKER_BACKEND_DATABASE_CONNECTION 0x0002
 
-
-typedef void (*bgworker_main_type) (Datum main_arg);
+typedef void (*bgworker_main_type)(Datum main_arg);
 
 /*
  * Points in time at which a bgworker can request to be started
  */
-typedef enum
-{
-	BgWorkerStart_PostmasterStart,
-	BgWorkerStart_ConsistentState,
-	BgWorkerStart_RecoveryFinished
+typedef enum {
+    BgWorkerStart_PostmasterStart,
+    BgWorkerStart_ConsistentState,
+    BgWorkerStart_RecoveryFinished
 } BgWorkerStartTime;
 
-#define BGW_DEFAULT_RESTART_INTERVAL	60
-#define BGW_NEVER_RESTART				-1
-#define BGW_MAXLEN						64
-#define BGW_EXTRALEN					128
+#define BGW_DEFAULT_RESTART_INTERVAL 60
+#define BGW_NEVER_RESTART -1
+#define BGW_MAXLEN 64
+#define BGW_EXTRALEN 128
 
-typedef struct BackgroundWorker
-{
-	char		bgw_name[BGW_MAXLEN];
-	int			bgw_flags;
-	BgWorkerStartTime bgw_start_time;
-	int			bgw_restart_time;		/* in seconds, or BGW_NEVER_RESTART */
-	bgworker_main_type bgw_main;
-	char		bgw_library_name[BGW_MAXLEN];	/* only if bgw_main is NULL */
-	char		bgw_function_name[BGW_MAXLEN];	/* only if bgw_main is NULL */
-	Datum		bgw_main_arg;
-	char		bgw_extra[BGW_EXTRALEN];
-	pid_t		bgw_notify_pid; /* SIGUSR1 this backend on start/stop */
+typedef struct BackgroundWorker {
+    char               bgw_name[BGW_MAXLEN];
+    int                bgw_flags;
+    BgWorkerStartTime  bgw_start_time;
+    int                bgw_restart_time; /* in seconds, or BGW_NEVER_RESTART */
+    bgworker_main_type bgw_main;
+    char               bgw_library_name[BGW_MAXLEN];  /* only if bgw_main is NULL */
+    char               bgw_function_name[BGW_MAXLEN]; /* only if bgw_main is NULL */
+    Datum              bgw_main_arg;
+    char               bgw_extra[BGW_EXTRALEN];
+    pid_t              bgw_notify_pid; /* SIGUSR1 this backend on start/stop */
 } BackgroundWorker;
 
-typedef enum BgwHandleStatus
-{
-	BGWH_STARTED,				/* worker is running */
-	BGWH_NOT_YET_STARTED,		/* worker hasn't been started yet */
-	BGWH_STOPPED,				/* worker has exited */
-	BGWH_POSTMASTER_DIED		/* postmaster died; worker status unclear */
+typedef enum BgwHandleStatus {
+    BGWH_STARTED,         /* worker is running */
+    BGWH_NOT_YET_STARTED, /* worker hasn't been started yet */
+    BGWH_STOPPED,         /* worker has exited */
+    BGWH_POSTMASTER_DIED  /* postmaster died; worker status unclear */
 } BgwHandleStatus;
 
 struct BackgroundWorkerHandle;
@@ -105,17 +101,12 @@ typedef struct BackgroundWorkerHandle BackgroundWorkerHandle;
 extern void RegisterBackgroundWorker(BackgroundWorker *worker);
 
 /* Register a new bgworker from a regular backend */
-extern bool RegisterDynamicBackgroundWorker(BackgroundWorker *worker,
-								BackgroundWorkerHandle **handle);
+extern bool RegisterDynamicBackgroundWorker(BackgroundWorker *worker, BackgroundWorkerHandle **handle);
 
 /* Query the status of a bgworker */
-extern BgwHandleStatus GetBackgroundWorkerPid(BackgroundWorkerHandle *handle,
-					   pid_t *pidp);
-extern BgwHandleStatus
-WaitForBackgroundWorkerStartup(BackgroundWorkerHandle *
-							   handle, pid_t *pid);
-extern BgwHandleStatus
-			WaitForBackgroundWorkerShutdown(BackgroundWorkerHandle *);
+extern BgwHandleStatus GetBackgroundWorkerPid(BackgroundWorkerHandle *handle, pid_t *pidp);
+extern BgwHandleStatus WaitForBackgroundWorkerStartup(BackgroundWorkerHandle *handle, pid_t *pid);
+extern BgwHandleStatus WaitForBackgroundWorkerShutdown(BackgroundWorkerHandle *);
 
 /* Terminate a bgworker */
 extern void TerminateBackgroundWorker(BackgroundWorkerHandle *handle);
@@ -141,4 +132,4 @@ extern void BackgroundWorkerInitializeConnectionByOid(Oid dboid, Oid useroid);
 extern void BackgroundWorkerBlockSignals(void);
 extern void BackgroundWorkerUnblockSignals(void);
 
-#endif   /* BGWORKER_H */
+#endif /* BGWORKER_H */

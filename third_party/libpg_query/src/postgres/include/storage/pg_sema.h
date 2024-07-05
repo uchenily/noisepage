@@ -47,10 +47,9 @@ typedef sem_t PGSemaphoreData;
 
 #ifdef USE_SYSV_SEMAPHORES
 
-typedef struct PGSemaphoreData
-{
-	int			semId;			/* semaphore set identifier */
-	int			semNum;			/* semaphore number within set */
+typedef struct PGSemaphoreData {
+    int semId;  /* semaphore set identifier */
+    int semNum; /* semaphore number within set */
 } PGSemaphoreData;
 #endif
 
@@ -60,7 +59,6 @@ typedef HANDLE PGSemaphoreData;
 #endif
 
 typedef PGSemaphoreData *PGSemaphore;
-
 
 /* Module initialization (called during postmaster start or shmem reinit) */
 extern void PGReserveSemaphores(int maxSemas, int port);
@@ -80,4 +78,4 @@ extern void PGSemaphoreUnlock(PGSemaphore sema);
 /* Lock a semaphore only if able to do so without blocking */
 extern bool PGSemaphoreTryLock(PGSemaphore sema);
 
-#endif   /* PG_SEMA_H */
+#endif /* PG_SEMA_H */

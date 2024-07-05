@@ -5,10 +5,10 @@ namespace noisepage::binder {
 common::SanctionedSharedPtr<spdlog::logger>::Ptr binder_logger = nullptr;
 
 void InitBinderLogger() {
-  if (binder_logger == nullptr) {
-    binder_logger = std::make_shared<spdlog::logger>("binder_logger", ::default_sink);  // NOLINT
-    spdlog::register_logger(binder_logger);
-  }
+    if (binder_logger == nullptr) {
+        binder_logger = std::make_shared<spdlog::logger>("binder_logger", ::default_sink); // NOLINT
+        spdlog::register_logger(binder_logger);
+    }
 }
 #endif
-}  // namespace noisepage::binder
+} // namespace noisepage::binder

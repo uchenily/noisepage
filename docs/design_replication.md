@@ -4,7 +4,7 @@
 
 - Built on top of the [thesis](https://gustavoangulo.github.io/thesis.pdf) Gus wrote, with some important tweaks:
   - To support synchronous replication, it is necessary to sometimes send the Oldest Active Transaction (OAT) serialized on the primary.
-  - Uses the `Messenger` instead of the `ITP`. 
+  - Uses the `Messenger` instead of the `ITP`.
 
 ## Replication
 
@@ -87,7 +87,7 @@ NoisePage currently is closest to `remote_apply` when synchronous replication is
        - At time of writing: a transaction is active until it is serialized. This can hang synchronous replication without the `NotifyOATMsg` mechanism below.
 3. On the primary, the `LogSerializerTask` hands the batch of records to the `PrimaryReplicationManager`.
 4. Then, depending on the replication mode:
-  - ASYNC: The commit callbacks are invoked immediately. The batch of records is sent to the replicas.  
+  - ASYNC: The commit callbacks are invoked immediately. The batch of records is sent to the replicas.
   - SYNC: The commit callbacks are stored until the relevant `TxnAppliedMsg` are received from the replicas. The batch of records is sent to the replicas.
 5. On the replicas, the `Messenger` thread will pick up the batch of records while polling on all the custom serverloop callbacks (SLCs).
 6. The `Messenger` forwards the batch of records to the `ReplicaReplicationManager`'s `EventLoop`, which forwards the batch of records to the `ReplicationLogProvider`.
@@ -100,7 +100,7 @@ NoisePage currently is closest to `remote_apply` when synchronous replication is
 
 ### Implementation
 
-Note that read-only transactions are not replicated across the network as their commit records are not serialized.  
+Note that read-only transactions are not replicated across the network as their commit records are not serialized.
 This has some implications for bookkeeping in the `ReplicationManager` code.
 
 #### Message types
@@ -125,19 +125,19 @@ Outdated but possibly useful meeting notes from an old buggy implementation of r
 
 - Issues with the old implementation.
     - Problem: Conflating "I've received batch X of logs" with "I've applied batch X of logs."
-        - Pathological case: long-running txn 1  
-          Batch 1 = txn 1 starts, (other random transactions have log records).   
-          All subsequent batches: txn 1 never commits but has one record in every batch.   
+        - Pathological case: long-running txn 1
+          Batch 1 = txn 1 starts, (other random transactions have log records).
+          All subsequent batches: txn 1 never commits but has one record in every batch.
           This pollutes every batch and prevents all batches from being acknowledged.
-    - Problem: We cannot acknowledge a log record until the log record has been applied by both disk and replication. 
-        - Because of the deferred applications, it is difficult to design bookkeeping at a per-batch level of what logs have or have not been applied.  
-          For example, suppose batch 42 contained [T1 record 2/?, T2 record 2/2, T3 record 3/?].  
-          How would you maintain that bookkeeping?  
+    - Problem: We cannot acknowledge a log record until the log record has been applied by both disk and replication.
+        - Because of the deferred applications, it is difficult to design bookkeeping at a per-batch level of what logs have or have not been applied.
+          For example, suppose batch 42 contained [T1 record 2/?, T2 record 2/2, T3 record 3/?].
+          How would you maintain that bookkeeping?
     - Problem: Who invokes commit callbacks?
-        - Previously, an experimental branch had a CommitCallbackManager.  
-        - Previously: "a commit callback should be invoked exactly once, by the subsystem that is last"  
-        - Now: "every subsystem invokes the commit callback"  
-          Commit callback has counting semaphore to wake up network thread.  
+        - Previously, an experimental branch had a CommitCallbackManager.
+        - Previously: "a commit callback should be invoked exactly once, by the subsystem that is last"
+        - Now: "every subsystem invokes the commit callback"
+          Commit callback has counting semaphore to wake up network thread.
 - Going forward, high-level plan for sync replication:
     - Commit callbacks will now be invoked by all "serializing" components (disk, replication). Previously tried to only invoke once.
     - Serializer has to hand the replication manager (batch of log records, (list of txn ids with their commit callbacks)).
@@ -151,7 +151,6 @@ Outdated but possibly useful meeting notes from an old buggy implementation of r
        vec<txn_start_times>
     3. The replication manager on the primary receives that list
        Invokes the respective commit callbacks
-- This should  
-    Completely decouple batch "receive ack" from "applied ack".  
-    Which would eliminate the current "everything has to happen in one batch" limitation.  
-  
+- This should
+    Completely decouple batch "receive ack" from "applied ack".
+    Which would eliminate the current "everything has to happen in one batch" limitation.

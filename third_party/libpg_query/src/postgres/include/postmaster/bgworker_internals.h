@@ -23,16 +23,15 @@
  * rw_backend set, and will be present in BackendList.  Note: do not rely on
  * rw_backend being non-NULL for shmem-connected workers!
  */
-typedef struct RegisteredBgWorker
-{
-	BackgroundWorker rw_worker; /* its registry entry */
-	struct bkend *rw_backend;	/* its BackendList entry, or NULL */
-	pid_t		rw_pid;			/* 0 if not running */
-	int			rw_child_slot;
-	TimestampTz rw_crashed_at;	/* if not 0, time it last crashed */
-	int			rw_shmem_slot;
-	bool		rw_terminate;
-	slist_node	rw_lnode;		/* list link */
+typedef struct RegisteredBgWorker {
+    BackgroundWorker rw_worker;  /* its registry entry */
+    struct bkend    *rw_backend; /* its BackendList entry, or NULL */
+    pid_t            rw_pid;     /* 0 if not running */
+    int              rw_child_slot;
+    TimestampTz      rw_crashed_at; /* if not 0, time it last crashed */
+    int              rw_shmem_slot;
+    bool             rw_terminate;
+    slist_node       rw_lnode; /* list link */
 } RegisteredBgWorker;
 
 extern slist_head BackgroundWorkerList;
@@ -52,4 +51,4 @@ extern void StartBackgroundWorker(void) pg_attribute_noreturn();
 extern BackgroundWorker *BackgroundWorkerEntry(int slotno);
 #endif
 
-#endif   /* BGWORKER_INTERNALS_H */
+#endif /* BGWORKER_INTERNALS_H */

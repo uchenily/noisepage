@@ -59,7 +59,7 @@ INSERT INTO edge VALUES(3, 7, 70);
 INSERT INTO edge VALUES(4, 8, 80);
 INSERT INTO edge VALUES(7, 8, 80);
 INSERT INTO edge VALUES(8, 9, 90);
-  
+
 -- TODO: We return an unexpected number of results for this query
 -- WITH RECURSIVE ancest(id, mtime) AS (SELECT 0, 0 UNION SELECT edge.xto, edge.seq FROM edge, ancest WHERE edge.xfrom=ancest.id) SELECT * FROM ancest;
 

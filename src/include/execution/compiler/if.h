@@ -26,45 +26,45 @@ class FunctionBuilder;
  * @endcode
  */
 class If {
- public:
-  /**
-   * Create a new if-statement using the provided boolean if-condition.
-   * @param function The function this if statement is appended to.
-   * @param condition The boolean condition.
-   */
-  If(FunctionBuilder *function, ast::Expr *condition);
+public:
+    /**
+     * Create a new if-statement using the provided boolean if-condition.
+     * @param function The function this if statement is appended to.
+     * @param condition The boolean condition.
+     */
+    If(FunctionBuilder *function, ast::Expr *condition);
 
-  /**
-   * Destructor will complete the statement.
-   */
-  ~If();
+    /**
+     * Destructor will complete the statement.
+     */
+    ~If();
 
-  /**
-   * Begin an else clause.
-   */
-  void Else();
+    /**
+     * Begin an else clause.
+     */
+    void Else();
 
-  /**
-   * Finish the if-then-else statement. The generated statement will be appended to the current
-   * function.
-   */
-  void EndIf();
+    /**
+     * Finish the if-then-else statement. The generated statement will be appended to the current
+     * function.
+     */
+    void EndIf();
 
- private:
-  // The function to append this if statement to.
-  FunctionBuilder *function_;
-  // The start position;
-  const SourcePosition position_;
-  // Previous function statement list.
-  ast::BlockStmt *prev_func_stmt_list_;
-  // The condition.
-  ast::Expr *condition_;
-  // The statements in the "then" clause.
-  ast::BlockStmt *then_stmts_;
-  // The statements in the "else" clause.
-  ast::BlockStmt *else_stmts_;
-  // Flag indicating if the if-statement has completed.
-  bool completed_;
+private:
+    // The function to append this if statement to.
+    FunctionBuilder *function_;
+    // The start position;
+    const SourcePosition position_;
+    // Previous function statement list.
+    ast::BlockStmt *prev_func_stmt_list_;
+    // The condition.
+    ast::Expr *condition_;
+    // The statements in the "then" clause.
+    ast::BlockStmt *then_stmts_;
+    // The statements in the "else" clause.
+    ast::BlockStmt *else_stmts_;
+    // Flag indicating if the if-statement has completed.
+    bool completed_;
 };
 
-}  // namespace noisepage::execution::compiler
+} // namespace noisepage::execution::compiler

@@ -1205,4 +1205,3 @@ FROM t1
 WHERE c>d
 ----
 26 values hashing to b34105736c8bfff2f1d852ef07663fa7
-

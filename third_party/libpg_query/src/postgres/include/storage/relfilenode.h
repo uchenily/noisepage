@@ -54,11 +54,10 @@
  * there *must not* be any unused padding bytes in this struct.  That
  * should be safe as long as all the fields are of type Oid.
  */
-typedef struct RelFileNode
-{
-	Oid			spcNode;		/* tablespace */
-	Oid			dbNode;			/* database */
-	Oid			relNode;		/* relation */
+typedef struct RelFileNode {
+    Oid spcNode; /* tablespace */
+    Oid dbNode;  /* database */
+    Oid relNode; /* relation */
 } RelFileNode;
 
 /*
@@ -69,14 +68,12 @@ typedef struct RelFileNode
  * are always transient and removed in case of a database crash; they are
  * never WAL-logged or fsync'd.
  */
-typedef struct RelFileNodeBackend
-{
-	RelFileNode node;
-	BackendId	backend;
+typedef struct RelFileNodeBackend {
+    RelFileNode node;
+    BackendId   backend;
 } RelFileNodeBackend;
 
-#define RelFileNodeBackendIsTemp(rnode) \
-	((rnode).backend != InvalidBackendId)
+#define RelFileNodeBackendIsTemp(rnode) ((rnode).backend != InvalidBackendId)
 
 /*
  * Note: RelFileNodeEquals and RelFileNodeBackendEquals compare relNode first
@@ -85,15 +82,11 @@ typedef struct RelFileNodeBackend
  * but do it anyway to be sure.  Likewise for checking the backend ID in
  * RelFileNodeBackendEquals.
  */
-#define RelFileNodeEquals(node1, node2) \
-	((node1).relNode == (node2).relNode && \
-	 (node1).dbNode == (node2).dbNode && \
-	 (node1).spcNode == (node2).spcNode)
+#define RelFileNodeEquals(node1, node2)                                                                                \
+    ((node1).relNode == (node2).relNode && (node1).dbNode == (node2).dbNode && (node1).spcNode == (node2).spcNode)
 
-#define RelFileNodeBackendEquals(node1, node2) \
-	((node1).node.relNode == (node2).node.relNode && \
-	 (node1).node.dbNode == (node2).node.dbNode && \
-	 (node1).backend == (node2).backend && \
-	 (node1).node.spcNode == (node2).node.spcNode)
+#define RelFileNodeBackendEquals(node1, node2)                                                                         \
+    ((node1).node.relNode == (node2).node.relNode && (node1).node.dbNode == (node2).node.dbNode                        \
+     && (node1).backend == (node2).backend && (node1).node.spcNode == (node2).node.spcNode)
 
-#endif   /* RELFILENODE_H */
+#endif /* RELFILENODE_H */

@@ -3,9 +3,9 @@
 #include <stdlib.h>
 
 int main() {
-  PgQueryPlpgsqlParseResult result;
+    PgQueryPlpgsqlParseResult result;
 
-  result = pg_query_parse_plpgsql(" \
+    result = pg_query_parse_plpgsql(" \
   CREATE OR REPLACE FUNCTION cs_fmt_browser_version(v_name varchar, \
                                                   v_version varchar) \
 RETURNS varchar AS $$ \
@@ -17,13 +17,13 @@ BEGIN \
 END; \
 $$ LANGUAGE plpgsql;");
 
-  if (result.error) {
-    printf("error: %s at %d\n", result.error->message, result.error->cursorpos);
-  } else {
-    printf("%s\n", result.plpgsql_funcs);
-  }
+    if (result.error) {
+        printf("error: %s at %d\n", result.error->message, result.error->cursorpos);
+    } else {
+        printf("%s\n", result.plpgsql_funcs);
+    }
 
-  pg_query_free_plpgsql_parse_result(result);
+    pg_query_free_plpgsql_parse_result(result);
 
-  return 0;
+    return 0;
 }

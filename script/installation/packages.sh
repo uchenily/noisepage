@@ -88,7 +88,7 @@ main() {
     ( IFS=$' '; echo "${ALLOWED[*]}" )
     exit 1
   fi
-  
+
   echo "PACKAGES WILL BE INSTALLED. THIS MAY BREAK YOUR EXISTING TOOLCHAIN."
   echo "YOU ACCEPT ALL RESPONSIBILITY BY PROCEEDING."
   echo
@@ -107,7 +107,7 @@ give_up() {
   OS=$1
   VERSION=$2
   [ ! -z "$VERSION" ] && VERSION=" $VERSION"
-  
+
   echo
   echo "Unsupported distribution '${OS}${VERSION}'"
   echo "Please contact our support team for additional help."
@@ -128,10 +128,10 @@ install() {
     LINUX)
       DISTRO=$(cat /etc/os-release | grep '^ID=' | cut -d '=' -f 2 | tr "[:lower:]" "[:upper:]" | tr -d '"')
       VERSION=$(cat /etc/os-release | grep '^VERSION_ID=' | cut -d '"' -f 2)
-      
+
       # We only support Ubuntu right now
       [ "$DISTRO" != "UBUNTU" ] && give_up $DISTRO $VERSION
-      
+
       # Check Ubuntu version
       case $VERSION in
         20.04) install_linux ;;
@@ -153,7 +153,7 @@ install_pip() {
 install_linux() {
   # Update apt-get.
   apt-get -y update
-  
+
   # Install packages. Note that word splitting is desired behavior.
   if [ "$INSTALL_TYPE" == "build" ] || [ "$INSTALL_TYPE" = "all" ]; then
     apt-get -y install $( IFS=$' '; echo "${LINUX_BUILD_PACKAGES[*]}" )

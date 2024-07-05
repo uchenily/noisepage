@@ -18,117 +18,120 @@ namespace noisepage::optimizer {
  * Derive stats for the root group using a group expression's children's stats
  */
 class StatsCalculator : public OperatorVisitor {
- public:
-  /**
-   * Calculates stats for a logical GroupExpression
-   * @param gexpr GroupExpression
-   * @param context OptimizerContext
-   */
-  void CalculateStats(GroupExpression *gexpr, OptimizerContext *context);
+public:
+    /**
+     * Calculates stats for a logical GroupExpression
+     * @param gexpr GroupExpression
+     * @param context OptimizerContext
+     */
+    void CalculateStats(GroupExpression *gexpr, OptimizerContext *context);
 
-  /**
-   * Visit a LogicalGet
-   * @param op Operator being visited
-   */
-  void Visit(const LogicalGet *op) override;
+    /**
+     * Visit a LogicalGet
+     * @param op Operator being visited
+     */
+    void Visit(const LogicalGet *op) override;
 
-  /**
-   * Visit a LogicalQueryDerivedGet
-   * @param op Operator being visited
-   */
-  void Visit(const LogicalQueryDerivedGet *op) override;
+    /**
+     * Visit a LogicalQueryDerivedGet
+     * @param op Operator being visited
+     */
+    void Visit(const LogicalQueryDerivedGet *op) override;
 
-  /**
-   * Visit a LogicalCteScan
-   * @param op Operator being visited
-   */
-  void Visit(const LogicalCteScan *op) override;
+    /**
+     * Visit a LogicalCteScan
+     * @param op Operator being visited
+     */
+    void Visit(const LogicalCteScan *op) override;
 
-  /**
-   * Visit a LogicalInnerJoin
-   * @param op Operator being visited
-   */
-  void Visit(const LogicalInnerJoin *op) override;
+    /**
+     * Visit a LogicalInnerJoin
+     * @param op Operator being visited
+     */
+    void Visit(const LogicalInnerJoin *op) override;
 
-  /**
-   * Visit a LogicalSemiJoin
-   * @param op Operator being visited
-   */
-  void Visit(const LogicalSemiJoin *op) override;
+    /**
+     * Visit a LogicalSemiJoin
+     * @param op Operator being visited
+     */
+    void Visit(const LogicalSemiJoin *op) override;
 
-  /**
-   * Visit a LogicalAggregateAndGroupBy
-   * @param op Operator being visited
-   */
-  void Visit(const LogicalAggregateAndGroupBy *op) override;
+    /**
+     * Visit a LogicalAggregateAndGroupBy
+     * @param op Operator being visited
+     */
+    void Visit(const LogicalAggregateAndGroupBy *op) override;
 
-  /**
-   * Visit a LogicalLimit
-   * @param op Operator being visited
-   */
-  void Visit(const LogicalLimit *op) override;
+    /**
+     * Visit a LogicalLimit
+     * @param op Operator being visited
+     */
+    void Visit(const LogicalLimit *op) override;
 
-  /**
-   * Visit a LogicalInsert
-   * @param op Operator being visited
-   */
-  void Visit(const LogicalInsert *op) override;
+    /**
+     * Visit a LogicalInsert
+     * @param op Operator being visited
+     */
+    void Visit(const LogicalInsert *op) override;
 
-  /**
-   * Visit a LogicalUpdate
-   * @param op Operator being visited
-   */
-  void Visit(const LogicalUpdate *op) override;
+    /**
+     * Visit a LogicalUpdate
+     * @param op Operator being visited
+     */
+    void Visit(const LogicalUpdate *op) override;
 
-  /**
-   * Visit a LogicalDelete
-   * @param op Operator being visited
-   */
-  void Visit(const LogicalDelete *op) override;
+    /**
+     * Visit a LogicalDelete
+     * @param op Operator being visited
+     */
+    void Visit(const LogicalDelete *op) override;
 
-  /*
-   * Visit a LogicalUnion
-   * @param op Operator being visited
-   */
-  void Visit(const LogicalUnion *op) override;
+    /*
+     * Visit a LogicalUnion
+     * @param op Operator being visited
+     */
+    void Visit(const LogicalUnion *op) override;
 
-  /**
-   * Visit a LogicalCreateIndex
-   * @param op Operator being visited
-   */
-  void Visit(const LogicalCreateIndex *op) override;
+    /**
+     * Visit a LogicalCreateIndex
+     * @param op Operator being visited
+     */
+    void Visit(const LogicalCreateIndex *op) override;
 
- private:
-  /**
-   * Return estimated cardinality for a filter
-   * @param group The Group to estimated the cardinality for
-   * @param num_rows Number of rows of base table
-   * @param predicate_stats The stats for columns in the expression
-   * @param predicates conjunction predicates
-   * @returns Estimated cardinality
-   */
-  size_t EstimateCardinalityForFilter(Group *group, size_t num_rows, const TableStats &predicate_stats,
-                                      const std::vector<AnnotatedExpression> &predicates);
+private:
+    /**
+     * Return estimated cardinality for a filter
+     * @param group The Group to estimated the cardinality for
+     * @param num_rows Number of rows of base table
+     * @param predicate_stats The stats for columns in the expression
+     * @param predicates conjunction predicates
+     * @returns Estimated cardinality
+     */
+    size_t EstimateCardinalityForFilter(Group                                  *group,
+                                        size_t                                  num_rows,
+                                        const TableStats                       &predicate_stats,
+                                        const std::vector<AnnotatedExpression> &predicates);
 
-  /**
-   * Calculates selectivity for predicate
-   * @param group The Group to calculate selectivity for
-   * @param predicate_table_stats Table Statistics
-   * @param expr Predicate
-   * @returns selectivity estimate
-   */
-  double CalculateSelectivityForPredicate(Group *group, const TableStats &predicate_table_stats,
-                                          common::ManagedPointer<parser::AbstractExpression> expr);
+    /**
+     * Calculates selectivity for predicate
+     * @param group The Group to calculate selectivity for
+     * @param predicate_table_stats Table Statistics
+     * @param expr Predicate
+     * @returns selectivity estimate
+     */
+    double CalculateSelectivityForPredicate(Group                                             *group,
+                                            const TableStats                                  &predicate_table_stats,
+                                            common::ManagedPointer<parser::AbstractExpression> expr);
 
-  /**
-   * GroupExpression
-   */
-  GroupExpression *gexpr_;
+    /**
+     * GroupExpression
+     */
+    GroupExpression *gexpr_;
 
-  /**
-   * Metadata
-   */
-  OptimizerContext *context_;
+    /**
+     * Metadata
+     */
+    OptimizerContext *context_;
 };
 
-}  // namespace noisepage::optimizer
+} // namespace noisepage::optimizer

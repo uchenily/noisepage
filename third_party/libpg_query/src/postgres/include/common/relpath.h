@@ -21,37 +21,35 @@
  * additional forks for storing various metadata. ForkNumber is used when
  * we need to refer to a specific fork in a relation.
  */
-typedef enum ForkNumber
-{
-	InvalidForkNumber = -1,
-	MAIN_FORKNUM = 0,
-	FSM_FORKNUM,
-	VISIBILITYMAP_FORKNUM,
-	INIT_FORKNUM
+typedef enum ForkNumber {
+    InvalidForkNumber = -1,
+    MAIN_FORKNUM = 0,
+    FSM_FORKNUM,
+    VISIBILITYMAP_FORKNUM,
+    INIT_FORKNUM
 
-	/*
-	 * NOTE: if you add a new fork, change MAX_FORKNUM and possibly
-	 * FORKNAMECHARS below, and update the forkNames array in
-	 * src/common/relpath.c
-	 */
+    /*
+     * NOTE: if you add a new fork, change MAX_FORKNUM and possibly
+     * FORKNAMECHARS below, and update the forkNames array in
+     * src/common/relpath.c
+     */
 } ForkNumber;
 
-#define MAX_FORKNUM		INIT_FORKNUM
+#define MAX_FORKNUM INIT_FORKNUM
 
-#define FORKNAMECHARS	4		/* max chars for a fork name */
+#define FORKNAMECHARS 4 /* max chars for a fork name */
 
 extern const char *const forkNames[];
 
 extern ForkNumber forkname_to_number(const char *forkName);
-extern int	forkname_chars(const char *str, ForkNumber *fork);
+extern int        forkname_chars(const char *str, ForkNumber *fork);
 
 /*
  * Stuff for computing filesystem pathnames for relations.
  */
 extern char *GetDatabasePath(Oid dbNode, Oid spcNode);
 
-extern char *GetRelationPath(Oid dbNode, Oid spcNode, Oid relNode,
-				int backendId, ForkNumber forkNumber);
+extern char *GetRelationPath(Oid dbNode, Oid spcNode, Oid relNode, int backendId, ForkNumber forkNumber);
 
 /*
  * Wrapper macros for GetRelationPath.  Beware of multiple
@@ -59,16 +57,13 @@ extern char *GetRelationPath(Oid dbNode, Oid spcNode, Oid relNode,
  */
 
 /* First argument is a RelFileNode */
-#define relpathbackend(rnode, backend, forknum) \
-	GetRelationPath((rnode).dbNode, (rnode).spcNode, (rnode).relNode, \
-					backend, forknum)
+#define relpathbackend(rnode, backend, forknum)                                                                        \
+    GetRelationPath((rnode).dbNode, (rnode).spcNode, (rnode).relNode, backend, forknum)
 
 /* First argument is a RelFileNode */
-#define relpathperm(rnode, forknum) \
-	relpathbackend(rnode, InvalidBackendId, forknum)
+#define relpathperm(rnode, forknum) relpathbackend(rnode, InvalidBackendId, forknum)
 
 /* First argument is a RelFileNodeBackend */
-#define relpath(rnode, forknum) \
-	relpathbackend((rnode).node, (rnode).backend, forknum)
+#define relpath(rnode, forknum) relpathbackend((rnode).node, (rnode).backend, forknum)
 
-#endif   /* RELPATH_H */
+#endif /* RELPATH_H */

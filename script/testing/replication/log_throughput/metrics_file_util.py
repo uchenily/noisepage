@@ -5,9 +5,7 @@ from typing import Set
 from ...util.constants import LOG
 from .constants import RESULTS_DIR
 
-"""
-This file exposes a bunch of helper methods for interacting with metric csv files
-"""
+# This file exposes a bunch of helper methods for interacting with metric csv files
 
 
 def get_csv_file_path(file_name: str) -> str:

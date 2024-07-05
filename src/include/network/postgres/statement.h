@@ -25,129 +25,147 @@ namespace noisepage::network {
  * parameters multiple times.
  */
 class Statement {
- public:
-  /**
-   * Constructor that doesn't have parameter types, i.e. Simple Query protocol
-   * @param query_text original query text from the wire
-   * @param parse_result output from postgresparser
-   */
-  Statement(std::string &&query_text, std::unique_ptr<parser::ParseResult> &&parse_result)
-      : Statement(std::move(query_text), std::move(parse_result), {}) {}
+public:
+    /**
+     * Constructor that doesn't have parameter types, i.e. Simple Query protocol
+     * @param query_text original query text from the wire
+     * @param parse_result output from postgresparser
+     */
+    Statement(std::string &&query_text, std::unique_ptr<parser::ParseResult> &&parse_result)
+        : Statement(std::move(query_text), std::move(parse_result), {}) {}
 
-  /**
-   * Constructor that does have parameter types, i.e. Extended Query protocol
-   * @param query_text original query text from the wire
-   * @param parse_result output from postgresparser
-   * @param param_types types of the values to be bound
-   */
-  Statement(std::string &&query_text, std::unique_ptr<parser::ParseResult> &&parse_result,
-            std::vector<execution::sql::SqlTypeId> &&param_types);
+    /**
+     * Constructor that does have parameter types, i.e. Extended Query protocol
+     * @param query_text original query text from the wire
+     * @param parse_result output from postgresparser
+     * @param param_types types of the values to be bound
+     */
+    Statement(std::string                            &&query_text,
+              std::unique_ptr<parser::ParseResult>   &&parse_result,
+              std::vector<execution::sql::SqlTypeId> &&param_types);
 
-  /**
-   * @return true if the statement is empty
-   */
-  bool Empty() const { return parse_result_->Empty(); }
+    /**
+     * @return true if the statement is empty
+     */
+    bool Empty() const {
+        return parse_result_->Empty();
+    }
 
-  /**
-   * @return managed pointer to the output of the parser for this statement
-   */
-  common::ManagedPointer<parser::ParseResult> ParseResult() const { return common::ManagedPointer(parse_result_); }
+    /**
+     * @return managed pointer to the output of the parser for this statement
+     */
+    common::ManagedPointer<parser::ParseResult> ParseResult() const {
+        return common::ManagedPointer(parse_result_);
+    }
 
-  /**
-   * @return managed pointer to the  root statement of the ParseResult. Just shorthand for ParseResult->GetStatement(0)
-   */
-  common::ManagedPointer<parser::SQLStatement> RootStatement() const { return common::ManagedPointer(root_statement_); }
+    /**
+     * @return managed pointer to the  root statement of the ParseResult. Just shorthand for
+     * ParseResult->GetStatement(0)
+     */
+    common::ManagedPointer<parser::SQLStatement> RootStatement() const {
+        return common::ManagedPointer(root_statement_);
+    }
 
-  /**
-   * @return vector of the statements parameters (if any)
-   */
-  const std::vector<execution::sql::SqlTypeId> &ParamTypes() const { return param_types_; }
+    /**
+     * @return vector of the statements parameters (if any)
+     */
+    const std::vector<execution::sql::SqlTypeId> &ParamTypes() const {
+        return param_types_;
+    }
 
-  /**
-   * @return QueryType of the root statement of the ParseResult
-   */
-  QueryType GetQueryType() const { return type_; }
+    /**
+     * @return QueryType of the root statement of the ParseResult
+     */
+    QueryType GetQueryType() const {
+        return type_;
+    }
 
-  /**
-   * @return the original query text. This is a const & instead of a std::string_view because we require that it be
-   * null-terminated to pass the underlying C-string to libpgquery methods. std::string_view does not guarantee
-   * null-termination. We could add a std::string_view accessor for performance if we can justify it.
-   */
-  const std::string &GetQueryText() const { return query_text_; }
+    /**
+     * @return the original query text. This is a const & instead of a std::string_view because we require that it be
+     * null-terminated to pass the underlying C-string to libpgquery methods. std::string_view does not guarantee
+     * null-termination. We could add a std::string_view accessor for performance if we can justify it.
+     */
+    const std::string &GetQueryText() const {
+        return query_text_;
+    }
 
-  /**
-   * @return the optimize result of the query
-   */
-  common::ManagedPointer<optimizer::OptimizeResult> OptimizeResult() const {
-    return common::ManagedPointer(optimize_result_);
-  }
+    /**
+     * @return the optimize result of the query
+     */
+    common::ManagedPointer<optimizer::OptimizeResult> OptimizeResult() const {
+        return common::ManagedPointer(optimize_result_);
+    }
 
-  /**
-   * @return the optimized physical plan for this query
-   */
-  common::ManagedPointer<planner::AbstractPlanNode> PhysicalPlan() const { return optimize_result_->GetPlanNode(); }
+    /**
+     * @return the optimized physical plan for this query
+     */
+    common::ManagedPointer<planner::AbstractPlanNode> PhysicalPlan() const {
+        return optimize_result_->GetPlanNode();
+    }
 
-  /**
-   * @return the compiled executable query
-   */
-  common::ManagedPointer<execution::compiler::ExecutableQuery> GetExecutableQuery() const {
-    return common::ManagedPointer(executable_query_);
-  }
+    /**
+     * @return the compiled executable query
+     */
+    common::ManagedPointer<execution::compiler::ExecutableQuery> GetExecutableQuery() const {
+        return common::ManagedPointer(executable_query_);
+    }
 
-  /**
-   * @param optimize_result optimize result to take ownership of
-   */
-  void SetOptimizeResult(std::unique_ptr<optimizer::OptimizeResult> &&optimize_result) {
-    optimize_result_ = std::move(optimize_result);
-  }
+    /**
+     * @param optimize_result optimize result to take ownership of
+     */
+    void SetOptimizeResult(std::unique_ptr<optimizer::OptimizeResult> &&optimize_result) {
+        optimize_result_ = std::move(optimize_result);
+    }
 
-  /**
-   * @param executable_query executable query to take ownership of
-   */
-  void SetExecutableQuery(std::unique_ptr<execution::compiler::ExecutableQuery> &&executable_query) {
-    executable_query_ = std::move(executable_query);
-  }
+    /**
+     * @param executable_query executable query to take ownership of
+     */
+    void SetExecutableQuery(std::unique_ptr<execution::compiler::ExecutableQuery> &&executable_query) {
+        executable_query_ = std::move(executable_query);
+    }
 
-  /**
-   * Stash desired parameter types to avoid having to do a full binding pass for prepared statements
-   * @param desired_param_types output from the binder if Statement has parameters to fast-path convert for future
-   * bindings
-   */
-  void SetDesiredParamTypes(std::vector<execution::sql::SqlTypeId> &&desired_param_types) {
-    desired_param_types_ = std::move(desired_param_types);
-    NOISEPAGE_ASSERT(desired_param_types_.size() == param_types_.size(), "");
-  }
+    /**
+     * Stash desired parameter types to avoid having to do a full binding pass for prepared statements
+     * @param desired_param_types output from the binder if Statement has parameters to fast-path convert for future
+     * bindings
+     */
+    void SetDesiredParamTypes(std::vector<execution::sql::SqlTypeId> &&desired_param_types) {
+        desired_param_types_ = std::move(desired_param_types);
+        NOISEPAGE_ASSERT(desired_param_types_.size() == param_types_.size(), "");
+    }
 
-  /**
+    /**
 
-   * @return output from the binder if Statement has parameters to fast-path convert for future
-   * bindings
-   */
-  const std::vector<execution::sql::SqlTypeId> &GetDesiredParamTypes() const { return desired_param_types_; }
+     * @return output from the binder if Statement has parameters to fast-path convert for future
+     * bindings
+     */
+    const std::vector<execution::sql::SqlTypeId> &GetDesiredParamTypes() const {
+        return desired_param_types_;
+    }
 
-  /**
-   * Remove the cached objects related to query execution for this Statement. This should be done any time there is a
-   * DDL change related to this statement.
-   */
-  void ClearCachedObjects() {
-    optimize_result_ = nullptr;
-    executable_query_ = nullptr;
-    desired_param_types_ = {};
-  }
+    /**
+     * Remove the cached objects related to query execution for this Statement. This should be done any time there is a
+     * DDL change related to this statement.
+     */
+    void ClearCachedObjects() {
+        optimize_result_ = nullptr;
+        executable_query_ = nullptr;
+        desired_param_types_ = {};
+    }
 
- private:
-  const std::string query_text_;
-  const std::unique_ptr<parser::ParseResult> parse_result_ = nullptr;
-  const std::vector<execution::sql::SqlTypeId> param_types_;
-  common::ManagedPointer<parser::SQLStatement> root_statement_ = nullptr;
-  enum QueryType type_ = QueryType::QUERY_INVALID;
+private:
+    const std::string                            query_text_;
+    const std::unique_ptr<parser::ParseResult>   parse_result_ = nullptr;
+    const std::vector<execution::sql::SqlTypeId> param_types_;
+    common::ManagedPointer<parser::SQLStatement> root_statement_ = nullptr;
+    enum QueryType                               type_ = QueryType::QUERY_INVALID;
 
-  // The following objects can be "cached" in Statement objects for future statement invocations. Though they don't
-  // relate to the Postgres Statement concept, these objects should be compatible with future queries that match the
-  // same query text. The exception to this that DDL changes can break these cached objects.
-  std::unique_ptr<optimizer::OptimizeResult> optimize_result_ = nullptr;              // generated in the Bind phase
-  std::unique_ptr<execution::compiler::ExecutableQuery> executable_query_ = nullptr;  // generated in the Execute phase
-  std::vector<execution::sql::SqlTypeId> desired_param_types_;                        // generated in the Bind phase
+    // The following objects can be "cached" in Statement objects for future statement invocations. Though they don't
+    // relate to the Postgres Statement concept, these objects should be compatible with future queries that match the
+    // same query text. The exception to this that DDL changes can break these cached objects.
+    std::unique_ptr<optimizer::OptimizeResult>            optimize_result_ = nullptr;  // generated in the Bind phase
+    std::unique_ptr<execution::compiler::ExecutableQuery> executable_query_ = nullptr; // generated in the Execute phase
+    std::vector<execution::sql::SqlTypeId>                desired_param_types_;        // generated in the Bind phase
 };
 
-}  // namespace noisepage::network
+} // namespace noisepage::network

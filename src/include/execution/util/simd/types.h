@@ -58,10 +58,21 @@ alignas(64) static constexpr const uint64_t K8_BIT_MATCH_LUT[256] = {
     0x0002070605040301ull, 0x0207060504030100ull, 0x0001070605040302ull, 0x0107060504030200ull, 0x0007060504030201ull,
     0x0706050403020100ull};
 
-alignas(64) static constexpr const uint64_t K4_BIT_MATCH_LUT[16] = {
-    0x0000000100020003ull, 0x0001000200030000ull, 0x0000000200030001ull, 0x0002000300010000ull,
-    0x0000000100030002ull, 0x0001000300020000ull, 0x0000000300020001ull, 0x0003000200010000ull,
-    0x0000000100020003ull, 0x0001000200030000ull, 0x0000000200030001ull, 0x0002000300010000ull,
-    0x0000000100030002ull, 0x0001000300020000ull, 0x0000000300020001ull, 0x0003000200010000ull};
+alignas(64) static constexpr const uint64_t K4_BIT_MATCH_LUT[16] = {0x0000000100020003ull,
+                                                                    0x0001000200030000ull,
+                                                                    0x0000000200030001ull,
+                                                                    0x0002000300010000ull,
+                                                                    0x0000000100030002ull,
+                                                                    0x0001000300020000ull,
+                                                                    0x0000000300020001ull,
+                                                                    0x0003000200010000ull,
+                                                                    0x0000000100020003ull,
+                                                                    0x0001000200030000ull,
+                                                                    0x0000000200030001ull,
+                                                                    0x0002000300010000ull,
+                                                                    0x0000000100030002ull,
+                                                                    0x0001000300020000ull,
+                                                                    0x0000000300020001ull,
+                                                                    0x0003000200010000ull};
 
-}  // namespace noisepage::execution::util::simd
+} // namespace noisepage::execution::util::simd

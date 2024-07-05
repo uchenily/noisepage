@@ -775,7 +775,7 @@ add_custom_command(
 # Here, we create a custom target that merely wraps the output file
 # from the custom command above; this ensures that the custom command
 # is actually only ever invoked once even when multiple indepdendent
-# targets that require bitcode are built because the build system 
+# targets that require bitcode are built because the build system
 # (e.g. Make, Ninja) is now 'aware' of the target-level dependency.
 add_custom_target(bitcode_generator DEPENDS "${CMAKE_BINARY_DIR}/bin/bytecode_handlers_ir.bc")
 
@@ -986,7 +986,7 @@ foreach (NOISEPAGE_TEST_CPP ${NOISEPAGE_TEST_SOURCES})
         set(EXCLUDE_OR_NOT "NO_EXCLUDE")
     endif ()
 
-    if (${NOISEPAGE_TEST} IN_LIST TESTS_REQUIRING_BITCODE) 
+    if (${NOISEPAGE_TEST} IN_LIST TESTS_REQUIRING_BITCODE)
         set(TEST_REQUIRES_BITCODE "BITCODE")
     else ()
         set(TEST_REQUIRES_BITCODE "NO_BITCODE")
@@ -1013,7 +1013,7 @@ foreach (NOISEPAGE_TEST_CPP ${NOISEPAGE_SELF_DRIVING_E2E_TEST_SOURCES})
     add_noisepage_test(${NOISEPAGE_TEST} ${NOISEPAGE_TEST_CPP} self_driving_e2e_test ${EXCLUDE_OR_NOT} NO_UNITY FALSE)
 endforeach ()
 
-# The jumbotest for specific prefixes that require bitcode. 
+# The jumbotest for specific prefixes that require bitcode.
 set(PREFIXES_REQUIRING_BITCODE "")
 # The jumbotests for entire folders that require bitcode.
 set(FOLDERS_REQUIRING_BITCODE execution)
@@ -1049,7 +1049,7 @@ function(add_jumbotest
                 list(REMOVE_ITEM JUMBO_SOURCES_ALL ${PREFIXED_FILE})
             endforeach ()
 
-            if (${PREFIX} IN_LIST PREFIXES_REQUIRING_BITCODE) 
+            if (${PREFIX} IN_LIST PREFIXES_REQUIRING_BITCODE)
                 set(TEST_REQUIRES_BITCODE "BITCODE")
             else ()
                 set(TEST_REQUIRES_BITCODE "NO_BITCODE")
@@ -1060,7 +1060,7 @@ function(add_jumbotest
         set(TEST_NAME_SUFFIX "_other")
     endif ()
     if (NOT "${JUMBO_SOURCES_ALL}" STREQUAL "")
-        if (${FOLDER_NAME} IN_LIST FOLDERS_REQUIRING_BITCODE) 
+        if (${FOLDER_NAME} IN_LIST FOLDERS_REQUIRING_BITCODE)
             set(TEST_REQUIRES_BITCODE "BITCODE")
         else ()
             set(TEST_REQUIRES_BITCODE "NO_BITCODE")

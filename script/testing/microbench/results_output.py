@@ -12,7 +12,7 @@ PERCENT_FLOAT_FIELD_NAMES = ['coef_var', 'change']
 
 def send_results(config, artifact_processor):
     """ Iterate over the microbenchmark results to generate a comparison
-    against the histroical artifacts and send that comparrison to the 
+    against the histroical artifacts and send that comparrison to the
     performance storage service """
     ret_code = 0
     for bench_name in sorted(config.benchmarks):
@@ -36,7 +36,7 @@ def send_results(config, artifact_processor):
 
 
 def table_dump(config, artifact_processor):
-    """ Create a human readable table for the output comparison between the 
+    """ Create a human readable table for the output comparison between the
     current test results and the historical results (if there are any)
     """
     text_table = PrettyTable()

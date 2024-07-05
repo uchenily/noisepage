@@ -16,33 +16,33 @@ namespace noisepage::optimizer {
  * and optimizer, respectively
  */
 class AbstractOptimizerNode {
- public:
-  AbstractOptimizerNode() = default;
+public:
+    AbstractOptimizerNode() = default;
 
-  virtual ~AbstractOptimizerNode() = default;
+    virtual ~AbstractOptimizerNode() = default;
 
-  /**
-   * Pushes a child node onto this node's children
-   * @param child a child node
-   */
-  virtual void PushChild(std::unique_ptr<AbstractOptimizerNode> child) = 0;
+    /**
+     * Pushes a child node onto this node's children
+     * @param child a child node
+     */
+    virtual void PushChild(std::unique_ptr<AbstractOptimizerNode> child) = 0;
 
-  /**
-   * @return The vector of this node's children.
-   */
-  virtual std::vector<common::ManagedPointer<AbstractOptimizerNode>> GetChildren() const = 0;
+    /**
+     * @return The vector of this node's children.
+     */
+    virtual std::vector<common::ManagedPointer<AbstractOptimizerNode>> GetChildren() const = 0;
 
-  /**
-   * @return A pointer to the AbstractOptimizerNodeContents that this node contains.
-   */
-  virtual common::ManagedPointer<AbstractOptimizerNodeContents> Contents() const = 0;
+    /**
+     * @return A pointer to the AbstractOptimizerNodeContents that this node contains.
+     */
+    virtual common::ManagedPointer<AbstractOptimizerNodeContents> Contents() const = 0;
 
-  /**
-   * @return a copy of the node
-   */
-  virtual std::unique_ptr<AbstractOptimizerNode> Copy() = 0;
+    /**
+     * @return a copy of the node
+     */
+    virtual std::unique_ptr<AbstractOptimizerNode> Copy() = 0;
 
- private:
+private:
 };
 
-}  // namespace noisepage::optimizer
+} // namespace noisepage::optimizer

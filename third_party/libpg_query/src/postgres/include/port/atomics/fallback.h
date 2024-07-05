@@ -14,7 +14,7 @@
 
 /* intentionally no include guards, should only be included by atomics.h */
 #ifndef INSIDE_ATOMICS_H
-#	error "should be included via atomics.h"
+#error "should be included via atomics.h"
 #endif
 
 #ifndef pg_memory_barrier_impl
@@ -50,7 +50,6 @@ extern void pg_extern_compiler_barrier(void);
 #define pg_compiler_barrier_impl pg_extern_compiler_barrier
 #endif
 
-
 /*
  * If we have atomics implementation for this platform, fall back to providing
  * the atomics API using a spinlock to protect the internal state. Possibly
@@ -67,18 +66,17 @@ extern void pg_extern_compiler_barrier(void);
 #define PG_HAVE_ATOMIC_FLAG_SIMULATION
 #define PG_HAVE_ATOMIC_FLAG_SUPPORT
 
-typedef struct pg_atomic_flag
-{
-	/*
-	 * To avoid circular includes we can't use s_lock as a type here. Instead
-	 * just reserve enough space for all spinlock types. Some platforms would
-	 * be content with just one byte instead of 4, but that's not too much
-	 * waste.
-	 */
-#if defined(__hppa) || defined(__hppa__)	/* HP PA-RISC, GCC and HP compilers */
-	int			sema[4];
+typedef struct pg_atomic_flag {
+    /*
+     * To avoid circular includes we can't use s_lock as a type here. Instead
+     * just reserve enough space for all spinlock types. Some platforms would
+     * be content with just one byte instead of 4, but that's not too much
+     * waste.
+     */
+#if defined(__hppa) || defined(__hppa__) /* HP PA-RISC, GCC and HP compilers */
+    int sema[4];
 #else
-	int			sema;
+    int sema;
 #endif
 } pg_atomic_flag;
 
@@ -89,15 +87,14 @@ typedef struct pg_atomic_flag
 #define PG_HAVE_ATOMIC_U32_SIMULATION
 
 #define PG_HAVE_ATOMIC_U32_SUPPORT
-typedef struct pg_atomic_uint32
-{
-	/* Check pg_atomic_flag's definition above for an explanation */
-#if defined(__hppa) || defined(__hppa__)	/* HP PA-RISC, GCC and HP compilers */
-	int			sema[4];
+typedef struct pg_atomic_uint32 {
+    /* Check pg_atomic_flag's definition above for an explanation */
+#if defined(__hppa) || defined(__hppa__) /* HP PA-RISC, GCC and HP compilers */
+    int sema[4];
 #else
-	int			sema;
+    int sema;
 #endif
-	volatile uint32 value;
+    volatile uint32 value;
 } pg_atomic_uint32;
 
 #endif /* PG_HAVE_ATOMIC_U32_SUPPORT */
@@ -116,16 +113,14 @@ extern bool pg_atomic_test_set_flag_impl(volatile pg_atomic_flag *ptr);
 extern void pg_atomic_clear_flag_impl(volatile pg_atomic_flag *ptr);
 
 #define PG_HAVE_ATOMIC_UNLOCKED_TEST_FLAG
-static inline bool
-pg_atomic_unlocked_test_flag_impl(volatile pg_atomic_flag *ptr)
-{
-	/*
-	 * Can't do this efficiently in the semaphore based implementation - we'd
-	 * have to try to acquire the semaphore - so always return true. That's
-	 * correct, because this is only an unlocked test anyway. Do this in the
-	 * header so compilers can optimize the test away.
-	 */
-	return true;
+static inline bool pg_atomic_unlocked_test_flag_impl(volatile pg_atomic_flag *ptr) {
+    /*
+     * Can't do this efficiently in the semaphore based implementation - we'd
+     * have to try to acquire the semaphore - so always return true. That's
+     * correct, because this is only an unlocked test anyway. Do this in the
+     * header so compilers can optimize the test away.
+     */
+    return true;
 }
 
 #endif /* PG_HAVE_ATOMIC_FLAG_SIMULATION */
@@ -136,13 +131,11 @@ pg_atomic_unlocked_test_flag_impl(volatile pg_atomic_flag *ptr)
 extern void pg_atomic_init_u32_impl(volatile pg_atomic_uint32 *ptr, uint32 val_);
 
 #define PG_HAVE_ATOMIC_COMPARE_EXCHANGE_U32
-extern bool pg_atomic_compare_exchange_u32_impl(volatile pg_atomic_uint32 *ptr,
-												uint32 *expected, uint32 newval);
+extern bool pg_atomic_compare_exchange_u32_impl(volatile pg_atomic_uint32 *ptr, uint32 *expected, uint32 newval);
 
 #define PG_HAVE_ATOMIC_FETCH_ADD_U32
 extern uint32 pg_atomic_fetch_add_u32_impl(volatile pg_atomic_uint32 *ptr, int32 add_);
 
 #endif /* PG_HAVE_ATOMIC_U32_SIMULATION */
-
 
 #endif /* defined(PG_USE_INLINE) || defined(ATOMICS_INCLUDE_DEFINITIONS) */

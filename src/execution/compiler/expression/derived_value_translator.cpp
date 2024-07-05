@@ -9,12 +9,12 @@
 namespace noisepage::execution::compiler {
 
 DerivedValueTranslator::DerivedValueTranslator(const parser::DerivedValueExpression &expr,
-                                               CompilationContext *compilation_context)
+                                               CompilationContext                   *compilation_context)
     : ExpressionTranslator(expr, compilation_context) {}
 
 ast::Expr *DerivedValueTranslator::DeriveValue(WorkContext *ctx, const ColumnValueProvider *provider) const {
-  const auto &derived_expr = GetExpressionAs<parser::DerivedValueExpression>();
-  return provider->GetChildOutput(ctx, derived_expr.GetTupleIdx(), derived_expr.GetValueIdx());
+    const auto &derived_expr = GetExpressionAs<parser::DerivedValueExpression>();
+    return provider->GetChildOutput(ctx, derived_expr.GetTupleIdx(), derived_expr.GetValueIdx());
 }
 
-}  // namespace noisepage::execution::compiler
+} // namespace noisepage::execution::compiler

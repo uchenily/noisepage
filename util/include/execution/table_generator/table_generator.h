@@ -45,295 +45,324 @@ constexpr uint32_t INDEX_ACTION_TEST_SIZE = 10000;
  * Helper class to generate test tables and their indexes.
  */
 class TableGenerator {
- public:
-  /**
-   * Constructor
-   * @param exec_ctx execution context of the test
-   * @param store block store to use when creating tables
-   * @param ns_oid oid of the namespace
-   */
-  explicit TableGenerator(exec::ExecutionContext *exec_ctx, common::ManagedPointer<storage::BlockStore> store,
-                          catalog::namespace_oid_t ns_oid)
-      : exec_ctx_{exec_ctx}, store_{store}, ns_oid_{ns_oid} {}
+public:
+    /**
+     * Constructor
+     * @param exec_ctx execution context of the test
+     * @param store block store to use when creating tables
+     * @param ns_oid oid of the namespace
+     */
+    explicit TableGenerator(exec::ExecutionContext                     *exec_ctx,
+                            common::ManagedPointer<storage::BlockStore> store,
+                            catalog::namespace_oid_t                    ns_oid)
+        : exec_ctx_{exec_ctx}
+        , store_{store}
+        , ns_oid_{ns_oid} {}
 
-  /**
-   * Generate table name
-   * If a type has no columns, the type is dropped from the name.
-   *
-   * @param types Number of types
-   * @param cols Number of columns per type
-   * @param row Number of rows
-   * @param car Cardinality
-   * @return table name
-   */
-  static std::string GenerateTableName(std::vector<execution::sql::SqlTypeId> types, std::vector<uint32_t> cols,
-                                       size_t row, size_t car) {
-    std::stringstream table_name;
-    for (size_t idx = 0; idx < cols.size(); idx++) {
-      if (cols[idx] != 0) {
-        table_name << execution::sql::SqlTypeIdToString(types[idx]);
-        table_name << "Col" << cols[idx];
-      }
+    /**
+     * Generate table name
+     * If a type has no columns, the type is dropped from the name.
+     *
+     * @param types Number of types
+     * @param cols Number of columns per type
+     * @param row Number of rows
+     * @param car Cardinality
+     * @return table name
+     */
+    static std::string GenerateTableName(std::vector<execution::sql::SqlTypeId> types,
+                                         std::vector<uint32_t>                  cols,
+                                         size_t                                 row,
+                                         size_t                                 car) {
+        std::stringstream table_name;
+        for (size_t idx = 0; idx < cols.size(); idx++) {
+            if (cols[idx] != 0) {
+                table_name << execution::sql::SqlTypeIdToString(types[idx]);
+                table_name << "Col" << cols[idx];
+            }
+        }
+        table_name << "Row" << row << "Car" << car;
+        return table_name.str();
     }
-    table_name << "Row" << row << "Car" << car;
-    return table_name.str();
-  }
-
-  /**
-   * Generate test tables.
-   */
-  void GenerateTestTables();
-
-  /**
-   * Generate the tables for the execution runner
-   * @param settings Execution-runners settings
-   * @param config Data Configuration for execution-runners
-   */
-  void GenerateExecutionRunnersData(const runner::ExecutionRunnersSettings &settings,
-                                    const runner::ExecutionRunnersDataConfig &config);
-
-  /**
-   * Adds a execution-runner index
-   * Function does not check whether an index of the same key_num
-   * already exists on the table GenerateTableName({type}, {tbl_cols}, row_num, row_num)
-   *
-   * @param type Datatype of the underlying table
-   * @param tbl_cols Number of columns in the table
-   * @param row_num # of rows in the underlying table
-   * @param key_num Number of keys comprising the index
-   */
-  void BuildExecutionRunnerIndex(execution::sql::SqlTypeId type, uint32_t tbl_cols, int64_t row_num, int64_t key_num);
-
-  /**
-   * Drops a unique execution-runner index on GenerateTableName({type}, {tbl_cols}, row_num, row_num)
-   *
-   * @param type Datatype of the underlying table
-   * @param tbl_cols Number of columns in the table
-   * @param row_num # of rows in the underlying table
-   * @param key_num Number of keys comprising the index
-   * @returns bool indicating whether successful
-   */
-  bool DropExecutionRunnerIndex(execution::sql::SqlTypeId type, uint32_t tbl_cols, int64_t row_num, int64_t key_num);
-
- private:
-  exec::ExecutionContext *exec_ctx_;
-  const common::ManagedPointer<storage::BlockStore> store_;
-  catalog::namespace_oid_t ns_oid_;
-
-  /**
-   * Enumeration to characterize the distribution of values in a given column
-   */
-  enum class Dist : uint8_t { Uniform, Serial, Rotate };
-
-  /**
-   * Metadata about the data for a given column. Specifically, the type of the
-   * column, the distribution of values, a min and max if appropriate.
-   */
-  struct ColumnInsertMeta {
-    /**
-     * Name of the column
-     */
-    std::string name_;
-    /**
-     * Type of the column
-     */
-    execution::sql::SqlTypeId type_;
-    /**
-     * Whether the column is nullable
-     */
-    bool nullable_;
-    /**
-     * Distribution of values
-     */
-    Dist dist_;
-    /**
-     * Serial Counter
-     */
-    uint64_t counter_{0};
-    /**
-     * Min value of the column
-     */
-    uint64_t min_;
-    /**
-     * Max value of the column
-     */
-    uint64_t max_;
-    /**
-     * Counter to generate serial data
-     */
-    uint64_t serial_counter_{0};
-    /**
-     * Whether is copy
-     */
-    bool is_clone_ = false;
-    /**
-     * Clone idx
-     */
-    size_t clone_idx_ = 0;
 
     /**
-     * Constructor
+     * Generate test tables.
      */
-    ColumnInsertMeta(std::string name, const execution::sql::SqlTypeId type, bool nullable, Dist dist, uint64_t min,
-                     uint64_t max)
-        : name_(std::move(name)), type_(type), nullable_(nullable), dist_(dist), min_(min), max_(max) {}
+    void GenerateTestTables();
 
     /**
-     * Clone Constructor
+     * Generate the tables for the execution runner
+     * @param settings Execution-runners settings
+     * @param config Data Configuration for execution-runners
      */
-    ColumnInsertMeta(std::string name, const execution::sql::SqlTypeId type, bool nullable, size_t clone_idx)
-        : name_(std::move(name)), type_(type), nullable_(nullable), is_clone_(true), clone_idx_(clone_idx) {}
-  };
-
-  /**
-   * Metadata about a table. Specifically, the schema and number of
-   * rows in the table.
-   */
-  struct TableInsertMeta {
-    /**
-     * Name of the table
-     */
-    std::string name_;
-    /**
-     * Number of rows
-     */
-    uint32_t num_rows_;
-    /**
-     * Columns
-     */
-    std::vector<ColumnInsertMeta> col_meta_;
+    void GenerateExecutionRunnersData(const runner::ExecutionRunnersSettings   &settings,
+                                      const runner::ExecutionRunnersDataConfig &config);
 
     /**
-     * Constructor
+     * Adds a execution-runner index
+     * Function does not check whether an index of the same key_num
+     * already exists on the table GenerateTableName({type}, {tbl_cols}, row_num, row_num)
+     *
+     * @param type Datatype of the underlying table
+     * @param tbl_cols Number of columns in the table
+     * @param row_num # of rows in the underlying table
+     * @param key_num Number of keys comprising the index
      */
-    TableInsertMeta(std::string name, uint32_t num_rows, std::vector<ColumnInsertMeta> col_meta)
-        : name_(std::move(name)), num_rows_(num_rows), col_meta_(std::move(col_meta)) {}
-  };
-
-  /**
-   * Metadata about an index column
-   */
-  struct IndexColumn {
-    /**
-     * Name of the column
-     */
-    const char *name_;
-    /**
-     * Type of the column
-     */
-    const execution::sql::SqlTypeId type_;
-    /**
-     * Whether the columns is nullable
-     */
-    bool nullable_;
-    /**
-     * Column name in the original table
-     */
-    const char *table_col_name_;
+    void BuildExecutionRunnerIndex(execution::sql::SqlTypeId type, uint32_t tbl_cols, int64_t row_num, int64_t key_num);
 
     /**
-     * Constructor
+     * Drops a unique execution-runner index on GenerateTableName({type}, {tbl_cols}, row_num, row_num)
+     *
+     * @param type Datatype of the underlying table
+     * @param tbl_cols Number of columns in the table
+     * @param row_num # of rows in the underlying table
+     * @param key_num Number of keys comprising the index
+     * @returns bool indicating whether successful
      */
-    IndexColumn(const char *name, const execution::sql::SqlTypeId type, bool nullable, const char *table_col_name)
-        : name_(name), type_(type), nullable_(nullable), table_col_name_(table_col_name) {}
-  };
+    bool DropExecutionRunnerIndex(execution::sql::SqlTypeId type, uint32_t tbl_cols, int64_t row_num, int64_t key_num);
 
-  /**
-   * Metadata about an index.
-   */
-  struct IndexInsertMeta {
-    /**
-     * Name of the index
-     */
-    const char *index_name_;
-    /**
-     * Name of the corresponding table
-     */
-    const char *table_name_;
-    /**
-     * Columns
-     */
-    std::vector<IndexColumn> cols_;
+private:
+    exec::ExecutionContext                           *exec_ctx_;
+    const common::ManagedPointer<storage::BlockStore> store_;
+    catalog::namespace_oid_t                          ns_oid_;
 
     /**
-     * Constructors
+     * Enumeration to characterize the distribution of values in a given column
      */
-    IndexInsertMeta(const char *index_name, const char *table_name, std::vector<IndexColumn> cols)
-        : index_name_(index_name), table_name_(table_name), cols_(std::move(cols)) {}
-  };
+    enum class Dist : uint8_t { Uniform, Serial, Rotate };
 
-  void InitTestIndexes();
+    /**
+     * Metadata about the data for a given column. Specifically, the type of the
+     * column, the distribution of values, a min and max if appropriate.
+     */
+    struct ColumnInsertMeta {
+        /**
+         * Name of the column
+         */
+        std::string name_;
+        /**
+         * Type of the column
+         */
+        execution::sql::SqlTypeId type_;
+        /**
+         * Whether the column is nullable
+         */
+        bool nullable_;
+        /**
+         * Distribution of values
+         */
+        Dist dist_;
+        /**
+         * Serial Counter
+         */
+        uint64_t counter_{0};
+        /**
+         * Min value of the column
+         */
+        uint64_t min_;
+        /**
+         * Max value of the column
+         */
+        uint64_t max_;
+        /**
+         * Counter to generate serial data
+         */
+        uint64_t serial_counter_{0};
+        /**
+         * Whether is copy
+         */
+        bool is_clone_ = false;
+        /**
+         * Clone idx
+         */
+        size_t clone_idx_ = 0;
 
-  /**
-   * Create integer data with the given distribution
-   * @tparam T
-   * @param col_meta
-   * @param num_vals
-   * @return
-   */
-  template <typename T>
-  T *CreateNumberColumnData(ColumnInsertMeta *col_meta, uint32_t num_vals);
+        /**
+         * Constructor
+         */
+        ColumnInsertMeta(std::string                     name,
+                         const execution::sql::SqlTypeId type,
+                         bool                            nullable,
+                         Dist                            dist,
+                         uint64_t                        min,
+                         uint64_t                        max)
+            : name_(std::move(name))
+            , type_(type)
+            , nullable_(nullable)
+            , dist_(dist)
+            , min_(min)
+            , max_(max) {}
 
-  /**
-   * Create an array of boolean data with the given distribution
-   * @param col_meta
-   * @param num_vals
-   * @return
-   */
-  bool *CreateBooleanColumnData(ColumnInsertMeta *col_meta, uint32_t num_vals);
+        /**
+         * Clone Constructor
+         */
+        ColumnInsertMeta(std::string name, const execution::sql::SqlTypeId type, bool nullable, size_t clone_idx)
+            : name_(std::move(name))
+            , type_(type)
+            , nullable_(nullable)
+            , is_clone_(true)
+            , clone_idx_(clone_idx) {}
+    };
 
-  /**
-   * Generate column data
-   * @param col_meta
-   * @param num_rows
-   * @return
-   */
-  std::pair<byte *, uint32_t *> GenerateColumnData(ColumnInsertMeta *col_meta, uint32_t num_rows);
+    /**
+     * Metadata about a table. Specifically, the schema and number of
+     * rows in the table.
+     */
+    struct TableInsertMeta {
+        /**
+         * Name of the table
+         */
+        std::string name_;
+        /**
+         * Number of rows
+         */
+        uint32_t num_rows_;
+        /**
+         * Columns
+         */
+        std::vector<ColumnInsertMeta> col_meta_;
 
-  /**
-   * Generate column data for varchar
-   * @param col_meta
-   * @param num_vals
-   * @return
-   */
-  storage::VarlenEntry *CreateVarcharColumnData(ColumnInsertMeta *col_meta, uint32_t num_vals);
+        /**
+         * Constructor
+         */
+        TableInsertMeta(std::string name, uint32_t num_rows, std::vector<ColumnInsertMeta> col_meta)
+            : name_(std::move(name))
+            , num_rows_(num_rows)
+            , col_meta_(std::move(col_meta)) {}
+    };
 
-  /**
-   * Clone Column Data
-   * T - underlying type of original
-   * S - underlying type of copied data
-   * @param orig original
-   * @param num_rows number of rows
-   * @returns cloned column data
-   */
-  template <typename T, typename S>
-  std::pair<byte *, uint32_t *> CloneColumnData(std::pair<byte *, uint32_t *> orig, uint32_t num_rows);
+    /**
+     * Metadata about an index column
+     */
+    struct IndexColumn {
+        /**
+         * Name of the column
+         */
+        const char *name_;
+        /**
+         * Type of the column
+         */
+        const execution::sql::SqlTypeId type_;
+        /**
+         * Whether the columns is nullable
+         */
+        bool nullable_;
+        /**
+         * Column name in the original table
+         */
+        const char *table_col_name_;
 
-  /**
-   * Create table
-   * @param metadata TableInsertMeta
-   */
-  void CreateTable(TableInsertMeta *metadata);
+        /**
+         * Constructor
+         */
+        IndexColumn(const char *name, const execution::sql::SqlTypeId type, bool nullable, const char *table_col_name)
+            : name_(name)
+            , type_(type)
+            , nullable_(nullable)
+            , table_col_name_(table_col_name) {}
+    };
 
-  /**
-   * Create Index
-   * @param index_meta Index Metadata
-   */
-  void CreateIndex(IndexInsertMeta *index_meta);
+    /**
+     * Metadata about an index.
+     */
+    struct IndexInsertMeta {
+        /**
+         * Name of the index
+         */
+        const char *index_name_;
+        /**
+         * Name of the corresponding table
+         */
+        const char *table_name_;
+        /**
+         * Columns
+         */
+        std::vector<IndexColumn> cols_;
 
-  /**
-   * Fill a given table according to its metadata
-   * @param table_oid
-   * @param table
-   * @param schema
-   * @param table_meta
-   */
-  void FillTable(catalog::table_oid_t table_oid, common::ManagedPointer<storage::SqlTable> table,
-                 const catalog::Schema &schema, TableInsertMeta *table_meta);
+        /**
+         * Constructors
+         */
+        IndexInsertMeta(const char *index_name, const char *table_name, std::vector<IndexColumn> cols)
+            : index_name_(index_name)
+            , table_name_(table_name)
+            , cols_(std::move(cols)) {}
+    };
 
-  void FillIndex(common::ManagedPointer<storage::index::Index> index, const catalog::IndexSchema &index_schema,
-                 const IndexInsertMeta &index_meta, common::ManagedPointer<storage::SqlTable> table,
-                 const catalog::Schema &table_schema);
+    void InitTestIndexes();
+
+    /**
+     * Create integer data with the given distribution
+     * @tparam T
+     * @param col_meta
+     * @param num_vals
+     * @return
+     */
+    template <typename T>
+    T *CreateNumberColumnData(ColumnInsertMeta *col_meta, uint32_t num_vals);
+
+    /**
+     * Create an array of boolean data with the given distribution
+     * @param col_meta
+     * @param num_vals
+     * @return
+     */
+    bool *CreateBooleanColumnData(ColumnInsertMeta *col_meta, uint32_t num_vals);
+
+    /**
+     * Generate column data
+     * @param col_meta
+     * @param num_rows
+     * @return
+     */
+    std::pair<byte *, uint32_t *> GenerateColumnData(ColumnInsertMeta *col_meta, uint32_t num_rows);
+
+    /**
+     * Generate column data for varchar
+     * @param col_meta
+     * @param num_vals
+     * @return
+     */
+    storage::VarlenEntry *CreateVarcharColumnData(ColumnInsertMeta *col_meta, uint32_t num_vals);
+
+    /**
+     * Clone Column Data
+     * T - underlying type of original
+     * S - underlying type of copied data
+     * @param orig original
+     * @param num_rows number of rows
+     * @returns cloned column data
+     */
+    template <typename T, typename S>
+    std::pair<byte *, uint32_t *> CloneColumnData(std::pair<byte *, uint32_t *> orig, uint32_t num_rows);
+
+    /**
+     * Create table
+     * @param metadata TableInsertMeta
+     */
+    void CreateTable(TableInsertMeta *metadata);
+
+    /**
+     * Create Index
+     * @param index_meta Index Metadata
+     */
+    void CreateIndex(IndexInsertMeta *index_meta);
+
+    /**
+     * Fill a given table according to its metadata
+     * @param table_oid
+     * @param table
+     * @param schema
+     * @param table_meta
+     */
+    void FillTable(catalog::table_oid_t                      table_oid,
+                   common::ManagedPointer<storage::SqlTable> table,
+                   const catalog::Schema                    &schema,
+                   TableInsertMeta                          *table_meta);
+
+    void FillIndex(common::ManagedPointer<storage::index::Index> index,
+                   const catalog::IndexSchema                   &index_schema,
+                   const IndexInsertMeta                        &index_meta,
+                   common::ManagedPointer<storage::SqlTable>     table,
+                   const catalog::Schema                        &table_schema);
 };
 
-}  // namespace noisepage::execution::sql
+} // namespace noisepage::execution::sql

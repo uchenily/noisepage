@@ -1,6 +1,6 @@
 #pragma once
 
-#include <chrono>  // NOLINT
+#include <chrono> // NOLINT
 
 namespace noisepage::execution::util {
 
@@ -9,36 +9,42 @@ namespace noisepage::execution::util {
  */
 template <typename ResolutionRatio = std::milli>
 class Timer {
-  using Clock = std::chrono::high_resolution_clock;
-  using TimePoint = std::chrono::time_point<Clock>;
+    using Clock = std::chrono::high_resolution_clock;
+    using TimePoint = std::chrono::time_point<Clock>;
 
- public:
-  Timer() noexcept { Start(); }
+public:
+    Timer() noexcept {
+        Start();
+    }
 
-  /**
-   * Start the timer.
-   */
-  void Start() noexcept { start_ = Clock::now(); }
+    /**
+     * Start the timer.
+     */
+    void Start() noexcept {
+        start_ = Clock::now();
+    }
 
-  /**
-   * Stop the timer.
-   */
-  void Stop() noexcept {
-    stop_ = Clock::now();
+    /**
+     * Stop the timer.
+     */
+    void Stop() noexcept {
+        stop_ = Clock::now();
 
-    elapsed_ = std::chrono::duration_cast<std::chrono::duration<double, ResolutionRatio>>(stop_ - start_).count();
-  }
+        elapsed_ = std::chrono::duration_cast<std::chrono::duration<double, ResolutionRatio>>(stop_ - start_).count();
+    }
 
-  /**
-   * @return The total number of elapsed time units.
-   */
-  double GetElapsed() const noexcept { return elapsed_; }
+    /**
+     * @return The total number of elapsed time units.
+     */
+    double GetElapsed() const noexcept {
+        return elapsed_;
+    }
 
- private:
-  TimePoint start_;
-  TimePoint stop_;
+private:
+    TimePoint start_;
+    TimePoint stop_;
 
-  double elapsed_{0};
+    double elapsed_{0};
 };
 
 /**
@@ -57,11 +63,11 @@ class Timer {
  */
 template <typename ResolutionRatio, typename F>
 inline double Time(F &&f) {
-  Timer<ResolutionRatio> timer;
-  timer.Start();
-  f();
-  timer.Stop();
-  return timer.GetElapsed();
+    Timer<ResolutionRatio> timer;
+    timer.Start();
+    f();
+    timer.Stop();
+    return timer.GetElapsed();
 }
 
 /**
@@ -72,7 +78,7 @@ inline double Time(F &&f) {
  */
 template <typename F>
 inline double TimeNanos(F &&f) {
-  return Time<std::nano>(f);
+    return Time<std::nano>(f);
 }
 
 /**
@@ -90,24 +96,25 @@ inline double TimeNanos(F &&f) {
  */
 template <typename ResolutionRatio = std::milli>
 class ScopedTimer {
- public:
-  /**
-   * Constructor
-   * @param elapsed output variable of the elapsed time
-   */
-  explicit ScopedTimer(double *elapsed) noexcept : elapsed_(elapsed) {
-    *elapsed_ = 0;
-    timer_.Start();
-  }
+public:
+    /**
+     * Constructor
+     * @param elapsed output variable of the elapsed time
+     */
+    explicit ScopedTimer(double *elapsed) noexcept
+        : elapsed_(elapsed) {
+        *elapsed_ = 0;
+        timer_.Start();
+    }
 
-  ~ScopedTimer() {
-    timer_.Stop();
-    *elapsed_ = timer_.GetElapsed();
-  }
+    ~ScopedTimer() {
+        timer_.Stop();
+        *elapsed_ = timer_.GetElapsed();
+    }
 
- private:
-  Timer<ResolutionRatio> timer_;
-  double *elapsed_;
+private:
+    Timer<ResolutionRatio> timer_;
+    double                *elapsed_;
 };
 
-}  // namespace noisepage::execution::util
+} // namespace noisepage::execution::util

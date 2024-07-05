@@ -22,7 +22,7 @@ You can use [kcachegrind](http://kcachegrind.sourceforge.net/html/Home.html) for
 
 ## Profiling a portion of execution
 
-Suppose you want the Callgrind graph for a feature you implemented but the graph is getting skewed by other heavier options such as Inserts, you can turn profiling on/off during runtime through the following steps - 
+Suppose you want the Callgrind graph for a feature you implemented but the graph is getting skewed by other heavier options such as Inserts, you can turn profiling on/off during runtime through the following steps -
 
 First Launch Valgrind and turn off instrumentation at start
 

@@ -14,45 +14,39 @@
 #ifndef SDIR_H
 #define SDIR_H
 
-
 /*
  * ScanDirection was an int8 for no apparent reason. I kept the original
  * values because I'm not sure if I'll break anything otherwise.  -ay 2/95
  */
-typedef enum ScanDirection
-{
-	BackwardScanDirection = -1,
-	NoMovementScanDirection = 0,
-	ForwardScanDirection = 1
+typedef enum ScanDirection {
+    BackwardScanDirection = -1,
+    NoMovementScanDirection = 0,
+    ForwardScanDirection = 1
 } ScanDirection;
 
 /*
  * ScanDirectionIsValid
  *		True iff scan direction is valid.
  */
-#define ScanDirectionIsValid(direction) \
-	((bool) (BackwardScanDirection <= (direction) && \
-			 (direction) <= ForwardScanDirection))
+#define ScanDirectionIsValid(direction)                                                                                \
+    ((bool) (BackwardScanDirection <= (direction) && (direction) <= ForwardScanDirection))
 
 /*
  * ScanDirectionIsBackward
  *		True iff scan direction is backward.
  */
-#define ScanDirectionIsBackward(direction) \
-	((bool) ((direction) == BackwardScanDirection))
+#define ScanDirectionIsBackward(direction) ((bool) ((direction) == BackwardScanDirection))
 
 /*
  * ScanDirectionIsNoMovement
  *		True iff scan direction indicates no movement.
  */
-#define ScanDirectionIsNoMovement(direction) \
-	((bool) ((direction) == NoMovementScanDirection))
+#define ScanDirectionIsNoMovement(direction) ((bool) ((direction) == NoMovementScanDirection))
 
 /*
  * ScanDirectionIsForward
  *		True iff scan direction is forward.
  */
-#define ScanDirectionIsForward(direction) \
-	((bool) ((direction) == ForwardScanDirection))
+#define ScanDirectionIsForward(direction) ((bool) ((direction) == ForwardScanDirection))
 
-#endif   /* SDIR_H */
+#endif /* SDIR_H */

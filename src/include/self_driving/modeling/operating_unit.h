@@ -12,7 +12,7 @@
 
 namespace noisepage::runner {
 class ExecutionRunners;
-}  // namespace noisepage::runner
+} // namespace noisepage::runner
 
 namespace noisepage::execution::compiler::test {
 class CompilerTest_SimpleSeqScanTest_Test;
@@ -39,22 +39,22 @@ class CompilerTest_SimpleInsertTest_Test;
 class CompilerTest_InsertIntoSelectWithParamTest_Test;
 class CompilerTest_SimpleInsertWithParamsTest_Test;
 class CompilerTest_StaticDistinctAggregateTest_Test;
-}  // namespace noisepage::execution::compiler::test
+} // namespace noisepage::execution::compiler::test
 
 namespace noisepage::execution::exec {
 class ExecutionContext;
-}  // namespace noisepage::execution::exec
+} // namespace noisepage::execution::exec
 
 namespace noisepage::execution::sql {
 class TableVectorIterator;
 class Sorter;
 class JoinHashTable;
 class AggregationHashTable;
-}  // namespace noisepage::execution::sql
+} // namespace noisepage::execution::sql
 
 namespace noisepage::optimizer {
 class IdxJoinTest_SimpleIdxJoinTest_Test;
-}  // namespace noisepage::optimizer
+} // namespace noisepage::optimizer
 
 namespace noisepage::selfdriving {
 
@@ -75,248 +75,288 @@ class OperatingUnitRecorder;
  * - Estimated cardinality
  */
 class ExecutionOperatingUnitFeature {
-  friend class noisepage::runner::ExecutionRunners;
-  friend class execution::exec::ExecutionContext;
-  friend class OperatingUnitRecorder;
-  friend class ExecOUFeatureVector;
-  friend class PipelineOperatingUnits;
-  friend class execution::sql::TableVectorIterator;
-  friend class execution::sql::Sorter;
-  friend class execution::sql::JoinHashTable;
-  friend class execution::sql::AggregationHashTable;
+    friend class noisepage::runner::ExecutionRunners;
+    friend class execution::exec::ExecutionContext;
+    friend class OperatingUnitRecorder;
+    friend class ExecOUFeatureVector;
+    friend class PipelineOperatingUnits;
+    friend class execution::sql::TableVectorIterator;
+    friend class execution::sql::Sorter;
+    friend class execution::sql::JoinHashTable;
+    friend class execution::sql::AggregationHashTable;
 
- public:
-  ExecutionOperatingUnitFeature() = default;
+public:
+    ExecutionOperatingUnitFeature() = default;
 
-  /**
-   * Constructor for ExecutionOperatingUnitFeature
-   * @param translator_id The ID of the translator
-   * @param feature Type
-   * @param num_rows Estimated number of output tuples
-   * @param key_size Total Key Size
-   * @param num_keys Number of keys
-   * @param cardinality Estimated cardinality
-   * @param mem_factor Memory adjustment factor
-   * @param num_loops Number of loops
-   * @param num_concurrent Number of concurrent tasks (including current one)
-   * @param specific_feature0 A feature specific feature value
-   * @param specific_feature1 A (second) feature specific feature value
-   */
-  ExecutionOperatingUnitFeature(execution::translator_id_t translator_id, ExecutionOperatingUnitType feature,
-                                size_t num_rows, size_t key_size, size_t num_keys, size_t cardinality,
-                                double mem_factor, size_t num_loops, size_t num_concurrent, size_t specific_feature0,
-                                size_t specific_feature1)
-      : translator_id_(translator_id),
-        feature_id_(feature_id_counter++),
-        feature_(feature),
-        num_rows_(num_rows),
-        key_size_(key_size),
-        num_keys_(num_keys),
-        cardinality_(cardinality),
-        mem_factors_({mem_factor}),
-        num_loops_(num_loops),
-        num_concurrent_(num_concurrent),
-        specific_feature0_(specific_feature0),
-        specific_feature1_(specific_feature1) {}
+    /**
+     * Constructor for ExecutionOperatingUnitFeature
+     * @param translator_id The ID of the translator
+     * @param feature Type
+     * @param num_rows Estimated number of output tuples
+     * @param key_size Total Key Size
+     * @param num_keys Number of keys
+     * @param cardinality Estimated cardinality
+     * @param mem_factor Memory adjustment factor
+     * @param num_loops Number of loops
+     * @param num_concurrent Number of concurrent tasks (including current one)
+     * @param specific_feature0 A feature specific feature value
+     * @param specific_feature1 A (second) feature specific feature value
+     */
+    ExecutionOperatingUnitFeature(execution::translator_id_t translator_id,
+                                  ExecutionOperatingUnitType feature,
+                                  size_t                     num_rows,
+                                  size_t                     key_size,
+                                  size_t                     num_keys,
+                                  size_t                     cardinality,
+                                  double                     mem_factor,
+                                  size_t                     num_loops,
+                                  size_t                     num_concurrent,
+                                  size_t                     specific_feature0,
+                                  size_t                     specific_feature1)
+        : translator_id_(translator_id)
+        , feature_id_(feature_id_counter++)
+        , feature_(feature)
+        , num_rows_(num_rows)
+        , key_size_(key_size)
+        , num_keys_(num_keys)
+        , cardinality_(cardinality)
+        , mem_factors_({mem_factor})
+        , num_loops_(num_loops)
+        , num_concurrent_(num_concurrent)
+        , specific_feature0_(specific_feature0)
+        , specific_feature1_(specific_feature1) {}
 
-  /**
-   * Constructor for ExecutionOperatingUnitFeature from an existing feature
-   *
-   * @param feature Newly created OU type
-   * @param other Existing OU to copy information from
-   */
-  ExecutionOperatingUnitFeature(ExecutionOperatingUnitType feature, const ExecutionOperatingUnitFeature &other)
-      : translator_id_(other.translator_id_),
-        feature_id_(other.feature_id_),
-        feature_(feature),
-        num_rows_(other.num_rows_),
-        key_size_(other.key_size_),
-        num_keys_(other.num_keys_),
-        cardinality_(other.cardinality_),
-        mem_factors_(other.mem_factors_),
-        num_loops_(other.num_loops_),
-        num_concurrent_(other.num_concurrent_),
-        specific_feature0_(other.specific_feature0_),
-        specific_feature1_(other.specific_feature1_) {}
+    /**
+     * Constructor for ExecutionOperatingUnitFeature from an existing feature
+     *
+     * @param feature Newly created OU type
+     * @param other Existing OU to copy information from
+     */
+    ExecutionOperatingUnitFeature(ExecutionOperatingUnitType feature, const ExecutionOperatingUnitFeature &other)
+        : translator_id_(other.translator_id_)
+        , feature_id_(other.feature_id_)
+        , feature_(feature)
+        , num_rows_(other.num_rows_)
+        , key_size_(other.key_size_)
+        , num_keys_(other.num_keys_)
+        , cardinality_(other.cardinality_)
+        , mem_factors_(other.mem_factors_)
+        , num_loops_(other.num_loops_)
+        , num_concurrent_(other.num_concurrent_)
+        , specific_feature0_(other.specific_feature0_)
+        , specific_feature1_(other.specific_feature1_) {}
 
-  /**
-   * Returns a vector of doubles consisting of 9 features starting with num_rows
-   */
-  void GetAllAttributes(std::vector<double> *all_attributes) const {
-    all_attributes->push_back(num_rows_);
-    all_attributes->push_back(key_size_);
-    all_attributes->push_back(num_keys_);
-    all_attributes->push_back(cardinality_);
-    all_attributes->push_back(GetMemFactor());
-    all_attributes->push_back(num_loops_);
-    all_attributes->push_back(num_concurrent_);
-    all_attributes->push_back(specific_feature0_);
-    all_attributes->push_back(specific_feature1_);
-  }
-
-  /** @return The ID of the translator for this ExecutionOperatingUnitFeature. */
-  execution::translator_id_t GetTranslatorId() const { return translator_id_; }
-
-  /** @return The ID of this ExecutionOperatingUnitFeature. */
-  execution::feature_id_t GetFeatureId() const { return feature_id_; }
-
-  /**
-   * @return type
-   */
-  ExecutionOperatingUnitType GetExecutionOperatingUnitType() const { return feature_; }
-
-  /**
-   * Updates target with the value of update under a specific update mode.
-   *
-   * If mode == SET: *target = update
-   * If mode == ADD: *target += update
-   * If mode == MULT: *target *= update
-   *
-   * @param mode Mode to use for updating target
-   * @param target Target to update
-   * @param update Value to apply
-   */
-  void ApplyValueUpdate(ExecutionOperatingUnitFeatureUpdateMode mode, size_t *target, size_t update);
-
-  /**
-   * Update num_rows under a given mode and value
-   * @param mode Mode to use for updating target
-   * @param val Value to apply for the update
-   */
-  void UpdateNumRows(ExecutionOperatingUnitFeatureUpdateMode mode, size_t val) {
-    ApplyValueUpdate(mode, &num_rows_, val);
-  }
-
-  /**
-   * @return estimated number of output tuples
-   */
-  size_t GetNumRows() const { return num_rows_; }
-
-  /**
-   * @return total key size
-   */
-  size_t GetKeySize() const { return key_size_; }
-
-  /**
-   * @return number of keys (columns)
-   */
-  size_t GetNumKeys() const { return num_keys_; }
-
-  /**
-   * Update cardinality under a given mode and value
-   * @param mode Mode to use for updating target
-   * @param val Value to apply for the update
-   */
-  void UpdateCardinality(ExecutionOperatingUnitFeatureUpdateMode mode, size_t val) {
-    ApplyValueUpdate(mode, &cardinality_, val);
-  }
-
-  /**
-   * @return estimated cardinality
-   */
-  size_t GetCardinality() const { return cardinality_; }
-
-  /**
-   * Update num_concurrent under a given mode and value
-   * @param mode Mode to use for updating target
-   * @param val Value to apply for the update
-   */
-  void UpdateNumConcurrent(ExecutionOperatingUnitFeatureUpdateMode mode, size_t val) {
-    ApplyValueUpdate(mode, &num_concurrent_, val);
-  }
-
-  /**
-   * @return num concurrent
-   */
-  size_t GetNumConcurrent() const { return num_concurrent_; }
-
-  /**
-   * @return memory adjustment factor
-   */
-  double GetMemFactor() const {
-    if (mem_factors_.empty()) return 1.0;
-
-    double sum = 0.0;
-    for (auto factor : mem_factors_) {
-      sum += factor;
+    /**
+     * Returns a vector of doubles consisting of 9 features starting with num_rows
+     */
+    void GetAllAttributes(std::vector<double> *all_attributes) const {
+        all_attributes->push_back(num_rows_);
+        all_attributes->push_back(key_size_);
+        all_attributes->push_back(num_keys_);
+        all_attributes->push_back(cardinality_);
+        all_attributes->push_back(GetMemFactor());
+        all_attributes->push_back(num_loops_);
+        all_attributes->push_back(num_concurrent_);
+        all_attributes->push_back(specific_feature0_);
+        all_attributes->push_back(specific_feature1_);
     }
 
-    return sum / mem_factors_.size();
-  }
+    /** @return The ID of the translator for this ExecutionOperatingUnitFeature. */
+    execution::translator_id_t GetTranslatorId() const {
+        return translator_id_;
+    }
 
-  /**
-   * Update num_loops under a given mode and value
-   * @param mode Mode to use for updating target
-   * @param val Value to apply for the update
-   */
-  void UpdateNumLoops(ExecutionOperatingUnitFeatureUpdateMode mode, size_t val) {
-    ApplyValueUpdate(mode, &num_concurrent_, val);
-  }
+    /** @return The ID of this ExecutionOperatingUnitFeature. */
+    execution::feature_id_t GetFeatureId() const {
+        return feature_id_;
+    }
 
-  /**
-   * @return number of iterations
-   */
-  size_t GetNumLoops() const { return num_loops_; }
+    /**
+     * @return type
+     */
+    ExecutionOperatingUnitType GetExecutionOperatingUnitType() const {
+        return feature_;
+    }
 
-  /**
-   * @return feature specific value 0
-   */
-  size_t GetSpecificFeature0() const { return specific_feature0_; }
+    /**
+     * Updates target with the value of update under a specific update mode.
+     *
+     * If mode == SET: *target = update
+     * If mode == ADD: *target += update
+     * If mode == MULT: *target *= update
+     *
+     * @param mode Mode to use for updating target
+     * @param target Target to update
+     * @param update Value to apply
+     */
+    void ApplyValueUpdate(ExecutionOperatingUnitFeatureUpdateMode mode, size_t *target, size_t update);
 
-  /**
-   * @return feature specific value 1
-   */
-  size_t GetSpecificFeature1() const { return specific_feature1_; }
+    /**
+     * Update num_rows under a given mode and value
+     * @param mode Mode to use for updating target
+     * @param val Value to apply for the update
+     */
+    void UpdateNumRows(ExecutionOperatingUnitFeatureUpdateMode mode, size_t val) {
+        ApplyValueUpdate(mode, &num_rows_, val);
+    }
 
- private:
-  /**
-   * Set the estimated number of output tuples
-   * @note only should be invoked by OperatingUnitRecorder or counters
-   * @param num_rows Updated estimate
-   */
-  void SetNumRows(size_t num_rows) { num_rows_ = num_rows; }
+    /**
+     * @return estimated number of output tuples
+     */
+    size_t GetNumRows() const {
+        return num_rows_;
+    }
 
-  /**
-   * Set the estimated cardinality
-   * @note only should be invoked by OperatingUnitRecorder or counters
-   * @param cardinality Updated cardinality
-   */
-  void SetCardinality(size_t cardinality) { cardinality_ = cardinality; }
+    /**
+     * @return total key size
+     */
+    size_t GetKeySize() const {
+        return key_size_;
+    }
 
-  /*
-   * Set the number of concurrent other tasks
-   * @param num_concurrent number of concurent tasks
-   */
-  void SetNumConcurrent(size_t num_concurrent) { num_concurrent_ = num_concurrent; }
+    /**
+     * @return number of keys (columns)
+     */
+    size_t GetNumKeys() const {
+        return num_keys_;
+    }
 
-  /**
-   * Set the estimated number of loops
-   * @note only should be invoked by OperatingUnitRecorder or counters
-   * @param num_loops Updated estimate
-   */
-  void SetNumLoops(size_t num_loops) { num_loops_ = num_loops; }
+    /**
+     * Update cardinality under a given mode and value
+     * @param mode Mode to use for updating target
+     * @param val Value to apply for the update
+     */
+    void UpdateCardinality(ExecutionOperatingUnitFeatureUpdateMode mode, size_t val) {
+        ApplyValueUpdate(mode, &cardinality_, val);
+    }
 
-  /**
-   * Set the mem factor
-   * @note only should be invoked by OperatingUnitRecorder
-   * @param mem_factor Updated mem_factor
-   */
-  void AddMemFactor(double mem_factor) { mem_factors_.emplace_back(mem_factor); }
+    /**
+     * @return estimated cardinality
+     */
+    size_t GetCardinality() const {
+        return cardinality_;
+    }
 
-  static std::atomic<execution::feature_id_t> feature_id_counter;
+    /**
+     * Update num_concurrent under a given mode and value
+     * @param mode Mode to use for updating target
+     * @param val Value to apply for the update
+     */
+    void UpdateNumConcurrent(ExecutionOperatingUnitFeatureUpdateMode mode, size_t val) {
+        ApplyValueUpdate(mode, &num_concurrent_, val);
+    }
 
-  execution::translator_id_t translator_id_;
-  execution::feature_id_t feature_id_;
-  ExecutionOperatingUnitType feature_;
-  size_t num_rows_;
-  size_t key_size_;
-  size_t num_keys_;
-  size_t cardinality_;
-  std::vector<double> mem_factors_;
-  size_t num_loops_;
-  size_t num_concurrent_;
-  size_t specific_feature0_;
-  size_t specific_feature1_;
+    /**
+     * @return num concurrent
+     */
+    size_t GetNumConcurrent() const {
+        return num_concurrent_;
+    }
+
+    /**
+     * @return memory adjustment factor
+     */
+    double GetMemFactor() const {
+        if (mem_factors_.empty())
+            return 1.0;
+
+        double sum = 0.0;
+        for (auto factor : mem_factors_) {
+            sum += factor;
+        }
+
+        return sum / mem_factors_.size();
+    }
+
+    /**
+     * Update num_loops under a given mode and value
+     * @param mode Mode to use for updating target
+     * @param val Value to apply for the update
+     */
+    void UpdateNumLoops(ExecutionOperatingUnitFeatureUpdateMode mode, size_t val) {
+        ApplyValueUpdate(mode, &num_concurrent_, val);
+    }
+
+    /**
+     * @return number of iterations
+     */
+    size_t GetNumLoops() const {
+        return num_loops_;
+    }
+
+    /**
+     * @return feature specific value 0
+     */
+    size_t GetSpecificFeature0() const {
+        return specific_feature0_;
+    }
+
+    /**
+     * @return feature specific value 1
+     */
+    size_t GetSpecificFeature1() const {
+        return specific_feature1_;
+    }
+
+private:
+    /**
+     * Set the estimated number of output tuples
+     * @note only should be invoked by OperatingUnitRecorder or counters
+     * @param num_rows Updated estimate
+     */
+    void SetNumRows(size_t num_rows) {
+        num_rows_ = num_rows;
+    }
+
+    /**
+     * Set the estimated cardinality
+     * @note only should be invoked by OperatingUnitRecorder or counters
+     * @param cardinality Updated cardinality
+     */
+    void SetCardinality(size_t cardinality) {
+        cardinality_ = cardinality;
+    }
+
+    /*
+     * Set the number of concurrent other tasks
+     * @param num_concurrent number of concurent tasks
+     */
+    void SetNumConcurrent(size_t num_concurrent) {
+        num_concurrent_ = num_concurrent;
+    }
+
+    /**
+     * Set the estimated number of loops
+     * @note only should be invoked by OperatingUnitRecorder or counters
+     * @param num_loops Updated estimate
+     */
+    void SetNumLoops(size_t num_loops) {
+        num_loops_ = num_loops;
+    }
+
+    /**
+     * Set the mem factor
+     * @note only should be invoked by OperatingUnitRecorder
+     * @param mem_factor Updated mem_factor
+     */
+    void AddMemFactor(double mem_factor) {
+        mem_factors_.emplace_back(mem_factor);
+    }
+
+    static std::atomic<execution::feature_id_t> feature_id_counter;
+
+    execution::translator_id_t translator_id_;
+    execution::feature_id_t    feature_id_;
+    ExecutionOperatingUnitType feature_;
+    size_t                     num_rows_;
+    size_t                     key_size_;
+    size_t                     num_keys_;
+    size_t                     cardinality_;
+    std::vector<double>        mem_factors_;
+    size_t                     num_loops_;
+    size_t                     num_concurrent_;
+    size_t                     specific_feature0_;
+    size_t                     specific_feature1_;
 };
 
 /**
@@ -329,40 +369,42 @@ using ExecutionOperatingUnitFeatureVector = std::vector<ExecutionOperatingUnitFe
  * State is maintained in TLS during execution.
  */
 class EXPORT ExecOUFeatureVector {
- public:
-  /**
-   * Pipeline ID
-   */
-  execution::pipeline_id_t pipeline_id_{execution::INVALID_PIPELINE_ID};
+public:
+    /**
+     * Pipeline ID
+     */
+    execution::pipeline_id_t pipeline_id_{execution::INVALID_PIPELINE_ID};
 
-  /**
-   * Features for a given pipeline
-   *
-   * This is a pointer because we need to be able to explicitly delete the
-   * vector on all control flow paths. A standard std::vector may not be
-   * properly cleaned up if execution encounters an "exception".
-   */
-  std::unique_ptr<execution::sql::MemPoolVector<ExecutionOperatingUnitFeature>> pipeline_features_ = nullptr;
+    /**
+     * Features for a given pipeline
+     *
+     * This is a pointer because we need to be able to explicitly delete the
+     * vector on all control flow paths. A standard std::vector may not be
+     * properly cleaned up if execution encounters an "exception".
+     */
+    std::unique_ptr<execution::sql::MemPoolVector<ExecutionOperatingUnitFeature>> pipeline_features_ = nullptr;
 
-  /**
-   * Resets the feature vector state so it can be initialized again
-   */
-  void Reset() {
-    pipeline_id_ = execution::INVALID_PIPELINE_ID;
-    pipeline_features_ = nullptr;
-  }
+    /**
+     * Resets the feature vector state so it can be initialized again
+     */
+    void Reset() {
+        pipeline_id_ = execution::INVALID_PIPELINE_ID;
+        pipeline_features_ = nullptr;
+    }
 
-  /**
-   * Function used to update a feature's metadata information
-   * @param pipeline_id Pipeline Identifier
-   * @param feature_id Feature Identifier
-   * @param modifier Attribute to modify
-   * @param mode Update mode to the value
-   * @param val Value
-   */
-  void UpdateFeature(execution::pipeline_id_t pipeline_id, execution::feature_id_t feature_id,
-                     ExecutionOperatingUnitFeatureAttribute modifier, ExecutionOperatingUnitFeatureUpdateMode mode,
-                     uint32_t val);
+    /**
+     * Function used to update a feature's metadata information
+     * @param pipeline_id Pipeline Identifier
+     * @param feature_id Feature Identifier
+     * @param modifier Attribute to modify
+     * @param mode Update mode to the value
+     * @param val Value
+     */
+    void UpdateFeature(execution::pipeline_id_t                pipeline_id,
+                       execution::feature_id_t                 feature_id,
+                       ExecutionOperatingUnitFeatureAttribute  modifier,
+                       ExecutionOperatingUnitFeatureUpdateMode mode,
+                       uint32_t                                val);
 };
 
 /**
@@ -371,79 +413,81 @@ class EXPORT ExecOUFeatureVector {
  * within that given pipeline.
  */
 class PipelineOperatingUnits {
- public:
-  friend class noisepage::optimizer::IdxJoinTest_SimpleIdxJoinTest_Test;
-  friend class noisepage::execution::compiler::test::CompilerTest_SimpleSeqScanTest_Test;
-  friend class noisepage::execution::compiler::test::CompilerTest_SimpleSeqScanNonVecFilterTest_Test;
-  friend class noisepage::execution::compiler::test::CompilerTest_SimpleSeqScanWithProjectionTest_Test;
-  friend class noisepage::execution::compiler::test::CompilerTest_SimpleSeqScanWithParamsTest_Test;
-  friend class noisepage::execution::compiler::test::CompilerTest_SimpleIndexScanTest_Test;
-  friend class noisepage::execution::compiler::test::CompilerTest_SimpleIndexScanAscendingTest_Test;
-  friend class noisepage::execution::compiler::test::CompilerTest_SimpleIndexScanLimitAscendingTest_Test;
-  friend class noisepage::execution::compiler::test::CompilerTest_SimpleIndexScanDescendingTest_Test;
-  friend class noisepage::execution::compiler::test::CompilerTest_SimpleIndexScanLimitDescendingTest_Test;
-  friend class noisepage::execution::compiler::test::CompilerTest_SimpleAggregateTest_Test;
-  friend class noisepage::execution::compiler::test::CompilerTest_CountStarTest_Test;
-  friend class noisepage::execution::compiler::test::CompilerTest_SimpleSortTest_Test;
-  friend class noisepage::execution::compiler::test::CompilerTest_SimpleAggregateHavingTest_Test;
-  friend class noisepage::execution::compiler::test::CompilerTest_SimpleHashJoinTest_Test;
-  friend class noisepage::execution::compiler::test::CompilerTest_MultiWayHashJoinTest_Test;
-  friend class noisepage::execution::compiler::test::CompilerTest_SimpleNestedLoopJoinTest_Test;
-  friend class noisepage::execution::compiler::test::CompilerTest_SimpleIndexNestedLoopJoinTest_Test;
-  friend class noisepage::execution::compiler::test::CompilerTest_SimpleIndexNestedLoopJoinMultiColumnTest_Test;
-  friend class noisepage::execution::compiler::test::CompilerTest_SimpleDeleteTest_Test;
-  friend class noisepage::execution::compiler::test::CompilerTest_SimpleUpdateTest_Test;
-  friend class noisepage::execution::compiler::test::CompilerTest_SimpleInsertTest_Test;
-  friend class noisepage::execution::compiler::test::CompilerTest_InsertIntoSelectWithParamTest_Test;
-  friend class noisepage::execution::compiler::test::CompilerTest_SimpleInsertWithParamsTest_Test;
-  friend class noisepage::execution::compiler::test::CompilerTest_StaticDistinctAggregateTest_Test;
-  friend class noisepage::runner::ExecutionRunners;
+public:
+    friend class noisepage::optimizer::IdxJoinTest_SimpleIdxJoinTest_Test;
+    friend class noisepage::execution::compiler::test::CompilerTest_SimpleSeqScanTest_Test;
+    friend class noisepage::execution::compiler::test::CompilerTest_SimpleSeqScanNonVecFilterTest_Test;
+    friend class noisepage::execution::compiler::test::CompilerTest_SimpleSeqScanWithProjectionTest_Test;
+    friend class noisepage::execution::compiler::test::CompilerTest_SimpleSeqScanWithParamsTest_Test;
+    friend class noisepage::execution::compiler::test::CompilerTest_SimpleIndexScanTest_Test;
+    friend class noisepage::execution::compiler::test::CompilerTest_SimpleIndexScanAscendingTest_Test;
+    friend class noisepage::execution::compiler::test::CompilerTest_SimpleIndexScanLimitAscendingTest_Test;
+    friend class noisepage::execution::compiler::test::CompilerTest_SimpleIndexScanDescendingTest_Test;
+    friend class noisepage::execution::compiler::test::CompilerTest_SimpleIndexScanLimitDescendingTest_Test;
+    friend class noisepage::execution::compiler::test::CompilerTest_SimpleAggregateTest_Test;
+    friend class noisepage::execution::compiler::test::CompilerTest_CountStarTest_Test;
+    friend class noisepage::execution::compiler::test::CompilerTest_SimpleSortTest_Test;
+    friend class noisepage::execution::compiler::test::CompilerTest_SimpleAggregateHavingTest_Test;
+    friend class noisepage::execution::compiler::test::CompilerTest_SimpleHashJoinTest_Test;
+    friend class noisepage::execution::compiler::test::CompilerTest_MultiWayHashJoinTest_Test;
+    friend class noisepage::execution::compiler::test::CompilerTest_SimpleNestedLoopJoinTest_Test;
+    friend class noisepage::execution::compiler::test::CompilerTest_SimpleIndexNestedLoopJoinTest_Test;
+    friend class noisepage::execution::compiler::test::CompilerTest_SimpleIndexNestedLoopJoinMultiColumnTest_Test;
+    friend class noisepage::execution::compiler::test::CompilerTest_SimpleDeleteTest_Test;
+    friend class noisepage::execution::compiler::test::CompilerTest_SimpleUpdateTest_Test;
+    friend class noisepage::execution::compiler::test::CompilerTest_SimpleInsertTest_Test;
+    friend class noisepage::execution::compiler::test::CompilerTest_InsertIntoSelectWithParamTest_Test;
+    friend class noisepage::execution::compiler::test::CompilerTest_SimpleInsertWithParamsTest_Test;
+    friend class noisepage::execution::compiler::test::CompilerTest_StaticDistinctAggregateTest_Test;
+    friend class noisepage::runner::ExecutionRunners;
 
-  /**
-   * Constructor
-   */
-  PipelineOperatingUnits() = default;
+    /**
+     * Constructor
+     */
+    PipelineOperatingUnits() = default;
 
-  /**
-   * Adds a new pipeline and its features vector to the storage unit
-   * @note asserts that pipeline identifier is unique
-   * @param pipeline pipeline identifier
-   * @param features Vector of ExecutionOperatingUnitFeature describing pipeline contents
-   */
-  void RecordOperatingUnit(execution::pipeline_id_t pipeline, ExecutionOperatingUnitFeatureVector &&features) {
-    UNUSED_ATTRIBUTE auto res = units_.insert(std::make_pair(pipeline, std::move(features)));
-    NOISEPAGE_ASSERT(res.second, "Recording duplicate pipeline entry into PipelineOperatingUnits");
-  }
+    /**
+     * Adds a new pipeline and its features vector to the storage unit
+     * @note asserts that pipeline identifier is unique
+     * @param pipeline pipeline identifier
+     * @param features Vector of ExecutionOperatingUnitFeature describing pipeline contents
+     */
+    void RecordOperatingUnit(execution::pipeline_id_t pipeline, ExecutionOperatingUnitFeatureVector &&features) {
+        UNUSED_ATTRIBUTE auto res = units_.insert(std::make_pair(pipeline, std::move(features)));
+        NOISEPAGE_ASSERT(res.second, "Recording duplicate pipeline entry into PipelineOperatingUnits");
+    }
 
-  /**
-   * Gets the features vector for a given pipeline identifier
-   * @note asserts that pipeline identifier exists
-   * @param pipeline pipeline identifier
-   */
-  const ExecutionOperatingUnitFeatureVector &GetPipelineFeatures(execution::pipeline_id_t pipeline) const {
-    UNUSED_ATTRIBUTE auto itr = units_.find(pipeline);
-    NOISEPAGE_ASSERT(itr != units_.end(), "Requested pipeline could not be found in PipelineOperatingUnits");
-    return itr->second;
-  }
+    /**
+     * Gets the features vector for a given pipeline identifier
+     * @note asserts that pipeline identifier exists
+     * @param pipeline pipeline identifier
+     */
+    const ExecutionOperatingUnitFeatureVector &GetPipelineFeatures(execution::pipeline_id_t pipeline) const {
+        UNUSED_ATTRIBUTE auto itr = units_.find(pipeline);
+        NOISEPAGE_ASSERT(itr != units_.end(), "Requested pipeline could not be found in PipelineOperatingUnits");
+        return itr->second;
+    }
 
-  /**
-   * Gets the map from pipeline id to features
-   * @return the pipeline feature map
-   */
-  const std::unordered_map<execution::pipeline_id_t, ExecutionOperatingUnitFeatureVector> &GetPipelineFeatureMap()
-      const {
-    return units_;
-  }
+    /**
+     * Gets the map from pipeline id to features
+     * @return the pipeline feature map
+     */
+    const std::unordered_map<execution::pipeline_id_t, ExecutionOperatingUnitFeatureVector> &
+    GetPipelineFeatureMap() const {
+        return units_;
+    }
 
-  /**
-   * Checks whether a certain pipeline exists
-   * @param pipeline Pipeline Identifier
-   * @return if exist or not
-   */
-  bool HasPipelineFeatures(execution::pipeline_id_t pipeline) const { return units_.find(pipeline) != units_.end(); }
+    /**
+     * Checks whether a certain pipeline exists
+     * @param pipeline Pipeline Identifier
+     * @return if exist or not
+     */
+    bool HasPipelineFeatures(execution::pipeline_id_t pipeline) const {
+        return units_.find(pipeline) != units_.end();
+    }
 
- private:
-  std::unordered_map<execution::pipeline_id_t, ExecutionOperatingUnitFeatureVector> units_{};
+private:
+    std::unordered_map<execution::pipeline_id_t, ExecutionOperatingUnitFeatureVector> units_{};
 };
 
-}  // namespace noisepage::selfdriving
+} // namespace noisepage::selfdriving

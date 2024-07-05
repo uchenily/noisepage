@@ -42,13 +42,12 @@ typedef struct MemoryContextData *MemoryContext;
  * typically would be allocated within the context itself, thereby avoiding
  * any need to manage it explicitly (the reset/delete action will free it).
  */
-typedef void (*MemoryContextCallbackFunction) (void *arg);
+typedef void (*MemoryContextCallbackFunction)(void *arg);
 
-typedef struct MemoryContextCallback
-{
-	MemoryContextCallbackFunction func; /* function to call */
-	void	   *arg;			/* argument to pass it */
-	struct MemoryContextCallback *next; /* next in list of callbacks */
+typedef struct MemoryContextCallback {
+    MemoryContextCallbackFunction func; /* function to call */
+    void                         *arg;  /* argument to pass it */
+    struct MemoryContextCallback *next; /* next in list of callbacks */
 } MemoryContextCallback;
 
 /*
@@ -56,14 +55,14 @@ typedef struct MemoryContextCallback
  * Avoid accessing it directly!  Instead, use MemoryContextSwitchTo()
  * to change the setting.
  */
-extern PGDLLIMPORT __thread  MemoryContext CurrentMemoryContext;
+extern PGDLLIMPORT __thread MemoryContext CurrentMemoryContext;
 
 /*
  * Flags for MemoryContextAllocExtended.
  */
-#define MCXT_ALLOC_HUGE			0x01	/* allow huge allocation (> 1 GB) */
-#define MCXT_ALLOC_NO_OOM		0x02	/* no failure if out-of-memory */
-#define MCXT_ALLOC_ZERO			0x04	/* zero allocated memory */
+#define MCXT_ALLOC_HUGE 0x01   /* allow huge allocation (> 1 GB) */
+#define MCXT_ALLOC_NO_OOM 0x02 /* no failure if out-of-memory */
+#define MCXT_ALLOC_ZERO 0x04   /* zero allocated memory */
 
 /*
  * Fundamental memory-allocation operations (more are in utils/memutils.h)
@@ -71,14 +70,13 @@ extern PGDLLIMPORT __thread  MemoryContext CurrentMemoryContext;
 extern void *MemoryContextAlloc(MemoryContext context, Size size);
 extern void *MemoryContextAllocZero(MemoryContext context, Size size);
 extern void *MemoryContextAllocZeroAligned(MemoryContext context, Size size);
-extern void *MemoryContextAllocExtended(MemoryContext context,
-						   Size size, int flags);
+extern void *MemoryContextAllocExtended(MemoryContext context, Size size, int flags);
 
 extern void *palloc(Size size);
 extern void *palloc0(Size size);
 extern void *palloc_extended(Size size, int flags);
 extern void *repalloc(void *pointer, Size size);
-extern void pfree(void *pointer);
+extern void  pfree(void *pointer);
 
 /*
  * The result of palloc() is always word-aligned, so we can skip testing
@@ -88,10 +86,9 @@ extern void pfree(void *pointer);
  * issue that it evaluates the argument multiple times isn't a problem in
  * practice.
  */
-#define palloc0fast(sz) \
-	( MemSetTest(0, sz) ? \
-		MemoryContextAllocZeroAligned(CurrentMemoryContext, sz) : \
-		MemoryContextAllocZero(CurrentMemoryContext, sz) )
+#define palloc0fast(sz)                                                                                                \
+    (MemSetTest(0, sz) ? MemoryContextAllocZeroAligned(CurrentMemoryContext, sz)                                       \
+                       : MemoryContextAllocZero(CurrentMemoryContext, sz))
 
 /* Higher-limit allocators. */
 extern void *MemoryContextAllocHuge(MemoryContext context, Size size);
@@ -111,22 +108,19 @@ extern void *repalloc_huge(void *pointer, Size size);
 #ifndef FRONTEND
 #ifndef PG_USE_INLINE
 extern MemoryContext MemoryContextSwitchTo(MemoryContext context);
-#endif   /* !PG_USE_INLINE */
+#endif /* !PG_USE_INLINE */
 #if defined(PG_USE_INLINE) || defined(MCXT_INCLUDE_DEFINITIONS)
-STATIC_IF_INLINE MemoryContext
-MemoryContextSwitchTo(MemoryContext context)
-{
-	MemoryContext old = CurrentMemoryContext;
+STATIC_IF_INLINE MemoryContext MemoryContextSwitchTo(MemoryContext context) {
+    MemoryContext old = CurrentMemoryContext;
 
-	CurrentMemoryContext = context;
-	return old;
+    CurrentMemoryContext = context;
+    return old;
 }
-#endif   /* PG_USE_INLINE || MCXT_INCLUDE_DEFINITIONS */
-#endif   /* FRONTEND */
+#endif /* PG_USE_INLINE || MCXT_INCLUDE_DEFINITIONS */
+#endif /* FRONTEND */
 
 /* Registration of memory context reset/delete callbacks */
-extern void MemoryContextRegisterResetCallback(MemoryContext context,
-								   MemoryContextCallback *cb);
+extern void MemoryContextRegisterResetCallback(MemoryContext context, MemoryContextCallback *cb);
 
 /*
  * These are like standard strdup() except the copied string is
@@ -137,7 +131,7 @@ extern char *pstrdup(const char *in);
 extern char *pnstrdup(const char *in, Size len);
 
 /* sprintf into a palloc'd buffer --- these are in psprintf.c */
-extern char *psprintf(const char *fmt,...) pg_attribute_printf(1, 2);
+extern char  *psprintf(const char *fmt, ...) pg_attribute_printf(1, 2);
 extern size_t pvsnprintf(char *buf, size_t len, const char *fmt, va_list args) pg_attribute_printf(3, 0);
 
-#endif   /* PALLOC_H */
+#endif /* PALLOC_H */

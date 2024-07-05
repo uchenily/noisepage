@@ -85,22 +85,21 @@
  * the public functions. It is defined here to allow embedding Latches as
  * part of bigger structs.
  */
-typedef struct Latch
-{
-	sig_atomic_t is_set;
-	bool		is_shared;
-	int			owner_pid;
+typedef struct Latch {
+    sig_atomic_t is_set;
+    bool         is_shared;
+    int          owner_pid;
 #ifdef WIN32
-	HANDLE		event;
+    HANDLE event;
 #endif
 } Latch;
 
 /* Bitmasks for events that may wake-up WaitLatch() clients */
-#define WL_LATCH_SET		 (1 << 0)
-#define WL_SOCKET_READABLE	 (1 << 1)
-#define WL_SOCKET_WRITEABLE  (1 << 2)
-#define WL_TIMEOUT			 (1 << 3)
-#define WL_POSTMASTER_DEATH  (1 << 4)
+#define WL_LATCH_SET (1 << 0)
+#define WL_SOCKET_READABLE (1 << 1)
+#define WL_SOCKET_WRITEABLE (1 << 2)
+#define WL_TIMEOUT (1 << 3)
+#define WL_POSTMASTER_DEATH (1 << 4)
 
 /*
  * prototypes for functions in latch.c
@@ -110,9 +109,8 @@ extern void InitLatch(volatile Latch *latch);
 extern void InitSharedLatch(volatile Latch *latch);
 extern void OwnLatch(volatile Latch *latch);
 extern void DisownLatch(volatile Latch *latch);
-extern int	WaitLatch(volatile Latch *latch, int wakeEvents, long timeout);
-extern int WaitLatchOrSocket(volatile Latch *latch, int wakeEvents,
-				  pgsocket sock, long timeout);
+extern int  WaitLatch(volatile Latch *latch, int wakeEvents, long timeout);
+extern int  WaitLatchOrSocket(volatile Latch *latch, int wakeEvents, pgsocket sock, long timeout);
 extern void SetLatch(volatile Latch *latch);
 extern void ResetLatch(volatile Latch *latch);
 
@@ -126,7 +124,7 @@ extern void ResetLatch(volatile Latch *latch);
 #ifndef WIN32
 extern void latch_sigusr1_handler(void);
 #else
-#define latch_sigusr1_handler()  ((void) 0)
+#define latch_sigusr1_handler() ((void) 0)
 #endif
 
-#endif   /* LATCH_H */
+#endif /* LATCH_H */

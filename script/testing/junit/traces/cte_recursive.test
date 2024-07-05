@@ -215,4 +215,3 @@ query I rowsort
 SELECT 1;
 ----
 1
-

@@ -33,36 +33,34 @@
  */
 #define timestamptz int
 
-
 /* ----------------
  *		pg_authid definition.  cpp turns this into
  *		typedef struct FormData_pg_authid
  * ----------------
  */
-#define AuthIdRelationId	1260
-#define AuthIdRelation_Rowtype_Id	2842
+#define AuthIdRelationId 1260
+#define AuthIdRelation_Rowtype_Id 2842
 
-CATALOG(pg_authid,1260) BKI_SHARED_RELATION BKI_ROWTYPE_OID(2842) BKI_SCHEMA_MACRO
-{
-	NameData	rolname;		/* name of role */
-	bool		rolsuper;		/* read this field via superuser() only! */
-	bool		rolinherit;		/* inherit privileges from other roles? */
-	bool		rolcreaterole;	/* allowed to create more roles? */
-	bool		rolcreatedb;	/* allowed to create databases? */
-	bool		rolcanlogin;	/* allowed to log in as session user? */
-	bool		rolreplication; /* role used for streaming replication */
-	bool		rolbypassrls;	/* bypasses row level security? */
-	int32		rolconnlimit;	/* max connections allowed (-1=no limit) */
+CATALOG(pg_authid, 1260) BKI_SHARED_RELATION BKI_ROWTYPE_OID(2842) BKI_SCHEMA_MACRO {
+    NameData rolname;        /* name of role */
+    bool     rolsuper;       /* read this field via superuser() only! */
+    bool     rolinherit;     /* inherit privileges from other roles? */
+    bool     rolcreaterole;  /* allowed to create more roles? */
+    bool     rolcreatedb;    /* allowed to create databases? */
+    bool     rolcanlogin;    /* allowed to log in as session user? */
+    bool     rolreplication; /* role used for streaming replication */
+    bool     rolbypassrls;   /* bypasses row level security? */
+    int32    rolconnlimit;   /* max connections allowed (-1=no limit) */
 
-	/* remaining fields may be null; use heap_getattr to read them! */
-#ifdef CATALOG_VARLEN			/* variable-length fields start here */
-	text		rolpassword;	/* password, if any */
-	timestamptz rolvaliduntil;	/* password expiration time, if any */
+    /* remaining fields may be null; use heap_getattr to read them! */
+#ifdef CATALOG_VARLEN          /* variable-length fields start here */
+    text        rolpassword;   /* password, if any */
+    timestamptz rolvaliduntil; /* password expiration time, if any */
 #endif
-} FormData_pg_authid;
+}
+FormData_pg_authid;
 
 #undef timestamptz
-
 
 /* ----------------
  *		Form_pg_authid corresponds to a pointer to a tuple with
@@ -75,18 +73,18 @@ typedef FormData_pg_authid *Form_pg_authid;
  *		compiler constants for pg_authid
  * ----------------
  */
-#define Natts_pg_authid					11
-#define Anum_pg_authid_rolname			1
-#define Anum_pg_authid_rolsuper			2
-#define Anum_pg_authid_rolinherit		3
-#define Anum_pg_authid_rolcreaterole	4
-#define Anum_pg_authid_rolcreatedb		5
-#define Anum_pg_authid_rolcanlogin		6
-#define Anum_pg_authid_rolreplication	7
-#define Anum_pg_authid_rolbypassrls		8
-#define Anum_pg_authid_rolconnlimit		9
-#define Anum_pg_authid_rolpassword		10
-#define Anum_pg_authid_rolvaliduntil	11
+#define Natts_pg_authid 11
+#define Anum_pg_authid_rolname 1
+#define Anum_pg_authid_rolsuper 2
+#define Anum_pg_authid_rolinherit 3
+#define Anum_pg_authid_rolcreaterole 4
+#define Anum_pg_authid_rolcreatedb 5
+#define Anum_pg_authid_rolcanlogin 6
+#define Anum_pg_authid_rolreplication 7
+#define Anum_pg_authid_rolbypassrls 8
+#define Anum_pg_authid_rolconnlimit 9
+#define Anum_pg_authid_rolpassword 10
+#define Anum_pg_authid_rolvaliduntil 11
 
 /* ----------------
  *		initial contents of pg_authid
@@ -95,8 +93,8 @@ typedef FormData_pg_authid *Form_pg_authid;
  * user choices.
  * ----------------
  */
-DATA(insert OID = 10 ( "POSTGRES" t t t t t t t -1 _null_ _null_));
+DATA(insert OID = 10("POSTGRES" t t t t t t t - 1 _null_ _null_));
 
 #define BOOTSTRAP_SUPERUSERID 10
 
-#endif   /* PG_AUTHID_H */
+#endif /* PG_AUTHID_H */

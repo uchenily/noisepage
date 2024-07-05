@@ -87,7 +87,7 @@ fun main(execCtx: *ExecutionContext) -> int32 {
 
   // Build table
   @joinHTBuild(&state.table)
- 
+
   // Run the second pipeline
   pipeline_2(execCtx, &state)
 

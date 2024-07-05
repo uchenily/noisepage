@@ -5,10 +5,10 @@ namespace noisepage::metrics {
 common::SanctionedSharedPtr<spdlog::logger>::Ptr metrics_logger = nullptr;
 
 void InitMetricsLogger() {
-  if (metrics_logger == nullptr) {
-    metrics_logger = std::make_shared<spdlog::logger>("metrics_logger", ::default_sink);  // NOLINT
-    spdlog::register_logger(metrics_logger);
-  }
+    if (metrics_logger == nullptr) {
+        metrics_logger = std::make_shared<spdlog::logger>("metrics_logger", ::default_sink); // NOLINT
+        spdlog::register_logger(metrics_logger);
+    }
 }
 #endif
-}  // namespace noisepage::metrics
+} // namespace noisepage::metrics

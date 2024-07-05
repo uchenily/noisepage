@@ -17,140 +17,146 @@ namespace noisepage::execution::parsing {
  * Parses TPL files.
  */
 class Parser {
- public:
-  /**
-   * Build a parser instance using the given scanner and AST context
-   * @param scanner The scanner used to read input tokens
-   * @param context The context
-   */
-  Parser(Scanner *scanner, ast::Context *context);
+public:
+    /**
+     * Build a parser instance using the given scanner and AST context
+     * @param scanner The scanner used to read input tokens
+     * @param context The context
+     */
+    Parser(Scanner *scanner, ast::Context *context);
 
-  /**
-   * This class cannot be copied or moved
-   */
-  DISALLOW_COPY_AND_MOVE(Parser);
+    /**
+     * This class cannot be copied or moved
+     */
+    DISALLOW_COPY_AND_MOVE(Parser);
 
-  /**
-   * Parse and generate an abstract syntax tree from the input TPL source code
-   * @return The generated AST
-   */
-  ast::AstNode *Parse();
+    /**
+     * Parse and generate an abstract syntax tree from the input TPL source code
+     * @return The generated AST
+     */
+    ast::AstNode *Parse();
 
- private:
-  util::Region *Region() { return context_->GetRegion(); }
+private:
+    util::Region *Region() {
+        return context_->GetRegion();
+    }
 
-  // Move to the next token in the stream
-  Token::Type Next() { return scanner_->Next(); }
+    // Move to the next token in the stream
+    Token::Type Next() {
+        return scanner_->Next();
+    }
 
-  // Peek at the next token in the stream
-  Token::Type Peek() const { return scanner_->Peek(); }
+    // Peek at the next token in the stream
+    Token::Type Peek() const {
+        return scanner_->Peek();
+    }
 
-  // Consume one token. In debug mode, throw an error if the next token isn't
-  // what was expected. In release mode, just consume the token without checking
-  void Consume(UNUSED_ATTRIBUTE Token::Type expected) {
-    UNUSED_ATTRIBUTE Token::Type next = Next();
+    // Consume one token. In debug mode, throw an error if the next token isn't
+    // what was expected. In release mode, just consume the token without checking
+    void Consume(UNUSED_ATTRIBUTE Token::Type expected) {
+        UNUSED_ATTRIBUTE Token::Type next = Next();
 #ifndef NDEBUG
-    if (next != expected) {
-      error_reporter_->Report(scanner_->CurrentPosition(), sema::ErrorMessages::kUnexpectedToken, next, expected);
-    }
+        if (next != expected) {
+            error_reporter_->Report(scanner_->CurrentPosition(), sema::ErrorMessages::kUnexpectedToken, next, expected);
+        }
 #endif
-  }
-
-  // If the next token doesn't matched the given expected token, throw an error
-  void Expect(Token::Type expected) {
-    Token::Type next = Next();
-    if (next != expected) {
-      error_reporter_->Report(scanner_->CurrentPosition(), sema::ErrorMessages::kUnexpectedToken, next, expected);
-    }
-  }
-
-  // If the next token matches the given expected token, consume it and return
-  // true; otherwise, return false
-  bool Matches(Token::Type expected) {
-    if (Peek() != expected) {
-      return false;
     }
 
-    Consume(expected);
-    return true;
-  }
+    // If the next token doesn't matched the given expected token, throw an error
+    void Expect(Token::Type expected) {
+        Token::Type next = Next();
+        if (next != expected) {
+            error_reporter_->Report(scanner_->CurrentPosition(), sema::ErrorMessages::kUnexpectedToken, next, expected);
+        }
+    }
 
-  // Get the current symbol as an AST string
-  ast::Identifier GetSymbol() {
-    const std::string &literal = scanner_->CurrentLiteral();
-    return context_->GetIdentifier(literal);
-  }
+    // If the next token matches the given expected token, consume it and return
+    // true; otherwise, return false
+    bool Matches(Token::Type expected) {
+        if (Peek() != expected) {
+            return false;
+        }
 
-  // In case of errors, sync up to any token in the list
-  void Sync(const std::unordered_set<Token::Type> &s);
+        Consume(expected);
+        return true;
+    }
 
-  // Cast the input node into an expression if it is one, otherwise report error
-  ast::Expr *MakeExpr(ast::AstNode *node);
+    // Get the current symbol as an AST string
+    ast::Identifier GetSymbol() {
+        const std::string &literal = scanner_->CurrentLiteral();
+        return context_->GetIdentifier(literal);
+    }
 
-  // -------------------------------------------------------
-  // Parsing productions
-  // -------------------------------------------------------
+    // In case of errors, sync up to any token in the list
+    void Sync(const std::unordered_set<Token::Type> &s);
 
-  ast::Decl *ParseDecl();
+    // Cast the input node into an expression if it is one, otherwise report error
+    ast::Expr *MakeExpr(ast::AstNode *node);
 
-  ast::Decl *ParseFunctionDecl();
+    // -------------------------------------------------------
+    // Parsing productions
+    // -------------------------------------------------------
 
-  ast::Decl *ParseStructDecl();
+    ast::Decl *ParseDecl();
 
-  ast::Decl *ParseVariableDecl();
+    ast::Decl *ParseFunctionDecl();
 
-  ast::Stmt *ParseStmt();
+    ast::Decl *ParseStructDecl();
 
-  ast::Stmt *ParseSimpleStmt();
+    ast::Decl *ParseVariableDecl();
 
-  ast::Stmt *ParseBlockStmt();
+    ast::Stmt *ParseStmt();
 
-  class ForHeader;
+    ast::Stmt *ParseSimpleStmt();
 
-  ForHeader ParseForHeader();
+    ast::Stmt *ParseBlockStmt();
 
-  ast::Stmt *ParseForStmt();
+    class ForHeader;
 
-  ast::Stmt *ParseIfStmt();
+    ForHeader ParseForHeader();
 
-  ast::Stmt *ParseReturnStmt();
+    ast::Stmt *ParseForStmt();
 
-  ast::Expr *ParseExpr();
+    ast::Stmt *ParseIfStmt();
 
-  ast::Expr *ParseBinaryOpExpr(uint32_t min_prec);
+    ast::Stmt *ParseReturnStmt();
 
-  ast::Expr *ParseUnaryOpExpr();
+    ast::Expr *ParseExpr();
 
-  ast::Expr *ParsePrimaryExpr();
+    ast::Expr *ParseBinaryOpExpr(uint32_t min_prec);
 
-  ast::Expr *ParseOperand();
+    ast::Expr *ParseUnaryOpExpr();
 
-  ast::Expr *ParseFunctionLitExpr();
+    ast::Expr *ParsePrimaryExpr();
 
-  ast::Expr *ParseType();
+    ast::Expr *ParseOperand();
 
-  ast::Expr *ParseFunctionType();
+    ast::Expr *ParseFunctionLitExpr();
 
-  ast::Expr *ParsePointerType();
+    ast::Expr *ParseType();
 
-  ast::Expr *ParseArrayType();
+    ast::Expr *ParseFunctionType();
 
-  ast::Expr *ParseStructType();
+    ast::Expr *ParsePointerType();
 
-  ast::Expr *ParseMapType();
+    ast::Expr *ParseArrayType();
 
- private:
-  // The source code scanner
-  Scanner *scanner_;
+    ast::Expr *ParseStructType();
 
-  // The context
-  ast::Context *context_;
+    ast::Expr *ParseMapType();
 
-  // A factory for all node types
-  ast::AstNodeFactory *node_factory_;
+private:
+    // The source code scanner
+    Scanner *scanner_;
 
-  // The error reporter
-  sema::ErrorReporter *error_reporter_;
+    // The context
+    ast::Context *context_;
+
+    // A factory for all node types
+    ast::AstNodeFactory *node_factory_;
+
+    // The error reporter
+    sema::ErrorReporter *error_reporter_;
 };
 
-}  // namespace noisepage::execution::parsing
+} // namespace noisepage::execution::parsing

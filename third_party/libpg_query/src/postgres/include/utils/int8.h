@@ -22,7 +22,6 @@
 
 #include "fmgr.h"
 
-
 extern bool scanint8(const char *str, bool errorOK, int64 *result);
 
 extern Datum int8in(PG_FUNCTION_ARGS);
@@ -126,4 +125,4 @@ extern Datum oidtoi8(PG_FUNCTION_ARGS);
 extern Datum generate_series_int8(PG_FUNCTION_ARGS);
 extern Datum generate_series_step_int8(PG_FUNCTION_ARGS);
 
-#endif   /* INT8_H */
+#endif /* INT8_H */

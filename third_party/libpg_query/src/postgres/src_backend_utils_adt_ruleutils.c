@@ -23,8 +23,8 @@
 #include "postgres.h"
 
 #include <ctype.h>
-#include <unistd.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 #include "access/htup_details.h"
 #include "access/sysattr.h"
@@ -51,9 +51,9 @@
 #include "nodes/nodeFuncs.h"
 #include "optimizer/tlist.h"
 #include "parser/keywords.h"
-#include "parser/parse_node.h"
 #include "parser/parse_agg.h"
 #include "parser/parse_func.h"
+#include "parser/parse_node.h"
 #include "parser/parse_oper.h"
 #include "parser/parser.h"
 #include "parser/parsetree.h"
@@ -73,30 +73,28 @@
 #include "utils/typcache.h"
 #include "utils/xml.h"
 
-
 /* ----------
  * Pretty formatting constants
  * ----------
  */
 
 /* Indent counts */
-#define PRETTYINDENT_STD		8
-#define PRETTYINDENT_JOIN		4
-#define PRETTYINDENT_VAR		4
+#define PRETTYINDENT_STD 8
+#define PRETTYINDENT_JOIN 4
+#define PRETTYINDENT_VAR 4
 
-#define PRETTYINDENT_LIMIT		40		/* wrap limit */
+#define PRETTYINDENT_LIMIT 40 /* wrap limit */
 
 /* Pretty flags */
-#define PRETTYFLAG_PAREN		1
-#define PRETTYFLAG_INDENT		2
+#define PRETTYFLAG_PAREN 1
+#define PRETTYFLAG_INDENT 2
 
 /* Default line length for pretty-print wrapping: 0 means wrap always */
-#define WRAP_COLUMN_DEFAULT		0
+#define WRAP_COLUMN_DEFAULT 0
 
 /* macro to test if pretty action needed */
-#define PRETTY_PAREN(context)	((context)->prettyFlags & PRETTYFLAG_PAREN)
-#define PRETTY_INDENT(context)	((context)->prettyFlags & PRETTYFLAG_INDENT)
-
+#define PRETTY_PAREN(context) ((context)->prettyFlags & PRETTYFLAG_PAREN)
+#define PRETTY_INDENT(context) ((context)->prettyFlags & PRETTYFLAG_INDENT)
 
 /* ----------
  * Local data types
@@ -104,18 +102,17 @@
  */
 
 /* Context info needed for invoking a recursive querytree display routine */
-typedef struct
-{
-	StringInfo	buf;			/* output buffer to append to */
-	List	   *namespaces;		/* List of deparse_namespace nodes */
-	List	   *windowClause;	/* Current query level's WINDOW clause */
-	List	   *windowTList;	/* targetlist for resolving WINDOW clause */
-	int			prettyFlags;	/* enabling of pretty-print functions */
-	int			wrapColumn;		/* max line length, or -1 for no limit */
-	int			indentLevel;	/* current indent level for prettyprint */
-	bool		varprefix;		/* TRUE to print prefixes on Vars */
-	ParseExprKind special_exprkind;		/* set only for exprkinds needing
-										 * special handling */
+typedef struct {
+    StringInfo    buf;              /* output buffer to append to */
+    List         *namespaces;       /* List of deparse_namespace nodes */
+    List         *windowClause;     /* Current query level's WINDOW clause */
+    List         *windowTList;      /* targetlist for resolving WINDOW clause */
+    int           prettyFlags;      /* enabling of pretty-print functions */
+    int           wrapColumn;       /* max line length, or -1 for no limit */
+    int           indentLevel;      /* current indent level for prettyprint */
+    bool          varprefix;        /* TRUE to print prefixes on Vars */
+    ParseExprKind special_exprkind; /* set only for exprkinds needing
+                                     * special handling */
 } deparse_context;
 
 /*
@@ -145,23 +142,22 @@ typedef struct
  * be derived on-the-fly from the current PlanState, but it seems notationally
  * clearer to set them up as separate fields.)
  */
-typedef struct
-{
-	List	   *rtable;			/* List of RangeTblEntry nodes */
-	List	   *rtable_names;	/* Parallel list of names for RTEs */
-	List	   *rtable_columns; /* Parallel list of deparse_columns structs */
-	List	   *ctes;			/* List of CommonTableExpr nodes */
-	/* Workspace for column alias assignment: */
-	bool		unique_using;	/* Are we making USING names globally unique */
-	List	   *using_names;	/* List of assigned names for USING columns */
-	/* Remaining fields are used only when deparsing a Plan tree: */
-	PlanState  *planstate;		/* immediate parent of current expression */
-	List	   *ancestors;		/* ancestors of planstate */
-	PlanState  *outer_planstate;	/* outer subplan state, or NULL if none */
-	PlanState  *inner_planstate;	/* inner subplan state, or NULL if none */
-	List	   *outer_tlist;	/* referent for OUTER_VAR Vars */
-	List	   *inner_tlist;	/* referent for INNER_VAR Vars */
-	List	   *index_tlist;	/* referent for INDEX_VAR Vars */
+typedef struct {
+    List *rtable;         /* List of RangeTblEntry nodes */
+    List *rtable_names;   /* Parallel list of names for RTEs */
+    List *rtable_columns; /* Parallel list of deparse_columns structs */
+    List *ctes;           /* List of CommonTableExpr nodes */
+    /* Workspace for column alias assignment: */
+    bool  unique_using; /* Are we making USING names globally unique */
+    List *using_names;  /* List of assigned names for USING columns */
+    /* Remaining fields are used only when deparsing a Plan tree: */
+    PlanState *planstate;       /* immediate parent of current expression */
+    List      *ancestors;       /* ancestors of planstate */
+    PlanState *outer_planstate; /* outer subplan state, or NULL if none */
+    PlanState *inner_planstate; /* inner subplan state, or NULL if none */
+    List      *outer_tlist;     /* referent for OUTER_VAR Vars */
+    List      *inner_tlist;     /* referent for INNER_VAR Vars */
+    List      *index_tlist;     /* referent for INDEX_VAR Vars */
 } deparse_namespace;
 
 /*
@@ -205,100 +201,91 @@ typedef struct
  * column alias list are not necessarily one-for-one with varattnos of the
  * JOIN, so we need a separate new_colnames[] array for printing purposes.
  */
-typedef struct
-{
-	/*
-	 * colnames is an array containing column aliases to use for columns that
-	 * existed when the query was parsed.  Dropped columns have NULL entries.
-	 * This array can be directly indexed by varattno to get a Var's name.
-	 *
-	 * Non-NULL entries are guaranteed unique within the RTE, *except* when
-	 * this is for an unnamed JOIN RTE.  In that case we merely copy up names
-	 * from the two input RTEs.
-	 *
-	 * During the recursive descent in set_using_names(), forcible assignment
-	 * of a child RTE's column name is represented by pre-setting that element
-	 * of the child's colnames array.  So at that stage, NULL entries in this
-	 * array just mean that no name has been preassigned, not necessarily that
-	 * the column is dropped.
-	 */
-	int			num_cols;		/* length of colnames[] array */
-	char	  **colnames;		/* array of C strings and NULLs */
+typedef struct {
+    /*
+     * colnames is an array containing column aliases to use for columns that
+     * existed when the query was parsed.  Dropped columns have NULL entries.
+     * This array can be directly indexed by varattno to get a Var's name.
+     *
+     * Non-NULL entries are guaranteed unique within the RTE, *except* when
+     * this is for an unnamed JOIN RTE.  In that case we merely copy up names
+     * from the two input RTEs.
+     *
+     * During the recursive descent in set_using_names(), forcible assignment
+     * of a child RTE's column name is represented by pre-setting that element
+     * of the child's colnames array.  So at that stage, NULL entries in this
+     * array just mean that no name has been preassigned, not necessarily that
+     * the column is dropped.
+     */
+    int    num_cols; /* length of colnames[] array */
+    char **colnames; /* array of C strings and NULLs */
 
-	/*
-	 * new_colnames is an array containing column aliases to use for columns
-	 * that would exist if the query was re-parsed against the current
-	 * definitions of its base tables.  This is what to print as the column
-	 * alias list for the RTE.  This array does not include dropped columns,
-	 * but it will include columns added since original parsing.  Indexes in
-	 * it therefore have little to do with current varattno values.  As above,
-	 * entries are unique unless this is for an unnamed JOIN RTE.  (In such an
-	 * RTE, we never actually print this array, but we must compute it anyway
-	 * for possible use in computing column names of upper joins.) The
-	 * parallel array is_new_col marks which of these columns are new since
-	 * original parsing.  Entries with is_new_col false must match the
-	 * non-NULL colnames entries one-for-one.
-	 */
-	int			num_new_cols;	/* length of new_colnames[] array */
-	char	  **new_colnames;	/* array of C strings */
-	bool	   *is_new_col;		/* array of bool flags */
+    /*
+     * new_colnames is an array containing column aliases to use for columns
+     * that would exist if the query was re-parsed against the current
+     * definitions of its base tables.  This is what to print as the column
+     * alias list for the RTE.  This array does not include dropped columns,
+     * but it will include columns added since original parsing.  Indexes in
+     * it therefore have little to do with current varattno values.  As above,
+     * entries are unique unless this is for an unnamed JOIN RTE.  (In such an
+     * RTE, we never actually print this array, but we must compute it anyway
+     * for possible use in computing column names of upper joins.) The
+     * parallel array is_new_col marks which of these columns are new since
+     * original parsing.  Entries with is_new_col false must match the
+     * non-NULL colnames entries one-for-one.
+     */
+    int    num_new_cols; /* length of new_colnames[] array */
+    char **new_colnames; /* array of C strings */
+    bool  *is_new_col;   /* array of bool flags */
 
-	/* This flag tells whether we should actually print a column alias list */
-	bool		printaliases;
+    /* This flag tells whether we should actually print a column alias list */
+    bool printaliases;
 
-	/* This list has all names used as USING names in joins above this RTE */
-	List	   *parentUsing;	/* names assigned to parent merged columns */
+    /* This list has all names used as USING names in joins above this RTE */
+    List *parentUsing; /* names assigned to parent merged columns */
 
-	/*
-	 * If this struct is for a JOIN RTE, we fill these fields during the
-	 * set_using_names() pass to describe its relationship to its child RTEs.
-	 *
-	 * leftattnos and rightattnos are arrays with one entry per existing
-	 * output column of the join (hence, indexable by join varattno).  For a
-	 * simple reference to a column of the left child, leftattnos[i] is the
-	 * child RTE's attno and rightattnos[i] is zero; and conversely for a
-	 * column of the right child.  But for merged columns produced by JOIN
-	 * USING/NATURAL JOIN, both leftattnos[i] and rightattnos[i] are nonzero.
-	 * Also, if the column has been dropped, both are zero.
-	 *
-	 * If it's a JOIN USING, usingNames holds the alias names selected for the
-	 * merged columns (these might be different from the original USING list,
-	 * if we had to modify names to achieve uniqueness).
-	 */
-	int			leftrti;		/* rangetable index of left child */
-	int			rightrti;		/* rangetable index of right child */
-	int		   *leftattnos;		/* left-child varattnos of join cols, or 0 */
-	int		   *rightattnos;	/* right-child varattnos of join cols, or 0 */
-	List	   *usingNames;		/* names assigned to merged columns */
+    /*
+     * If this struct is for a JOIN RTE, we fill these fields during the
+     * set_using_names() pass to describe its relationship to its child RTEs.
+     *
+     * leftattnos and rightattnos are arrays with one entry per existing
+     * output column of the join (hence, indexable by join varattno).  For a
+     * simple reference to a column of the left child, leftattnos[i] is the
+     * child RTE's attno and rightattnos[i] is zero; and conversely for a
+     * column of the right child.  But for merged columns produced by JOIN
+     * USING/NATURAL JOIN, both leftattnos[i] and rightattnos[i] are nonzero.
+     * Also, if the column has been dropped, both are zero.
+     *
+     * If it's a JOIN USING, usingNames holds the alias names selected for the
+     * merged columns (these might be different from the original USING list,
+     * if we had to modify names to achieve uniqueness).
+     */
+    int   leftrti;     /* rangetable index of left child */
+    int   rightrti;    /* rangetable index of right child */
+    int  *leftattnos;  /* left-child varattnos of join cols, or 0 */
+    int  *rightattnos; /* right-child varattnos of join cols, or 0 */
+    List *usingNames;  /* names assigned to merged columns */
 } deparse_columns;
 
 /* This macro is analogous to rt_fetch(), but for deparse_columns structs */
-#define deparse_columns_fetch(rangetable_index, dpns) \
-	((deparse_columns *) list_nth((dpns)->rtable_columns, (rangetable_index)-1))
+#define deparse_columns_fetch(rangetable_index, dpns)                                                                  \
+    ((deparse_columns *) list_nth((dpns)->rtable_columns, (rangetable_index) -1))
 
 /*
  * Entry in set_rtable_names' hash table
  */
-typedef struct
-{
-	char		name[NAMEDATALEN];		/* Hash key --- must be first */
-	int			counter;		/* Largest addition used so far for name */
+typedef struct {
+    char name[NAMEDATALEN]; /* Hash key --- must be first */
+    int  counter;           /* Largest addition used so far for name */
 } NameHashEntry;
-
 
 /* ----------
  * Global data
  * ----------
  */
 
-
-
-
-
 /* GUC parameters */
-__thread bool		quote_all_identifiers = false;
-
-
+__thread bool quote_all_identifiers = false;
 
 /* ----------
  * Local functions
@@ -308,150 +295,149 @@ __thread bool		quote_all_identifiers = false;
  * as a parameter, and append their text output to its contents.
  * ----------
  */
-//static char *deparse_expression_pretty(Node *expr, List *dpcontext,
+// static char *deparse_expression_pretty(Node *expr, List *dpcontext,
 //						  bool forceprefix, bool showimplicit,
 //						  int prettyFlags, int startIndent);
-//static char *pg_get_viewdef_worker(Oid viewoid,
+// static char *pg_get_viewdef_worker(Oid viewoid,
 //					  int prettyFlags, int wrapColumn);
-//static char *pg_get_triggerdef_worker(Oid trigid, bool pretty);
-//static void decompile_column_index_array(Datum column_index_array, Oid relId,
+// static char *pg_get_triggerdef_worker(Oid trigid, bool pretty);
+// static void decompile_column_index_array(Datum column_index_array, Oid relId,
 //							 StringInfo buf);
-//static char *pg_get_ruledef_worker(Oid ruleoid, int prettyFlags);
-//static char *pg_get_indexdef_worker(Oid indexrelid, int colno,
+// static char *pg_get_ruledef_worker(Oid ruleoid, int prettyFlags);
+// static char *pg_get_indexdef_worker(Oid indexrelid, int colno,
 //					   const Oid *excludeOps,
 //					   bool attrsOnly, bool showTblSpc,
 //					   int prettyFlags);
-//static char *pg_get_constraintdef_worker(Oid constraintId, bool fullCommand,
+// static char *pg_get_constraintdef_worker(Oid constraintId, bool fullCommand,
 //							int prettyFlags);
-//static text *pg_get_expr_worker(text *expr, Oid relid, const char *relname,
+// static text *pg_get_expr_worker(text *expr, Oid relid, const char *relname,
 //				   int prettyFlags);
-//static int print_function_arguments(StringInfo buf, HeapTuple proctup,
+// static int print_function_arguments(StringInfo buf, HeapTuple proctup,
 //						 bool print_table_args, bool print_defaults);
-//static void print_function_rettype(StringInfo buf, HeapTuple proctup);
-//static void print_function_trftypes(StringInfo buf, HeapTuple proctup);
-//static void set_rtable_names(deparse_namespace *dpns, List *parent_namespaces,
+// static void print_function_rettype(StringInfo buf, HeapTuple proctup);
+// static void print_function_trftypes(StringInfo buf, HeapTuple proctup);
+// static void set_rtable_names(deparse_namespace *dpns, List *parent_namespaces,
 //				 Bitmapset *rels_used);
-//static void set_deparse_for_query(deparse_namespace *dpns, Query *query,
+// static void set_deparse_for_query(deparse_namespace *dpns, Query *query,
 //					  List *parent_namespaces);
-//static void set_simple_column_names(deparse_namespace *dpns);
-//static bool has_dangerous_join_using(deparse_namespace *dpns, Node *jtnode);
-//static void set_using_names(deparse_namespace *dpns, Node *jtnode,
+// static void set_simple_column_names(deparse_namespace *dpns);
+// static bool has_dangerous_join_using(deparse_namespace *dpns, Node *jtnode);
+// static void set_using_names(deparse_namespace *dpns, Node *jtnode,
 //				List *parentUsing);
-//static void set_relation_column_names(deparse_namespace *dpns,
+// static void set_relation_column_names(deparse_namespace *dpns,
 //						  RangeTblEntry *rte,
 //						  deparse_columns *colinfo);
-//static void set_join_column_names(deparse_namespace *dpns, RangeTblEntry *rte,
+// static void set_join_column_names(deparse_namespace *dpns, RangeTblEntry *rte,
 //					  deparse_columns *colinfo);
-//static bool colname_is_unique(char *colname, deparse_namespace *dpns,
+// static bool colname_is_unique(char *colname, deparse_namespace *dpns,
 //				  deparse_columns *colinfo);
-//static char *make_colname_unique(char *colname, deparse_namespace *dpns,
+// static char *make_colname_unique(char *colname, deparse_namespace *dpns,
 //					deparse_columns *colinfo);
-//static void expand_colnames_array_to(deparse_columns *colinfo, int n);
-//static void identify_join_columns(JoinExpr *j, RangeTblEntry *jrte,
+// static void expand_colnames_array_to(deparse_columns *colinfo, int n);
+// static void identify_join_columns(JoinExpr *j, RangeTblEntry *jrte,
 //					  deparse_columns *colinfo);
-//static void flatten_join_using_qual(Node *qual,
+// static void flatten_join_using_qual(Node *qual,
 //						List **leftvars, List **rightvars);
-//static char *get_rtable_name(int rtindex, deparse_context *context);
-//static void set_deparse_planstate(deparse_namespace *dpns, PlanState *ps);
-//static void push_child_plan(deparse_namespace *dpns, PlanState *ps,
+// static char *get_rtable_name(int rtindex, deparse_context *context);
+// static void set_deparse_planstate(deparse_namespace *dpns, PlanState *ps);
+// static void push_child_plan(deparse_namespace *dpns, PlanState *ps,
 //				deparse_namespace *save_dpns);
-//static void pop_child_plan(deparse_namespace *dpns,
+// static void pop_child_plan(deparse_namespace *dpns,
 //			   deparse_namespace *save_dpns);
-//static void push_ancestor_plan(deparse_namespace *dpns, ListCell *ancestor_cell,
+// static void push_ancestor_plan(deparse_namespace *dpns, ListCell *ancestor_cell,
 //				   deparse_namespace *save_dpns);
-//static void pop_ancestor_plan(deparse_namespace *dpns,
+// static void pop_ancestor_plan(deparse_namespace *dpns,
 //				  deparse_namespace *save_dpns);
-//static void make_ruledef(StringInfo buf, HeapTuple ruletup, TupleDesc rulettc,
+// static void make_ruledef(StringInfo buf, HeapTuple ruletup, TupleDesc rulettc,
 //			 int prettyFlags);
-//static void make_viewdef(StringInfo buf, HeapTuple ruletup, TupleDesc rulettc,
+// static void make_viewdef(StringInfo buf, HeapTuple ruletup, TupleDesc rulettc,
 //			 int prettyFlags, int wrapColumn);
-//static void get_query_def(Query *query, StringInfo buf, List *parentnamespace,
+// static void get_query_def(Query *query, StringInfo buf, List *parentnamespace,
 //			  TupleDesc resultDesc,
 //			  int prettyFlags, int wrapColumn, int startIndent);
-//static void get_values_def(List *values_lists, deparse_context *context);
-//static void get_with_clause(Query *query, deparse_context *context);
-//static void get_select_query_def(Query *query, deparse_context *context,
+// static void get_values_def(List *values_lists, deparse_context *context);
+// static void get_with_clause(Query *query, deparse_context *context);
+// static void get_select_query_def(Query *query, deparse_context *context,
 //					 TupleDesc resultDesc);
-//static void get_insert_query_def(Query *query, deparse_context *context);
-//static void get_update_query_def(Query *query, deparse_context *context);
-//static void get_update_query_targetlist_def(Query *query, List *targetList,
+// static void get_insert_query_def(Query *query, deparse_context *context);
+// static void get_update_query_def(Query *query, deparse_context *context);
+// static void get_update_query_targetlist_def(Query *query, List *targetList,
 //								deparse_context *context,
 //								RangeTblEntry *rte);
-//static void get_delete_query_def(Query *query, deparse_context *context);
-//static void get_utility_query_def(Query *query, deparse_context *context);
-//static void get_basic_select_query(Query *query, deparse_context *context,
+// static void get_delete_query_def(Query *query, deparse_context *context);
+// static void get_utility_query_def(Query *query, deparse_context *context);
+// static void get_basic_select_query(Query *query, deparse_context *context,
 //					   TupleDesc resultDesc);
-//static void get_target_list(List *targetList, deparse_context *context,
+// static void get_target_list(List *targetList, deparse_context *context,
 //				TupleDesc resultDesc);
-//static void get_setop_query(Node *setOp, Query *query,
+// static void get_setop_query(Node *setOp, Query *query,
 //				deparse_context *context,
 //				TupleDesc resultDesc);
-//static Node *get_rule_sortgroupclause(Index ref, List *tlist,
+// static Node *get_rule_sortgroupclause(Index ref, List *tlist,
 //						 bool force_colno,
 //						 deparse_context *context);
-//static void get_rule_groupingset(GroupingSet *gset, List *targetlist,
+// static void get_rule_groupingset(GroupingSet *gset, List *targetlist,
 //					 bool omit_parens, deparse_context *context);
-//static void get_rule_orderby(List *orderList, List *targetList,
+// static void get_rule_orderby(List *orderList, List *targetList,
 //				 bool force_colno, deparse_context *context);
-//static void get_rule_windowclause(Query *query, deparse_context *context);
-//static void get_rule_windowspec(WindowClause *wc, List *targetList,
+// static void get_rule_windowclause(Query *query, deparse_context *context);
+// static void get_rule_windowspec(WindowClause *wc, List *targetList,
 //					deparse_context *context);
-//static char *get_variable(Var *var, int levelsup, bool istoplevel,
+// static char *get_variable(Var *var, int levelsup, bool istoplevel,
 //			 deparse_context *context);
-//static Node *find_param_referent(Param *param, deparse_context *context,
+// static Node *find_param_referent(Param *param, deparse_context *context,
 //					deparse_namespace **dpns_p, ListCell **ancestor_cell_p);
-//static void get_parameter(Param *param, deparse_context *context);
-//static const char *get_simple_binary_op_name(OpExpr *expr);
-//static bool isSimpleNode(Node *node, Node *parentNode, int prettyFlags);
-//static void appendContextKeyword(deparse_context *context, const char *str,
+// static void get_parameter(Param *param, deparse_context *context);
+// static const char *get_simple_binary_op_name(OpExpr *expr);
+// static bool isSimpleNode(Node *node, Node *parentNode, int prettyFlags);
+// static void appendContextKeyword(deparse_context *context, const char *str,
 //					 int indentBefore, int indentAfter, int indentPlus);
-//static void removeStringInfoSpaces(StringInfo str);
-//static void get_rule_expr(Node *node, deparse_context *context,
+// static void removeStringInfoSpaces(StringInfo str);
+// static void get_rule_expr(Node *node, deparse_context *context,
 //			  bool showimplicit);
-//static void get_rule_expr_toplevel(Node *node, deparse_context *context,
+// static void get_rule_expr_toplevel(Node *node, deparse_context *context,
 //					   bool showimplicit);
-//static void get_oper_expr(OpExpr *expr, deparse_context *context);
-//static void get_func_expr(FuncExpr *expr, deparse_context *context,
+// static void get_oper_expr(OpExpr *expr, deparse_context *context);
+// static void get_func_expr(FuncExpr *expr, deparse_context *context,
 //			  bool showimplicit);
-//static void get_agg_expr(Aggref *aggref, deparse_context *context);
-//static void get_windowfunc_expr(WindowFunc *wfunc, deparse_context *context);
-//static void get_coercion_expr(Node *arg, deparse_context *context,
+// static void get_agg_expr(Aggref *aggref, deparse_context *context);
+// static void get_windowfunc_expr(WindowFunc *wfunc, deparse_context *context);
+// static void get_coercion_expr(Node *arg, deparse_context *context,
 //				  Oid resulttype, int32 resulttypmod,
 //				  Node *parentNode);
-//static void get_const_expr(Const *constval, deparse_context *context,
+// static void get_const_expr(Const *constval, deparse_context *context,
 //			   int showtype);
-//static void get_const_collation(Const *constval, deparse_context *context);
-//static void simple_quote_literal(StringInfo buf, const char *val);
-//static void get_sublink_expr(SubLink *sublink, deparse_context *context);
-//static void get_from_clause(Query *query, const char *prefix,
+// static void get_const_collation(Const *constval, deparse_context *context);
+// static void simple_quote_literal(StringInfo buf, const char *val);
+// static void get_sublink_expr(SubLink *sublink, deparse_context *context);
+// static void get_from_clause(Query *query, const char *prefix,
 //				deparse_context *context);
-//static void get_from_clause_item(Node *jtnode, Query *query,
+// static void get_from_clause_item(Node *jtnode, Query *query,
 //					 deparse_context *context);
-//static void get_column_alias_list(deparse_columns *colinfo,
+// static void get_column_alias_list(deparse_columns *colinfo,
 //					  deparse_context *context);
-//static void get_from_clause_coldeflist(RangeTblFunction *rtfunc,
+// static void get_from_clause_coldeflist(RangeTblFunction *rtfunc,
 //						   deparse_columns *colinfo,
 //						   deparse_context *context);
-//static void get_tablesample_def(TableSampleClause *tablesample,
+// static void get_tablesample_def(TableSampleClause *tablesample,
 //					deparse_context *context);
-//static void get_opclass_name(Oid opclass, Oid actual_datatype,
+// static void get_opclass_name(Oid opclass, Oid actual_datatype,
 //				 StringInfo buf);
-//static Node *processIndirection(Node *node, deparse_context *context,
+// static Node *processIndirection(Node *node, deparse_context *context,
 //				   bool printit);
-//static void printSubscripts(ArrayRef *aref, deparse_context *context);
-//static char *get_relation_name(Oid relid);
-//static char *generate_relation_name(Oid relid, List *namespaces);
-//static char *generate_qualified_relation_name(Oid relid);
-//static char *generate_function_name(Oid funcid, int nargs,
+// static void printSubscripts(ArrayRef *aref, deparse_context *context);
+// static char *get_relation_name(Oid relid);
+// static char *generate_relation_name(Oid relid, List *namespaces);
+// static char *generate_qualified_relation_name(Oid relid);
+// static char *generate_function_name(Oid funcid, int nargs,
 //					   List *argnames, Oid *argtypes,
 //					   bool has_variadic, bool *use_variadic_p,
 //					   ParseExprKind special_exprkind);
-//static char *generate_operator_name(Oid operid, Oid arg1, Oid arg2);
-//static text *string_to_text(char *str);
-//static char *flatten_reloptions(Oid relid);
+// static char *generate_operator_name(Oid operid, Oid arg1, Oid arg2);
+// static text *string_to_text(char *str);
+// static char *flatten_reloptions(Oid relid);
 
-#define only_marker(rte)  ((rte)->inh ? "" : "ONLY ")
-
+#define only_marker(rte) ((rte)->inh ? "" : "ONLY ")
 
 /* ----------
  * get_ruledef			- Do it all and return a text
@@ -460,45 +446,20 @@ __thread bool		quote_all_identifiers = false;
  * ----------
  */
 
-
-
-
-
-
-
-
-
 /* ----------
  * get_viewdef			- Mainly the same thing, but we
  *				  only return the SELECT part of a view
  * ----------
  */
 
-
-
-
-
-
-
-
-
-
-
-
 /*
  * Common code for by-OID and by-name variants of pg_get_viewdef
  */
-
 
 /* ----------
  * get_triggerdef			- Get the definition of a trigger
  * ----------
  */
-
-
-
-
-
 
 /* ----------
  * get_indexdef			- Get the definition of an index
@@ -513,14 +474,9 @@ __thread bool		quote_all_identifiers = false;
  * ----------
  */
 
-
-
-
 /* Internal version that returns a palloc'd C string; no pretty-printing */
 
-
 /* Internal version that just reports the column definitions */
-
 
 /*
  * Internal workhorse to decompile an index definition.
@@ -529,8 +485,6 @@ __thread bool		quote_all_identifiers = false;
  * NULL then it points to an array of exclusion operator OIDs.
  */
 
-
-
 /*
  * pg_get_constraintdef
  *
@@ -538,26 +492,18 @@ __thread bool		quote_all_identifiers = false;
  * appear after "ALTER TABLE ... ADD CONSTRAINT <constraintname>".
  */
 
-
-
-
 /*
  * Internal version that returns a full ALTER TABLE ... ADD CONSTRAINT command
  */
-
 
 /*
  * As of 9.4, we now use an MVCC snapshot for this.
  */
 
-
-
 /*
  * Convert an int16[] Datum into a comma-separated list of column names
  * for the indicated relation; append the list to buf.
  */
-
-
 
 /* ----------
  * get_expr			- Decompile an expression tree
@@ -573,19 +519,11 @@ __thread bool		quote_all_identifiers = false;
  * ----------
  */
 
-
-
-
-
-
-
 /* ----------
  * get_userbyid			- Get a user name by roleid and
  *				  fallback to 'unknown (OID=n)'
  * ----------
  */
-
-
 
 /*
  * pg_get_serial_sequence
@@ -594,8 +532,6 @@ __thread bool		quote_all_identifiers = false;
  *		First parameter is not treated as double-quoted, second parameter
  *		is --- see documentation for reason.
  */
-
-
 
 /*
  * pg_get_functiondef
@@ -608,14 +544,12 @@ __thread bool		quote_all_identifiers = false;
  * with "AS ", and no preceding line will look like that.
  */
 
-
 /*
  * pg_get_function_arguments
  *		Get a nicely-formatted list of arguments for a function.
  *		This is everything that would go between the parentheses in
  *		CREATE FUNCTION.
  */
-
 
 /*
  * pg_get_function_identity_arguments
@@ -624,19 +558,16 @@ __thread bool		quote_all_identifiers = false;
  *		ALTER FUNCTION, etc.  In particular, don't print defaults.
  */
 
-
 /*
  * pg_get_function_result
  *		Get a nicely-formatted version of the result type of a function.
  *		This is what would appear after RETURNS in CREATE FUNCTION.
  */
 
-
 /*
  * Guts of pg_get_function_result: append the function's return type
  * to the specified buffer.
  */
-
 
 /*
  * Common code for pg_get_function_arguments and pg_get_function_result:
@@ -646,13 +577,9 @@ __thread bool		quote_all_identifiers = false;
  * Function return value is the number of arguments printed.
  */
 
-
-
-
 /*
  * Append used transformated types to specified buffer
  */
-
 
 /*
  * Get textual representation of a function argument's default value.  The
@@ -661,14 +588,11 @@ __thread bool		quote_all_identifiers = false;
  * how information_schema.sql uses it.
  */
 
-
-
 /*
  * deparse_expression			- General utility for deparsing expressions
  *
  * calls deparse_expression_pretty with all prettyPrinting disabled
  */
-
 
 /* ----------
  * deparse_expression_pretty	- General utility for deparsing expressions
@@ -690,7 +614,6 @@ __thread bool		quote_all_identifiers = false;
  * ----------
  */
 
-
 /* ----------
  * deparse_context_for			- Build deparse context for a single relation
  *
@@ -699,7 +622,6 @@ __thread bool		quote_all_identifiers = false;
  * varlevelsup 0).  This is sufficient for many uses of deparse_expression.
  * ----------
  */
-
 
 /*
  * deparse_context_for_plan_rtable - Build deparse context for a plan's rtable
@@ -714,7 +636,6 @@ __thread bool		quote_all_identifiers = false;
  * In addition to the plan's rangetable list, pass the per-RTE alias names
  * assigned by a previous call to select_rtable_names_for_explain.
  */
-
 
 /*
  * set_deparse_context_planstate	- Specify Plan node containing expression
@@ -745,7 +666,6 @@ __thread bool		quote_all_identifiers = false;
  * The result is the same List passed in; this is a notational convenience.
  */
 
-
 /*
  * select_rtable_names_for_explain	- Select RTE aliases for EXPLAIN
  *
@@ -753,7 +673,6 @@ __thread bool		quote_all_identifiers = false;
  * This is just a frontend to set_rtable_names.  We have to expose the aliases
  * to EXPLAIN because EXPLAIN needs to know the right alias names to print.
  */
-
 
 /*
  * set_rtable_names: select RTE aliases to be used in printing a query
@@ -769,14 +688,12 @@ __thread bool		quote_all_identifiers = false;
  * names.
  */
 
-
 /*
  * set_deparse_for_query: set up deparse_namespace for deparsing a Query tree
  *
  * For convenience, this is defined to initialize the deparse_namespace struct
  * from scratch.
  */
-
 
 /*
  * set_simple_column_names: fill in column aliases for non-query situations
@@ -786,7 +703,6 @@ __thread bool		quote_all_identifiers = false;
  * need to (note that EXPLAIN should never see join alias Vars anyway).
  * If we do hit a join RTE we'll just process it like a non-table base RTE.
  */
-
 
 /*
  * has_dangerous_join_using: search jointree for unnamed JOIN USING
@@ -808,7 +724,6 @@ __thread bool		quote_all_identifiers = false;
  * the join tree to see if we have to, before starting set_using_names().
  */
 
-
 /*
  * set_using_names: select column aliases to be used for merged USING columns
  *
@@ -822,7 +737,6 @@ __thread bool		quote_all_identifiers = false;
  * the current jointree node.  (The passed-in list must not be modified.)
  */
 
-
 /*
  * set_relation_column_names: select column aliases for a non-join RTE
  *
@@ -830,7 +744,6 @@ __thread bool		quote_all_identifiers = false;
  * If any colnames entries are already filled in, those override local
  * choices.
  */
-
 
 /*
  * set_join_column_names: select column aliases for a join RTE
@@ -850,13 +763,11 @@ __thread bool		quote_all_identifiers = false;
  * dpns is query-wide info, colinfo is for the column's RTE
  */
 
-
 /*
  * make_colname_unique: modify colname if necessary to make it unique
  *
  * dpns is query-wide info, colinfo is for the column's RTE
  */
-
 
 /*
  * expand_colnames_array_to: make colinfo->colnames at least n items long
@@ -864,14 +775,12 @@ __thread bool		quote_all_identifiers = false;
  * Any added array entries are initialized to zero.
  */
 
-
 /*
  * identify_join_columns: figure out where columns of a join come from
  *
  * Fills the join-specific fields of the colinfo struct, except for
  * usingNames which is filled later.
  */
-
 
 /*
  * flatten_join_using_qual: extract Vars being joined from a JOIN/USING qual
@@ -883,13 +792,11 @@ __thread bool		quote_all_identifiers = false;
  * Caller must initialize the result lists to NIL.
  */
 
-
 /*
  * get_rtable_name: convenience function to get a previously assigned RTE alias
  *
  * The RTE must belong to the topmost namespace level in "context".
  */
-
 
 /*
  * set_deparse_planstate: set up deparse_namespace to parse subexpressions
@@ -901,7 +808,6 @@ __thread bool		quote_all_identifiers = false;
  * not need to change when shifting attention to different plan nodes in a
  * single plan tree.
  */
-
 
 /*
  * push_child_plan: temporarily transfer deparsing attention to a child plan
@@ -916,11 +822,9 @@ __thread bool		quote_all_identifiers = false;
  * previous state for pop_child_plan.
  */
 
-
 /*
  * pop_child_plan: undo the effects of push_child_plan
  */
-
 
 /*
  * push_ancestor_plan: temporarily transfer deparsing attention to an
@@ -938,12 +842,9 @@ __thread bool		quote_all_identifiers = false;
  * previous state for pop_ancestor_plan.
  */
 
-
 /*
  * pop_ancestor_plan: undo the effects of push_ancestor_plan
  */
-
-
 
 /* ----------
  * make_ruledef			- reconstruct the CREATE RULE command
@@ -951,15 +852,11 @@ __thread bool		quote_all_identifiers = false;
  * ----------
  */
 
-
-
 /* ----------
  * make_viewdef			- reconstruct the SELECT part of a
  *				  view rewrite rule
  * ----------
  */
-
-
 
 /* ----------
  * get_query_def			- Parse back one query parsetree
@@ -969,32 +866,25 @@ __thread bool		quote_all_identifiers = false;
  * ----------
  */
 
-
 /* ----------
  * get_values_def			- Parse back a VALUES list
  * ----------
  */
-
 
 /* ----------
  * get_with_clause			- Parse back a WITH clause
  * ----------
  */
 
-
 /* ----------
  * get_select_query_def			- Parse back a SELECT parsetree
  * ----------
  */
 
-
 /*
  * Detect whether query looks like SELECT ... FROM VALUES();
  * if so, return the VALUES RTE.  Otherwise return NULL.
  */
-
-
-
 
 /* ----------
  * get_target_list			- Parse back a SELECT target list
@@ -1003,25 +893,19 @@ __thread bool		quote_all_identifiers = false;
  * ----------
  */
 
-
-
-
 /*
  * Display a sort/group clause.
  *
  * Also returns the expression tree, so caller need not find it again.
  */
 
-
 /*
  * Display a GroupingSet
  */
 
-
 /*
  * Display an ORDER BY list.
  */
-
 
 /*
  * Display a WINDOW clause.
@@ -1030,46 +914,34 @@ __thread bool		quote_all_identifiers = false;
  * specifications, in which case we should print nothing here.
  */
 
-
 /*
  * Display a window definition
  */
-
 
 /* ----------
  * get_insert_query_def			- Parse back an INSERT parsetree
  * ----------
  */
 
-
-
 /* ----------
  * get_update_query_def			- Parse back an UPDATE parsetree
  * ----------
  */
-
-
 
 /* ----------
  * get_update_query_targetlist_def			- Parse back an UPDATE targetlist
  * ----------
  */
 
-
-
 /* ----------
  * get_delete_query_def			- Parse back a DELETE parsetree
  * ----------
  */
 
-
-
 /* ----------
  * get_utility_query_def			- Parse back a UTILITY parsetree
  * ----------
  */
-
-
 
 /*
  * Display a Var appropriately.
@@ -1091,8 +963,6 @@ __thread bool		quote_all_identifiers = false;
  * it is a whole-row Var or a subplan output reference).
  */
 
-
-
 /*
  * Get the name of a field of an expression of composite type.  The
  * expression is usually a Var, but we handle other cases too.
@@ -1111,7 +981,6 @@ __thread bool		quote_all_identifiers = false;
  * a determinable composite type.
  */
 
-
 /*
  * Try to find the referenced expression for a PARAM_EXEC Param that might
  * reference a parameter supplied by an upper NestLoop or SubPlan plan node.
@@ -1121,11 +990,9 @@ __thread bool		quote_all_identifiers = false;
  * found, return NULL.
  */
 
-
 /*
  * Display a Param appropriately.
  */
-
 
 /*
  * get_simple_binary_op_name
@@ -1134,16 +1001,12 @@ __thread bool		quote_all_identifiers = false;
  * will return single char binary operator name, or NULL if it's not
  */
 
-
-
 /*
  * isSimpleNode - check if given node is simple (doesn't need parenthesizing)
  *
  *	true   : simple in the context of parent node's type
  *	false  : not simple
  */
-
-
 
 /*
  * appendContextKeyword - append a keyword to buffer
@@ -1152,14 +1015,11 @@ __thread bool		quote_all_identifiers = false;
  * Otherwise, just append the keyword.
  */
 
-
 /*
  * removeStringInfoSpaces - delete trailing spaces from a buffer.
  *
  * Possibly this should move to stringinfo.c at some point.
  */
-
-
 
 /*
  * get_rule_expr_paren	- deparse expr using get_rule_expr,
@@ -1172,8 +1032,6 @@ __thread bool		quote_all_identifiers = false;
  * use get_rule_expr_paren instead of get_rule_expr so parentheses can be
  * added.
  */
-
-
 
 /* ----------
  * get_rule_expr			- Parse back an expression
@@ -1189,7 +1047,6 @@ __thread bool		quote_all_identifiers = false;
  * ----------
  */
 
-
 /*
  * get_rule_expr_toplevel		- Parse back a toplevel expression
  *
@@ -1202,27 +1059,21 @@ __thread bool		quote_all_identifiers = false;
  * whether to print AS, so it needs to invoke get_variable() directly anyway.)
  */
 
-
-
 /*
  * get_oper_expr			- Parse back an OpExpr node
  */
-
 
 /*
  * get_func_expr			- Parse back a FuncExpr node
  */
 
-
 /*
  * get_agg_expr			- Parse back an Aggref node
  */
 
-
 /*
  * get_windowfunc_expr	- Parse back a WindowFunc node
  */
-
 
 /* ----------
  * get_coercion_expr
@@ -1230,7 +1081,6 @@ __thread bool		quote_all_identifiers = false;
  *	Make a string representation of a value coerced to a specific type
  * ----------
  */
-
 
 /* ----------
  * get_const_expr
@@ -1248,24 +1098,18 @@ __thread bool		quote_all_identifiers = false;
  * ----------
  */
 
-
 /*
  * helper for get_const_expr: append COLLATE if needed
  */
-
 
 /*
  * simple_quote_literal - Format a string as a SQL literal, append to buf
  */
 
-
-
 /* ----------
  * get_sublink_expr			- Parse back a sublink
  * ----------
  */
-
-
 
 /* ----------
  * get_from_clause			- Parse back a FROM clause
@@ -1276,15 +1120,11 @@ __thread bool		quote_all_identifiers = false;
  * ----------
  */
 
-
-
-
 /*
  * get_column_alias_list - print column alias list for an RTE
  *
  * Caller must already have printed the relation's alias name.
  */
-
 
 /*
  * get_from_clause_coldeflist - reproduce FROM clause coldeflist
@@ -1299,11 +1139,9 @@ __thread bool		quote_all_identifiers = false;
  * responsible for ensuring that an alias or AS is present before it.
  */
 
-
 /*
  * get_tablesample_def			- print a TableSampleClause
  */
-
 
 /*
  * get_opclass_name			- fetch name of an index operator class
@@ -1315,7 +1153,6 @@ __thread bool		quote_all_identifiers = false;
  * InvalidOid for actual_datatype.)
  */
 
-
 /*
  * processIndirection - take care of array and subfield assignment
  *
@@ -1325,93 +1162,78 @@ __thread bool		quote_all_identifiers = false;
  * base column name (that the caller just printed).
  */
 
-
-
-
 /*
  * quote_identifier			- Quote an identifier only if needed
  *
  * When quotes are needed, we palloc the required space; slightly
  * space-wasteful but well worth it for notational simplicity.
  */
-const char *
-quote_identifier(const char *ident)
-{
-	/*
-	 * Can avoid quoting if ident starts with a lowercase letter or underscore
-	 * and contains only lowercase letters, digits, and underscores, *and* is
-	 * not any SQL keyword.  Otherwise, supply quotes.
-	 */
-	int			nquotes = 0;
-	bool		safe;
-	const char *ptr;
-	char	   *result;
-	char	   *optr;
+const char *quote_identifier(const char *ident) {
+    /*
+     * Can avoid quoting if ident starts with a lowercase letter or underscore
+     * and contains only lowercase letters, digits, and underscores, *and* is
+     * not any SQL keyword.  Otherwise, supply quotes.
+     */
+    int         nquotes = 0;
+    bool        safe;
+    const char *ptr;
+    char       *result;
+    char       *optr;
 
-	/*
-	 * would like to use <ctype.h> macros here, but they might yield unwanted
-	 * locale-specific results...
-	 */
-	safe = ((ident[0] >= 'a' && ident[0] <= 'z') || ident[0] == '_');
+    /*
+     * would like to use <ctype.h> macros here, but they might yield unwanted
+     * locale-specific results...
+     */
+    safe = ((ident[0] >= 'a' && ident[0] <= 'z') || ident[0] == '_');
 
-	for (ptr = ident; *ptr; ptr++)
-	{
-		char		ch = *ptr;
+    for (ptr = ident; *ptr; ptr++) {
+        char ch = *ptr;
 
-		if ((ch >= 'a' && ch <= 'z') ||
-			(ch >= '0' && ch <= '9') ||
-			(ch == '_'))
-		{
-			/* okay */
-		}
-		else
-		{
-			safe = false;
-			if (ch == '"')
-				nquotes++;
-		}
-	}
+        if ((ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9') || (ch == '_')) {
+            /* okay */
+        } else {
+            safe = false;
+            if (ch == '"')
+                nquotes++;
+        }
+    }
 
-	if (quote_all_identifiers)
-		safe = false;
+    if (quote_all_identifiers)
+        safe = false;
 
-	if (safe)
-	{
-		/*
-		 * Check for keyword.  We quote keywords except for unreserved ones.
-		 * (In some cases we could avoid quoting a col_name or type_func_name
-		 * keyword, but it seems much harder than it's worth to tell that.)
-		 *
-		 * Note: ScanKeywordLookup() does case-insensitive comparison, but
-		 * that's fine, since we already know we have all-lower-case.
-		 */
-		const ScanKeyword *keyword = ScanKeywordLookup(ident,
-													   ScanKeywords,
-													   NumScanKeywords);
+    if (safe) {
+        /*
+         * Check for keyword.  We quote keywords except for unreserved ones.
+         * (In some cases we could avoid quoting a col_name or type_func_name
+         * keyword, but it seems much harder than it's worth to tell that.)
+         *
+         * Note: ScanKeywordLookup() does case-insensitive comparison, but
+         * that's fine, since we already know we have all-lower-case.
+         */
+        const ScanKeyword *keyword = ScanKeywordLookup(ident, ScanKeywords, NumScanKeywords);
 
-		if (keyword != NULL && keyword->category != UNRESERVED_KEYWORD)
-			safe = false;
-	}
+        if (keyword != NULL && keyword->category != UNRESERVED_KEYWORD)
+            safe = false;
+    }
 
-	if (safe)
-		return ident;			/* no change needed */
+    if (safe)
+        return ident; /* no change needed */
 
-	result = (char *) palloc(strlen(ident) + nquotes + 2 + 1);
+    result = (char *) palloc(strlen(ident) + nquotes + 2 + 1);
 
-	optr = result;
-	*optr++ = '"';
-	for (ptr = ident; *ptr; ptr++)
-	{
-		char		ch = *ptr;
+    optr = result;
+    *optr++ = '"';
+    for (ptr = ident; *ptr; ptr++) {
+        char ch = *ptr;
 
-		if (ch == '"')
-			*optr++ = '"';
-		*optr++ = ch;
-	}
-	*optr++ = '"';
-	*optr = '\0';
+        if (ch == '"')
+            *optr++ = '"';
+        *optr++ = ch;
+    }
+    *optr++ = '"';
+    *optr = '\0';
 
-	return result;
+    return result;
 }
 
 /*
@@ -1421,7 +1243,6 @@ quote_identifier(const char *ident)
  * is NULL, quoting each component if necessary.  The result is palloc'd.
  */
 
-
 /*
  * get_relation_name
  *		Get the unqualified name of a relation specified by OID
@@ -1429,7 +1250,6 @@ quote_identifier(const char *ident)
  * This differs from the underlying get_rel_name() function in that it will
  * throw error instead of silently returning NULL if the OID is bad.
  */
-
 
 /*
  * generate_relation_name
@@ -1442,14 +1262,12 @@ quote_identifier(const char *ident)
  * visible in the namespace list.
  */
 
-
 /*
  * generate_qualified_relation_name
  *		Compute the name to display for a relation specified by OID
  *
  * As above, but unconditionally schema-qualify the name.
  */
-
 
 /*
  * generate_function_name
@@ -1467,7 +1285,6 @@ quote_identifier(const char *ident)
  * The result includes all necessary quoting and schema-prefixing.
  */
 
-
 /*
  * generate_operator_name
  *		Compute the name to display for an operator specified by OID,
@@ -1480,7 +1297,6 @@ quote_identifier(const char *ident)
  * in an expression.
  */
 
-
 /*
  * generate_collation_name
  *		Compute the name to display for a collation specified by OID
@@ -1488,15 +1304,12 @@ quote_identifier(const char *ident)
  * The result includes all necessary quoting and schema-prefixing.
  */
 
-
 /*
  * Given a C string, produce a TEXT datum.
  *
  * We assume that the input was palloc'd and may be freed.
  */
 
-
 /*
  * Generate a C string representing a relation's reloptions, or NULL if none.
  */
-

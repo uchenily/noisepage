@@ -12,7 +12,7 @@ nodes.h - now wraps libpg_query/nodes.h (rather than including a modified
 	copy)
 
 parsenodes.h - no change.
-	   include/parser/parsenodes.h is a modified (reduced?) version of 
+	   include/parser/parsenodes.h is a modified (reduced?) version of
 	   libpg_query/src/postgres/include/nodes/parsenodes.h
 
 pg_list.h - removed from include directory, as contents are identical
@@ -32,4 +32,3 @@ pg_query.h - removed from include directory, as contents are identical
 pg_trigger.h - no change.
 	   include/parser/pg_trigger.h is a reduced version of
 	   libpg_query/src/postgres/include/catalog/pg_trigger.h
-

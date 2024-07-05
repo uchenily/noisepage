@@ -12,10 +12,10 @@ StarTranslator::StarTranslator(const parser::AbstractExpression &expr, Compilati
     : ExpressionTranslator(expr, compilation_context) {}
 
 ast::Expr *StarTranslator::DeriveValue(WorkContext *ctx, const ColumnValueProvider *provider) const {
-  auto *codegen = GetCodeGen();
-  // TODO(Amadou): COUNT(*) will increment its counter regardless of the input we pass in.
-  // So the value we return here does not matter. The StarExpression can just be replaced by a constant.
-  return codegen->IntToSql(0);
+    auto *codegen = GetCodeGen();
+    // TODO(Amadou): COUNT(*) will increment its counter regardless of the input we pass in.
+    // So the value we return here does not matter. The StarExpression can just be replaced by a constant.
+    return codegen->IntToSql(0);
 }
 
-}  // namespace noisepage::execution::compiler
+} // namespace noisepage::execution::compiler

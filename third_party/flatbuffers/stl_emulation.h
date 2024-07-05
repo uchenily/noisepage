@@ -99,13 +99,13 @@ inline void vector_emplace_back(std::vector<T> *vector, V &&data) {
       }
   };
 
-  template <> class numeric_limits<float> : 
+  template <> class numeric_limits<float> :
       public std::numeric_limits<float> {
     public:
       static float lowest() { return -FLT_MAX; }
   };
 
-  template <> class numeric_limits<double> : 
+  template <> class numeric_limits<double> :
       public std::numeric_limits<double> {
     public:
       static double lowest() { return -DBL_MAX; }

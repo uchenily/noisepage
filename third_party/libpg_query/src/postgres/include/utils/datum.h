@@ -43,7 +43,6 @@ extern Datum datumTransfer(Datum value, bool typByVal, int typLen);
  *
  * XXX : See comments in the code for restrictions!
  */
-extern bool datumIsEqual(Datum value1, Datum value2,
-			 bool typByVal, int typLen);
+extern bool datumIsEqual(Datum value1, Datum value2, bool typByVal, int typLen);
 
-#endif   /* DATUM_H */
+#endif /* DATUM_H */

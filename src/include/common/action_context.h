@@ -19,20 +19,20 @@ STRONG_TYPEDEF_HEADER(action_id_t, uint64_t);
  * The lifecycle states of internal actions.
  */
 enum class ActionState : uint8_t {
-  /** The system has created the action but the invocation has not started. */
-  INITIATED,
+    /** The system has created the action but the invocation has not started. */
+    INITIATED,
 
-  /** The action's invocation has begun. */
-  IN_PROGRESS,
+    /** The action's invocation has begun. */
+    IN_PROGRESS,
 
-  /** The action has completed successfully. */
-  SUCCESS,
+    /** The action has completed successfully. */
+    SUCCESS,
 
-  /** The action has failed and is terminated. */
-  FAILURE,
+    /** The action has failed and is terminated. */
+    FAILURE,
 
-  /** The action is unable to proeceed now and has been deferred for later execution. */
-  DEFERRED,
+    /** The action is unable to proeceed now and has been deferred for later execution. */
+    DEFERRED,
 };
 
 /**
@@ -50,36 +50,44 @@ enum class ActionState : uint8_t {
  * they complete, or even inconsistent affects.
  */
 class ActionContext {
- public:
-  ActionContext(const ActionContext &) = delete;
+public:
+    ActionContext(const ActionContext &) = delete;
 
-  /**
-   * Constructor of ActionContext.
-   * @param action_id id of this action.
-   */
-  explicit ActionContext(action_id_t action_id) : action_id_(action_id), state_(ActionState::INITIATED) {}
+    /**
+     * Constructor of ActionContext.
+     * @param action_id id of this action.
+     */
+    explicit ActionContext(action_id_t action_id)
+        : action_id_(action_id)
+        , state_(ActionState::INITIATED) {}
 
-  /**
-   * Get the state of this action.
-   * @return action state.
-   */
-  ActionState GetState() const { return state_.load(); }
+    /**
+     * Get the state of this action.
+     * @return action state.
+     */
+    ActionState GetState() const {
+        return state_.load();
+    }
 
-  /**
-   * Set the state of this action.
-   * @param state action state.
-   */
-  void SetState(ActionState state) { state_.store(state); }
+    /**
+     * Set the state of this action.
+     * @param state action state.
+     */
+    void SetState(ActionState state) {
+        state_.store(state);
+    }
 
-  /**
-   * Get action id.
-   * @return action id.
-   */
-  action_id_t GetActionId() const { return action_id_; }
+    /**
+     * Get action id.
+     * @return action id.
+     */
+    action_id_t GetActionId() const {
+        return action_id_;
+    }
 
- private:
-  action_id_t action_id_;
-  std::atomic<ActionState> state_;
+private:
+    action_id_t              action_id_;
+    std::atomic<ActionState> state_;
 };
 
-}  // namespace noisepage::common
+} // namespace noisepage::common

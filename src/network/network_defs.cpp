@@ -6,4 +6,4 @@ namespace noisepage::network {
 
 STRONG_TYPEDEF_BODY(connection_id_t, uint16_t);
 
-}  // namespace noisepage::network
+} // namespace noisepage::network

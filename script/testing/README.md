@@ -48,9 +48,9 @@ If you specify the `--query-mode extended`, you then can also indicate the prepa
 
 - Check if the noisepage bin exists
 - Run the pre-suite task (test suite specific)
-  - e.g. install oltp bin 
+  - e.g. install oltp bin
 - Run the test sequentially
-  - [Optional] Fork a subprocess to start the DB (via python subprocess.Popen) 
+  - [Optional] Fork a subprocess to start the DB (via python subprocess.Popen)
     - If skip this step, the test will run on the used database
   - Run the pre-test task (test specific)
   - Fork a subprocess to start the test process using the command (via python subprocess.Popen)
@@ -59,7 +59,7 @@ If you specify the `--query-mode extended`, you then can also indicate the prepa
   - Run the post-test task (test specific)
   - [Optional] Stop the DB
     - If skip this step, the populated database can be used for following experiments
-- Run the post-suite task (test suite specific) 
+- Run the post-suite task (test suite specific)
 - Print out the logs to the stdout
 
 ## Adding a New Test Case
@@ -83,10 +83,10 @@ All test cases should inherit from the `TestCase` class. Anyone is free to modif
 - `NoisePageServer`
   - Manage the lifecycle of the NoisePage instance. It create a Python subprocess for the NoisePage process, poll the logs, and terminate or kill it when the test finishes
 - `TestCase`
-  - Manage a the life cycle of a test case. A test case is usually a process trigger from command line. The actual test case can be specified as a command string and created and executed in a Python subprocess. 
+  - Manage a the life cycle of a test case. A test case is usually a process trigger from command line. The actual test case can be specified as a command string and created and executed in a Python subprocess.
   - The `TestCase` class also provides `run_pre_test` and `run_post_test` functions for you to override for preparation and clean up of each test case.
 - `TestServer`
-  - Manage the entire lifecycle of a test. It uses the `NoisePageServer` to manage the database process. One `TestServer` can have a list of `TestCase`s and treats the entire collection as a suite. 
+  - Manage the entire lifecycle of a test. It uses the `NoisePageServer` to manage the database process. One `TestServer` can have a list of `TestCase`s and treats the entire collection as a suite.
   - Also provides the `run_pre_suite` and `run_post_suite` functions for you to override to specify any preparation and cleanup at the suite level.
 
 ## Step-by-step instructions
@@ -110,7 +110,7 @@ All test cases should inherit from the `TestCase` class. Anyone is free to modif
     - You can refer to [oltpbench/util.py](https://github.com/cmu-db/noisepage/blob/master/script/testing/oltpbench/util.py) for reference.
 - Create a stage for your test in Jenkins pipeline
   - Go to `noisepage/Jenkinsfile`, create a stage at the place of your choice, and create the stage based on the template config as below.
-  
+
   ```groovy
   stage('My Test') {
       parallel{

@@ -36,13 +36,13 @@ class CheckConfig(object):
             """ Takes the relative complement of tracked files & modified files.
                 The result is a list of all elements that were NOT modified.
                 We tell clang-tidy to skip these files to speed up builds.
-                
+
                 Git is told to look relative to the root path (:/)
-                We tell git to only diff into the past (...) 
+                We tell git to only diff into the past (...)
                 We also tell git to only diff new or modified files (filter=AM)
             """
             with os.popen('(git ls-files --full-name :/;'
-                          ' git diff origin/master... --name-only --diff-filter=AM)' 
+                          ' git diff origin/master... --name-only --diff-filter=AM)'
                           '| sort | uniq -u') as diff:
                 for line in diff:
                     self.ignore_pats.append("/%s" % line.strip())

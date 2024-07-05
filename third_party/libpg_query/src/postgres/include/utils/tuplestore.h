@@ -33,7 +33,6 @@
 
 #include "executor/tuptable.h"
 
-
 /* Tuplestorestate is an opaque type whose details are not known outside
  * tuplestore.c.
  */
@@ -44,39 +43,32 @@ typedef struct Tuplestorestate Tuplestorestate;
  * to support the same behavior for IndexTuples and/or bare Datums.
  */
 
-extern Tuplestorestate *tuplestore_begin_heap(bool randomAccess,
-					  bool interXact,
-					  int maxKBytes);
+extern Tuplestorestate *tuplestore_begin_heap(bool randomAccess, bool interXact, int maxKBytes);
 
 extern void tuplestore_set_eflags(Tuplestorestate *state, int eflags);
 
-extern void tuplestore_puttupleslot(Tuplestorestate *state,
-						TupleTableSlot *slot);
+extern void tuplestore_puttupleslot(Tuplestorestate *state, TupleTableSlot *slot);
 extern void tuplestore_puttuple(Tuplestorestate *state, HeapTuple tuple);
-extern void tuplestore_putvalues(Tuplestorestate *state, TupleDesc tdesc,
-					 Datum *values, bool *isnull);
+extern void tuplestore_putvalues(Tuplestorestate *state, TupleDesc tdesc, Datum *values, bool *isnull);
 
 /* tuplestore_donestoring() used to be required, but is no longer used */
-#define tuplestore_donestoring(state)	((void) 0)
+#define tuplestore_donestoring(state) ((void) 0)
 
-extern int	tuplestore_alloc_read_pointer(Tuplestorestate *state, int eflags);
+extern int tuplestore_alloc_read_pointer(Tuplestorestate *state, int eflags);
 
 extern void tuplestore_select_read_pointer(Tuplestorestate *state, int ptr);
 
-extern void tuplestore_copy_read_pointer(Tuplestorestate *state,
-							 int srcptr, int destptr);
+extern void tuplestore_copy_read_pointer(Tuplestorestate *state, int srcptr, int destptr);
 
 extern void tuplestore_trim(Tuplestorestate *state);
 
 extern bool tuplestore_in_memory(Tuplestorestate *state);
 
-extern bool tuplestore_gettupleslot(Tuplestorestate *state, bool forward,
-						bool copy, TupleTableSlot *slot);
+extern bool tuplestore_gettupleslot(Tuplestorestate *state, bool forward, bool copy, TupleTableSlot *slot);
 
 extern bool tuplestore_advance(Tuplestorestate *state, bool forward);
 
-extern bool tuplestore_skiptuples(Tuplestorestate *state,
-					  int64 ntuples, bool forward);
+extern bool tuplestore_skiptuples(Tuplestorestate *state, int64 ntuples, bool forward);
 
 extern bool tuplestore_ateof(Tuplestorestate *state);
 
@@ -86,4 +78,4 @@ extern void tuplestore_clear(Tuplestorestate *state);
 
 extern void tuplestore_end(Tuplestorestate *state);
 
-#endif   /* TUPLESTORE_H */
+#endif /* TUPLESTORE_H */

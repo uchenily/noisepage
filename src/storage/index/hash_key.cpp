@@ -9,4 +9,4 @@ template class HashKey<64>;
 template class HashKey<128>;
 template class HashKey<256>;
 
-}  // namespace noisepage::storage::index
+} // namespace noisepage::storage::index

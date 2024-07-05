@@ -6,16 +6,20 @@ namespace noisepage::execution::sql {
  * Boolean negation.
  */
 struct Not {
-  /** @return True if NOT input. */
-  bool operator()(const bool input) const noexcept { return !input; }
+    /** @return True if NOT input. */
+    bool operator()(const bool input) const noexcept {
+        return !input;
+    }
 };
 
 /**
  * Boolean AND.
  */
 struct And {
-  /** @return True if left AND right. */
-  bool operator()(const bool left, bool right) const noexcept { return left && right; }
+    /** @return True if left AND right. */
+    bool operator()(const bool left, bool right) const noexcept {
+        return left && right;
+    }
 };
 
 /**
@@ -36,18 +40,20 @@ struct And {
  * (2) Either input is true and the other is NULL.
  */
 struct AndNullMask {
-  /** @return True (i.e. result is NULL) if both inputs are NULL, or either input is true and the other is NULL. */
-  bool operator()(const bool left, const bool right, const bool left_null, const bool right_null) const noexcept {
-    return (left_null && (right_null || right)) || (left && right_null);
-  }
+    /** @return True (i.e. result is NULL) if both inputs are NULL, or either input is true and the other is NULL. */
+    bool operator()(const bool left, const bool right, const bool left_null, const bool right_null) const noexcept {
+        return (left_null && (right_null || right)) || (left && right_null);
+    }
 };
 
 /**
  * Boolean OR.
  */
 struct Or {
-  /** @return True if left OR right. */
-  bool operator()(const bool left, const bool right) const noexcept { return left || right; }
+    /** @return True if left OR right. */
+    bool operator()(const bool left, const bool right) const noexcept {
+        return left || right;
+    }
 };
 
 /**
@@ -68,10 +74,10 @@ struct Or {
  * (2) Either input is false and the other is NULL.
  */
 struct OrNullMask {
-  /** @return True (i.e. result is NULL) if both inputs are NULL, or either input is false and the other is NULL. */
-  bool operator()(const bool left, const bool right, const bool left_null, const bool right_null) const noexcept {
-    return (left_null && (right_null || !right)) || (!left && right_null);
-  }
+    /** @return True (i.e. result is NULL) if both inputs are NULL, or either input is false and the other is NULL. */
+    bool operator()(const bool left, const bool right, const bool left_null, const bool right_null) const noexcept {
+        return (left_null && (right_null || !right)) || (!left && right_null);
+    }
 };
 
-}  // namespace noisepage::execution::sql
+} // namespace noisepage::execution::sql

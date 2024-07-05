@@ -38,13 +38,8 @@ extern bool row_security;
  * by other error cases where we're just trying to decide if data from the
  * table should be passed back to the user or not).
  */
-enum CheckEnableRlsResult
-{
-	RLS_NONE,
-	RLS_NONE_ENV,
-	RLS_ENABLED
-};
+enum CheckEnableRlsResult { RLS_NONE, RLS_NONE_ENV, RLS_ENABLED };
 
-extern int	check_enable_rls(Oid relid, Oid checkAsUser, bool noError);
+extern int check_enable_rls(Oid relid, Oid checkAsUser, bool noError);
 
-#endif   /* RLS_H */
+#endif /* RLS_H */
