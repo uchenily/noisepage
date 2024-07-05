@@ -13,17 +13,17 @@
  * the pointer is meant only for the signal handler. If you think you need a global pointer to db_main somewhere else in
  * the system, you're probably doing something wrong.
  */
-namespace {
+namespace global {
 noisepage::common::ManagedPointer<noisepage::DBMain> db_main_handler_ptr = nullptr;
-}
+} // namespace global
 
 /**
  * The signal handler to be invoked for SIGINT and SIGTERM
  * @param sig_num portable signal number passed to the handler by the kernel
  */
 void SignalHandler(int32_t sig_num) {
-    if ((sig_num == SIGINT || sig_num == SIGTERM) && db_main_handler_ptr != nullptr) {
-        db_main_handler_ptr->ForceShutdown();
+    if ((sig_num == SIGINT || sig_num == SIGTERM) && global::db_main_handler_ptr != nullptr) {
+        global::db_main_handler_ptr->ForceShutdown();
     }
 }
 
@@ -31,7 +31,7 @@ void SignalHandler(int32_t sig_num) {
  * Register SignalHandler for SIGINT and SIGTERM
  * @return 0 if successful, otherwise errno
  */
-int32_t RegisterSignalHandler() {
+auto RegisterSignalHandler() -> int32_t {
     // Initialize a signal handler to call SignalHandler()
     struct sigaction sa; // NOLINT
     sa.sa_handler = &SignalHandler;
@@ -52,7 +52,7 @@ int32_t RegisterSignalHandler() {
     return 0;
 }
 
-int main(int argc, char *argv[]) {
+auto main(int argc, char *argv[]) -> int {
     // Register signal handler so we can kill the server once it's running
     const auto register_result = RegisterSignalHandler();
     if (register_result != 0) {
@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Parse Setting Values
-    ::gflags::SetUsageMessage("Usage Info: \n");
+    ::gflags::SetUsageMessage("\nUsage Info: \n");
     ::gflags::ParseCommandLineFlags(&argc, &argv, true);
 
     // Initialize debug loggers
@@ -82,7 +82,7 @@ int main(int argc, char *argv[]) {
                        .SetUseNetwork(true)
                        .Build();
 
-    db_main_handler_ptr = db_main.get();
+    global::db_main_handler_ptr = db_main.get();
 
     db_main->Run();
 
