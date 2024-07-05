@@ -3,6 +3,8 @@
 
 #include <stdbool.h>
 
+#include "pg_query.h"
+
 PgQueryFingerprintResult pg_query_fingerprint_with_opts(const char *input, bool printTokens);
 
 #endif
