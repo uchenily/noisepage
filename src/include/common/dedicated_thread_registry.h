@@ -78,7 +78,7 @@ public:
         common::SpinLatch::ScopedSpinLatch guard(&table_latch_);
         auto                              *task = new Task(std::forward<Args>(args)...); // Create task
         thread_owners_table_[requester].insert(task);
-        threads_table_.emplace(task, std::thread([this] {
+        threads_table_.emplace(task, std::thread([this, task] {
                                    if (metrics_manager_ != DISABLED) {
                                        metrics_manager_->RegisterThread();
                                    }
