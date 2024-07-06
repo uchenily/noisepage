@@ -54,7 +54,7 @@ public:
      * @param fd The socket file descriptor of the client connection to be dispatched.
      * @param provider The protocol that should be used to handle this request.
      */
-    void DispatchConnection(uint32_t fd, common::ManagedPointer<ProtocolInterpreterProvider> provider);
+    void DispatchConnection(int fd, common::ManagedPointer<ProtocolInterpreterProvider> provider);
 
     /**
      * Creates all of the ConnectionHandlerTasks (num_handlers of them) and then sits in its event loop until stopped.

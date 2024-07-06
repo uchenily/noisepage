@@ -39,13 +39,13 @@ namespace noisepage::common {
 class NotifiableTask : public DedicatedThreadTask {
 public:
     /** Construct a new NotifiableTask instance with the specified task id. */
-    explicit NotifiableTask(int task_id);
+    explicit NotifiableTask(uint32_t task_id);
 
     /** Destroy the NotifiableTask, deleting and freeing all of its registered events. */
     ~NotifiableTask() override;
 
     /** @return The unique ID assigned to the task. */
-    auto Id() const -> size_t {
+    auto Id() const -> uint32_t {
         return task_id_;
     }
 
@@ -190,7 +190,7 @@ public:
     } // NOLINT
 
 private:
-    const int          task_id_;
+    uint32_t           task_id_;
     struct event_base *base_;
 
     // struct event and lifecycle management

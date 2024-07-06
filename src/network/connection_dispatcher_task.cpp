@@ -32,12 +32,12 @@ ConnectionDispatcherTask::ConnectionDispatcherTask(
     // Note that libevent callback functions must have type (int fd, int16_t flags, void *arg) -> void.
 
     // This callback dispatches client connections at fd to a handler. This uses the dispatcher's protocol interpreter.
-    event_callback_fn connection_dispatcher_fn = [](int fd, int16_t flags, void *arg) {
+    event_callback_fn connection_dispatcher_cb = [](int fd, int16_t /*flags*/, void *arg) {
         auto *dispatcher = static_cast<ConnectionDispatcherTask *>(arg);
         dispatcher->DispatchConnection(fd, dispatcher->interpreter_provider_);
     };
     // This callback exits the event loop.
-    event_callback_fn loop_exit_fn = [](int fd, int16_t flags, void *arg) {
+    event_callback_fn loop_exit_cb = [](int fd, int16_t flags, void *arg) {
         static_cast<NotifiableTask *>(arg)->ExitLoop(fd, flags);
     };
 
@@ -48,16 +48,16 @@ ConnectionDispatcherTask::ConnectionDispatcherTask(
         //   EV_READ : Wait until the file descriptor becomes readable.
         //   EV_PERSIST : Non-persistent events are removed upon activation (single-use), the server should be
         //   persistent.
-        RegisterEvent(listen_fd, EV_READ | EV_PERSIST, connection_dispatcher_fn, this);
+        RegisterEvent(listen_fd, EV_READ | EV_PERSIST, connection_dispatcher_cb, this);
     }
     // Exit the event loop if the terminal launching the server process is closed.
-    RegisterSignalEvent(SIGHUP, loop_exit_fn, this);
+    RegisterSignalEvent(SIGHUP, loop_exit_cb, this);
 }
 
-void ConnectionDispatcherTask::DispatchConnection(uint32_t                                            fd,
+void ConnectionDispatcherTask::DispatchConnection(int                                                 fd,
                                                   common::ManagedPointer<ProtocolInterpreterProvider> provider) {
     // Wait for a new socket connection. Currently, addr and addrlen are unused.
-    struct sockaddr_storage addr;
+    struct sockaddr_storage addr {};
     socklen_t               addrlen = sizeof(addr);
     int                     new_conn_fd = accept(fd, reinterpret_cast<struct sockaddr *>(&addr), &addrlen);
     if (new_conn_fd == -1) {
@@ -100,7 +100,7 @@ void ConnectionDispatcherTask::Terminate() {
     }
 }
 
-uint64_t ConnectionDispatcherTask::NextDispatchHandlerOffset() {
+auto ConnectionDispatcherTask::NextDispatchHandlerOffset() -> uint64_t {
     // Get the handler that the next connection should be dispatched to.
     // This is round-robin.
     // TODO(WAN): as inherited from Tianyu, we can be smarter about scheduling dispatch.
