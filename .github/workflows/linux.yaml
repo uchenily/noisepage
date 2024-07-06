@@ -34,8 +34,13 @@ jobs:
 
       - name: CMake Setup
         run: |
-          cmake -GNinja -Bbuild -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Release -DNOISEPAGE_UNITY_BUILD=ON
+          cmake -GNinja -Bbuild -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug -DNOISEPAGE_UNITY_BUILD=ON -DNOISEPAGE_GENERATE_COVERAGE=ON
 
       - name: CMake Build
         run: |
           cmake --build build
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4.0.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
