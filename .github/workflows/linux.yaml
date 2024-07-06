@@ -30,7 +30,7 @@ jobs:
       - name: Setup dependencies
         run: |
           apt-get update -y
-          apt-get install -y curl git pkg-config ccache
+          apt-get install -y curl git pkg-config ccache lcov
 
       - name: CMake Setup
         run: |

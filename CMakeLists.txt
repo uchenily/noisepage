@@ -1482,3 +1482,6 @@ file(GLOB_RECURSE
 foreach (_var IN LISTS BUILD_SUPPORT_SCRIPTS)
     execute_process(COMMAND chmod +x "${_var}")
 endforeach ()
+
+# Coverage
+include(cmake/coverage.cmake)
