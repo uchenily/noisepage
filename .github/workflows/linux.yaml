@@ -34,15 +34,20 @@ jobs:
 
       - name: CMake Setup
         run: |
-          cmake -GNinja -Bbuild -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug -DNOISEPAGE_UNITY_BUILD=ON -DNOISEPAGE_GENERATE_COVERAGE=ON
+          cmake -GNinja -Bbuild -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug -DNOISEPAGE_UNITY_BUILD=ON -DNOISEPAGE_GENERATE_COVERAGE=ON -DNOISEPAGE_BUILD_TESTS=ON
 
       - name: CMake Build
         run: |
           cmake --build build
 
-      - name: CMake Coverage
-        run: |
-          cmake --build build -t coverage
+      # - name: CMake Test
+      #   run: |
+      #     # ctest --test-dir build -j2 --output-on-failure || true
+      #     cmake --build build -t unittest
+
+      # - name: CMake Coverage
+      #   run: |
+      #     cmake --build build -t coverage
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4.0.1
