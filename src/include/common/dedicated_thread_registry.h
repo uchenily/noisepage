@@ -74,13 +74,14 @@ public:
      * started yet
      */
     template <class T, class... Targs>
-    common::ManagedPointer<T> RegisterDedicatedThread(DedicatedThreadOwner *requester, Targs... args) {
+    auto RegisterDedicatedThread(DedicatedThreadOwner *requester, Targs... args) -> common::ManagedPointer<T> {
         common::SpinLatch::ScopedSpinLatch guard(&table_latch_);
         auto                              *task = new T(std::forward<Targs>(args)...); // Create task
         thread_owners_table_[requester].insert(task);
-        threads_table_.emplace(task, std::thread([=] {
-                                   if (metrics_manager_ != DISABLED)
+        threads_table_.emplace(task, std::thread([this] {
+                                   if (metrics_manager_ != DISABLED) {
                                        metrics_manager_->RegisterThread();
+                                   }
                                    task->RunTask();
                                }));
         requester->AddThread();
@@ -97,9 +98,9 @@ public:
      * @warning StopTask should not be called multiple times with the same task.
      * @return true if task was stopped, false otherwise
      */
-    bool StopTask(DedicatedThreadOwner *requester, common::ManagedPointer<DedicatedThreadTask> task) {
-        DedicatedThreadTask *task_ptr;
-        std::thread         *task_thread;
+    auto StopTask(DedicatedThreadOwner *requester, common::ManagedPointer<DedicatedThreadTask> task) -> bool {
+        DedicatedThreadTask *task_ptr = nullptr;
+        std::thread         *task_thread = nullptr;
         {
             common::SpinLatch::ScopedSpinLatch guard(&table_latch_);
             // Exposing the raw pointer like this is okay because we own the underlying raw pointer
@@ -110,8 +111,9 @@ public:
         }
 
         // Notify requester of removal
-        if (!requester->OnThreadRemoval(task))
+        if (!requester->OnThreadRemoval(task)) {
             return false;
+        }
 
         // Terminate task, unlock during termination of thread since we aren't touching the metadata tables
         task->Terminate();

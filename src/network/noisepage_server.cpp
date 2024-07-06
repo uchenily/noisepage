@@ -43,7 +43,7 @@ void TerrierServer::RegisterSocket() {
 
     constexpr auto conn_backlog = common::Settings::CONNECTION_BACKLOG;
     constexpr auto is_networked_socket = type == NETWORKED_SOCKET;
-    constexpr auto socket_description = std::string_view(is_networked_socket ? "networked" : "Unix domain");
+    constexpr auto socket_description = std::string_view{is_networked_socket ? "networked" : "Unix domain"};
 
     auto &socket_fd = is_networked_socket ? network_socket_fd_ : unix_domain_socket_fd_;
 

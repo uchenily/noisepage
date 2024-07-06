@@ -37,27 +37,27 @@ public:
     /**
      * @param null_ptr null pointer
      */
-    ManagedPointer(std::nullptr_t null_ptr) noexcept
+    ManagedPointer(std::nullptr_t /*null_ptr*/) noexcept
         : underlying_(nullptr) {} // NOLINT
 
     /**
      * @return the underlying pointer
      */
-    Underlying &operator*() const {
+    auto operator*() const -> Underlying & {
         return *underlying_;
     }
 
     /**
      * @return the underlying pointer
      */
-    Underlying *operator->() const {
+    auto operator->() const -> Underlying * {
         return underlying_;
     }
 
     /**
      * @return the underlying pointer
      */
-    Underlying *Get() const {
+    auto Get() const -> Underlying * {
         return underlying_;
     }
 
@@ -72,7 +72,7 @@ public:
      * Overloaded assignment operator for nullptr type
      * @return reference to this
      */
-    ManagedPointer &operator=(std::nullptr_t) {
+    auto operator=(std::nullptr_t) -> ManagedPointer & {
         underlying_ = nullptr;
         return *this;
     }
@@ -81,7 +81,7 @@ public:
      * Overloaded assignment operator for unique_ptr type
      * @return reference to this
      */
-    ManagedPointer &operator=(const std::unique_ptr<Underlying> &smart_ptr) {
+    auto operator=(const std::unique_ptr<Underlying> &smart_ptr) -> ManagedPointer & {
         underlying_ = smart_ptr.get();
         return *this;
     }
@@ -90,7 +90,7 @@ public:
      * Overloaded assignment operator for underlying ptr type
      * @return reference to this
      */
-    ManagedPointer &operator=(Underlying *const ptr) {
+    auto operator=(Underlying *const ptr) -> ManagedPointer & {
         underlying_ = ptr;
         return *this;
     }
@@ -100,7 +100,7 @@ public:
      * @param other the other ManagedPointer to be compared with
      * @return true if the two ManagedPointers are equal, false otherwise.
      */
-    bool operator==(const ManagedPointer &other) const {
+    auto operator==(const ManagedPointer &other) const -> bool {
         return underlying_ == other.underlying_;
     }
 
@@ -109,7 +109,7 @@ public:
      * @param other the other pointer to be compared with
      * @return true if the underlying pointer is equal to the given pointer, false otherwise.
      */
-    bool operator==(Underlying *other) const {
+    auto operator==(Underlying *other) const -> bool {
         return underlying_ == other;
     }
 
@@ -118,7 +118,7 @@ public:
      * @param other the other ManagedPointer to be compared with
      * @return true if the two ManagedPointers are not equal, false otherwise.
      */
-    bool operator!=(const ManagedPointer &other) const {
+    auto operator!=(const ManagedPointer &other) const -> bool {
         return underlying_ != other.underlying_;
     }
 
@@ -127,7 +127,7 @@ public:
      * @param other the other pointer to be compared with
      * @return true if the underlying pointer is not equal to the given pointer, false otherwise.
      */
-    bool operator!=(Underlying *other) const {
+    auto operator!=(Underlying *other) const -> bool {
         return underlying_ != other;
     }
 
@@ -137,7 +137,7 @@ public:
      * @param pointer The ManagedPointer to be output.
      * @return modified output stream.
      */
-    friend std::ostream &operator<<(std::ostream &os, const ManagedPointer &pointer) {
+    friend auto operator<<(std::ostream &os, const ManagedPointer &pointer) -> std::ostream & {
         return os << pointer.underlying_;
     }
 
@@ -147,7 +147,7 @@ public:
      * @return ManagedPointer holding the new type
      */
     template <class NewType>
-    ManagedPointer<NewType> CastManagedPointerTo() const {
+    auto CastManagedPointerTo() const -> ManagedPointer<NewType> {
         // Either "Underlying is a valid NewType" or "Underlying is base class of NewType".
         static_assert(std::is_convertible_v<Underlying *, NewType *> || std::is_base_of_v<Underlying, NewType>);
         return ManagedPointer<NewType>(reinterpret_cast<NewType *>(underlying_));
@@ -169,7 +169,7 @@ struct hash<noisepage::common::ManagedPointer<Underlying>> {
      * @param ptr the ManagedPointer to be hashed.
      * @return the hash of the ManagedPointer.
      */
-    size_t operator()(const noisepage::common::ManagedPointer<Underlying> &ptr) const {
+    auto operator()(const noisepage::common::ManagedPointer<Underlying> &ptr) const -> size_t {
         return hash<Underlying *>()(ptr.operator->());
     }
 };
