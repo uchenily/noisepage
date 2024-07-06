@@ -65,18 +65,18 @@ public:
      * registry owns the task object and is in charge of deleting it. The requester only receives a ManagedPointer to
      * the task
      *
-     * @tparam T task type to initialize and run
-     * @tparam Targs type of arguments to pass to constructor of task
+     * @tparam Task task type to initialize and run
+     * @tparam Args type of arguments to pass to constructor of task
      * @param requester The owner to assign the new thread to
      * @param args arguments to pass to constructor of task
      * @return ManagedPointer to task object
      * @warning RegisterDedicatedThread only registers the thread, it does not guarantee that the thread has been
      * started yet
      */
-    template <class T, class... Targs>
-    auto RegisterDedicatedThread(DedicatedThreadOwner *requester, Targs... args) -> common::ManagedPointer<T> {
+    template <class Task, class... Args>
+    auto RegisterDedicatedThread(DedicatedThreadOwner *requester, Args... args) -> common::ManagedPointer<Task> {
         common::SpinLatch::ScopedSpinLatch guard(&table_latch_);
-        auto                              *task = new T(std::forward<Targs>(args)...); // Create task
+        auto                              *task = new Task(std::forward<Args>(args)...); // Create task
         thread_owners_table_[requester].insert(task);
         threads_table_.emplace(task, std::thread([this] {
                                    if (metrics_manager_ != DISABLED) {

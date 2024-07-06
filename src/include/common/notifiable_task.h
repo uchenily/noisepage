@@ -26,7 +26,7 @@ namespace noisepage::common {
  */
 #define METHOD_AS_CALLBACK(type, method)                                                                               \
     [](int fd, int16_t flags, void *arg) {                                                                             \
-        static_cast<type *>(arg)->method(fd, flags);                                                                   \
+        static_cast<(type) *>(arg)->method(fd, flags);                                                                 \
     }
 
 /**
@@ -45,7 +45,7 @@ public:
     ~NotifiableTask() override;
 
     /** @return The unique ID assigned to the task. */
-    size_t Id() const {
+    auto Id() const -> size_t {
         return task_id_;
     }
 
@@ -71,11 +71,9 @@ public:
      *        null which will wait forever
      * @return pointer to the allocated event.
      */
-    struct event *RegisterEvent(int                   fd,
-                                int16_t               flags,
-                                event_callback_fn     callback,
-                                void                 *arg,
-                                const struct timeval *timeout = nullptr);
+    auto
+    RegisterEvent(int fd, int16_t flags, event_callback_fn callback, void *arg, const struct timeval *timeout = nullptr)
+        -> struct event *;
     /**
      * @brief Register a signal event. This is a wrapper around RegisterEvent()
      *
@@ -86,7 +84,7 @@ public:
      * @param arg an argument to be passed to the callback function
      * @return pointer to the allocated event.
      */
-    struct event *RegisterSignalEvent(int signal, event_callback_fn callback, void *arg) {
+    auto RegisterSignalEvent(int signal, event_callback_fn callback, void *arg) -> struct event * {
         return RegisterEvent(signal, EV_SIGNAL | EV_PERSIST, callback, arg);
     }
 
@@ -102,7 +100,7 @@ public:
      * @param arg an argument to be passed to the callback function
      * @return pointer to the allocated event.
      */
-    struct event *RegisterPeriodicEvent(const struct timeval *timeout, event_callback_fn callback, void *arg) {
+    auto RegisterPeriodicEvent(const struct timeval *timeout, event_callback_fn callback, void *arg) -> struct event * {
         return RegisterEvent(-1, EV_TIMEOUT | EV_PERSIST, callback, arg, timeout);
     }
 
@@ -117,7 +115,7 @@ public:
      * @param arg an argument to be passed to the callback function
      * @return pointer to the allocated event.
      */
-    struct event *RegisterManualEvent(event_callback_fn callback, void *arg) {
+    auto RegisterManualEvent(event_callback_fn callback, void *arg) -> struct event * {
         return RegisterEvent(-1, EV_PERSIST, callback, arg);
     }
 
@@ -187,7 +185,7 @@ public:
     /**
      * Wrapper around ExitLoop() to conform to libevent callback signature
      */
-    void ExitLoop(int, int16_t) {
+    void ExitLoop(int /*unused*/, int16_t /*unused*/) {
         ExitLoop();
     } // NOLINT
 
