@@ -20,22 +20,23 @@ namespace noisepage {
 class EventUtil {
 private:
     template <typename T>
-    static bool NotNull(T *ptr) {
+    static auto NotNull(T *ptr) -> bool {
         return ptr != nullptr;
     }
 
-    static bool IsZero(int arg) {
+    static auto IsZero(int arg) -> bool {
         return arg == 0;
     }
 
-    static bool NonNegative(int arg) {
+    static auto NonNegative(int arg) -> bool {
         return arg >= 0;
     }
 
     template <typename T>
-    static T Wrap(T value, bool (*check)(T), const char *error_msg) {
-        if (!check(value))
+    static auto Wrap(T value, bool (*check)(T), const char *error_msg) -> T {
+        if (!check(value)) {
             throw NETWORK_PROCESS_EXCEPTION(error_msg);
+        }
         return value;
     }
 
@@ -53,7 +54,7 @@ public:
     /**
      * @return A new event_base
      */
-    static struct event_base *EventBaseNew() {
+    static auto EventBaseNew() -> struct event_base * {
         return Wrap(event_base_new(), NotNull<struct event_base>, "Can't allocate event base");
     }
 
@@ -62,7 +63,7 @@ public:
      * @param timeout
      * @return a positive integer or an exception is thrown on failure
      */
-    static int EventBaseLoopExit(struct event_base *base, const struct timeval *timeout) {
+    static auto EventBaseLoopExit(struct event_base *base, const struct timeval *timeout) -> int {
         return Wrap(event_base_loopexit(base, timeout), IsZero, "Error when exiting loop");
     }
 
@@ -70,7 +71,7 @@ public:
      * @param event The event to delete
      * @return a positive integer or an exception is thrown on failure
      */
-    static int EventDel(struct event *event) {
+    static auto EventDel(struct event *event) -> int {
         return Wrap(event_del(event), IsZero, "Error when deleting event");
     }
 
@@ -79,7 +80,7 @@ public:
      * @param timeout
      * @return a positive integer or an exception is thrown on failure
      */
-    static int EventAdd(struct event *event, const struct timeval *timeout) {
+    static auto EventAdd(struct event *event, const struct timeval *timeout) -> int {
         return Wrap(event_add(event, timeout), IsZero, "Error when adding event");
     }
 
@@ -93,12 +94,12 @@ public:
      * @param arg Argument to pass to the callback function
      * @return a positive integer or an exception is thrown on failure
      */
-    static int EventAssign(struct event      *event,
-                           struct event_base *base,
-                           int                fd,
-                           int16_t            flags,
-                           event_callback_fn  callback,
-                           void              *arg) {
+    static auto EventAssign(struct event      *event,
+                            struct event_base *base,
+                            int                fd,
+                            int16_t            flags,
+                            event_callback_fn  callback,
+                            void              *arg) -> int {
         return Wrap(event_assign(event, base, fd, flags, callback, arg), IsZero, "Error when assigning event");
     }
 
@@ -107,7 +108,7 @@ public:
      * @param base The event_base to dispatch on
      * @return a positive integer or an exception is thrown on failure
      */
-    static int EventBaseDispatch(struct event_base *base) {
+    static auto EventBaseDispatch(struct event_base *base) -> int {
         return Wrap(event_base_dispatch(base), NonNegative, "Error in event base dispatch");
     }
 };
