@@ -1,0 +1,41 @@
+name: Linux
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build_linux:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: false
+      # matrix:
+      #   config:
+      #     - { compiler: gcc, version: 13, build_type: release, cxx: g++ }
+      #     - { compiler: clang, version: 17, build_type: release, cxx: clang++ }
+    container:
+      image: 'wwfalcon/noisepage'
+    name: 'build-noisepage'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@main
+
+      - name: Setup dependencies
+        run: |
+          apt-get update -y
+          apt-get install -y curl git pkg-config ccache
+
+      - name: CMake Setup
+        run: |
+          cmake -GNinja -Bbuild -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Release -DNOISEPAGE_UNITY_BUILD=ON
+
+      - name: CMake Build
+        run: |
+          cmake --build build
