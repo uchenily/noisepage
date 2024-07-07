@@ -27,14 +27,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@main
 
-      - name: Setup dependencies
-        run: |
-          apt-get update -y
-          apt-get install -y curl git pkg-config ccache lcov
+      # - name: Setup dependencies
+      #   run: |
+      #     apt-get update -y
+      #     apt-get install -y curl git pkg-config ccache lcov
 
       - name: CMake Setup
         run: |
-          cmake -GNinja -Bbuild -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug -DNOISEPAGE_UNITY_BUILD=ON -DNOISEPAGE_GENERATE_COVERAGE=ON -DNOISEPAGE_BUILD_TESTS=ON
+          # ld.lld: error: failed to open test/xxx: No space left on device
+          # cmake -GNinja -Bbuild -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug -DNOISEPAGE_UNITY_BUILD=ON -DNOISEPAGE_GENERATE_COVERAGE=ON -DNOISEPAGE_BUILD_TESTS=ON
+          cmake -GNinja -Bbuild -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Release -DNOISEPAGE_UNITY_BUILD=ON
 
       - name: CMake Build
         run: |
@@ -49,7 +51,7 @@ jobs:
       #   run: |
       #     cmake --build build -t coverage
 
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v4.0.1
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+      # - name: Upload coverage reports to Codecov
+      #   uses: codecov/codecov-action@v4.0.1
+      #   with:
+      #     token: ${{ secrets.CODECOV_TOKEN }}
