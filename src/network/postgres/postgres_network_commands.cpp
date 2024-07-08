@@ -6,6 +6,7 @@
 
 #include "common/thread_context.h"
 #include "metrics/metrics_store.h"
+#include "network/network_types.h"
 #include "network/network_util.h"
 #include "network/postgres/postgres_packet_util.h"
 #include "network/postgres/postgres_protocol_interpreter.h"
@@ -13,15 +14,17 @@
 #include "parser/variable_show_statement.h"
 #include "traffic_cop/traffic_cop.h"
 
-namespace noisepage::network {
+namespace {
 /**
  * Write the row description for a SHOW statement.
  *
  * @param out       Packet writer for writing results.
  * @param statement The SHOW statement to be described.
  */
-static void WriteShowRowDescription(const common::ManagedPointer<PostgresPacketWriter> out,
-                                    const common::ManagedPointer<network::Statement>   statement) {
+using namespace noisepage;
+using namespace noisepage::network;
+void WriteShowRowDescription(const common::ManagedPointer<PostgresPacketWriter> out,
+                             const common::ManagedPointer<network::Statement>   statement) {
     // TODO(WAN): This code exists because the SHOW statement does not go through the optimizer and therefore does not
     //  have a corresponding OutputSchema to go through the usual (SELECT) code path in DescribeCommand.
     const auto &show_stmt UNUSED_ATTRIBUTE
@@ -36,21 +39,17 @@ static void WriteShowRowDescription(const common::ManagedPointer<PostgresPacketW
     out->WriteRowDescription(cols, {network::FieldFormat::text});
 }
 
-} // namespace noisepage::network
-
-namespace noisepage::network {
-
-static auto FinishSimpleQueryCommand(const common::ManagedPointer<PostgresPacketWriter> out,
-                                     const common::ManagedPointer<ConnectionContext>    connection) -> Transition {
+auto FinishSimpleQueryCommand(const common::ManagedPointer<PostgresPacketWriter> out,
+                              const common::ManagedPointer<ConnectionContext>    connection) -> Transition {
     out->WriteReadyForQuery(connection->TransactionState());
     return Transition::PROCEED;
 }
 
-static void ExecutePortal(const common::ManagedPointer<network::ConnectionContext>    connection_ctx,
-                          const common::ManagedPointer<Portal>                        portal,
-                          const common::ManagedPointer<network::PostgresPacketWriter> out,
-                          const common::ManagedPointer<trafficcop::TrafficCop>        t_cop,
-                          const bool                                                  explicit_txn_block) {
+void ExecutePortal(const common::ManagedPointer<network::ConnectionContext>    connection_ctx,
+                   const common::ManagedPointer<Portal>                        portal,
+                   const common::ManagedPointer<network::PostgresPacketWriter> out,
+                   const common::ManagedPointer<trafficcop::TrafficCop>        t_cop,
+                   const bool                                                  explicit_txn_block) {
     trafficcop::TrafficCopResult result;
 
     const auto query_type = portal->GetStatement()->GetQueryType();
@@ -107,6 +106,9 @@ static void ExecutePortal(const common::ManagedPointer<network::ConnectionContex
         out->WriteError(std::get<common::ErrorData>(result.extra_));
     }
 }
+} // namespace
+
+namespace noisepage::network {
 
 auto SimpleQueryCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>    interpreter,
                               const common::ManagedPointer<PostgresPacketWriter>   out,
@@ -703,10 +705,10 @@ auto CloseCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>  inter
     return Transition::PROCEED;
 }
 
-Transition TerminateCommand::Exec(const common::ManagedPointer<ProtocolInterpreter> interpreter,
-                                  const common::ManagedPointer<PostgresPacketWriter> /*out*/,
-                                  const common::ManagedPointer<trafficcop::TrafficCop> /*t_cop*/,
-                                  const common::ManagedPointer<ConnectionContext> /*connection*/) {
+auto TerminateCommand::Exec(const common::ManagedPointer<ProtocolInterpreter> /*interpreter*/,
+                            const common::ManagedPointer<PostgresPacketWriter> /*out*/,
+                            const common::ManagedPointer<trafficcop::TrafficCop> /*t_cop*/,
+                            const common::ManagedPointer<ConnectionContext> /*connection*/) -> Transition {
     // Postgres doesn't send any sort of response for the Terminate command
     // We don't do removal of the temp namespace at the Command level because it's possible that we don't receive a
     // Terminate packet to generate the Command from, and instead closed the connection due to timeout
@@ -714,10 +716,10 @@ Transition TerminateCommand::Exec(const common::ManagedPointer<ProtocolInterpret
 }
 
 // (Matt): this seems to only exist for testing
-Transition EmptyCommand::Exec(common::ManagedPointer<ProtocolInterpreter>  interpreter,
-                              common::ManagedPointer<PostgresPacketWriter> out,
-                              common::ManagedPointer<trafficcop::TrafficCop> /*t_cop*/,
-                              common::ManagedPointer<ConnectionContext> /*connection*/) {
+auto EmptyCommand::Exec(common::ManagedPointer<ProtocolInterpreter> /*interpreter*/,
+                        common::ManagedPointer<PostgresPacketWriter> out,
+                        common::ManagedPointer<trafficcop::TrafficCop> /*t_cop*/,
+                        common::ManagedPointer<ConnectionContext> /*connection*/) -> Transition {
     NETWORK_LOG_TRACE("Empty Command");
     out->WriteEmptyQueryResponse();
     out->WriteReadyForQuery(NetworkTransactionStateType::IDLE);

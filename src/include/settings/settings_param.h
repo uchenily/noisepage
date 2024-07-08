@@ -27,7 +27,7 @@ class TaskManagerTests;
 
 namespace noisepage::runner {
 void InitializeRunnersState();
-}
+} // namespace noisepage::runner
 
 namespace noisepage::settings {
 

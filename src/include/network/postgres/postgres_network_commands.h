@@ -1,17 +1,6 @@
 #pragma once
 #include "network/network_command.h"
 
-#define DEFINE_POSTGRES_COMMAND(COMMAND, flush)                                                                        \
-    class COMMAND : public PostgresNetworkCommand {                                                                    \
-    public:                                                                                                            \
-        explicit COMMAND(const common::ManagedPointer<InputPacket> in)                                                 \
-            : PostgresNetworkCommand(in, flush) {}                                                                     \
-        auto Exec(common::ManagedPointer<ProtocolInterpreter>    interpreter,                                          \
-                  common::ManagedPointer<PostgresPacketWriter>   out,                                                  \
-                  common::ManagedPointer<trafficcop::TrafficCop> t_cop,                                                \
-                  common::ManagedPointer<ConnectionContext>      connection) -> Transition override;                        \
-    }
-
 namespace noisepage::network {
 
 /**
@@ -44,6 +33,17 @@ protected:
         : NetworkCommand(in, flush) {}
 };
 
+#define DEFINE_POSTGRES_COMMAND(COMMAND, flush)                                                                        \
+    class COMMAND : public PostgresNetworkCommand {                                                                    \
+    public:                                                                                                            \
+        explicit COMMAND(const common::ManagedPointer<InputPacket> in)                                                 \
+            : PostgresNetworkCommand(in, flush) {}                                                                     \
+        auto Exec(common::ManagedPointer<ProtocolInterpreter>    interpreter,                                          \
+                  common::ManagedPointer<PostgresPacketWriter>   out,                                                  \
+                  common::ManagedPointer<trafficcop::TrafficCop> t_cop,                                                \
+                  common::ManagedPointer<ConnectionContext>      connection) -> Transition override;                        \
+    }
+
 // Set all to force flush for now
 DEFINE_POSTGRES_COMMAND(SimpleQueryCommand, true);
 DEFINE_POSTGRES_COMMAND(ParseCommand, false);
@@ -54,5 +54,7 @@ DEFINE_POSTGRES_COMMAND(SyncCommand, true);
 DEFINE_POSTGRES_COMMAND(CloseCommand, true);
 DEFINE_POSTGRES_COMMAND(TerminateCommand, true);
 DEFINE_POSTGRES_COMMAND(EmptyCommand, true); // (Matt): This seems to be only for testing? Not a big fan of that.
+
+#undef DEFINE_POSTGRES_COMMAND
 
 } // namespace noisepage::network
