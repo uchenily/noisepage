@@ -10,7 +10,7 @@ namespace noisepage::network {
 
 /**
  * PostgresCommandFactory constructs PostgresNetworkCommands that parses input packets to API calls
- * into traffic cop
+ * into taskflow
  */
 class PostgresCommandFactory {
 public:

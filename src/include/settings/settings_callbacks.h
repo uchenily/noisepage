@@ -132,13 +132,13 @@ public:
                                         DBMain                                       *db_main,
                                         common::ManagedPointer<common::ActionContext> action_context);
 
-    /** Update the query execution mode in TrafficCop */
+    /** Update the query execution mode in Taskflow */
     static void CompiledQueryExecution(void                                         *old_value,
                                        void                                         *new_value,
                                        DBMain                                       *db_main,
                                        common::ManagedPointer<common::ActionContext> action_context);
 
-    /** Clear all cached ExecutableQuery in TrafficCop */
+    /** Clear all cached ExecutableQuery in Taskflow */
     static void ClearQueryCache(void                                         *old_value,
                                 void                                         *new_value,
                                 DBMain                                       *db_main,

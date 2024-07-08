@@ -34,14 +34,14 @@ namespace noisepage::transaction {
 class TransactionContext;
 }
 
-namespace noisepage::trafficcop {
+namespace noisepage::taskflow {
 
 /**
- * Static helper methods for accessing some of the TrafficCop's functionality without instantiating an object
+ * Static helper methods for accessing some of the taskflow's functionality without instantiating an object
  */
-class TrafficCopUtil {
+class TaskflowUtil {
 public:
-    TrafficCopUtil() = delete;
+    TaskflowUtil() = delete;
 
     /**
      * @param txn used by optimizer
@@ -76,4 +76,4 @@ private:
                                         optimizer::PropertySet                         *property_set);
 };
 
-} // namespace noisepage::trafficcop
+} // namespace noisepage::taskflow

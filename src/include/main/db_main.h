@@ -22,7 +22,7 @@
 #include "storage/garbage_collector_thread.h"
 #include "storage/recovery/recovery_manager.h"
 #include "task/task_manager.h"
-#include "traffic_cop/traffic_cop.h"
+#include "taskflow/taskflow.h"
 #include "transaction/deferred_action_manager.h"
 #include "transaction/transaction_manager.h"
 #include "util/query_exec_util.h"
@@ -39,9 +39,9 @@ namespace settings {
     class Callbacks;
 } // namespace settings
 
-namespace trafficcop {
-    class TrafficCopTests;
-} // namespace trafficcop
+namespace taskflow {
+    class TaskflowTests;
+} // namespace taskflow
 
 /**
  * The DBMain Class holds all the singleton pointers. It is mostly useful for coordinating dependencies between
@@ -59,7 +59,7 @@ public:
     ~DBMain();
 
     /**
-     * Boots the traffic cop and networking layer, starts the server loop.
+     * Boots the taskflow and networking layer, starts the server loop.
      * It will block until server shuts down.
      */
     void Run();
@@ -317,17 +317,17 @@ public:
     public:
         /**
          * @param thread_registry argument to the TerrierServer
-         * @param traffic_cop argument to the ConnectionHandleFactor
+         * @param taskflow argument to the ConnectionHandleFactor
          * @param port argument to TerrierServer
          * @param connection_thread_count argument to TerrierServer
          * @param socket_directory argument to TerrierServer
          */
         NetworkLayer(const common::ManagedPointer<common::DedicatedThreadRegistry> thread_registry,
-                     const common::ManagedPointer<trafficcop::TrafficCop>          traffic_cop,
+                     const common::ManagedPointer<taskflow::Taskflow>              taskflow,
                      const uint16_t                                                port,
                      const uint16_t                                                connection_thread_count,
                      const std::string                                            &socket_directory) {
-            connection_handle_factory_ = std::make_unique<network::ConnectionHandleFactory>(traffic_cop);
+            connection_handle_factory_ = std::make_unique<network::ConnectionHandleFactory>(taskflow);
             command_factory_ = std::make_unique<network::PostgresCommandFactory>();
             provider_ = std::make_unique<network::PostgresProtocolInterpreter::Provider>(
                 common::ManagedPointer(command_factory_));
@@ -560,30 +560,28 @@ public:
                 execution_layer = std::make_unique<ExecutionLayer>(bytecode_handlers_path_);
             }
 
-            std::unique_ptr<trafficcop::TrafficCop> traffic_cop = DISABLED;
-            if (use_traffic_cop_) {
+            std::unique_ptr<taskflow::Taskflow> taskflow = DISABLED;
+            if (use_taskflow_) {
                 NOISEPAGE_ASSERT(use_catalog_ && catalog_layer->GetCatalog() != DISABLED,
-                                 "TrafficCopLayer needs the CatalogLayer.");
-                NOISEPAGE_ASSERT(use_stats_storage_ && stats_storage != DISABLED,
-                                 "TrafficCopLayer needs StatsStorage.");
-                NOISEPAGE_ASSERT(use_execution_ && execution_layer != DISABLED,
-                                 "TrafficCopLayer needs ExecutionLayer.");
-                traffic_cop = std::make_unique<trafficcop::TrafficCop>(txn_layer->GetTransactionManager(),
-                                                                       catalog_layer->GetCatalog(),
-                                                                       common::ManagedPointer(replication_manager),
-                                                                       common::ManagedPointer(recovery_manager),
-                                                                       common::ManagedPointer(settings_manager),
-                                                                       common::ManagedPointer(stats_storage),
-                                                                       optimizer_timeout_,
-                                                                       use_query_cache_,
-                                                                       execution_mode_);
+                                 "TaskflowLayer needs the CatalogLayer.");
+                NOISEPAGE_ASSERT(use_stats_storage_ && stats_storage != DISABLED, "TaskflowLayer needs StatsStorage.");
+                NOISEPAGE_ASSERT(use_execution_ && execution_layer != DISABLED, "TaskflowLayer needs ExecutionLayer.");
+                taskflow = std::make_unique<taskflow::Taskflow>(txn_layer->GetTransactionManager(),
+                                                                catalog_layer->GetCatalog(),
+                                                                common::ManagedPointer(replication_manager),
+                                                                common::ManagedPointer(recovery_manager),
+                                                                common::ManagedPointer(settings_manager),
+                                                                common::ManagedPointer(stats_storage),
+                                                                optimizer_timeout_,
+                                                                use_query_cache_,
+                                                                execution_mode_);
             }
 
             std::unique_ptr<NetworkLayer> network_layer = DISABLED;
             if (use_network_) {
-                NOISEPAGE_ASSERT(use_traffic_cop_ && traffic_cop != DISABLED, "NetworkLayer needs TrafficCopLayer.");
+                NOISEPAGE_ASSERT(use_taskflow_ && taskflow != DISABLED, "NetworkLayer needs TaskflowLayer.");
                 network_layer = std::make_unique<NetworkLayer>(common::ManagedPointer(thread_registry),
-                                                               common::ManagedPointer(traffic_cop),
+                                                               common::ManagedPointer(taskflow),
                                                                network_port_,
                                                                connection_thread_count_,
                                                                uds_file_directory_);
@@ -669,7 +667,7 @@ public:
             db_main->gc_thread_ = std::move(gc_thread);
             db_main->stats_storage_ = std::move(stats_storage);
             db_main->execution_layer_ = std::move(execution_layer);
-            db_main->traffic_cop_ = std::move(traffic_cop);
+            db_main->taskflow_ = std::move(taskflow);
             db_main->network_layer_ = std::move(network_layer);
             db_main->pilot_thread_ = std::move(pilot_thread);
             db_main->pilot_ = std::move(pilot);
@@ -830,8 +828,8 @@ public:
          * @param value use component
          * @return self reference for chaining
          */
-        auto SetUseTrafficCop(const bool value) -> Builder & {
-            use_traffic_cop_ = value;
+        auto SetUseTaskflow(const bool value) -> Builder & {
+            use_taskflow_ = value;
             return *this;
         }
 
@@ -926,7 +924,7 @@ public:
         }
 
         /**
-         * @param value TrafficCop argument
+         * @param value Taskflow argument
          * @return self reference for chaining
          */
         auto SetOptimizerTimeout(const uint64_t value) -> Builder & {
@@ -1071,7 +1069,7 @@ public:
         bool use_gc_thread_ = false;
         bool use_stats_storage_ = false;
         bool use_execution_ = false;
-        bool use_traffic_cop_ = false;
+        bool use_taskflow_ = false;
         bool use_query_cache_ = true;
         bool use_network_ = false;
         bool use_messenger_ = false;
@@ -1302,8 +1300,8 @@ public:
     /**
      * @return ManagedPointer to the component, can be nullptr if disabled
      */
-    auto GetTrafficCop() const -> common::ManagedPointer<trafficcop::TrafficCop> {
-        return common::ManagedPointer(traffic_cop_);
+    auto GetTaskflow() const -> common::ManagedPointer<taskflow::Taskflow> {
+        return common::ManagedPointer(taskflow_);
     }
 
     /**
@@ -1362,7 +1360,7 @@ private:
         gc_thread_; // thread needs to die before manual invocations of GC in CatalogLayer and others
     std::unique_ptr<optimizer::StatsStorage>         stats_storage_;
     std::unique_ptr<ExecutionLayer>                  execution_layer_;
-    std::unique_ptr<trafficcop::TrafficCop>          traffic_cop_;
+    std::unique_ptr<taskflow::Taskflow>              taskflow_;
     std::unique_ptr<NetworkLayer>                    network_layer_;
     std::unique_ptr<MessengerLayer>                  messenger_layer_;
     std::unique_ptr<replication::ReplicationManager> replication_manager_; // Depends on messenger.

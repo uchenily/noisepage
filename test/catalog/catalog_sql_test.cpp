@@ -28,7 +28,7 @@ protected:
                        .SetUseGC(true)
                        .SetUseCatalog(true)
                        .SetUseGCThread(true)
-                       .SetUseTrafficCop(true)
+                       .SetUseTaskflow(true)
                        .SetUseStatsStorage(true)
                        .SetUseLogging(true)
                        .SetUseNetwork(true)

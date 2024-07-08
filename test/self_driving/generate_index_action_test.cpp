@@ -28,14 +28,14 @@ protected:
         // Creating exec_ctx
         std::unique_ptr<optimizer::AbstractCostModel> cost_model = std::make_unique<optimizer::TrivialCostModel>();
 
-        return trafficcop::TrafficCopUtil::Optimize(common::ManagedPointer(test_txn_),
-                                                    common::ManagedPointer(accessor_),
-                                                    common::ManagedPointer(stmt_list),
-                                                    test_db_oid_,
-                                                    stats_storage_,
-                                                    std::move(cost_model),
-                                                    optimizer_timeout_ms_,
-                                                    nullptr)
+        return taskflow::TaskflowUtil::Optimize(common::ManagedPointer(test_txn_),
+                                                common::ManagedPointer(accessor_),
+                                                common::ManagedPointer(stmt_list),
+                                                test_db_oid_,
+                                                stats_storage_,
+                                                std::move(cost_model),
+                                                optimizer_timeout_ms_,
+                                                nullptr)
             ->TakePlanNodeOwnership();
     }
 

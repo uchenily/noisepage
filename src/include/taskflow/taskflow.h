@@ -9,7 +9,7 @@
 #include "common/managed_pointer.h"
 #include "execution/vm/vm_defs.h"
 #include "network/network_defs.h"
-#include "traffic_cop/traffic_cop_defs.h"
+#include "taskflow/taskflow_defs.h"
 #include "transaction/transaction_defs.h"
 
 namespace noisepage::catalog {
@@ -60,15 +60,15 @@ namespace noisepage::common {
 class ErrorData;
 } // namespace noisepage::common
 
-namespace noisepage::trafficcop {
+namespace noisepage::taskflow {
 
 /**
- * The TrafficCop acts as a translation layer between protocol implementations at at the front-end and execution of
+ * The Taskflow acts as a translation layer between protocol implementations at at the front-end and execution of
  * queries in the back-end. We strive to encapsulate protocol-agnostic behavior at this layer (i.e. nothing
  * Postgres-specific). Anything protocol specific should be done at the network's protocol interpreter or command
  * processing layers.
  */
-class TrafficCop {
+class Taskflow {
 public:
     /**
      * @param txn_manager the transaction manager of the system
@@ -81,15 +81,15 @@ public:
      * @param use_query_cache whether to cache physical plans and generated code for Extended Query protocol
      * @param execution_mode how to run executable queries after code generation
      */
-    TrafficCop(common::ManagedPointer<transaction::TransactionManager> txn_manager,
-               common::ManagedPointer<catalog::Catalog>                catalog,
-               common::ManagedPointer<replication::ReplicationManager> replication_manager,
-               common::ManagedPointer<storage::RecoveryManager>        recovery_manager,
-               common::ManagedPointer<settings::SettingsManager>       settings_manager,
-               common::ManagedPointer<optimizer::StatsStorage>         stats_storage,
-               uint64_t                                                optimizer_timeout,
-               bool                                                    use_query_cache,
-               const execution::vm::ExecutionMode                      execution_mode)
+    Taskflow(common::ManagedPointer<transaction::TransactionManager> txn_manager,
+             common::ManagedPointer<catalog::Catalog>                catalog,
+             common::ManagedPointer<replication::ReplicationManager> replication_manager,
+             common::ManagedPointer<storage::RecoveryManager>        recovery_manager,
+             common::ManagedPointer<settings::SettingsManager>       settings_manager,
+             common::ManagedPointer<optimizer::StatsStorage>         stats_storage,
+             uint64_t                                                optimizer_timeout,
+             bool                                                    use_query_cache,
+             const execution::vm::ExecutionMode                      execution_mode)
         : txn_manager_(txn_manager)
         , catalog_(catalog)
         , replication_manager_(replication_manager)
@@ -101,7 +101,7 @@ public:
         , query_cache_timestamp_(transaction::INITIAL_TXN_TIMESTAMP)
         , execution_mode_(execution_mode) {}
 
-    virtual ~TrafficCop() = default;
+    virtual ~Taskflow() = default;
 
     /**
      * Hands a buffer of logs to replication
@@ -115,8 +115,8 @@ public:
      * @param database_name the name of the database the connection is accessing
      * @return a pair of OIDs for the database and the temporary namespace
      */
-    std::pair<catalog::db_oid_t, catalog::namespace_oid_t> CreateTempNamespace(network::connection_id_t connection_id,
-                                                                               const std::string       &database_name);
+    auto CreateTempNamespace(network::connection_id_t connection_id, const std::string &database_name)
+        -> std::pair<catalog::db_oid_t, catalog::namespace_oid_t>;
 
     /**
      * Drop the temporary namespace for a connection and all enclosing database objects
@@ -124,15 +124,15 @@ public:
      * @param db_oid the OID of the database the connection is accessing
      * @return true if the temporary namespace has been deleted, false otherwise
      */
-    bool DropTempNamespace(catalog::db_oid_t db_oid, catalog::namespace_oid_t ns_oid);
+    auto DropTempNamespace(catalog::db_oid_t db_oid, catalog::namespace_oid_t ns_oid) -> bool;
 
     /**
      * @param query SQL string to be parsed
      * @param connection_ctx used to maintain state
      * @return parser's ParseResult, nullptr if failed
      */
-    std::variant<std::unique_ptr<parser::ParseResult>, common::ErrorData>
-    ParseQuery(const std::string &query, common::ManagedPointer<network::ConnectionContext> connection_ctx) const;
+    auto ParseQuery(const std::string &query, common::ManagedPointer<network::ConnectionContext> connection_ctx) const
+        -> std::variant<std::unique_ptr<parser::ParseResult>, common::ErrorData>;
 
     /**
      * @param connection_ctx context containg txn and catalog accessor to be used
@@ -140,10 +140,10 @@ public:
      * @param parameters parameters for the query, can be nullptr if there are no parameters
      * @return optimize result containing physical plan that can be executed and the plan meta data
      */
-    std::unique_ptr<optimizer::OptimizeResult>
-    OptimizeBoundQuery(common::ManagedPointer<network::ConnectionContext>                   connection_ctx,
-                       common::ManagedPointer<parser::ParseResult>                          query,
-                       common::ManagedPointer<std::vector<parser::ConstantValueExpression>> parameters) const;
+    auto OptimizeBoundQuery(common::ManagedPointer<network::ConnectionContext>                   connection_ctx,
+                            common::ManagedPointer<parser::ParseResult>                          query,
+                            common::ManagedPointer<std::vector<parser::ConstantValueExpression>> parameters) const
+        -> std::unique_ptr<optimizer::OptimizeResult>;
 
     /**
      * Calls to txn manager to begin txn, and updates ConnectionContext state
@@ -161,7 +161,7 @@ public:
 
     /**
      * Contains the logic to reason about BEGIN, COMMIT, ROLLBACK execution. Responsible for outputting results, since
-     * we need to be able to do more than return a single TrafficCopResult (i.e. we may need a NOTICE and a COMPLETE)
+     * we need to be able to do more than return a single TaskflowResult (i.e. we may need a NOTICE and a COMPLETE)
      * @param connection_ctx context to be modified by changing txn state
      * @param out packet writer for writing results
      * @param explicit_txn_block true if in a txn from BEGIN, false otherwise
@@ -179,9 +179,10 @@ public:
      * @param parameters parameters for the query being bound, can be nullptr if there are no parameters
      * @return result of the operation
      */
-    TrafficCopResult BindQuery(common::ManagedPointer<network::ConnectionContext>                   connection_ctx,
-                               common::ManagedPointer<network::Statement>                           statement,
-                               common::ManagedPointer<std::vector<parser::ConstantValueExpression>> parameters) const;
+    auto BindQuery(common::ManagedPointer<network::ConnectionContext>                   connection_ctx,
+                   common::ManagedPointer<network::Statement>                           statement,
+                   common::ManagedPointer<std::vector<parser::ConstantValueExpression>> parameters) const
+        -> TaskflowResult;
 
     /**
      * Contains the logic to handle SET statements.
@@ -189,8 +190,8 @@ public:
      * @param statement The set statement to be executed.
      * @return The result of the operation.
      */
-    TrafficCopResult ExecuteSetStatement(common::ManagedPointer<network::ConnectionContext> connection_ctx,
-                                         common::ManagedPointer<network::Statement>         statement) const;
+    auto ExecuteSetStatement(common::ManagedPointer<network::ConnectionContext> connection_ctx,
+                             common::ManagedPointer<network::Statement>         statement) const -> TaskflowResult;
 
     /**
      * Contains the logic to handle SHOW statements.
@@ -199,9 +200,9 @@ public:
      * @param statement       The statement to be executed.
      * @return                The result of the operation.
      */
-    TrafficCopResult ExecuteShowStatement(common::ManagedPointer<network::ConnectionContext>    connection_ctx,
-                                          common::ManagedPointer<network::PostgresPacketWriter> out,
-                                          common::ManagedPointer<network::Statement>            statement) const;
+    auto ExecuteShowStatement(common::ManagedPointer<network::ConnectionContext>    connection_ctx,
+                              common::ManagedPointer<network::PostgresPacketWriter> out,
+                              common::ManagedPointer<network::Statement>            statement) const -> TaskflowResult;
 
     /**
      * Contains the logic to reason about CREATE execution.
@@ -210,9 +211,9 @@ public:
      * @param query_type CREATE_TABLE, CREATE_INDEX, etc.
      * @return result of the operation
      */
-    TrafficCopResult ExecuteCreateStatement(common::ManagedPointer<network::ConnectionContext> connection_ctx,
-                                            common::ManagedPointer<planner::AbstractPlanNode>  physical_plan,
-                                            noisepage::network::QueryType                      query_type) const;
+    auto ExecuteCreateStatement(common::ManagedPointer<network::ConnectionContext> connection_ctx,
+                                common::ManagedPointer<planner::AbstractPlanNode>  physical_plan,
+                                noisepage::network::QueryType                      query_type) const -> TaskflowResult;
 
     /**
      * Contains the logic to reason about DROP execution.
@@ -221,9 +222,9 @@ public:
      * @param query_type DROP_TABLE, DROP_INDEX, etc.
      * @return result of the operation
      */
-    TrafficCopResult ExecuteDropStatement(common::ManagedPointer<network::ConnectionContext> connection_ctx,
-                                          common::ManagedPointer<planner::AbstractPlanNode>  physical_plan,
-                                          noisepage::network::QueryType                      query_type) const;
+    auto ExecuteDropStatement(common::ManagedPointer<network::ConnectionContext> connection_ctx,
+                              common::ManagedPointer<planner::AbstractPlanNode>  physical_plan,
+                              noisepage::network::QueryType                      query_type) const -> TaskflowResult;
 
     /**
      * Contains the logic to reason about EXPLAIN execution.
@@ -232,35 +233,35 @@ public:
      * @param portal to be executed
      * @return result of the operation
      */
-    TrafficCopResult ExecuteExplainStatement(common::ManagedPointer<network::ConnectionContext>    connection_ctx,
-                                             common::ManagedPointer<network::PostgresPacketWriter> out,
-                                             common::ManagedPointer<network::Portal>               portal) const;
+    auto ExecuteExplainStatement(common::ManagedPointer<network::ConnectionContext>    connection_ctx,
+                                 common::ManagedPointer<network::PostgresPacketWriter> out,
+                                 common::ManagedPointer<network::Portal>               portal) const -> TaskflowResult;
 
     /**
      * Contains the logic to reason about DML execution. Responsible for outputting results because we don't want to
-     * (can't) stick it in TrafficCopResult.
+     * (can't) stick it in TaskflowResult.
      * @param connection_ctx context to be used to access the internal txn
      * @param out packet writer to return results
      * @param portal to be executed, may contain parameters
      * @return result of the operation
      */
-    TrafficCopResult CodegenPhysicalPlan(common::ManagedPointer<network::ConnectionContext>    connection_ctx,
-                                         common::ManagedPointer<network::PostgresPacketWriter> out,
-                                         common::ManagedPointer<network::Portal>               portal) const;
+    auto CodegenPhysicalPlan(common::ManagedPointer<network::ConnectionContext>    connection_ctx,
+                             common::ManagedPointer<network::PostgresPacketWriter> out,
+                             common::ManagedPointer<network::Portal>               portal) const -> TaskflowResult;
     /**
      * Contains the logic to reason about DML execution. Responsible for outputting results because we don't want to
-     * (can't) stick it in TrafficCopResult.
+     * (can't) stick it in TaskflowResult.
      * @param connection_ctx context to be used to access the internal txn
      * @param out packet writer to return results
      * @param portal to be executed, may contain parameters
      * @return result of the operation
      */
-    TrafficCopResult RunExecutableQuery(common::ManagedPointer<network::ConnectionContext>    connection_ctx,
-                                        common::ManagedPointer<network::PostgresPacketWriter> out,
-                                        common::ManagedPointer<network::Portal>               portal) const;
+    auto RunExecutableQuery(common::ManagedPointer<network::ConnectionContext>    connection_ctx,
+                            common::ManagedPointer<network::PostgresPacketWriter> out,
+                            common::ManagedPointer<network::Portal>               portal) const -> TaskflowResult;
 
     /**
-     * Adjust the TrafficCop's optimizer timeout value (for use by SettingsManager)
+     * Adjust the Taskflow's optimizer timeout value (for use by SettingsManager)
      * @param optimizer_timeout time in ms to spend on a task @see optimizer::Optimizer constructor
      */
     void SetOptimizerTimeout(const uint64_t optimizer_timeout) {
@@ -268,7 +269,7 @@ public:
     }
 
     /**
-     * Adjust the TrafficCop's execution mode value (for use by SettingsManager)
+     * Adjust the Taskflow's execution mode value (for use by SettingsManager)
      * @param is_compiled set execution_mode_ to Compiled if true; Interpret if false
      */
     void SetExecutionMode(bool is_compiled) {
@@ -279,7 +280,7 @@ public:
     /**
      * @return true if query caching enabled, false otherwise
      */
-    bool UseQueryCache() const {
+    auto UseQueryCache() const -> bool {
         return use_query_cache_;
     }
 
@@ -297,9 +298,9 @@ private:
     common::ManagedPointer<settings::SettingsManager>       settings_manager_;
     common::ManagedPointer<optimizer::StatsStorage>         stats_storage_;
     uint64_t                                                optimizer_timeout_;
-    const bool                                              use_query_cache_;
+    bool                                                    use_query_cache_;
     transaction::timestamp_t                                query_cache_timestamp_;
     execution::vm::ExecutionMode                            execution_mode_;
 };
 
-} // namespace noisepage::trafficcop
+} // namespace noisepage::taskflow

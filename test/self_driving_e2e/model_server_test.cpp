@@ -39,7 +39,7 @@ protected:
                            .SetUseGC(true)
                            .SetUseExecution(true)
                            .SetUseStatsStorage(true)
-                           .SetUseTrafficCop(true)
+                           .SetUseTaskflow(true)
                            .SetModelServerPath(model_server_path)
                            .SetModelServerEnablePythonCoverage(true)
                            .Build();

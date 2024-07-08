@@ -989,7 +989,7 @@ file(GLOB_RECURSE NOISEPAGE_TEST_SOURCES
         "test/storage/*.cpp"
         "test/sql/*.cpp"
         "test/task/*.cpp"
-        "test/traffic_cop/*.cpp"
+        "test/taskflow/*.cpp"
         "test/transaction/*.cpp"
         )
 
@@ -1116,7 +1116,7 @@ add_jumbotest("test/self_driving" "")
 add_jumbotest("test/settings" "")
 add_jumbotest("test/storage" "block_access_controller_test;block_compactor_test;bwtree_test;bwtree_index_test;data_table_test;data_table_concurrent_test;hash_index_test;large_garbage_collector_test;log_test;tuple_access_strategy_test;")
 add_jumbotest("test/task" "")
-add_jumbotest("test/traffic_cop" "traffic_cop_test;")
+add_jumbotest("test/taskflow" "taskflow_test;")
 add_jumbotest("test/transaction" "large_transaction_test;")
 
 # Read up on CTest resource groups: https://cmake.org/cmake/help/latest/manual/ctest.1.html#resource-allocation
@@ -1125,7 +1125,7 @@ set_tests_properties(
         catalog_sql_test jumbotest_catalog_catalog_sql_test
         metrics_test jumbotest_metrics_metrics_test
         network_test jumbotest_network_network_test
-        traffic_cop_test jumbotest_traffic_cop_traffic_cop_test
+        taskflow_test jumbotest_taskflow_taskflow_test
         PROPERTIES RESOURCE_GROUPS "port15721:1")
 set_tests_properties(
         model_server_test

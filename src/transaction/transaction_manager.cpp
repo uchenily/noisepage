@@ -65,7 +65,7 @@ void TransactionManager::LogCommit(TransactionContext *const txn,
             NOISEPAGE_ASSERT(
                 txn->GetReplicationPolicy() == ReplicationPolicy::ASYNC
                     || txn->GetReplicationPolicy() == ReplicationPolicy::DISABLE,
-                "The below code has only been reasoned about for these cases. See TrafficCop::CommitCallback.");
+                "The below code has only been reasoned about for these cases. See Taskflow::CommitCallback.");
             if (txn->IsReadOnly()) {
                 // Read-only txns have no external dependencies through the system, so remove it from running
                 // transactions table immediately

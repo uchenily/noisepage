@@ -5,9 +5,9 @@
 
 #include "network/connection_handle.h"
 
-namespace noisepage::trafficcop {
-class TrafficCop;
-} // namespace noisepage::trafficcop
+namespace noisepage::taskflow {
+class Taskflow;
+} // namespace noisepage::taskflow
 
 namespace noisepage::network {
 
@@ -26,9 +26,9 @@ class ProtocolInterpreter;
  */
 class ConnectionHandleFactory {
 public:
-    /** Instantiate a new ConnectionHandleFactory that uses the provided TrafficCop for all the handles created. */
-    explicit ConnectionHandleFactory(common::ManagedPointer<trafficcop::TrafficCop> tcop)
-        : traffic_cop_(tcop) {}
+    /** Instantiate a new ConnectionHandleFactory that uses the provided taskflow for all the handles created. */
+    explicit ConnectionHandleFactory(common::ManagedPointer<taskflow::Taskflow> taskflow)
+        : taskflow_(taskflow) {}
 
     /**
      * @brief Create a new connection handle.
@@ -50,7 +50,7 @@ private:
     /** This latch protects reusable_handles_. */
     common::SpinLatch reusable_handles_latch_;
     /** Maps from file descriptors -> Connection Handle. Protected by reusable_handles_latch_.*/
-    std::unordered_map<int, ConnectionHandle>      reusable_handles_;
-    common::ManagedPointer<trafficcop::TrafficCop> traffic_cop_;
+    std::unordered_map<int, ConnectionHandle>  reusable_handles_;
+    common::ManagedPointer<taskflow::Taskflow> taskflow_;
 };
 } // namespace noisepage::network

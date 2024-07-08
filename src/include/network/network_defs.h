@@ -4,8 +4,8 @@
 
 #include "common/strong_typedef.h"
 
-namespace noisepage::trafficcop {
-class TrafficCop;
+namespace noisepage::taskflow {
+class Taskflow;
 }
 
 namespace noisepage::network {
@@ -91,7 +91,7 @@ enum class NetworkMessageType : unsigned char {
 
 enum class DescribeCommandObjectType : unsigned char { PORTAL = 'P', STATEMENT = 'S' };
 
-// The TrafficCop logic relies on very specific ordering of these values. Reorder with care.
+// The taskflow logic relies on very specific ordering of these values. Reorder with care.
 enum class QueryType : uint8_t {
     // Transaction statements
     QUERY_BEGIN,
@@ -120,7 +120,7 @@ enum class QueryType : uint8_t {
     QUERY_EXPLAIN,
     QUERY_SET,
     QUERY_SHOW,
-    // end of what we support in the traffic cop right now
+    // end of what we support in the taskflow right now
     QUERY_RENAME,
     QUERY_ALTER,
     // Prepared statement stuff

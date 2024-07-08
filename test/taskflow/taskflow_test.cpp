@@ -1,4 +1,4 @@
-#include "traffic_cop/traffic_cop.h"
+#include "taskflow/taskflow.h"
 
 #include <memory>
 #include <pqxx/pqxx> // NOLINT
@@ -12,9 +12,9 @@
 #include "test_util/test_harness.h"
 #include "gtest/gtest.h"
 
-namespace noisepage::trafficcop {
+namespace noisepage::taskflow {
 
-class TrafficCopTests : public TerrierTest {
+class TaskflowTests : public TerrierTest {
 protected:
     void StartServer(const bool wal_async_commit_enable) {
         std::unordered_map<settings::Param, settings::ParamInfo> param_map;
@@ -26,7 +26,7 @@ protected:
                        .SetUseGC(true)
                        .SetUseCatalog(true)
                        .SetUseGCThread(true)
-                       .SetUseTrafficCop(true)
+                       .SetUseTaskflow(true)
                        .SetUseStatsStorage(true)
                        .SetUseLogging(true)
                        .SetUseNetwork(true)
@@ -48,7 +48,7 @@ protected:
 };
 
 // NOLINTNEXTLINE
-TEST_F(TrafficCopTests, EmptyCommitTest) {
+TEST_F(TaskflowTests, EmptyCommitTest) {
     StartServer(false);
     try {
         pqxx::connection connection(
@@ -64,7 +64,7 @@ TEST_F(TrafficCopTests, EmptyCommitTest) {
 }
 
 // NOLINTNEXTLINE
-TEST_F(TrafficCopTests, EmptyAbortTest) {
+TEST_F(TaskflowTests, EmptyAbortTest) {
     StartServer(false);
     try {
         pqxx::connection connection(
@@ -80,7 +80,7 @@ TEST_F(TrafficCopTests, EmptyAbortTest) {
 }
 
 // NOLINTNEXTLINE
-TEST_F(TrafficCopTests, EmptyStatementTest) {
+TEST_F(TaskflowTests, EmptyStatementTest) {
     StartServer(false);
     try {
         pqxx::connection connection(
@@ -97,7 +97,7 @@ TEST_F(TrafficCopTests, EmptyStatementTest) {
 }
 
 // NOLINTNEXTLINE
-TEST_F(TrafficCopTests, BadParseTest) {
+TEST_F(TaskflowTests, BadParseTest) {
     StartServer(false);
     try {
         pqxx::connection connection(
@@ -117,7 +117,7 @@ TEST_F(TrafficCopTests, BadParseTest) {
 }
 
 // NOLINTNEXTLINE
-TEST_F(TrafficCopTests, BadBindingTest) {
+TEST_F(TaskflowTests, BadBindingTest) {
     StartServer(false);
     try {
         pqxx::connection connection(
@@ -136,7 +136,7 @@ TEST_F(TrafficCopTests, BadBindingTest) {
 }
 
 // NOLINTNEXTLINE
-TEST_F(TrafficCopTests, BasicTest) {
+TEST_F(TaskflowTests, BasicTest) {
     StartServer(false);
     try {
         pqxx::connection connection(
@@ -160,7 +160,7 @@ TEST_F(TrafficCopTests, BasicTest) {
  * Test whether a temporary namespace is created for a connection to the database
  */
 // NOLINTNEXTLINE
-TEST_F(TrafficCopTests, TemporaryNamespaceTest) {
+TEST_F(TaskflowTests, TemporaryNamespaceTest) {
     StartServer(false);
     try {
         pqxx::connection connection(
@@ -179,7 +179,7 @@ TEST_F(TrafficCopTests, TemporaryNamespaceTest) {
             EXPECT_NE(db_oid, catalog::INVALID_DATABASE_OID);
             auto db_accessor = catalog_->GetAccessor(common::ManagedPointer(txn), db_oid, DISABLED);
             EXPECT_NE(db_accessor, nullptr);
-            new_namespace_oid = db_accessor->CreateNamespace(std::string(trafficcop::TEMP_NAMESPACE_PREFIX));
+            new_namespace_oid = db_accessor->CreateNamespace(std::string(taskflow::TEMP_NAMESPACE_PREFIX));
             txn_manager_->Abort(txn);
         } while (new_namespace_oid == catalog::INVALID_NAMESPACE_OID);
         EXPECT_GT(new_namespace_oid.UnderlyingValue(), catalog::START_OID);
@@ -190,7 +190,7 @@ TEST_F(TrafficCopTests, TemporaryNamespaceTest) {
 }
 
 // NOLINTNEXTLINE
-TEST_F(TrafficCopTests, ArithmeticErrorTest) {
+TEST_F(TaskflowTests, ArithmeticErrorTest) {
     StartServer(false);
     pqxx::connection connection(fmt::format("host=127.0.0.1 port={0} user={1} sslmode=disable application_name=psql",
                                             port_,
@@ -207,7 +207,7 @@ TEST_F(TrafficCopTests, ArithmeticErrorTest) {
 }
 
 // NOLINTNEXTLINE
-TEST_F(TrafficCopTests, AsyncCommitTest) {
+TEST_F(TaskflowTests, AsyncCommitTest) {
     StartServer(true);
     try {
         pqxx::connection connection(
@@ -227,4 +227,4 @@ TEST_F(TrafficCopTests, AsyncCommitTest) {
     }
 }
 
-} // namespace noisepage::trafficcop
+} // namespace noisepage::taskflow

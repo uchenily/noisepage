@@ -78,7 +78,7 @@ auto main(int argc, char *argv[]) -> int {
                        .SetUseGCThread(true)
                        .SetUseStatsStorage(true)
                        .SetUseExecution(true)
-                       .SetUseTrafficCop(true)
+                       .SetUseTaskflow(true)
                        .SetUseNetwork(true)
                        .Build();
 

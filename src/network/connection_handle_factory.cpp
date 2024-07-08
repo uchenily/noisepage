@@ -16,7 +16,7 @@ ConnectionHandle &ConnectionHandleFactory::NewConnectionHandle(int              
         it = reusable_handles_.find(conn_fd);
         // If no mapping exists for the file descriptor, a new mapping is created.
         if (it == reusable_handles_.end()) {
-            auto ret = reusable_handles_.try_emplace(conn_fd, conn_fd, task, traffic_cop_, std::move(interpreter));
+            auto ret = reusable_handles_.try_emplace(conn_fd, conn_fd, task, taskflow_, std::move(interpreter));
             NOISEPAGE_ASSERT(ret.second, "TOCTOU bug in reusable_handles_.");
             return ret.first->second;
         }

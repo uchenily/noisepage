@@ -1,4 +1,4 @@
-#include "traffic_cop/traffic_cop_util.h"
+#include "taskflow/taskflow_util.h"
 
 #include "catalog/catalog_accessor.h"
 #include "optimizer/abstract_optimizer.h"
@@ -19,17 +19,17 @@
 #include "parser/transaction_statement.h"
 #include "planner/plannodes/abstract_plan_node.h"
 
-namespace noisepage::trafficcop {
+namespace noisepage::taskflow {
 
 std::unique_ptr<optimizer::OptimizeResult>
-TrafficCopUtil::Optimize(const common::ManagedPointer<transaction::TransactionContext>        txn,
-                         const common::ManagedPointer<catalog::CatalogAccessor>               accessor,
-                         const common::ManagedPointer<parser::ParseResult>                    query,
-                         const catalog::db_oid_t                                              db_oid,
-                         common::ManagedPointer<optimizer::StatsStorage>                      stats_storage,
-                         std::unique_ptr<optimizer::AbstractCostModel>                        cost_model,
-                         const uint64_t                                                       optimizer_timeout,
-                         common::ManagedPointer<std::vector<parser::ConstantValueExpression>> parameters) {
+TaskflowUtil::Optimize(const common::ManagedPointer<transaction::TransactionContext>        txn,
+                       const common::ManagedPointer<catalog::CatalogAccessor>               accessor,
+                       const common::ManagedPointer<parser::ParseResult>                    query,
+                       const catalog::db_oid_t                                              db_oid,
+                       common::ManagedPointer<optimizer::StatsStorage>                      stats_storage,
+                       std::unique_ptr<optimizer::AbstractCostModel>                        cost_model,
+                       const uint64_t                                                       optimizer_timeout,
+                       common::ManagedPointer<std::vector<parser::ConstantValueExpression>> parameters) {
     // Optimizer transforms annotated ParseResult to logical expressions (ephemeral Optimizer structure)
     optimizer::QueryToOperatorTransformer transformer(accessor, db_oid);
     auto                                  query_statement = query->GetStatement(0);
@@ -90,8 +90,8 @@ TrafficCopUtil::Optimize(const common::ManagedPointer<transaction::TransactionCo
     // cost model. Do we expect that can be transactional?
 }
 
-void TrafficCopUtil::CollectSelectProperties(common::ManagedPointer<parser::SelectStatement> sel_stmt,
-                                             optimizer::PropertySet                         *property_set) {
+void TaskflowUtil::CollectSelectProperties(common::ManagedPointer<parser::SelectStatement> sel_stmt,
+                                           optimizer::PropertySet                         *property_set) {
     // PropertySort
     if (sel_stmt->GetSelectOrderBy()) {
         std::vector<optimizer::OrderByOrderingType>                     sort_dirs;
@@ -110,7 +110,7 @@ void TrafficCopUtil::CollectSelectProperties(common::ManagedPointer<parser::Sele
     }
 }
 
-network::QueryType TrafficCopUtil::QueryTypeForStatement(const common::ManagedPointer<parser::SQLStatement> statement) {
+network::QueryType TaskflowUtil::QueryTypeForStatement(const common::ManagedPointer<parser::SQLStatement> statement) {
     const auto statement_type = statement->GetType();
     switch (statement_type) {
     case parser::StatementType::TRANSACTION: {
@@ -191,4 +191,4 @@ network::QueryType TrafficCopUtil::QueryTypeForStatement(const common::ManagedPo
     }
 }
 
-} // namespace noisepage::trafficcop
+} // namespace noisepage::taskflow

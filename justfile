@@ -12,3 +12,6 @@ container:
 
 pre-commit:
     pre-commit run -a
+
+debug:
+    gdb -x debug.gdb

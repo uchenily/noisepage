@@ -27,13 +27,13 @@ public:
      *
      * @param sock_fd Client connection's file descriptor.
      * @param task The task responsible for this handle's creation.
-     * @param tcop The traffic cop to be used.
+     * @param taskflow The taskflow to be used.
      * @param interpreter protocol Interpreter to use for this connection handle.
      */
-    ConnectionHandle(int                                            sock_fd,
-                     common::ManagedPointer<ConnectionHandlerTask>  task,
-                     common::ManagedPointer<trafficcop::TrafficCop> tcop,
-                     std::unique_ptr<ProtocolInterpreter>           interpreter);
+    ConnectionHandle(int                                           sock_fd,
+                     common::ManagedPointer<ConnectionHandlerTask> task,
+                     common::ManagedPointer<taskflow::Taskflow>    taskflow,
+                     std::unique_ptr<ProtocolInterpreter>          interpreter);
 
     /** Reset this connection handle. */
     ~ConnectionHandle();
@@ -168,10 +168,10 @@ private:
 
     // See class header warning; don't add state here unless required for the StateMachine.
 
-    std::unique_ptr<NetworkIoWrapper>              io_wrapper_;
-    common::ManagedPointer<ConnectionHandlerTask>  conn_handler_task_;
-    common::ManagedPointer<trafficcop::TrafficCop> traffic_cop_;
-    std::unique_ptr<ProtocolInterpreter>           protocol_interpreter_;
+    std::unique_ptr<NetworkIoWrapper>             io_wrapper_;
+    common::ManagedPointer<ConnectionHandlerTask> conn_handler_task_;
+    common::ManagedPointer<taskflow::Taskflow>    taskflow_;
+    std::unique_ptr<ProtocolInterpreter>          protocol_interpreter_;
 
     StateMachine  state_machine_{};
     struct event *network_event_ = nullptr;

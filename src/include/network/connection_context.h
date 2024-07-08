@@ -18,7 +18,7 @@ namespace noisepage::network {
  * in this layer, and if you find yourself wanting to put more the design should be discussed.
  *
  * This class is designed to share information between several layers: ConnectionHandle, ProtocolInterpreter,
- * NetworkCommands, and TrafficCop.
+ * NetworkCommands, and Taskflow.
  */
 class ConnectionContext {
 public:
@@ -140,7 +140,7 @@ public:
 
     /**
      * @param txn new value
-     * @warning this should only be used by TrafficCop::BeginTransaction and TrafficCop::EndTransaction
+     * @warning this should only be used by Taskflow::BeginTransaction and Taskflow::EndTransaction
      * @warning it should match the txn used for this ConnectionContext's current CatalogAccessor
      */
     void SetTransaction(const common::ManagedPointer<transaction::TransactionContext> txn) {
@@ -159,7 +159,7 @@ public:
 
     /**
      * @param accessor new value
-     * @warning this should only be used by TrafficCop::BeginTransaction and TrafficCop::EndTransaction
+     * @warning this should only be used by Taskflow::BeginTransaction and Taskflow::EndTransaction
      * @warning it should match the txn used for this ConnectionContext's current txn
      */
     void SetAccessor(std::unique_ptr<catalog::CatalogAccessor> accessor) {
@@ -230,7 +230,7 @@ private:
     /**
      * In theory the ConnectionContext owns this too, but for legacy reasons (and safety about who can delete them) we
      * don't use unique_ptrs for txns. If that ever changes, then the ConnectionContext should probably own it and
-     * transfer ownership to the TransactionManager (via the TrafficCop) at commit or abort.
+     * transfer ownership to the TransactionManager (via the Taskflow) at commit or abort.
      */
     common::ManagedPointer<transaction::TransactionContext> txn_ = nullptr;
 

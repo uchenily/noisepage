@@ -6,8 +6,8 @@
 #include <vector>
 
 #include "parser/postgresparser.h"
-#include "traffic_cop/traffic_cop_defs.h"
-#include "traffic_cop/traffic_cop_util.h"
+#include "taskflow/taskflow_defs.h"
+#include "taskflow/taskflow_util.h"
 
 namespace noisepage::network {
 
@@ -21,7 +21,7 @@ Statement::Statement(std::string                            &&query_text,
     NOISEPAGE_ASSERT(parse_result_->GetStatements().size() <= 1, "We currently expect one statement per string.");
     if (!Empty()) {
         root_statement_ = parse_result_->GetStatement(0);
-        type_ = trafficcop::TrafficCopUtil::QueryTypeForStatement(root_statement_);
+        type_ = taskflow::TaskflowUtil::QueryTypeForStatement(root_statement_);
     }
 }
 } // namespace noisepage::network

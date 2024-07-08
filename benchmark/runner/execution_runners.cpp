@@ -39,7 +39,7 @@
 #include "storage/index/bplustree.h"
 #include "storage/sql_table.h"
 #include "storage/storage_defs.h"
-#include "traffic_cop/traffic_cop_util.h"
+#include "taskflow/taskflow_util.h"
 
 namespace noisepage::runner {
 
@@ -454,14 +454,14 @@ public:
         auto binder = binder::BindNodeVisitor(common::ManagedPointer(accessor), db_oid);
         binder.BindNameToNode(common::ManagedPointer(stmt_list), params, param_types);
 
-        auto out_plan = trafficcop::TrafficCopUtil::Optimize(common::ManagedPointer(txn),
-                                                             common::ManagedPointer(accessor),
-                                                             common::ManagedPointer(stmt_list),
-                                                             db_oid,
-                                                             db_main->GetStatsStorage(),
-                                                             std::move(cost_model),
-                                                             optimizer_timeout_,
-                                                             params)
+        auto out_plan = taskflow::TaskflowUtil::Optimize(common::ManagedPointer(txn),
+                                                         common::ManagedPointer(accessor),
+                                                         common::ManagedPointer(stmt_list),
+                                                         db_oid,
+                                                         db_main->GetStatsStorage(),
+                                                         std::move(cost_model),
+                                                         optimizer_timeout_,
+                                                         params)
                             ->TakePlanNodeOwnership();
 
         out_plan = checker(common::ManagedPointer(txn), std::move(out_plan));
@@ -2591,7 +2591,7 @@ void InitializeRunnersState() {
                                .SetRecordBufferSegmentSize(1000000000)
                                .SetRecordBufferSegmentReuse(1000000000)
                                .SetUseExecution(true)
-                               .SetUseTrafficCop(true)
+                               .SetUseTaskflow(true)
                                .SetUseNetwork(true)
                                .SetUseSettingsManager(true)
                                .SetSettingsParameterMap(std::move(param_map))

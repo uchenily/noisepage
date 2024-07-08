@@ -8,16 +8,16 @@
 #include "common/error/error_defs.h"
 #include "network/network_defs.h"
 #include "network/postgres/postgres_network_commands.h"
-#include "traffic_cop/traffic_cop.h"
+#include "taskflow/taskflow.h"
 
 constexpr uint32_t SSL_MESSAGE_VERNO = 80877103;
 #define PROTO_MAJOR_VERSION(x) ((x) >> 16)
 
 namespace noisepage::network {
-auto PostgresProtocolInterpreter::Process(common::ManagedPointer<ReadBuffer>             in,
-                                          common::ManagedPointer<WriteQueue>             out,
-                                          common::ManagedPointer<trafficcop::TrafficCop> t_cop,
-                                          common::ManagedPointer<ConnectionContext>      context) -> Transition {
+auto PostgresProtocolInterpreter::Process(common::ManagedPointer<ReadBuffer>         in,
+                                          common::ManagedPointer<WriteQueue>         out,
+                                          common::ManagedPointer<taskflow::Taskflow> taskflow,
+                                          common::ManagedPointer<ConnectionContext>  context) -> Transition {
     try {
         if (!TryBuildPacket(in)) {
             return Transition::NEED_READ_TIMEOUT;
@@ -30,7 +30,7 @@ auto PostgresProtocolInterpreter::Process(common::ManagedPointer<ReadBuffer>    
         // Always flush startup packet response
         out->ForceFlush();
         curr_input_packet_.Clear();
-        return ProcessStartup(in, out, t_cop, context);
+        return ProcessStartup(in, out, taskflow, context);
     }
     auto command = command_factory_->PacketToCommand(common::ManagedPointer<InputPacket>(&curr_input_packet_));
     PostgresPacketWriter writer(out);
@@ -47,16 +47,16 @@ auto PostgresProtocolInterpreter::Process(common::ManagedPointer<ReadBuffer>    
 
     const Transition ret = command->Exec(common::ManagedPointer<ProtocolInterpreter>(this),
                                          common::ManagedPointer<PostgresPacketWriter>(&writer),
-                                         t_cop,
+                                         taskflow,
                                          context);
     curr_input_packet_.Clear();
     return ret;
 }
 
-auto PostgresProtocolInterpreter::ProcessStartup(const common::ManagedPointer<ReadBuffer>             in,
-                                                 const common::ManagedPointer<WriteQueue>             out,
-                                                 const common::ManagedPointer<trafficcop::TrafficCop> t_cop,
-                                                 const common::ManagedPointer<ConnectionContext>      context)
+auto PostgresProtocolInterpreter::ProcessStartup(const common::ManagedPointer<ReadBuffer>         in,
+                                                 const common::ManagedPointer<WriteQueue>         out,
+                                                 const common::ManagedPointer<taskflow::Taskflow> taskflow,
+                                                 const common::ManagedPointer<ConnectionContext>  context)
     -> Transition {
     PostgresPacketWriter writer(out);
     auto                 proto_version = in->ReadValue<uint32_t>();
@@ -111,7 +111,7 @@ auto PostgresProtocolInterpreter::ProcessStartup(const common::ManagedPointer<Re
     // we loop with exponential backoff because in case there are multiple other pg connections also starting
     // at the same time, creating DDL conflicts when creating the temp namespace
     do {
-        oids = t_cop->CreateTempNamespace(context->GetConnectionID(), db_name);
+        oids = taskflow->CreateTempNamespace(context->GetConnectionID(), db_name);
         if (oids.first == catalog::INVALID_DATABASE_OID || oids.second != catalog::INVALID_NAMESPACE_OID) {
             break;
         }
@@ -148,11 +148,11 @@ auto PostgresProtocolInterpreter::ProcessStartup(const common::ManagedPointer<Re
 
 void PostgresProtocolInterpreter::Teardown(const common::ManagedPointer<ReadBuffer> /*in*/,
                                            const common::ManagedPointer<WriteQueue> /*out*/,
-                                           const common::ManagedPointer<trafficcop::TrafficCop> t_cop,
-                                           const common::ManagedPointer<ConnectionContext>      context) {
+                                           const common::ManagedPointer<taskflow::Taskflow> taskflow,
+                                           const common::ManagedPointer<ConnectionContext>  context) {
     // Close any open transaction
     if (context->Transaction() != nullptr) {
-        t_cop->EndTransaction(context, QueryType::QUERY_ROLLBACK);
+        taskflow->EndTransaction(context, QueryType::QUERY_ROLLBACK);
         // We're about to destruct this object (probably), but reset state anyway
         ResetTransactionState();
     }
@@ -168,7 +168,7 @@ void PostgresProtocolInterpreter::Teardown(const common::ManagedPointer<ReadBuff
     // created and we're closing the connection for that reason, in
     // case there's nothing to drop
     if (context->GetTempNamespaceOid() != catalog::INVALID_NAMESPACE_OID) {
-        while (!t_cop->DropTempNamespace(context->GetDatabaseOid(), context->GetTempNamespaceOid())) {
+        while (!taskflow->DropTempNamespace(context->GetDatabaseOid(), context->GetTempNamespaceOid())) {
         }
     }
 }

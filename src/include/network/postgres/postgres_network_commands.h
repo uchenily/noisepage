@@ -13,14 +13,14 @@ public:
      * Executes the command
      * @param interpreter The protocol interpreter that called this
      * @param out The Writer on which to construct output packets for the client
-     * @param t_cop The traffic cop pointer
+     * @param taskflow The taskflow pointer
      * @param connection The ConnectionContext which contains connection information
      * @return The next transition for the client's state machine
      */
-    virtual auto Exec(common::ManagedPointer<ProtocolInterpreter>    interpreter,
-                      common::ManagedPointer<PostgresPacketWriter>   out,
-                      common::ManagedPointer<trafficcop::TrafficCop> t_cop,
-                      common::ManagedPointer<ConnectionContext>      connection) -> Transition
+    virtual auto Exec(common::ManagedPointer<ProtocolInterpreter>  interpreter,
+                      common::ManagedPointer<PostgresPacketWriter> out,
+                      common::ManagedPointer<taskflow::Taskflow>   taskflow,
+                      common::ManagedPointer<ConnectionContext>    connection) -> Transition
         = 0;
 
 protected:
@@ -38,10 +38,10 @@ protected:
     public:                                                                                                            \
         explicit COMMAND(const common::ManagedPointer<InputPacket> in)                                                 \
             : PostgresNetworkCommand(in, flush) {}                                                                     \
-        auto Exec(common::ManagedPointer<ProtocolInterpreter>    interpreter,                                          \
-                  common::ManagedPointer<PostgresPacketWriter>   out,                                                  \
-                  common::ManagedPointer<trafficcop::TrafficCop> t_cop,                                                \
-                  common::ManagedPointer<ConnectionContext>      connection) -> Transition override;                        \
+        auto Exec(common::ManagedPointer<ProtocolInterpreter>  interpreter,                                            \
+                  common::ManagedPointer<PostgresPacketWriter> out,                                                    \
+                  common::ManagedPointer<taskflow::Taskflow>   taskflow,                                               \
+                  common::ManagedPointer<ConnectionContext>    connection) -> Transition override;                        \
     }
 
 // Set all to force flush for now

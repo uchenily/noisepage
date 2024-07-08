@@ -12,7 +12,7 @@
 #include "network/postgres/postgres_protocol_interpreter.h"
 #include "network/postgres/statement.h"
 #include "parser/variable_show_statement.h"
-#include "traffic_cop/traffic_cop.h"
+#include "taskflow/taskflow.h"
 
 namespace {
 /**
@@ -48,9 +48,9 @@ auto FinishSimpleQueryCommand(const common::ManagedPointer<PostgresPacketWriter>
 void ExecutePortal(const common::ManagedPointer<network::ConnectionContext>    connection_ctx,
                    const common::ManagedPointer<Portal>                        portal,
                    const common::ManagedPointer<network::PostgresPacketWriter> out,
-                   const common::ManagedPointer<trafficcop::TrafficCop>        t_cop,
+                   const common::ManagedPointer<taskflow::Taskflow>            taskflow,
                    const bool                                                  explicit_txn_block) {
-    trafficcop::TrafficCopResult result;
+    taskflow::TaskflowResult result;
 
     const auto query_type = portal->GetStatement()->GetQueryType();
     const auto physical_plan = portal->OptimizeResult()->GetPlanNode();
@@ -58,11 +58,11 @@ void ExecutePortal(const common::ManagedPointer<network::ConnectionContext>    c
     // This logic relies on ordering of values in the enum's definition and is documented there as well.
     if (NetworkUtil::DMLQueryType(query_type)) {
         // DML query to put through codegen
-        result = t_cop->CodegenPhysicalPlan(connection_ctx, out, portal);
+        result = taskflow->CodegenPhysicalPlan(connection_ctx, out, portal);
 
         // TODO(Matt): do something with result here in case codegen fails
 
-        result = t_cop->RunExecutableQuery(connection_ctx, out, portal);
+        result = taskflow->RunExecutableQuery(connection_ctx, out, portal);
     } else if (NetworkUtil::CreateQueryType(query_type)) {
         if (explicit_txn_block && query_type == network::QueryType::QUERY_CREATE_DB) {
             out->WriteError({common::ErrorSeverity::ERROR,
@@ -72,14 +72,14 @@ void ExecutePortal(const common::ManagedPointer<network::ConnectionContext>    c
             return;
         }
         if (query_type == network::QueryType::QUERY_CREATE_INDEX) {
-            result = t_cop->ExecuteCreateStatement(connection_ctx, physical_plan, query_type);
-            NOISEPAGE_ASSERT(result.type_ == trafficcop::ResultType::COMPLETE,
+            result = taskflow->ExecuteCreateStatement(connection_ctx, physical_plan, query_type);
+            NOISEPAGE_ASSERT(result.type_ == taskflow::ResultType::COMPLETE,
                              "Got through the binder as a valid index name, so we don't expect this to fail.");
-            result = t_cop->CodegenPhysicalPlan(connection_ctx, out, portal);
+            result = taskflow->CodegenPhysicalPlan(connection_ctx, out, portal);
             // TODO(Matt): do something with result here in case codegen fails
-            result = t_cop->RunExecutableQuery(connection_ctx, out, portal);
+            result = taskflow->RunExecutableQuery(connection_ctx, out, portal);
         } else {
-            result = t_cop->ExecuteCreateStatement(connection_ctx, physical_plan, query_type);
+            result = taskflow->ExecuteCreateStatement(connection_ctx, physical_plan, query_type);
         }
     } else if (NetworkUtil::DropQueryType(query_type)) {
         if (explicit_txn_block && query_type == network::QueryType::QUERY_DROP_DB) {
@@ -89,19 +89,19 @@ void ExecutePortal(const common::ManagedPointer<network::ConnectionContext>    c
             connection_ctx->Transaction()->SetMustAbort();
             return;
         }
-        result = t_cop->ExecuteDropStatement(connection_ctx, physical_plan, query_type);
+        result = taskflow->ExecuteDropStatement(connection_ctx, physical_plan, query_type);
     } else if (query_type == network::QueryType::QUERY_EXPLAIN) {
-        result = t_cop->ExecuteExplainStatement(connection_ctx, out, portal);
+        result = taskflow->ExecuteExplainStatement(connection_ctx, out, portal);
     } else if (query_type == network::QueryType::QUERY_SHOW) {
-        result = t_cop->ExecuteShowStatement(connection_ctx, out, portal->GetStatement());
+        result = taskflow->ExecuteShowStatement(connection_ctx, out, portal->GetStatement());
     }
 
-    if (result.type_ == trafficcop::ResultType::COMPLETE) {
+    if (result.type_ == taskflow::ResultType::COMPLETE) {
         NOISEPAGE_ASSERT(std::holds_alternative<uint32_t>(result.extra_), "We're expecting number of rows here.");
         out->WriteCommandComplete(query_type, std::get<uint32_t>(result.extra_));
     } else {
-        NOISEPAGE_ASSERT(result.type_ == trafficcop::ResultType::ERROR,
-                         "Currently only expecting COMPLETE or ERROR from TrafficCop here.");
+        NOISEPAGE_ASSERT(result.type_ == taskflow::ResultType::ERROR,
+                         "Currently only expecting COMPLETE or ERROR from Taskflow here.");
         NOISEPAGE_ASSERT(std::holds_alternative<common::ErrorData>(result.extra_), "We're expecting a message here.");
         out->WriteError(std::get<common::ErrorData>(result.extra_));
     }
@@ -110,10 +110,10 @@ void ExecutePortal(const common::ManagedPointer<network::ConnectionContext>    c
 
 namespace noisepage::network {
 
-auto SimpleQueryCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>    interpreter,
-                              const common::ManagedPointer<PostgresPacketWriter>   out,
-                              const common::ManagedPointer<trafficcop::TrafficCop> t_cop,
-                              const common::ManagedPointer<ConnectionContext>      connection) -> Transition {
+auto SimpleQueryCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>  interpreter,
+                              const common::ManagedPointer<PostgresPacketWriter> out,
+                              const common::ManagedPointer<taskflow::Taskflow>   taskflow,
+                              const common::ManagedPointer<ConnectionContext>    connection) -> Transition {
     const auto postgres_interpreter = interpreter.CastManagedPointerTo<network::PostgresProtocolInterpreter>();
     NOISEPAGE_ASSERT(!postgres_interpreter->WaitingForSync(),
                      "We shouldn't be trying to execute commands while waiting for Sync message. This should have been "
@@ -125,7 +125,7 @@ auto SimpleQueryCommand::Exec(const common::ManagedPointer<ProtocolInterpreter> 
 
     auto query_text = in_.ReadString();
 
-    auto parse_result = t_cop->ParseQuery(query_text, connection);
+    auto parse_result = taskflow->ParseQuery(query_text, connection);
 
     if (std::holds_alternative<common::ErrorData>(parse_result)) {
         out->WriteError(std::get<common::ErrorData>(parse_result));
@@ -172,8 +172,8 @@ auto SimpleQueryCommand::Exec(const common::ManagedPointer<ProtocolInterpreter> 
             return FinishSimpleQueryCommand(out, connection);
         }
 
-        auto set_result = t_cop->ExecuteSetStatement(connection, common::ManagedPointer(statement));
-        if (set_result.type_ == trafficcop::ResultType::ERROR) {
+        auto set_result = taskflow->ExecuteSetStatement(connection, common::ManagedPointer(statement));
+        if (set_result.type_ == taskflow::ResultType::ERROR) {
             out->WriteError(std::get<common::ErrorData>(set_result.extra_));
         } else {
             out->WriteCommandComplete(network::QueryType::QUERY_SET, 0);
@@ -183,8 +183,8 @@ auto SimpleQueryCommand::Exec(const common::ManagedPointer<ProtocolInterpreter> 
 
     // TODO(WAN): this is a temporary hack to unblock Ziqi's oltpbench work. #1188
     if (UNLIKELY(query_type == network::QueryType::QUERY_SHOW)) {
-        auto show_result = t_cop->ExecuteShowStatement(connection, out, common::ManagedPointer(statement));
-        NOISEPAGE_ASSERT(show_result.type_ == trafficcop::ResultType::COMPLETE,
+        auto show_result = taskflow->ExecuteShowStatement(connection, out, common::ManagedPointer(statement));
+        NOISEPAGE_ASSERT(show_result.type_ == taskflow::ResultType::COMPLETE,
                          "TODO this should be fixed to handle failure.");
         out->WriteCommandComplete(network::QueryType::QUERY_SHOW, 0);
         return FinishSimpleQueryCommand(out, connection);
@@ -194,15 +194,15 @@ auto SimpleQueryCommand::Exec(const common::ManagedPointer<ProtocolInterpreter> 
     if (connection->TransactionState() == network::NetworkTransactionStateType::IDLE) {
         NOISEPAGE_ASSERT(!postgres_interpreter->ExplicitTransactionBlock(),
                          "We shouldn't be in an explicit txn block is transaction state is IDLE.");
-        t_cop->BeginTransaction(connection);
+        taskflow->BeginTransaction(connection);
     }
 
     // This logic relies on ordering of values in the enum's definition and is documented there as well.
     if (NetworkUtil::TransactionalQueryType(query_type)) {
-        t_cop->ExecuteTransactionStatement(connection,
-                                           out,
-                                           postgres_interpreter->ExplicitTransactionBlock(),
-                                           query_type);
+        taskflow->ExecuteTransactionStatement(connection,
+                                              out,
+                                              postgres_interpreter->ExplicitTransactionBlock(),
+                                              query_type);
         if (query_type == network::QueryType::QUERY_BEGIN) {
             if (!(postgres_interpreter->ExplicitTransactionBlock())) {
                 postgres_interpreter->SetExplicitTransactionBlock();
@@ -221,11 +221,11 @@ auto SimpleQueryCommand::Exec(const common::ManagedPointer<ProtocolInterpreter> 
         out->WriteCommandComplete(query_type, 0);
     } else {
         // Try to bind the parsed statement
-        const auto bind_result = t_cop->BindQuery(connection, common::ManagedPointer(statement), nullptr);
+        const auto bind_result = taskflow->BindQuery(connection, common::ManagedPointer(statement), nullptr);
 
-        if (bind_result.type_ == trafficcop::ResultType::COMPLETE) {
+        if (bind_result.type_ == taskflow::ResultType::COMPLETE) {
             // Binding succeeded, optimize to generate a physical plan and then execute
-            auto optimize_result = t_cop->OptimizeBoundQuery(connection, statement->ParseResult(), nullptr);
+            auto optimize_result = taskflow->OptimizeBoundQuery(connection, statement->ParseResult(), nullptr);
 
             statement->SetOptimizeResult(std::move(optimize_result));
 
@@ -243,15 +243,15 @@ auto SimpleQueryCommand::Exec(const common::ManagedPointer<ProtocolInterpreter> 
             ExecutePortal(connection,
                           common::ManagedPointer(portal),
                           out,
-                          t_cop,
+                          taskflow,
                           postgres_interpreter->ExplicitTransactionBlock());
-        } else if (bind_result.type_ == trafficcop::ResultType::NOTICE) {
+        } else if (bind_result.type_ == taskflow::ResultType::NOTICE) {
             NOISEPAGE_ASSERT(std::holds_alternative<common::ErrorData>(bind_result.extra_),
                              "We're expecting a message here.");
             out->WriteError(std::get<common::ErrorData>(bind_result.extra_));
             out->WriteCommandComplete(query_type, 0);
         } else {
-            NOISEPAGE_ASSERT(bind_result.type_ == trafficcop::ResultType::ERROR,
+            NOISEPAGE_ASSERT(bind_result.type_ == taskflow::ResultType::ERROR,
                              "I don't think we expect any other ResultType at this point.");
             NOISEPAGE_ASSERT(std::holds_alternative<common::ErrorData>(bind_result.extra_),
                              "We're expecting a message here.");
@@ -264,19 +264,19 @@ auto SimpleQueryCommand::Exec(const common::ManagedPointer<ProtocolInterpreter> 
     if (!postgres_interpreter->ExplicitTransactionBlock()) {
         // Single statement transaction should be ended before returning
         // decide whether the txn should be committed or aborted based on the MustAbort flag, and then end the txn
-        t_cop->EndTransaction(connection,
-                              connection->Transaction()->MustAbort() ? network::QueryType::QUERY_ROLLBACK
-                                                                     : network::QueryType::QUERY_COMMIT);
+        taskflow->EndTransaction(connection,
+                                 connection->Transaction()->MustAbort() ? network::QueryType::QUERY_ROLLBACK
+                                                                        : network::QueryType::QUERY_COMMIT);
         postgres_interpreter->ResetTransactionState();
     }
 
     return FinishSimpleQueryCommand(out, connection);
 }
 
-auto ParseCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>    interpreter,
-                        const common::ManagedPointer<PostgresPacketWriter>   out,
-                        const common::ManagedPointer<trafficcop::TrafficCop> t_cop,
-                        const common::ManagedPointer<ConnectionContext>      connection) -> Transition {
+auto ParseCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>  interpreter,
+                        const common::ManagedPointer<PostgresPacketWriter> out,
+                        const common::ManagedPointer<taskflow::Taskflow>   taskflow,
+                        const common::ManagedPointer<ConnectionContext>    connection) -> Transition {
     const auto postgres_interpreter = interpreter.CastManagedPointerTo<network::PostgresProtocolInterpreter>();
     NOISEPAGE_ASSERT(!postgres_interpreter->WaitingForSync(),
                      "We shouldn't be trying to execute commands while waiting for Sync message. This should have been "
@@ -297,7 +297,7 @@ auto ParseCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>    int
     }
 
     auto query_text = in_.ReadString();
-    auto parse_result = t_cop->ParseQuery(query_text, connection);
+    auto parse_result = taskflow->ParseQuery(query_text, connection);
 
     if (std::holds_alternative<common::ErrorData>(parse_result)) {
         out->WriteError(std::get<common::ErrorData>(parse_result));
@@ -348,10 +348,10 @@ auto ParseCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>    int
     return Transition::PROCEED;
 }
 
-auto BindCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>    interpreter,
-                       const common::ManagedPointer<PostgresPacketWriter>   out,
-                       const common::ManagedPointer<trafficcop::TrafficCop> t_cop,
-                       const common::ManagedPointer<ConnectionContext>      connection) -> Transition {
+auto BindCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>  interpreter,
+                       const common::ManagedPointer<PostgresPacketWriter> out,
+                       const common::ManagedPointer<taskflow::Taskflow>   taskflow,
+                       const common::ManagedPointer<ConnectionContext>    connection) -> Transition {
     const bool bind_command_metrics_enabled
         = common::thread_context.metrics_store_ != nullptr
           && common::thread_context.metrics_store_->ComponentToRecord(metrics::MetricsComponent::BIND_COMMAND);
@@ -425,7 +425,7 @@ auto BindCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>    inte
         && !NetworkUtil::NonTransactionalQueryType(query_type)) {
         NOISEPAGE_ASSERT(!postgres_interpreter->ExplicitTransactionBlock(),
                          "We shouldn't be in an explicit txn block is transaction state is IDLE.");
-        t_cop->BeginTransaction(connection);
+        taskflow->BeginTransaction(connection);
     }
 
     if (NetworkUtil::TransactionalQueryType(query_type) || NetworkUtil::SkipBindQueryType(query_type)) {
@@ -455,13 +455,13 @@ auto BindCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>    inte
     }
 
     // Bind it, plan it
-    const auto bind_result = t_cop->BindQuery(connection, statement, common::ManagedPointer(&params));
-    if (LIKELY(bind_result.type_ == trafficcop::ResultType::COMPLETE)) {
+    const auto bind_result = taskflow->BindQuery(connection, statement, common::ManagedPointer(&params));
+    if (LIKELY(bind_result.type_ == taskflow::ResultType::COMPLETE)) {
         // Binding succeeded, optimize to generate a physical plan
-        if (statement->OptimizeResult() == nullptr || !t_cop->UseQueryCache()) {
+        if (statement->OptimizeResult() == nullptr || !taskflow->UseQueryCache()) {
             // it's not cached, optimize it
             auto optimize_result
-                = t_cop->OptimizeBoundQuery(connection, statement->ParseResult(), common::ManagedPointer(&params));
+                = taskflow->OptimizeBoundQuery(connection, statement->ParseResult(), common::ManagedPointer(&params));
 
             statement->SetOptimizeResult(std::move(optimize_result));
         }
@@ -470,7 +470,7 @@ auto BindCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>    inte
             portal_name,
             std::make_unique<Portal>(statement, std::move(params), std::move(result_formats)));
         out->WriteBindComplete();
-    } else if (UNLIKELY(bind_result.type_ == trafficcop::ResultType::NOTICE)) {
+    } else if (UNLIKELY(bind_result.type_ == taskflow::ResultType::NOTICE)) {
         // Binding generated a NOTICE, i.e. IF EXISTS failed, so we're not going to generate a physical plan of nullptr
         // and handle that case in Execute. In case it previously bound and compiled, we're gonna throw that away for
         // next execution
@@ -483,7 +483,7 @@ auto BindCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>    inte
         out->WriteError(std::get<common::ErrorData>(bind_result.extra_));
         out->WriteBindComplete();
     } else {
-        NOISEPAGE_ASSERT(bind_result.type_ == trafficcop::ResultType::ERROR,
+        NOISEPAGE_ASSERT(bind_result.type_ == taskflow::ResultType::ERROR,
                          "I don't think we expect any other ResultType at this point.");
         NOISEPAGE_ASSERT(std::holds_alternative<common::ErrorData>(bind_result.extra_),
                          "We're expecting a message here.");
@@ -508,7 +508,7 @@ auto BindCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>    inte
 
 auto DescribeCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>  interpreter,
                            const common::ManagedPointer<PostgresPacketWriter> out,
-                           const common::ManagedPointer<trafficcop::TrafficCop> /*t_cop*/,
+                           const common::ManagedPointer<taskflow::Taskflow> /*taskflow*/,
                            const common::ManagedPointer<ConnectionContext> /*connection*/) -> Transition {
     const auto postgres_interpreter = interpreter.CastManagedPointerTo<network::PostgresProtocolInterpreter>();
     NOISEPAGE_ASSERT(!postgres_interpreter->WaitingForSync(),
@@ -558,10 +558,10 @@ auto DescribeCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>  in
     return Transition::PROCEED;
 }
 
-auto ExecuteCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>    interpreter,
-                          const common::ManagedPointer<PostgresPacketWriter>   out,
-                          const common::ManagedPointer<trafficcop::TrafficCop> t_cop,
-                          const common::ManagedPointer<ConnectionContext>      connection) -> Transition {
+auto ExecuteCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>  interpreter,
+                          const common::ManagedPointer<PostgresPacketWriter> out,
+                          const common::ManagedPointer<taskflow::Taskflow>   taskflow,
+                          const common::ManagedPointer<ConnectionContext>    connection) -> Transition {
     const bool execute_command_metrics_enabled
         = common::thread_context.metrics_store_ != nullptr
           && common::thread_context.metrics_store_->ComponentToRecord(metrics::MetricsComponent::EXECUTE_COMMAND);
@@ -603,8 +603,8 @@ auto ExecuteCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>    i
             return FinishSimpleQueryCommand(out, connection);
         }
 
-        auto set_result = t_cop->ExecuteSetStatement(connection, common::ManagedPointer(statement));
-        if (set_result.type_ == trafficcop::ResultType::ERROR) {
+        auto set_result = taskflow->ExecuteSetStatement(connection, common::ManagedPointer(statement));
+        if (set_result.type_ == taskflow::ResultType::ERROR) {
             out->WriteError(std::get<common::ErrorData>(set_result.extra_));
         } else {
             out->WriteCommandComplete(network::QueryType::QUERY_SET, 0);
@@ -614,8 +614,8 @@ auto ExecuteCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>    i
 
     // Show statements are manually handled here.
     if (UNLIKELY(query_type == network::QueryType::QUERY_SHOW)) {
-        auto show_result = t_cop->ExecuteShowStatement(connection, out, portal->GetStatement());
-        NOISEPAGE_ASSERT(show_result.type_ == trafficcop::ResultType::COMPLETE,
+        auto show_result = taskflow->ExecuteShowStatement(connection, out, portal->GetStatement());
+        NOISEPAGE_ASSERT(show_result.type_ == taskflow::ResultType::COMPLETE,
                          "TODO(WAN) this should be fixed to handle failure.");
         out->WriteCommandComplete(query_type, std::get<uint32_t>(show_result.extra_));
         return Transition::PROCEED;
@@ -623,10 +623,10 @@ auto ExecuteCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>    i
 
     // This logic relies on ordering of values in the enum's definition and is documented there as well.
     if (NetworkUtil::TransactionalQueryType(query_type)) {
-        t_cop->ExecuteTransactionStatement(connection,
-                                           out,
-                                           postgres_interpreter->ExplicitTransactionBlock(),
-                                           query_type);
+        taskflow->ExecuteTransactionStatement(connection,
+                                              out,
+                                              postgres_interpreter->ExplicitTransactionBlock(),
+                                              query_type);
         if (query_type == network::QueryType::QUERY_BEGIN) {
             if (!(postgres_interpreter->ExplicitTransactionBlock())) {
                 postgres_interpreter->SetExplicitTransactionBlock();
@@ -650,7 +650,7 @@ auto ExecuteCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>    i
     }
 
     if (portal->OptimizeResult() != nullptr) {
-        ExecutePortal(connection, portal, out, t_cop, postgres_interpreter->ExplicitTransactionBlock());
+        ExecutePortal(connection, portal, out, taskflow, postgres_interpreter->ExplicitTransactionBlock());
         if (connection->TransactionState() == NetworkTransactionStateType::FAIL) {
             postgres_interpreter->SetWaitingForSync();
         }
@@ -662,16 +662,16 @@ auto ExecuteCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>    i
     return Transition::PROCEED;
 }
 
-auto SyncCommand::Exec(common::ManagedPointer<ProtocolInterpreter>    interpreter,
-                       common::ManagedPointer<PostgresPacketWriter>   out,
-                       common::ManagedPointer<trafficcop::TrafficCop> t_cop,
-                       common::ManagedPointer<ConnectionContext>      connection) -> Transition {
+auto SyncCommand::Exec(common::ManagedPointer<ProtocolInterpreter>  interpreter,
+                       common::ManagedPointer<PostgresPacketWriter> out,
+                       common::ManagedPointer<taskflow::Taskflow>   taskflow,
+                       common::ManagedPointer<ConnectionContext>    connection) -> Transition {
     const auto postgres_interpreter = interpreter.CastManagedPointerTo<network::PostgresProtocolInterpreter>();
     if (!postgres_interpreter->ExplicitTransactionBlock()
         && !(connection->TransactionState() == network::NetworkTransactionStateType::IDLE)) {
-        t_cop->EndTransaction(connection,
-                              connection->Transaction()->MustAbort() ? network::QueryType::QUERY_ROLLBACK
-                                                                     : network::QueryType::QUERY_COMMIT);
+        taskflow->EndTransaction(connection,
+                                 connection->Transaction()->MustAbort() ? network::QueryType::QUERY_ROLLBACK
+                                                                        : network::QueryType::QUERY_COMMIT);
         postgres_interpreter->ResetTransactionState();
     } else if (postgres_interpreter->WaitingForSync()) {
         postgres_interpreter->ResetWaitingForSync();
@@ -682,7 +682,7 @@ auto SyncCommand::Exec(common::ManagedPointer<ProtocolInterpreter>    interprete
 
 auto CloseCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>  interpreter,
                         const common::ManagedPointer<PostgresPacketWriter> out,
-                        const common::ManagedPointer<trafficcop::TrafficCop> /*t_cop*/,
+                        const common::ManagedPointer<taskflow::Taskflow> /*taskflow*/,
                         const common::ManagedPointer<ConnectionContext> /*connection*/) -> Transition {
     const auto postgres_interpreter = interpreter.CastManagedPointerTo<network::PostgresProtocolInterpreter>();
     NOISEPAGE_ASSERT(!postgres_interpreter->WaitingForSync(),
@@ -707,7 +707,7 @@ auto CloseCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>  inter
 
 auto TerminateCommand::Exec(const common::ManagedPointer<ProtocolInterpreter> /*interpreter*/,
                             const common::ManagedPointer<PostgresPacketWriter> /*out*/,
-                            const common::ManagedPointer<trafficcop::TrafficCop> /*t_cop*/,
+                            const common::ManagedPointer<taskflow::Taskflow> /*taskflow*/,
                             const common::ManagedPointer<ConnectionContext> /*connection*/) -> Transition {
     // Postgres doesn't send any sort of response for the Terminate command
     // We don't do removal of the temp namespace at the Command level because it's possible that we don't receive a
@@ -718,7 +718,7 @@ auto TerminateCommand::Exec(const common::ManagedPointer<ProtocolInterpreter> /*
 // (Matt): this seems to only exist for testing
 auto EmptyCommand::Exec(common::ManagedPointer<ProtocolInterpreter> /*interpreter*/,
                         common::ManagedPointer<PostgresPacketWriter> out,
-                        common::ManagedPointer<trafficcop::TrafficCop> /*t_cop*/,
+                        common::ManagedPointer<taskflow::Taskflow> /*taskflow*/,
                         common::ManagedPointer<ConnectionContext> /*connection*/) -> Transition {
     NETWORK_LOG_TRACE("Empty Command");
     out->WriteEmptyQueryResponse();

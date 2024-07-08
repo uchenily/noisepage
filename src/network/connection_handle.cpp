@@ -136,13 +136,13 @@ void ConnectionHandle::StateMachine::Accept(Transition action, const common::Man
     }
 }
 
-ConnectionHandle::ConnectionHandle(int                                            sock_fd,
-                                   common::ManagedPointer<ConnectionHandlerTask>  task,
-                                   common::ManagedPointer<trafficcop::TrafficCop> tcop,
-                                   std::unique_ptr<ProtocolInterpreter>           interpreter)
+ConnectionHandle::ConnectionHandle(int                                           sock_fd,
+                                   common::ManagedPointer<ConnectionHandlerTask> task,
+                                   common::ManagedPointer<taskflow::Taskflow>    taskflow,
+                                   std::unique_ptr<ProtocolInterpreter>          interpreter)
     : io_wrapper_(std::make_unique<NetworkIoWrapper>(sock_fd))
     , conn_handler_task_(task)
-    , traffic_cop_(tcop)
+    , taskflow_(taskflow)
     , protocol_interpreter_(std::move(interpreter)) {
     context_.SetCallback(Callback, this);
     context_.SetConnectionID(static_cast<connection_id_t>(sock_fd));
@@ -192,7 +192,7 @@ auto ConnectionHandle::TryWrite() -> Transition {
 auto ConnectionHandle::Process() -> Transition {
     auto transition = protocol_interpreter_->Process(io_wrapper_->GetReadBuffer(),
                                                      io_wrapper_->GetWriteQueue(),
-                                                     traffic_cop_,
+                                                     taskflow_,
                                                      common::ManagedPointer(&context_));
     return transition;
 }
@@ -215,7 +215,7 @@ auto ConnectionHandle::TryCloseConnection() -> Transition {
     // Stop the protocol interpreter.
     protocol_interpreter_->Teardown(io_wrapper_->GetReadBuffer(),
                                     io_wrapper_->GetWriteQueue(),
-                                    traffic_cop_,
+                                    taskflow_,
                                     common::ManagedPointer(&context_));
 
     // Try to close the connection. If that fails, return whatever should have been done instead.
@@ -269,7 +269,7 @@ void ConnectionHandle::ResetForReuse(connection_id_t                            
                                      std::unique_ptr<ProtocolInterpreter>          interpreter) {
     io_wrapper_->Restart();
     conn_handler_task_ = task;
-    // TODO(WAN): the same traffic cop is kept because the ConnectionHandleFactory always uses the same traffic cop
+    // TODO(WAN): the same taskflow is kept because the ConnectionHandleFactory always uses the same taskflow
     //  anyway, but if this ever changes then we'll need to revisit this.
     protocol_interpreter_ = std::move(interpreter);
     state_machine_ = ConnectionHandle::StateMachine();

@@ -13,9 +13,9 @@
 #include "network/noisepage_server.h"
 #include "network/postgres/postgres_protocol_interpreter.h"
 #include "storage/garbage_collector.h"
+#include "taskflow/taskflow.h"
 #include "test_util/manual_packet_util.h"
 #include "test_util/test_harness.h"
-#include "traffic_cop/traffic_cop.h"
 #include "transaction/deferred_action_manager.h"
 #include "transaction/transaction_manager.h"
 #include "gtest/gtest.h"
@@ -39,7 +39,7 @@ class FakeCommandFactory : public PostgresCommandFactory {
  */
 class NetworkTests : public TerrierTest {
 protected:
-    trafficcop::TrafficCop             *tcop_;
+    taskflow::Taskflow                 *taskflow_;
     catalog::Catalog                   *catalog_;
     storage::RecordBufferSegmentPool    buffer_pool_{100, 100};
     storage::BlockStore                 block_store_{100, 100};
@@ -76,7 +76,7 @@ protected:
                                         common::ManagedPointer(&block_store_),
                                         common::ManagedPointer(gc_));
 
-        tcop_ = new trafficcop::TrafficCop(common::ManagedPointer(txn_manager_),
+        taskflow_ = new taskflow::Taskflow(common::ManagedPointer(txn_manager_),
                                            common::ManagedPointer(catalog_),
                                            DISABLED,
                                            DISABLED,
@@ -96,7 +96,7 @@ protected:
 #endif
 
         try {
-            handle_factory_ = std::make_unique<ConnectionHandleFactory>(common::ManagedPointer(tcop_));
+            handle_factory_ = std::make_unique<ConnectionHandleFactory>(common::ManagedPointer(taskflow_));
             server_ = std::make_unique<TerrierServer>(
                 common::ManagedPointer<ProtocolInterpreterProvider>(&protocol_provider_),
                 common::ManagedPointer(handle_factory_.get()),
@@ -124,7 +124,7 @@ protected:
         gc_->PerformGarbageCollection();
 
         delete catalog_;
-        delete tcop_;
+        delete taskflow_;
         delete gc_;
         delete txn_manager_;
         delete deferred_action_manager_;

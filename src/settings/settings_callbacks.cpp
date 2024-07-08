@@ -229,7 +229,7 @@ void Callbacks::CompiledQueryExecution(void *const                              
                                        common::ManagedPointer<common::ActionContext> action_context) {
     action_context->SetState(common::ActionState::IN_PROGRESS);
     bool is_compiled = *static_cast<bool *>(new_value);
-    db_main->GetTrafficCop()->SetExecutionMode(is_compiled);
+    db_main->GetTaskflow()->SetExecutionMode(is_compiled);
     action_context->SetState(common::ActionState::SUCCESS);
 }
 
@@ -238,7 +238,7 @@ void Callbacks::ClearQueryCache(void                                         *ol
                                 DBMain                                       *db_main,
                                 common::ManagedPointer<common::ActionContext> action_context) {
     action_context->SetState(common::ActionState::IN_PROGRESS);
-    db_main->GetTrafficCop()->UpdateQueryCacheTimestamp();
+    db_main->GetTaskflow()->UpdateQueryCacheTimestamp();
     action_context->SetState(common::ActionState::SUCCESS);
 }
 

@@ -21,28 +21,28 @@ public:
      * Processes client's input that has been fed into the given ReadBufer
      * @param in The ReadBuffer to read input from
      * @param out The WriteQueue to communicate with the client through
-     * @param t_cop The traffic cop pointer
+     * @param taskflow The taskflow pointer
      * @param context the connection context
      * @return The next transition for the client's associated state machine
      */
-    virtual auto Process(common::ManagedPointer<ReadBuffer>             in,
-                         common::ManagedPointer<WriteQueue>             out,
-                         common::ManagedPointer<trafficcop::TrafficCop> t_cop,
-                         common::ManagedPointer<ConnectionContext>      context) -> Transition
+    virtual auto Process(common::ManagedPointer<ReadBuffer>         in,
+                         common::ManagedPointer<WriteQueue>         out,
+                         common::ManagedPointer<taskflow::Taskflow> taskflow,
+                         common::ManagedPointer<ConnectionContext>  context) -> Transition
         = 0;
 
     /**
      * Tear down any state and perform any connection closing duties for this protocol
      * @param in The ReadBuffer to read input from
      * @param out The WriteQueue to communicate with the client through
-     * @param t_cop The traffic cop pointer
+     * @param taskflow The taskflow pointer
      * @param context the connection context
      * @return The next transition for the client's associated state machine
      */
-    virtual void Teardown(common::ManagedPointer<ReadBuffer>             in,
-                          common::ManagedPointer<WriteQueue>             out,
-                          common::ManagedPointer<trafficcop::TrafficCop> t_cop,
-                          common::ManagedPointer<ConnectionContext>      context)
+    virtual void Teardown(common::ManagedPointer<ReadBuffer>         in,
+                          common::ManagedPointer<WriteQueue>         out,
+                          common::ManagedPointer<taskflow::Taskflow> taskflow,
+                          common::ManagedPointer<ConnectionContext>  context)
         = 0;
 
     /**

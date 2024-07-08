@@ -28,8 +28,8 @@
 #include "parser/postgresparser.h"
 #include "planner/plannodes/index_join_plan_node.h"
 #include "planner/plannodes/index_scan_plan_node.h"
+#include "taskflow/taskflow_defs.h"
 #include "test_util/test_harness.h"
-#include "traffic_cop/traffic_cop_defs.h"
 
 namespace noisepage::optimizer {
 
@@ -41,37 +41,37 @@ struct IdxJoinTest : public TerrierTest {
         auto                pwriter = network::PostgresPacketWriter(common::ManagedPointer(&queue));
         auto                portal = network::Portal(common::ManagedPointer(stmt));
         stmt->SetOptimizeResult(std::move(*optimize_result));
-        auto result = tcop_->CodegenPhysicalPlan(common::ManagedPointer(&context_),
-                                                 common::ManagedPointer(&pwriter),
-                                                 common::ManagedPointer(&portal));
-        NOISEPAGE_ASSERT(result.type_ == trafficcop::ResultType::COMPLETE, "Codegen should have succeeded");
-        result = tcop_->RunExecutableQuery(common::ManagedPointer(&context_),
-                                           common::ManagedPointer(&pwriter),
-                                           common::ManagedPointer(&portal));
-        NOISEPAGE_ASSERT(result.type_ == trafficcop::ResultType::COMPLETE, "Execute should have succeeded");
+        auto result = taskflow_->CodegenPhysicalPlan(common::ManagedPointer(&context_),
+                                                     common::ManagedPointer(&pwriter),
+                                                     common::ManagedPointer(&portal));
+        NOISEPAGE_ASSERT(result.type_ == taskflow::ResultType::COMPLETE, "Codegen should have succeeded");
+        result = taskflow_->RunExecutableQuery(common::ManagedPointer(&context_),
+                                               common::ManagedPointer(&pwriter),
+                                               common::ManagedPointer(&portal));
+        NOISEPAGE_ASSERT(result.type_ == taskflow::ResultType::COMPLETE, "Execute should have succeeded");
     }
 
     void ExecuteCreate(std::unique_ptr<optimizer::OptimizeResult> *optimize_result, network::QueryType qtype) {
-        auto result = tcop_->ExecuteCreateStatement(common::ManagedPointer(&context_),
-                                                    (*optimize_result)->GetPlanNode(),
-                                                    qtype);
-        NOISEPAGE_ASSERT(result.type_ == trafficcop::ResultType::COMPLETE, "Execute should have succeeded");
+        auto result = taskflow_->ExecuteCreateStatement(common::ManagedPointer(&context_),
+                                                        (*optimize_result)->GetPlanNode(),
+                                                        qtype);
+        NOISEPAGE_ASSERT(result.type_ == taskflow::ResultType::COMPLETE, "Execute should have succeeded");
     }
 
     void ExecuteSQL(std::string sql, network::QueryType qtype) {
         std::vector<parser::ConstantValueExpression> params;
-        tcop_->BeginTransaction(common::ManagedPointer(&context_));
-        auto parse = tcop_->ParseQuery(sql, common::ManagedPointer(&context_));
+        taskflow_->BeginTransaction(common::ManagedPointer(&context_));
+        auto parse = taskflow_->ParseQuery(sql, common::ManagedPointer(&context_));
         auto stmt
             = network::Statement(std::move(sql), std::move(std::get<std::unique_ptr<parser::ParseResult>>(parse)));
-        auto result = tcop_->BindQuery(common::ManagedPointer(&context_),
-                                       common::ManagedPointer(&stmt),
-                                       common::ManagedPointer(&params));
-        NOISEPAGE_ASSERT(result.type_ == trafficcop::ResultType::COMPLETE, "Bind should have succeeded");
+        auto result = taskflow_->BindQuery(common::ManagedPointer(&context_),
+                                           common::ManagedPointer(&stmt),
+                                           common::ManagedPointer(&params));
+        NOISEPAGE_ASSERT(result.type_ == taskflow::ResultType::COMPLETE, "Bind should have succeeded");
 
-        auto optimize_result = tcop_->OptimizeBoundQuery(common::ManagedPointer(&context_),
-                                                         stmt.ParseResult(),
-                                                         common::ManagedPointer(&params));
+        auto optimize_result = taskflow_->OptimizeBoundQuery(common::ManagedPointer(&context_),
+                                                             stmt.ParseResult(),
+                                                             common::ManagedPointer(&params));
         if (qtype >= network::QueryType::QUERY_CREATE_TABLE && qtype != network::QueryType::QUERY_CREATE_INDEX) {
             ExecuteCreate(&optimize_result, qtype);
         } else if (qtype == network::QueryType::QUERY_CREATE_INDEX) {
@@ -81,7 +81,7 @@ struct IdxJoinTest : public TerrierTest {
             CompileAndRun(&optimize_result, &stmt);
         }
 
-        tcop_->EndTransaction(common::ManagedPointer(&context_), network::QueryType::QUERY_COMMIT);
+        taskflow_->EndTransaction(common::ManagedPointer(&context_), network::QueryType::QUERY_COMMIT);
     }
 
     void SetUp() override {
@@ -91,15 +91,15 @@ struct IdxJoinTest : public TerrierTest {
                        .SetUseGC(true)
                        .SetUseCatalog(true)
                        .SetUseStatsStorage(true)
-                       .SetUseTrafficCop(true)
+                       .SetUsetaskflow(true)
                        .SetUseExecution(true)
                        .Build();
 
         catalog_ = db_main_->GetCatalogLayer()->GetCatalog();
         txn_manager_ = db_main_->GetTransactionLayer()->GetTransactionManager();
 
-        tcop_ = db_main_->GetTrafficCop();
-        auto oids = tcop_->CreateTempNamespace(network::connection_id_t(0), "noisepage");
+        taskflow_ = db_main_->Gettaskflow();
+        auto oids = taskflow_->CreateTempNamespace(network::connection_id_t(0), "noisepage");
         context_.SetDatabaseName("noisepage");
         context_.SetDatabaseOid(oids.first);
         context_.SetTempNamespaceOid(oids.second);
@@ -136,7 +136,7 @@ struct IdxJoinTest : public TerrierTest {
     network::ConnectionContext                              context_;
     common::ManagedPointer<catalog::Catalog>                catalog_;
     common::ManagedPointer<transaction::TransactionManager> txn_manager_;
-    common::ManagedPointer<trafficcop::TrafficCop>          tcop_;
+    common::ManagedPointer<taskflow::Taskflow>              taskflow_;
     std::unique_ptr<DBMain>                                 db_main_;
     catalog::db_oid_t                                       db_oid_;
 };
@@ -155,14 +155,14 @@ TEST_F(IdxJoinTest, SimpleIdxJoinTest) {
     binder.BindNameToNode(common::ManagedPointer(stmt_list), nullptr, nullptr);
 
     auto cost_model = std::make_unique<optimizer::TrivialCostModel>();
-    auto out_plan = trafficcop::TrafficCopUtil::Optimize(common::ManagedPointer(txn),
-                                                         common::ManagedPointer(accessor),
-                                                         common::ManagedPointer(stmt_list),
-                                                         db_oid_,
-                                                         db_main_->GetStatsStorage(),
-                                                         std::move(cost_model),
-                                                         optimizer_timeout_,
-                                                         nullptr)
+    auto out_plan = taskflow::TaskflowUtil::Optimize(common::ManagedPointer(txn),
+                                                     common::ManagedPointer(accessor),
+                                                     common::ManagedPointer(stmt_list),
+                                                     db_oid_,
+                                                     db_main_->GetStatsStorage(),
+                                                     std::move(cost_model),
+                                                     optimizer_timeout_,
+                                                     nullptr)
                         ->TakePlanNodeOwnership();
 
     EXPECT_EQ(out_plan->GetPlanNodeType(), planner::PlanNodeType::PROJECTION);
@@ -290,14 +290,14 @@ TEST_F(IdxJoinTest, MultiPredicateJoin) {
     binder.BindNameToNode(common::ManagedPointer(stmt_list), nullptr, nullptr);
 
     auto cost_model = std::make_unique<optimizer::TrivialCostModel>();
-    auto out_plan = trafficcop::TrafficCopUtil::Optimize(common::ManagedPointer(txn),
-                                                         common::ManagedPointer(accessor),
-                                                         common::ManagedPointer(stmt_list),
-                                                         db_oid_,
-                                                         db_main_->GetStatsStorage(),
-                                                         std::move(cost_model),
-                                                         optimizer_timeout_,
-                                                         nullptr)
+    auto out_plan = taskflow::TaskflowUtil::Optimize(common::ManagedPointer(txn),
+                                                     common::ManagedPointer(accessor),
+                                                     common::ManagedPointer(stmt_list),
+                                                     db_oid_,
+                                                     db_main_->GetStatsStorage(),
+                                                     std::move(cost_model),
+                                                     optimizer_timeout_,
+                                                     nullptr)
                         ->TakePlanNodeOwnership();
 
     EXPECT_EQ(out_plan->GetPlanNodeType(), planner::PlanNodeType::PROJECTION);
@@ -387,14 +387,14 @@ TEST_F(IdxJoinTest, MultiPredicateJoinWithExtra) {
     binder.BindNameToNode(common::ManagedPointer(stmt_list), nullptr, nullptr);
 
     auto cost_model = std::make_unique<optimizer::TrivialCostModel>();
-    auto out_plan = trafficcop::TrafficCopUtil::Optimize(common::ManagedPointer(txn),
-                                                         common::ManagedPointer(accessor),
-                                                         common::ManagedPointer(stmt_list),
-                                                         db_oid_,
-                                                         db_main_->GetStatsStorage(),
-                                                         std::move(cost_model),
-                                                         optimizer_timeout_,
-                                                         nullptr)
+    auto out_plan = taskflow::TaskflowUtil::Optimize(common::ManagedPointer(txn),
+                                                     common::ManagedPointer(accessor),
+                                                     common::ManagedPointer(stmt_list),
+                                                     db_oid_,
+                                                     db_main_->GetStatsStorage(),
+                                                     std::move(cost_model),
+                                                     optimizer_timeout_,
+                                                     nullptr)
                         ->TakePlanNodeOwnership();
 
     EXPECT_EQ(out_plan->GetPlanNodeType(), planner::PlanNodeType::PROJECTION);
@@ -483,14 +483,14 @@ TEST_F(IdxJoinTest, FooOnlyScan) {
     binder.BindNameToNode(common::ManagedPointer(stmt_list), nullptr, nullptr);
 
     auto cost_model = std::make_unique<optimizer::TrivialCostModel>();
-    auto out_plan = trafficcop::TrafficCopUtil::Optimize(common::ManagedPointer(txn),
-                                                         common::ManagedPointer(accessor),
-                                                         common::ManagedPointer(stmt_list),
-                                                         db_oid_,
-                                                         db_main_->GetStatsStorage(),
-                                                         std::move(cost_model),
-                                                         optimizer_timeout_,
-                                                         nullptr)
+    auto out_plan = taskflow::TaskflowUtil::Optimize(common::ManagedPointer(txn),
+                                                     common::ManagedPointer(accessor),
+                                                     common::ManagedPointer(stmt_list),
+                                                     db_oid_,
+                                                     db_main_->GetStatsStorage(),
+                                                     std::move(cost_model),
+                                                     optimizer_timeout_,
+                                                     nullptr)
                         ->TakePlanNodeOwnership();
 
     EXPECT_EQ(out_plan->GetPlanNodeType(), planner::PlanNodeType::PROJECTION);
@@ -565,14 +565,14 @@ TEST_F(IdxJoinTest, BarOnlyScan) {
     binder.BindNameToNode(common::ManagedPointer(stmt_list), nullptr, nullptr);
 
     auto cost_model = std::make_unique<optimizer::TrivialCostModel>();
-    auto out_plan = trafficcop::TrafficCopUtil::Optimize(common::ManagedPointer(txn),
-                                                         common::ManagedPointer(accessor),
-                                                         common::ManagedPointer(stmt_list),
-                                                         db_oid_,
-                                                         db_main_->GetStatsStorage(),
-                                                         std::move(cost_model),
-                                                         optimizer_timeout_,
-                                                         nullptr)
+    auto out_plan = taskflow::TaskflowUtil::Optimize(common::ManagedPointer(txn),
+                                                     common::ManagedPointer(accessor),
+                                                     common::ManagedPointer(stmt_list),
+                                                     db_oid_,
+                                                     db_main_->GetStatsStorage(),
+                                                     std::move(cost_model),
+                                                     optimizer_timeout_,
+                                                     nullptr)
                         ->TakePlanNodeOwnership();
 
     EXPECT_EQ(out_plan->GetPlanNodeType(), planner::PlanNodeType::PROJECTION);
@@ -647,14 +647,14 @@ TEST_F(IdxJoinTest, IndexToIndexJoin) {
     binder.BindNameToNode(common::ManagedPointer(stmt_list), nullptr, nullptr);
 
     auto cost_model = std::make_unique<optimizer::TrivialCostModel>();
-    auto out_plan = trafficcop::TrafficCopUtil::Optimize(common::ManagedPointer(txn),
-                                                         common::ManagedPointer(accessor),
-                                                         common::ManagedPointer(stmt_list),
-                                                         db_oid_,
-                                                         db_main_->GetStatsStorage(),
-                                                         std::move(cost_model),
-                                                         optimizer_timeout_,
-                                                         nullptr)
+    auto out_plan = taskflow::TaskflowUtil::Optimize(common::ManagedPointer(txn),
+                                                     common::ManagedPointer(accessor),
+                                                     common::ManagedPointer(stmt_list),
+                                                     db_oid_,
+                                                     db_main_->GetStatsStorage(),
+                                                     std::move(cost_model),
+                                                     optimizer_timeout_,
+                                                     nullptr)
                         ->TakePlanNodeOwnership();
 
     EXPECT_EQ(out_plan->GetPlanNodeType(), planner::PlanNodeType::PROJECTION);

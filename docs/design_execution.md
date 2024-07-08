@@ -115,7 +115,7 @@ The process of transforming a TPL module into an executable query is a simple on
 
 Labeling this layer of the execution engine as being responsible for both query compilation and execution is somewhat misleading because at times the query compilation path is elided altogether (more on this later). However, it doesn't make sense to partition the two into distinct layers because the interface to each execution mode supported by the execution engine is the same.
 
-The entry point to this second layer of the execution engine is the `ExecutableQuery::Run()` member function. After some setup, this function is invoked for an `ExecutableQuery` instance in the body of `TrafficCop::RunExecutableQuery()`.
+The entry point to this second layer of the execution engine is the `ExecutableQuery::Run()` member function. After some setup, this function is invoked for an `ExecutableQuery` instance in the body of `Taskflow::RunExecutableQuery()`.
 
 The function itself accepts two arguments: the execution context in which to execute the executable query, and the query execution mode (`ExecutionMode` enumeration). The execution context simply provides a centralized location for metadata related to query execution that is available throughout this lower layer of the execution engine. The execution mode passed to `ExecutableQuery::Run()` is one of three possible values:
 

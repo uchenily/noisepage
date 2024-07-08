@@ -1,12 +1,13 @@
 #pragma once
 
+#include <cstdint>
 #include <string>
 #include <string_view>
 #include <variant>
 
 #include "common/error/error_data.h"
 
-namespace noisepage::trafficcop {
+namespace noisepage::taskflow {
 
 /**
  * Prefix of per connection temporary namespaces
@@ -16,9 +17,9 @@ static constexpr std::string_view TEMP_NAMESPACE_PREFIX = "pg_temp_";
 enum class ResultType : uint8_t { COMPLETE, ERROR, NOTICE, NOOP, QUEUING, UNKNOWN };
 
 /**
- * Standardized return value for Traffic Cop operations.
+ * Standardized return value for Taskflow operations.
  */
-struct TrafficCopResult {
+struct TaskflowResult {
     /**
      * Classifies the result to help decide what to do with the result
      */
@@ -30,4 +31,4 @@ struct TrafficCopResult {
     std::variant<uint32_t, common::ErrorData> extra_;
 };
 
-} // namespace noisepage::trafficcop
+} // namespace noisepage::taskflow

@@ -19,7 +19,7 @@ A prototype implementation of the Postgres network protocol in C++ in order to s
        - `network_event_`: Handle transitions through the state machine of the `ProtocolInterpreter`, which is currently always `PostgresProtocolInterpreter`. See footnote A1.
     5. It is through `ProtocolInterpreter::Process()` that control flow proceeds to the next layer of the system.
        An example is `PostgresProtocolInterpreter::Process() -> SimpleQueryCommand::Exec()`, which goes through the
-       `TrafficCop` before returning control flow to the `PostgresProtocolInterpreter`.
+       `Taskflow` before returning control flow to the `PostgresProtocolInterpreter`.
 
 **Footnote A1.**
 It was envisioned that the internal Terrier protocol (ITP) would use the same network state machine as Postgres does.

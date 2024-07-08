@@ -146,14 +146,14 @@ QueryExecUtil::PlanStatement(const std::string                                  
         return nullptr;
     }
 
-    statement->SetOptimizeResult(trafficcop::TrafficCopUtil::Optimize(txn,
-                                                                      common::ManagedPointer(accessor),
-                                                                      statement->ParseResult(),
-                                                                      db_oid_,
-                                                                      stats_,
-                                                                      std::move(cost),
-                                                                      optimizer_timeout_,
-                                                                      params));
+    statement->SetOptimizeResult(taskflow::TaskflowUtil::Optimize(txn,
+                                                                  common::ManagedPointer(accessor),
+                                                                  statement->ParseResult(),
+                                                                  db_oid_,
+                                                                  stats_,
+                                                                  std::move(cost),
+                                                                  optimizer_timeout_,
+                                                                  params));
     return statement;
 }
 

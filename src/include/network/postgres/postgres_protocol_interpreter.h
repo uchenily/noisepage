@@ -62,26 +62,26 @@ public:
      * @see ProtocolIntepreter::Process
      * @param in buffer to read packets from
      * @param out buffer to send results back out on (doesn't really happen if TERMINATE is returned)
-     * @param t_cop non-owning pointer to the traffic cop to pass down to the command layer
+     * @param taskflow non-owning pointer to the taskflow to pass down to the command layer
      * @param context connection-specific (not protocol) state
      * @return next transition for ConnectionHandle's state machine
      */
-    Transition Process(common::ManagedPointer<ReadBuffer>             in,
-                       common::ManagedPointer<WriteQueue>             out,
-                       common::ManagedPointer<trafficcop::TrafficCop> t_cop,
-                       common::ManagedPointer<ConnectionContext>      context) override;
+    Transition Process(common::ManagedPointer<ReadBuffer>         in,
+                       common::ManagedPointer<WriteQueue>         out,
+                       common::ManagedPointer<taskflow::Taskflow> taskflow,
+                       common::ManagedPointer<ConnectionContext>  context) override;
 
     /**
      * Closes any protocol-specific state. We currently use this to remove the temporary namespace for Postgres.
      * @param in buffer to read packets from
      * @param out buffer to send results back out on (doesn't really happen if TERMINATE is returned)
-     * @param t_cop non-owning pointer to the traffic cop to pass down to the command layer
+     * @param taskflow non-owning pointer to the taskflow to pass down to the command layer
      * @param context connection-specific (not protocol) state
      */
-    void Teardown(common::ManagedPointer<ReadBuffer>             in,
-                  common::ManagedPointer<WriteQueue>             out,
-                  common::ManagedPointer<trafficcop::TrafficCop> t_cop,
-                  common::ManagedPointer<ConnectionContext>      context) override;
+    void Teardown(common::ManagedPointer<ReadBuffer>         in,
+                  common::ManagedPointer<WriteQueue>         out,
+                  common::ManagedPointer<taskflow::Taskflow> taskflow,
+                  common::ManagedPointer<ConnectionContext>  context) override;
 
     // TODO(Tianyu): Fill in the following documentation at some point
     /**
@@ -107,14 +107,14 @@ public:
      * connection.
      * @param in buffer to read packets from
      * @param out buffer to send results back out on (doesn't really happen if TERMINATE is returned)
-     * @param t_cop non-owning pointer to the traffic cop for use in any cleanup necessary
+     * @param taskflow non-owning pointer to the taskflow for use in any cleanup necessary
      * @param context where to stash connection-specific state
      * @return transition::PROCEED if it succeeded, transition::TERMINATE otherwise
      */
-    Transition ProcessStartup(common::ManagedPointer<ReadBuffer>             in,
-                              common::ManagedPointer<WriteQueue>             out,
-                              common::ManagedPointer<trafficcop::TrafficCop> t_cop,
-                              common::ManagedPointer<ConnectionContext>      context);
+    Transition ProcessStartup(common::ManagedPointer<ReadBuffer>         in,
+                              common::ManagedPointer<WriteQueue>         out,
+                              common::ManagedPointer<taskflow::Taskflow> taskflow,
+                              common::ManagedPointer<ConnectionContext>  context);
 
     /**
      * @return true if the current transaction was initiated with a BEGIN statement

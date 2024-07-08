@@ -71,34 +71,34 @@ ResultType TestingSQLUtil::ExecuteSQLQuery(
   if (!sql_stmt_list->is_valid) {
     return ResultType::FAILURE;
   }
-  auto statement = traffic_cop_.PrepareStatement(unnamed_statement, query,
+  auto statement = taskflow_.PrepareStatement(unnamed_statement, query,
                                                  std::move(sql_stmt_list));
   if (statement.get() == nullptr) {
-    traffic_cop_.setRowsAffected(0);
+    taskflow_.setRowsAffected(0);
     rows_changed = 0;
-    error_message = traffic_cop_.GetErrorMessage();
+    error_message = taskflow_.GetErrorMessage();
     return ResultType::FAILURE;
   }
   // ExecuteStatment
   std::vector<type::Value> param_values;
   bool unnamed = false;
   std::vector<int> result_format(statement->GetTupleDescriptor().size(), 0);
-  // SetTrafficCopCounter();
+  // SetTaskflowCounter();
   counter_.store(1);
-  auto status = traffic_cop_.ExecuteStatement(statement, param_values, unnamed,
+  auto status = taskflow_.ExecuteStatement(statement, param_values, unnamed,
                                               nullptr, result_format, result);
-  if (traffic_cop_.GetQueuing()) {
+  if (taskflow_.GetQueuing()) {
     ContinueAfterComplete();
-    traffic_cop_.ExecuteStatementPlanGetResult();
-    status = traffic_cop_.ExecuteStatementGetResult();
-    traffic_cop_.SetQueuing(false);
+    taskflow_.ExecuteStatementPlanGetResult();
+    status = taskflow_.ExecuteStatementGetResult();
+    taskflow_.SetQueuing(false);
   }
   if (status == ResultType::SUCCESS) {
     tuple_descriptor = statement->GetTupleDescriptor();
   }
   LOG_TRACE("Statement executed. Result: %s",
             ResultTypeToString(status).c_str());
-  rows_changed = traffic_cop_.getRowsAffected();
+  rows_changed = taskflow_.getRowsAffected();
   return status;
 }
 ...

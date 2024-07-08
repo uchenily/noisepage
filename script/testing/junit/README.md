@@ -25,7 +25,7 @@ A further breakdown of the contents of the `src/` directory:
 - The `moglib` directory contains modified APIs from Wan's mogjdbc library; we use this to handle some aspects of database interaction.
 - `GenerateTrace.java` is a utility that converts an input file consisting of SQL statements to the trace file format used in tracefile integration tests (see below).
 - `TracefileTest.java` takes in path to a trace file from an environment variable (`NOISEPAGE_TRACE_FILE`) and dynamically generates a test case for each query.
-- `TrafficCopTest.java` and `WireTest.java` are non-tracefile integration tests.
+- `TaskflowTest.java` and `WireTest.java` are non-tracefile integration tests.
 - `TestUtility.java` provides a list of utility methods; it contains supporting functions shared across tests.
 
 ### Usage: `TracefileTest.java`
@@ -219,7 +219,7 @@ Ant compiles all Java files present in the `src/` directory. The test runners au
 
 **Code Structure for New Tests**
 
-- See `TrafficCopTest.java` for an example of a non-tracefile integration test. Each test requires a `Connection` variable and SQL statements to setup the tables.
+- See `TaskflowTest.java` for an example of a non-tracefile integration test. Each test requires a `Connection` variable and SQL statements to setup the tables.
 - JUnit invokes the `Setup()` method prior to each test and then calls `Teardown()` after it completes. If you need different granularity, see the JUnit5 documentation. For instance, class level setup and teardown is possible.
 - Functions annotated with `@Test` denote the actual tests.
 

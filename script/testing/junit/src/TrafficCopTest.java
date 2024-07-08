@@ -1,5 +1,5 @@
 /**
- * Matches the basic tests in traffic_cop_test (this uses Extended Query protocol, that uses Simple Query)
+ * Matches the basic tests in taskflow_test (this uses Extended Query protocol, that uses Simple Query)
  */
 
 import java.sql.*;
@@ -8,7 +8,7 @@ import org.junit.*;
 import static junit.framework.TestCase.fail;
 import static org.junit.Assert.assertEquals;
 
-public class TrafficCopTest extends TestUtility {
+public class TaskflowTest extends TestUtility {
  private Connection conn;
  private ResultSet rs;
 

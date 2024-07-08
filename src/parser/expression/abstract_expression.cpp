@@ -284,7 +284,7 @@ int AbstractExpression::DeriveDepth() {
 }
 
 void AbstractExpression::DeriveExpressionName() {
-    // If alias exists, it will be used in TrafficCop
+    // If alias exists, it will be used in Taskflow
     if (!alias_.Empty()) {
         expression_name_ = alias_.GetName();
         return;

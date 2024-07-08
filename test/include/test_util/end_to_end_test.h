@@ -14,7 +14,7 @@
 #include "optimizer/cost_model/trivial_cost_model.h"
 #include "parser/postgresparser.h"
 #include "planner/plannodes/analyze_plan_node.h"
-#include "traffic_cop/traffic_cop_util.h"
+#include "taskflow/taskflow_util.h"
 #include "gtest/gtest.h"
 
 namespace noisepage::test {
@@ -53,17 +53,17 @@ public:
 
         // Optimize
         auto cost_model = std::make_unique<optimizer::TrivialCostModel>();
-        auto out_plan = trafficcop::TrafficCopUtil::Optimize(common::ManagedPointer(test_txn_),
-                                                             common::ManagedPointer(accessor),
-                                                             common::ManagedPointer(stmt_list),
-                                                             test_db_oid_,
-                                                             stats_storage_,
-                                                             std::move(cost_model),
-                                                             1000000,
-                                                             nullptr)
+        auto out_plan = taskflow::TaskflowUtil::Optimize(common::ManagedPointer(test_txn_),
+                                                         common::ManagedPointer(accessor),
+                                                         common::ManagedPointer(stmt_list),
+                                                         test_db_oid_,
+                                                         stats_storage_,
+                                                         std::move(cost_model),
+                                                         1000000,
+                                                         nullptr)
                             ->TakePlanNodeOwnership();
 
-        // This is pretty hacky, but since this skips over some of the traffic cop code, I need to manually add this
+        // This is pretty hacky, but since this skips over some of the taskflow code, I need to manually add this
         // callback
         if (out_plan->GetPlanNodeType() == planner::PlanNodeType::ANALYZE) {
             const auto                      analyze_plan = static_cast<planner::AnalyzePlanNode *>(out_plan.get());

@@ -69,7 +69,7 @@ TODO(WAN): write me. OLTPBench is possible to setup with sufficient ant proxy ma
     to
     ```exec_query->Run(common::ManagedPointer(exec_ctx), execution::vm::ExecutionMode::Compiled);```
     in
-    `src/traffic_cop/traffic_cop.cpp`
+    `src/taskflow/taskflow.cpp`
 - Build Terrier in `Release` mode with `Debug` symbols
   - ```bash
     mkdir RelWithDebug

@@ -11,11 +11,11 @@
 #include "parser/expression/derived_value_expression.h"
 #include "parser/postgresparser.h"
 #include "planner/plannodes/aggregate_plan_node.h"
+#include "taskflow/taskflow_util.h"
 #include "test_util/tpcc/builder.h"
 #include "test_util/tpcc/database.h"
 #include "test_util/tpcc/loader.h"
 #include "test_util/tpcc/worker.h"
-#include "traffic_cop/traffic_cop_util.h"
 
 namespace noisepage::tpcc {
 
@@ -73,14 +73,14 @@ void WorkloadCached::LoadTPCCQueries(const std::vector<std::string> &txn_names) 
 
             // generate plan node
             std::unique_ptr<planner::AbstractPlanNode> plan_node
-                = trafficcop::TrafficCopUtil::Optimize(common::ManagedPointer(txn),
-                                                       common::ManagedPointer(accessor),
-                                                       common::ManagedPointer(parse_result),
-                                                       db_oid_,
-                                                       db_main_->GetStatsStorage(),
-                                                       std::make_unique<optimizer::TrivialCostModel>(),
-                                                       optimizer_timeout,
-                                                       nullptr)
+                = taskflow::TaskflowUtil::Optimize(common::ManagedPointer(txn),
+                                                   common::ManagedPointer(accessor),
+                                                   common::ManagedPointer(parse_result),
+                                                   db_oid_,
+                                                   db_main_->GetStatsStorage(),
+                                                   std::make_unique<optimizer::TrivialCostModel>(),
+                                                   optimizer_timeout,
+                                                   nullptr)
                       ->TakePlanNodeOwnership();
 
             auto exec_ctx = std::make_unique<execution::exec::ExecutionContext>(db_oid_,
