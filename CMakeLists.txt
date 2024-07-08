@@ -138,7 +138,7 @@ function(print_sys_info QUERY_TARGET)
     message(STATUS "  System ${QUERY_TARGET}: ${SYS_INFO}")
 endfunction()
 print_sys_info("NUMBER_OF_LOGICAL_CORES;NUMBER_OF_PHYSICAL_CORES")
-print_sys_info("HOSTNAME;FQDN")
+# print_sys_info("HOSTNAME;FQDN") # it takes too much time
 print_sys_info("AVAILABLE_VIRTUAL_MEMORY;TOTAL_VIRTUAL_MEMORY")
 print_sys_info("AVAILABLE_PHYSICAL_MEMORY;TOTAL_PHYSICAL_MEMORY")
 print_sys_info("IS_64BIT;HAS_IA64")
@@ -433,40 +433,59 @@ endfunction()
 
 function(add_noisepage_dep NAME GIT_URL GIT_TAG)
     string(TOLOWER "${NAME}" NAME_LOWER)    # The automatically created variables are lowercase. Footgun!
-    FetchContent_Declare(${NAME})           # Declare the resource to be fetched.
-    if (NOT ${NAME}_POPULATED)
-        # The long form of FetchContent_Populate is used since NoisePage requires control of the source folder name.
-        # This is to enable includes like #include "NAME/their_files.h".
-        FetchContent_Populate(${NAME}
-                QUIET                                                   # Don't print verbose output while populating.
-                SOURCE_DIR ${CMAKE_BINARY_DIR}/_deps/src/${NAME}        # Source files go here.
-                BINARY_DIR ${CMAKE_BINARY_DIR}/_deps/build/${NAME}      # Build files go here.
-                SUBBUILD_DIR ${CMAKE_BINARY_DIR}/_deps/sub/${NAME}      # Sub-build files go here.
-                GIT_REPOSITORY ${GIT_URL}                               # Download from GIT_URL.
-                GIT_TAG ${GIT_TAG}                                      # Checkout the specific GIT_TAG version.
-                )
 
-        # Whenever custom behavior is required, override with NoisePage third_party/deps_override/NAME_CMakeLists.txt.
-        set(DEP_CUSTOM_CMAKELISTS ${PROJECT_SOURCE_DIR}/third_party/deps_override/${NAME}_CMakeLists.txt)
-        if (EXISTS ${DEP_CUSTOM_CMAKELISTS})
-            file(COPY ${DEP_CUSTOM_CMAKELISTS} DESTINATION ${${NAME_LOWER}_SOURCE_DIR})
-            file(RENAME ${${NAME_LOWER}_SOURCE_DIR}/${NAME}_CMakeLists.txt ${${NAME_LOWER}_SOURCE_DIR}/CMakeLists.txt)
-            message(STATUS "Copied ${DEP_CUSTOM_CMAKELISTS} -> ${${NAME_LOWER}_SOURCE_DIR}/CMakeLists.txt.")
+    set(SOURCE_DIR ${CMAKE_BINARY_DIR}/_deps/src/${NAME})
+    set(BINARY_DIR ${CMAKE_BINARY_DIR}/_deps/build/${NAME})
+    set(SUBBUILD_DIR ${CMAKE_BINARY_DIR}/_deps/sub/${NAME})
+
+    if (NOT EXISTS ${SOURCE_DIR})
+
+        FetchContent_Declare(${NAME})           # Declare the resource to be fetched.
+        if (NOT ${NAME}_POPULATED)
+            # The long form of FetchContent_Populate is used since NoisePage requires control of the source folder name.
+            # This is to enable includes like #include "NAME/their_files.h".
+            FetchContent_Populate(${NAME}
+                    QUIET                                                   # Don't print verbose output while populating.
+                    SOURCE_DIR ${CMAKE_BINARY_DIR}/_deps/src/${NAME}        # Source files go here.
+                    BINARY_DIR ${CMAKE_BINARY_DIR}/_deps/build/${NAME}      # Build files go here.
+                    SUBBUILD_DIR ${CMAKE_BINARY_DIR}/_deps/sub/${NAME}      # Sub-build files go here.
+                    GIT_REPOSITORY ${GIT_URL}                               # Download from GIT_URL.
+                    GIT_TAG ${GIT_TAG}                                      # Checkout the specific GIT_TAG version.
+                    )
+
+            # Whenever custom behavior is required, override with NoisePage third_party/deps_override/NAME_CMakeLists.txt.
+            set(DEP_CUSTOM_CMAKELISTS ${PROJECT_SOURCE_DIR}/third_party/deps_override/${NAME}_CMakeLists.txt)
+            if (EXISTS ${DEP_CUSTOM_CMAKELISTS})
+                file(COPY ${DEP_CUSTOM_CMAKELISTS} DESTINATION ${${NAME_LOWER}_SOURCE_DIR})
+                file(RENAME ${${NAME_LOWER}_SOURCE_DIR}/${NAME}_CMakeLists.txt ${${NAME_LOWER}_SOURCE_DIR}/CMakeLists.txt)
+                message(STATUS "Copied ${DEP_CUSTOM_CMAKELISTS} -> ${${NAME_LOWER}_SOURCE_DIR}/CMakeLists.txt.")
+            endif ()
+            unset(DEP_CUSTOM_CMAKELISTS)
+
+            set(MESSAGE_QUIET ON)                                                           # Silence third party includes.
+            add_subdirectory(${${NAME_LOWER}_SOURCE_DIR} ${${NAME_LOWER}_BINARY_DIR})       # Include the dependency.
+            unset(MESSAGE_QUIET)                                                            # Undo silence.
         endif ()
-        unset(DEP_CUSTOM_CMAKELISTS)
 
+        # Get the date of the last git commit for the GIT_TAG branch.
+        execute_process(COMMAND git log -1 --format=%cd --date=short                        # Get the last commit's date.
+                WORKING_DIRECTORY ${${NAME_LOWER}_SOURCE_DIR}                               # From the specified git dir.
+                OUTPUT_VARIABLE GIT_LAST_COMMIT)                                            # Save to GIT_LAST_COMMIT.
+        string(STRIP "${GIT_LAST_COMMIT}" GIT_LAST_COMMIT)                                  # Remove any trailing newlines.
+
+        message(STATUS "[FOUND] ${NAME} (${GIT_URL} ${GIT_TAG} ${GIT_LAST_COMMIT})")        # Print a success message.
+
+    else ()
+        # 必须先设置这几个变量
+        set(${NAME_LOWER}_SOURCE_DIR ${SOURCE_DIR})
+        set(${NAME_LOWER}_BINARY_DIR ${BINARY_DIR})
+        # 已经下载, 直接add_subdirectory
+        # message(STATUS "directory: ${${NAME_LOWER}_SOURCE_DIR} ${${NAME_LOWER}_BINARY_DIR}")
         set(MESSAGE_QUIET ON)                                                           # Silence third party includes.
         add_subdirectory(${${NAME_LOWER}_SOURCE_DIR} ${${NAME_LOWER}_BINARY_DIR})       # Include the dependency.
         unset(MESSAGE_QUIET)                                                            # Undo silence.
+        message(STATUS "[FOUND] [cached] ${NAME} (${GIT_URL} ${GIT_TAG} ${GIT_LAST_COMMIT})")        # Print a success message.
     endif ()
-
-    # Get the date of the last git commit for the GIT_TAG branch.
-    execute_process(COMMAND git log -1 --format=%cd --date=short                        # Get the last commit's date.
-            WORKING_DIRECTORY ${${NAME_LOWER}_SOURCE_DIR}                               # From the specified git dir.
-            OUTPUT_VARIABLE GIT_LAST_COMMIT)                                            # Save to GIT_LAST_COMMIT.
-    string(STRIP "${GIT_LAST_COMMIT}" GIT_LAST_COMMIT)                                  # Remove any trailing newlines.
-
-    message(STATUS "[FOUND] ${NAME} (${GIT_URL} ${GIT_TAG} ${GIT_LAST_COMMIT})")        # Print a success message.
 endfunction()
 
 function(add_noisepage_dep_singlefile NAME FILE_URL)
