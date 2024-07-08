@@ -1,7 +1,7 @@
 #include "catalog/catalog.h"
 
 #include <memory>
-#include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -71,19 +71,20 @@ void Catalog::TearDown() {
     while (table_iter != databases_->end()) {
         databases_->Scan(common::ManagedPointer(txn), &table_iter, pc);
 
-        for (uint i = 0; i < pc->NumTuples(); i++)
+        for (uint i = 0; i < pc->NumTuples(); i++) {
             db_cats.emplace_back(db_ptrs[i]);
+        }
     }
 
     // Pass vars by value except for db_cats which we move
     txn->RegisterCommitAction(
-        [=, db_cats{std::move(db_cats)}](transaction::DeferredActionManager *deferred_action_manager) {
+        [this, db_cats{std::move(db_cats)}](transaction::DeferredActionManager *deferred_action_manager) {
             for (auto db : db_cats) {
                 auto del_action = DeallocateDatabaseCatalog(db);
                 deferred_action_manager->RegisterDeferredAction(del_action);
             }
             // Pass vars to the deferral by value
-            deferred_action_manager->RegisterDeferredAction([=]() {
+            deferred_action_manager->RegisterDeferredAction([this]() {
                 delete databases_oid_index_;  // Delete the OID index
                 delete databases_name_index_; // Delete the name index
                 delete databases_;            // Delete the table
@@ -98,36 +99,39 @@ void Catalog::TearDown() {
     txn_manager_->Commit(txn, transaction::TransactionUtil::EmptyCallback, nullptr);
 }
 
-bool Catalog::CreateDatabase(const common::ManagedPointer<transaction::TransactionContext> txn,
-                             const std::string                                            &name,
+auto Catalog::CreateDatabase(const common::ManagedPointer<transaction::TransactionContext> txn,
+                             std::string_view                                              name,
                              const bool                                                    bootstrap,
-                             const catalog::db_oid_t                                       db_oid) {
+                             const catalog::db_oid_t                                       db_oid) -> bool {
     // Instantiate the DatabaseCatalog
     DatabaseCatalog *dbc = postgres::Builder::CreateDatabaseCatalog(catalog_block_store_, db_oid, garbage_collector_);
-    txn->RegisterAbortAction([=](transaction::DeferredActionManager *deferred_action_manager) {
+    txn->RegisterAbortAction([=](transaction::DeferredActionManager * /*deferred_action_manager*/) {
         delete dbc;
     });
     const bool success = Catalog::CreateDatabaseEntry(common::ManagedPointer(txn), db_oid, name, dbc);
-    if (bootstrap)
+    if (bootstrap) {
         dbc->Bootstrap(txn); // Bootstrap the created database
+    }
     return success;
 }
 
-db_oid_t Catalog::CreateDatabase(const common::ManagedPointer<transaction::TransactionContext> txn,
-                                 const std::string                                            &name,
-                                 const bool                                                    bootstrap) {
+auto Catalog::CreateDatabase(const common::ManagedPointer<transaction::TransactionContext> txn,
+                             std::string_view                                              name,
+                             const bool                                                    bootstrap) -> db_oid_t {
     const db_oid_t db_oid = next_oid_++;
     const auto     success = Catalog::CreateDatabase(common::ManagedPointer(txn), name, bootstrap, db_oid);
-    if (!success)
+    if (!success) {
         return INVALID_DATABASE_OID;
+    }
     return db_oid;
 }
 
-bool Catalog::DeleteDatabase(const common::ManagedPointer<transaction::TransactionContext> txn,
-                             const db_oid_t                                                database) {
+auto Catalog::DeleteDatabase(const common::ManagedPointer<transaction::TransactionContext> txn, const db_oid_t database)
+    -> bool {
     auto *const dbc = DeleteDatabaseEntry(common::ManagedPointer(txn), database);
-    if (dbc == nullptr)
+    if (dbc == nullptr) {
         return false;
+    }
 
     // Ensure the deferred action is created now in order to eagerly bind references
     // and not rely on the catalog still existing at the time the queue is processed
@@ -142,18 +146,19 @@ bool Catalog::DeleteDatabase(const common::ManagedPointer<transaction::Transacti
     return true;
 }
 
-bool Catalog::RenameDatabase(const common::ManagedPointer<transaction::TransactionContext> txn,
+auto Catalog::RenameDatabase(const common::ManagedPointer<transaction::TransactionContext> txn,
                              const db_oid_t                                                database,
-                             const std::string                                            &name) {
+                             std::string_view                                              name) -> bool {
     // Name is indexed so this is a delete and insert at the physical level
     auto *const dbc = DeleteDatabaseEntry(common::ManagedPointer(txn), database);
-    if (dbc == nullptr)
+    if (dbc == nullptr) {
         return false;
+    }
     return CreateDatabaseEntry(common::ManagedPointer(txn), database, name, dbc);
 }
 
-db_oid_t Catalog::GetDatabaseOid(const common::ManagedPointer<transaction::TransactionContext> txn,
-                                 const std::string                                            &name) {
+auto Catalog::GetDatabaseOid(const common::ManagedPointer<transaction::TransactionContext> txn, std::string_view name)
+    -> db_oid_t {
     const auto name_pri = databases_name_index_->GetProjectedRowInitializer();
 
     const auto name_varlen = storage::StorageUtil::CreateVarlen(name);
@@ -186,9 +191,8 @@ db_oid_t Catalog::GetDatabaseOid(const common::ManagedPointer<transaction::Trans
     return db_oid;
 }
 
-common::ManagedPointer<DatabaseCatalog>
-Catalog::GetDatabaseCatalog(const common::ManagedPointer<transaction::TransactionContext> txn,
-                            const db_oid_t                                                database) {
+auto Catalog::GetDatabaseCatalog(const common::ManagedPointer<transaction::TransactionContext> txn,
+                                 const db_oid_t database) -> common::ManagedPointer<DatabaseCatalog> {
     const auto oid_pri = databases_name_index_->GetProjectedRowInitializer();
 
     // Name is a larger projected row (16-byte key vs 4-byte key), sow we can reuse
@@ -201,7 +205,7 @@ Catalog::GetDatabaseCatalog(const common::ManagedPointer<transaction::Transactio
     databases_oid_index_->ScanKey(*txn, *pr, &index_results);
     if (index_results.empty()) {
         delete[] buffer;
-        return common::ManagedPointer<DatabaseCatalog>(nullptr);
+        return {nullptr};
     }
     NOISEPAGE_ASSERT(index_results.size() == 1, "Database name not unique in index");
 
@@ -214,26 +218,28 @@ Catalog::GetDatabaseCatalog(const common::ManagedPointer<transaction::Transactio
     return common::ManagedPointer(dbc);
 }
 
-std::unique_ptr<CatalogAccessor> Catalog::GetAccessor(const common::ManagedPointer<transaction::TransactionContext> txn,
-                                                      db_oid_t                                   database,
-                                                      const common::ManagedPointer<CatalogCache> cache) {
+auto Catalog::GetAccessor(const common::ManagedPointer<transaction::TransactionContext> txn,
+                          db_oid_t                                                      database,
+                          const common::ManagedPointer<CatalogCache> cache) -> std::unique_ptr<CatalogAccessor> {
     auto dbc = this->GetDatabaseCatalog(common::ManagedPointer(txn), database);
-    if (dbc == nullptr)
+    if (dbc == nullptr) {
         return nullptr;
+    }
     if (cache != DISABLED) {
         const auto last_ddl_change = dbc->write_lock_.load();
         const bool invalidate_cache = transaction::TransactionUtil::Committed(last_ddl_change)
                                       && transaction::TransactionUtil::NewerThan(last_ddl_change, cache->OldestEntry());
-        if (invalidate_cache)
+        if (invalidate_cache) {
             cache->Reset(txn->StartTime());
+        }
     }
     return std::make_unique<CatalogAccessor>(common::ManagedPointer(this), dbc, txn, cache);
 }
 
-bool Catalog::CreateDatabaseEntry(const common::ManagedPointer<transaction::TransactionContext> txn,
+auto Catalog::CreateDatabaseEntry(const common::ManagedPointer<transaction::TransactionContext> txn,
                                   const db_oid_t                                                db,
-                                  const std::string                                            &name,
-                                  DatabaseCatalog *const                                        dbc) {
+                                  std::string_view                                              name,
+                                  DatabaseCatalog *const                                        dbc) -> bool {
     const auto name_varlen = storage::StorageUtil::CreateVarlen(name);
 
     // Create the redo record for inserting into the table
@@ -287,8 +293,8 @@ bool Catalog::CreateDatabaseEntry(const common::ManagedPointer<transaction::Tran
     return true;
 }
 
-DatabaseCatalog *Catalog::DeleteDatabaseEntry(const common::ManagedPointer<transaction::TransactionContext> txn,
-                                              db_oid_t                                                      db) {
+auto Catalog::DeleteDatabaseEntry(const common::ManagedPointer<transaction::TransactionContext> txn, db_oid_t db)
+    -> DatabaseCatalog * {
     std::vector<storage::TupleSlot> index_results;
 
     const auto name_pri = databases_name_index_->GetProjectedRowInitializer();
@@ -341,8 +347,8 @@ DatabaseCatalog *Catalog::DeleteDatabaseEntry(const common::ManagedPointer<trans
     return dbc;
 }
 
-std::function<void()> Catalog::DeallocateDatabaseCatalog(DatabaseCatalog *const dbc) {
-    return [=]() {
+auto Catalog::DeallocateDatabaseCatalog(DatabaseCatalog *const dbc) -> std::function<void()> {
+    return [this, dbc]() {
         auto txn = txn_manager_->BeginTransaction();
         dbc->TearDown(common::ManagedPointer(txn));
         txn_manager_->Commit(txn, transaction::TransactionUtil::EmptyCallback, nullptr);
@@ -350,7 +356,7 @@ std::function<void()> Catalog::DeallocateDatabaseCatalog(DatabaseCatalog *const 
     };
 }
 
-common::ManagedPointer<storage::BlockStore> Catalog::GetBlockStore() const {
+auto Catalog::GetBlockStore() const -> common::ManagedPointer<storage::BlockStore> {
     // TODO(Matt): at some point we may decide the Catalog owns this, but right now it doesn't. Taking ownership may
     // introduce life cycle issues (i.e. guaranteeing that all tables are freed and Blocks returned before this object
     // gets deleted)

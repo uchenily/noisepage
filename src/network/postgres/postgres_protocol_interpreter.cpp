@@ -1,6 +1,5 @@
 #include "network/postgres/postgres_protocol_interpreter.h"
 
-#include <algorithm>
 #include <string>
 #include <thread> // NOLINT
 #include <utility>
@@ -15,13 +14,14 @@ constexpr uint32_t SSL_MESSAGE_VERNO = 80877103;
 #define PROTO_MAJOR_VERSION(x) ((x) >> 16)
 
 namespace noisepage::network {
-Transition PostgresProtocolInterpreter::Process(common::ManagedPointer<ReadBuffer>             in,
-                                                common::ManagedPointer<WriteQueue>             out,
-                                                common::ManagedPointer<trafficcop::TrafficCop> t_cop,
-                                                common::ManagedPointer<ConnectionContext>      context) {
+auto PostgresProtocolInterpreter::Process(common::ManagedPointer<ReadBuffer>             in,
+                                          common::ManagedPointer<WriteQueue>             out,
+                                          common::ManagedPointer<trafficcop::TrafficCop> t_cop,
+                                          common::ManagedPointer<ConnectionContext>      context) -> Transition {
     try {
-        if (!TryBuildPacket(in))
+        if (!TryBuildPacket(in)) {
             return Transition::NEED_READ_TIMEOUT;
+        }
     } catch (std::exception &e) {
         NETWORK_LOG_ERROR("Encountered exception {0} when parsing packet", e.what());
         return Transition::TERMINATE;
@@ -34,8 +34,9 @@ Transition PostgresProtocolInterpreter::Process(common::ManagedPointer<ReadBuffe
     }
     auto command = command_factory_->PacketToCommand(common::ManagedPointer<InputPacket>(&curr_input_packet_));
     PostgresPacketWriter writer(out);
-    if (command->FlushOnComplete())
+    if (command->FlushOnComplete()) {
         out->ForceFlush();
+    }
 
     if (WaitingForSync() && curr_input_packet_.msg_type_ != NetworkMessageType::PG_SYNC_COMMAND) {
         // When an error is detected while processing any Extended Query message, the backend issues ErrorResponse, then
@@ -52,10 +53,11 @@ Transition PostgresProtocolInterpreter::Process(common::ManagedPointer<ReadBuffe
     return ret;
 }
 
-Transition PostgresProtocolInterpreter::ProcessStartup(const common::ManagedPointer<ReadBuffer>             in,
-                                                       const common::ManagedPointer<WriteQueue>             out,
-                                                       const common::ManagedPointer<trafficcop::TrafficCop> t_cop,
-                                                       const common::ManagedPointer<ConnectionContext>      context) {
+auto PostgresProtocolInterpreter::ProcessStartup(const common::ManagedPointer<ReadBuffer>             in,
+                                                 const common::ManagedPointer<WriteQueue>             out,
+                                                 const common::ManagedPointer<trafficcop::TrafficCop> t_cop,
+                                                 const common::ManagedPointer<ConnectionContext>      context)
+    -> Transition {
     PostgresPacketWriter writer(out);
     auto                 proto_version = in->ReadValue<uint32_t>();
     NETWORK_LOG_TRACE("protocol version: {0}", proto_version);
@@ -81,7 +83,8 @@ Transition PostgresProtocolInterpreter::ProcessStartup(const common::ManagedPoin
     // is less than 2 bytes of data remaining we can already exit early.
     while (in->HasMore(2)) {
         // TODO(Tianyu): We don't seem to really handle the other flags?
-        std::string key = in->ReadString(), value = in->ReadString();
+        std::string key = in->ReadString();
+        std::string value = in->ReadString();
         NETWORK_LOG_TRACE("Option key {0}, value {1}", key.c_str(), value.c_str());
         if (key == std::string("database")) {
             context->CommandLineArgs()[key] = std::move(value);
@@ -92,7 +95,7 @@ Transition PostgresProtocolInterpreter::ProcessStartup(const common::ManagedPoin
     // TODO(Tianyu): Implement authentication. For now we always send AuthOK
 
     // Create a temp namespace for this connection
-    std::string db_name = catalog::DEFAULT_DATABASE;
+    std::string db_name{catalog::DEFAULT_DATABASE};
     auto       &cmdline_args = context->CommandLineArgs();
     if (cmdline_args.find("database") != cmdline_args.end()) {
         if (!cmdline_args["database"].empty()) {
@@ -109,8 +112,9 @@ Transition PostgresProtocolInterpreter::ProcessStartup(const common::ManagedPoin
     // at the same time, creating DDL conflicts when creating the temp namespace
     do {
         oids = t_cop->CreateTempNamespace(context->GetConnectionID(), db_name);
-        if (oids.first == catalog::INVALID_DATABASE_OID || oids.second != catalog::INVALID_NAMESPACE_OID)
+        if (oids.first == catalog::INVALID_DATABASE_OID || oids.second != catalog::INVALID_NAMESPACE_OID) {
             break;
+        }
         std::this_thread::sleep_for(std::chrono::milliseconds{sleep_time});
         sleep_time *= BACKOFF_FACTOR;
     } while (sleep_time <= MAX_BACKOFF_TIME);
@@ -142,8 +146,8 @@ Transition PostgresProtocolInterpreter::ProcessStartup(const common::ManagedPoin
     return Transition::PROCEED;
 }
 
-void PostgresProtocolInterpreter::Teardown(const common::ManagedPointer<ReadBuffer>             in,
-                                           const common::ManagedPointer<WriteQueue>             out,
+void PostgresProtocolInterpreter::Teardown(const common::ManagedPointer<ReadBuffer> /*in*/,
+                                           const common::ManagedPointer<WriteQueue> /*out*/,
                                            const common::ManagedPointer<trafficcop::TrafficCop> t_cop,
                                            const common::ManagedPointer<ConnectionContext>      context) {
     // Close any open transaction
@@ -169,13 +173,14 @@ void PostgresProtocolInterpreter::Teardown(const common::ManagedPointer<ReadBuff
     }
 }
 
-size_t PostgresProtocolInterpreter::GetPacketHeaderSize() {
+auto PostgresProtocolInterpreter::GetPacketHeaderSize() -> size_t {
     return startup_ ? sizeof(uint32_t) : 1 + sizeof(uint32_t);
 }
 
 void PostgresProtocolInterpreter::SetPacketMessageType(const common::ManagedPointer<ReadBuffer> in) {
-    if (!startup_)
+    if (!startup_) {
         curr_input_packet_.msg_type_ = in->ReadValue<NetworkMessageType>();
+    }
 }
 
 } // namespace noisepage::network

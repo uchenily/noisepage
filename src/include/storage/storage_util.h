@@ -1,7 +1,6 @@
 #pragma once
 
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "catalog/schema.h"
@@ -89,7 +88,7 @@ public:
      * @param offset address to be aligned
      * @return modified version of address padded to align to word_size
      */
-    static uint32_t PadUpToSize(uint8_t word_size, uint32_t offset);
+    static auto PadUpToSize(uint8_t word_size, uint32_t offset) -> uint32_t;
 
     /**
      * Given a pointer, pad the pointer so that the pointer aligns to the given size.
@@ -98,7 +97,7 @@ public:
      * @return padded pointer
      */
     // This const qualifier on ptr lies. Use this really only for pointer arithmetic.
-    static byte *AlignedPtr(const uint8_t size, const void *ptr) {
+    static auto AlignedPtr(const uint8_t size, const void *ptr) -> byte * {
         NOISEPAGE_ASSERT((size & (size - 1)) == 0, "word_size should be a power of two.");
         // Because size is a power of two, mask is always all 1s up to the length of size.
         // example, size is 8 (1000), mask is (0111)
@@ -115,7 +114,7 @@ public:
      * @return padded pointer
      */
     template <class A>
-    static A *AlignedPtr(const void *ptr) {
+    static auto AlignedPtr(const void *ptr) -> A * {
         return reinterpret_cast<A *>(AlignedPtr(sizeof(A), ptr));
     }
 
@@ -130,8 +129,8 @@ public:
      *
      * @return {offset_varlen, offset_8, offset_4, offset_2, offset_1}
      */
-    static std::vector<uint16_t> ComputeBaseAttributeOffsets(const std::vector<uint16_t> &attr_sizes,
-                                                             uint16_t                     num_reserved_columns);
+    static auto ComputeBaseAttributeOffsets(const std::vector<uint16_t> &attr_sizes, uint16_t num_reserved_columns)
+        -> std::vector<uint16_t>;
 
     /**
      * Computes the index attribute boundaries for a list of col ids. Col ids must be in ascending sorted order
@@ -160,7 +159,7 @@ public:
      * @param col_idx index of column
      * @return attribute size of col at index col_idx
      */
-    static uint8_t AttrSizeFromBoundaries(const std::vector<uint16_t> &boundaries, uint16_t col_idx);
+    static auto AttrSizeFromBoundaries(const std::vector<uint16_t> &boundaries, uint16_t col_idx) -> uint8_t;
 
     /**
      * Return a vector of all the column ids in the layout, excluding columns reserved by the storage layer
@@ -168,7 +167,7 @@ public:
      * @param layout
      * @return vector of column ids
      */
-    static std::vector<storage::col_id_t> ProjectionListAllColumns(const storage::BlockLayout &layout);
+    static auto ProjectionListAllColumns(const storage::BlockLayout &layout) -> std::vector<storage::col_id_t>;
 
     /**
      * Deallocates the value buffers along varlen columns within a block
@@ -183,7 +182,7 @@ public:
      * @return varlen entry representing string
      * @warning checking IsInlined() to see if you need to possibly clean up a buffer
      */
-    static storage::VarlenEntry CreateVarlen(const std::string &str) {
+    static auto CreateVarlen(std::string_view str) -> storage::VarlenEntry {
         if (str.size() > storage::VarlenEntry::InlineThreshold()) {
             byte *contents = common::AllocationUtil::AllocateAligned(str.size());
             std::memcpy(contents, str.data(), str.size());
@@ -200,7 +199,7 @@ public:
      * @warning checking IsInlined() to see if you need to possibly clean up a buffer
      * @warning the length of the data vector is not serialized
      */
-    static storage::VarlenEntry CreateVarlen(const std::vector<std::string> &vec) {
+    static auto CreateVarlen(const std::vector<std::string> &vec) -> storage::VarlenEntry {
         // determine total size
         size_t total_size = sizeof(size_t);
         for (auto &elem : vec) {
@@ -239,7 +238,7 @@ public:
      * @warning be careful if vec consists of pointers
      */
     template <typename T>
-    static storage::VarlenEntry CreateVarlen(const std::vector<T> &vec) {
+    static auto CreateVarlen(const std::vector<T> &vec) -> storage::VarlenEntry {
         // determine total size
         size_t total_size = sizeof(T) * vec.size() + sizeof(size_t);
 

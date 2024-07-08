@@ -1,6 +1,5 @@
 #pragma once
 #include <algorithm>
-#include <functional>
 #include <memory>
 
 #include "common/managed_pointer.h"
@@ -26,10 +25,10 @@ public:
      * @param context the connection context
      * @return The next transition for the client's associated state machine
      */
-    virtual Transition Process(common::ManagedPointer<ReadBuffer>             in,
-                               common::ManagedPointer<WriteQueue>             out,
-                               common::ManagedPointer<trafficcop::TrafficCop> t_cop,
-                               common::ManagedPointer<ConnectionContext>      context)
+    virtual auto Process(common::ManagedPointer<ReadBuffer>             in,
+                         common::ManagedPointer<WriteQueue>             out,
+                         common::ManagedPointer<trafficcop::TrafficCop> t_cop,
+                         common::ManagedPointer<ConnectionContext>      context) -> Transition
         = 0;
 
     /**
@@ -67,7 +66,7 @@ protected:
      * Return the size of the packet header
      * @return size of header
      */
-    virtual size_t GetPacketHeaderSize() = 0;
+    virtual auto GetPacketHeaderSize() -> size_t = 0;
 
     /**
      * Sets the message type of the current packet
@@ -80,16 +79,18 @@ protected:
      * @param in The ReadBuffer to read input from
      * @return whether the packet header is valid or not
      */
-    bool TryReadPacketHeader(const common::ManagedPointer<ReadBuffer> in) {
-        if (curr_input_packet_.header_parsed_)
+    auto TryReadPacketHeader(const common::ManagedPointer<ReadBuffer> in) -> bool {
+        if (curr_input_packet_.header_parsed_) {
             return true;
+        }
 
         // Header format: 1 byte message type (only if non-startup)
         //              + 4 byte message size (inclusive of these 4 bytes)
         size_t header_size = GetPacketHeaderSize();
         // Make sure the entire header is readable
-        if (!in->HasMore(header_size))
+        if (!in->HasMore(header_size)) {
             return false;
+        }
 
         // The header is ready to be read, fill in fields accordingly
         SetPacketMessageType(in);
@@ -121,9 +122,10 @@ protected:
      * @param in The ReadBuffer to read input from
      * @return whether the packet is valid or not
      */
-    bool TryBuildPacket(const common::ManagedPointer<ReadBuffer> in) {
-        if (!TryReadPacketHeader(in))
+    auto TryBuildPacket(const common::ManagedPointer<ReadBuffer> in) -> bool {
+        if (!TryReadPacketHeader(in)) {
             return false;
+        }
 
         size_t size_needed = curr_input_packet_.extended_
                                  ? curr_input_packet_.len_ - curr_input_packet_.buf_->BytesAvailable()
@@ -159,7 +161,7 @@ public:
     /**
      * @return a constructed instance of protocol interpreter
      */
-    virtual std::unique_ptr<ProtocolInterpreter> Get() = 0;
+    virtual auto Get() -> std::unique_ptr<ProtocolInterpreter> = 0;
 };
 
 } // namespace noisepage::network

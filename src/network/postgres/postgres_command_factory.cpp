@@ -3,8 +3,8 @@
 #include <memory>
 namespace noisepage::network {
 
-std::unique_ptr<PostgresNetworkCommand>
-PostgresCommandFactory::PacketToCommand(const common::ManagedPointer<InputPacket> packet) {
+auto PostgresCommandFactory::PacketToCommand(const common::ManagedPointer<InputPacket> packet)
+    -> std::unique_ptr<PostgresNetworkCommand> {
     switch (packet->msg_type_) {
     case NetworkMessageType::PG_SIMPLE_QUERY_COMMAND:
         return MAKE_POSTGRES_COMMAND(SimpleQueryCommand);

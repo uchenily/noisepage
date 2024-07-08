@@ -91,13 +91,13 @@
     /* Delete copy constructor. */                                                                                     \
     cname(const cname &) = delete;                                                                                     \
     /* Delete copy assignment. */                                                                                      \
-    cname &operator=(const cname &) = delete;
+    auto operator=(const cname &) = delete;
 
 #define DISALLOW_MOVE(cname)                                                                                           \
     /* Delete move constructor. */                                                                                     \
     cname(cname &&) = delete;                                                                                          \
     /* Delete move assignment. */                                                                                      \
-    cname &operator=(cname &&) = delete;
+    auto operator=(cname &&) = delete;
 
 /**
  * Disable copy and move.

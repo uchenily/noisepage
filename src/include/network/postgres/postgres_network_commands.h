@@ -1,15 +1,15 @@
 #pragma once
 #include "network/network_command.h"
 
-#define DEFINE_POSTGRES_COMMAND(name, flush)                                                                           \
-    class name : public PostgresNetworkCommand {                                                                       \
+#define DEFINE_POSTGRES_COMMAND(COMMAND, flush)                                                                        \
+    class COMMAND : public PostgresNetworkCommand {                                                                    \
     public:                                                                                                            \
-        explicit name(const common::ManagedPointer<InputPacket> in)                                                    \
+        explicit COMMAND(const common::ManagedPointer<InputPacket> in)                                                 \
             : PostgresNetworkCommand(in, flush) {}                                                                     \
-        Transition Exec(common::ManagedPointer<ProtocolInterpreter>    interpreter,                                    \
-                        common::ManagedPointer<PostgresPacketWriter>   out,                                            \
-                        common::ManagedPointer<trafficcop::TrafficCop> t_cop,                                          \
-                        common::ManagedPointer<ConnectionContext>      connection) override;                                \
+        auto Exec(common::ManagedPointer<ProtocolInterpreter>    interpreter,                                          \
+                  common::ManagedPointer<PostgresPacketWriter>   out,                                                  \
+                  common::ManagedPointer<trafficcop::TrafficCop> t_cop,                                                \
+                  common::ManagedPointer<ConnectionContext>      connection) -> Transition override;                        \
     }
 
 namespace noisepage::network {
@@ -28,10 +28,10 @@ public:
      * @param connection The ConnectionContext which contains connection information
      * @return The next transition for the client's state machine
      */
-    virtual Transition Exec(common::ManagedPointer<ProtocolInterpreter>    interpreter,
-                            common::ManagedPointer<PostgresPacketWriter>   out,
-                            common::ManagedPointer<trafficcop::TrafficCop> t_cop,
-                            common::ManagedPointer<ConnectionContext>      connection)
+    virtual auto Exec(common::ManagedPointer<ProtocolInterpreter>    interpreter,
+                      common::ManagedPointer<PostgresPacketWriter>   out,
+                      common::ManagedPointer<trafficcop::TrafficCop> t_cop,
+                      common::ManagedPointer<ConnectionContext>      connection) -> Transition
         = 0;
 
 protected:

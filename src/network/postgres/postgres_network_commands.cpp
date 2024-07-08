@@ -40,8 +40,8 @@ static void WriteShowRowDescription(const common::ManagedPointer<PostgresPacketW
 
 namespace noisepage::network {
 
-static Transition FinishSimpleQueryCommand(const common::ManagedPointer<PostgresPacketWriter> out,
-                                           const common::ManagedPointer<ConnectionContext>    connection) {
+static auto FinishSimpleQueryCommand(const common::ManagedPointer<PostgresPacketWriter> out,
+                                     const common::ManagedPointer<ConnectionContext>    connection) -> Transition {
     out->WriteReadyForQuery(connection->TransactionState());
     return Transition::PROCEED;
 }
@@ -108,10 +108,10 @@ static void ExecutePortal(const common::ManagedPointer<network::ConnectionContex
     }
 }
 
-Transition SimpleQueryCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>    interpreter,
-                                    const common::ManagedPointer<PostgresPacketWriter>   out,
-                                    const common::ManagedPointer<trafficcop::TrafficCop> t_cop,
-                                    const common::ManagedPointer<ConnectionContext>      connection) {
+auto SimpleQueryCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>    interpreter,
+                              const common::ManagedPointer<PostgresPacketWriter>   out,
+                              const common::ManagedPointer<trafficcop::TrafficCop> t_cop,
+                              const common::ManagedPointer<ConnectionContext>      connection) -> Transition {
     const auto postgres_interpreter = interpreter.CastManagedPointerTo<network::PostgresProtocolInterpreter>();
     NOISEPAGE_ASSERT(!postgres_interpreter->WaitingForSync(),
                      "We shouldn't be trying to execute commands while waiting for Sync message. This should have been "
@@ -202,8 +202,9 @@ Transition SimpleQueryCommand::Exec(const common::ManagedPointer<ProtocolInterpr
                                            postgres_interpreter->ExplicitTransactionBlock(),
                                            query_type);
         if (query_type == network::QueryType::QUERY_BEGIN) {
-            if (!(postgres_interpreter->ExplicitTransactionBlock()))
+            if (!(postgres_interpreter->ExplicitTransactionBlock())) {
                 postgres_interpreter->SetExplicitTransactionBlock();
+            }
         } else {
             postgres_interpreter->ResetTransactionState();
         }
@@ -270,10 +271,10 @@ Transition SimpleQueryCommand::Exec(const common::ManagedPointer<ProtocolInterpr
     return FinishSimpleQueryCommand(out, connection);
 }
 
-Transition ParseCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>    interpreter,
-                              const common::ManagedPointer<PostgresPacketWriter>   out,
-                              const common::ManagedPointer<trafficcop::TrafficCop> t_cop,
-                              const common::ManagedPointer<ConnectionContext>      connection) {
+auto ParseCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>    interpreter,
+                        const common::ManagedPointer<PostgresPacketWriter>   out,
+                        const common::ManagedPointer<trafficcop::TrafficCop> t_cop,
+                        const common::ManagedPointer<ConnectionContext>      connection) -> Transition {
     const auto postgres_interpreter = interpreter.CastManagedPointerTo<network::PostgresProtocolInterpreter>();
     NOISEPAGE_ASSERT(!postgres_interpreter->WaitingForSync(),
                      "We shouldn't be trying to execute commands while waiting for Sync message. This should have been "
@@ -345,10 +346,10 @@ Transition ParseCommand::Exec(const common::ManagedPointer<ProtocolInterpreter> 
     return Transition::PROCEED;
 }
 
-Transition BindCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>    interpreter,
-                             const common::ManagedPointer<PostgresPacketWriter>   out,
-                             const common::ManagedPointer<trafficcop::TrafficCop> t_cop,
-                             const common::ManagedPointer<ConnectionContext>      connection) {
+auto BindCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>    interpreter,
+                       const common::ManagedPointer<PostgresPacketWriter>   out,
+                       const common::ManagedPointer<trafficcop::TrafficCop> t_cop,
+                       const common::ManagedPointer<ConnectionContext>      connection) -> Transition {
     const bool bind_command_metrics_enabled
         = common::thread_context.metrics_store_ != nullptr
           && common::thread_context.metrics_store_->ComponentToRecord(metrics::MetricsComponent::BIND_COMMAND);
@@ -503,10 +504,10 @@ Transition BindCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>  
     return Transition::PROCEED;
 }
 
-Transition DescribeCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>    interpreter,
-                                 const common::ManagedPointer<PostgresPacketWriter>   out,
-                                 const common::ManagedPointer<trafficcop::TrafficCop> t_cop,
-                                 const common::ManagedPointer<ConnectionContext>      connection) {
+auto DescribeCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>  interpreter,
+                           const common::ManagedPointer<PostgresPacketWriter> out,
+                           const common::ManagedPointer<trafficcop::TrafficCop> /*t_cop*/,
+                           const common::ManagedPointer<ConnectionContext> /*connection*/) -> Transition {
     const auto postgres_interpreter = interpreter.CastManagedPointerTo<network::PostgresProtocolInterpreter>();
     NOISEPAGE_ASSERT(!postgres_interpreter->WaitingForSync(),
                      "We shouldn't be trying to execute commands while waiting for Sync message. This should have been "
@@ -555,10 +556,10 @@ Transition DescribeCommand::Exec(const common::ManagedPointer<ProtocolInterprete
     return Transition::PROCEED;
 }
 
-Transition ExecuteCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>    interpreter,
-                                const common::ManagedPointer<PostgresPacketWriter>   out,
-                                const common::ManagedPointer<trafficcop::TrafficCop> t_cop,
-                                const common::ManagedPointer<ConnectionContext>      connection) {
+auto ExecuteCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>    interpreter,
+                          const common::ManagedPointer<PostgresPacketWriter>   out,
+                          const common::ManagedPointer<trafficcop::TrafficCop> t_cop,
+                          const common::ManagedPointer<ConnectionContext>      connection) -> Transition {
     const bool execute_command_metrics_enabled
         = common::thread_context.metrics_store_ != nullptr
           && common::thread_context.metrics_store_->ComponentToRecord(metrics::MetricsComponent::EXECUTE_COMMAND);
@@ -625,8 +626,9 @@ Transition ExecuteCommand::Exec(const common::ManagedPointer<ProtocolInterpreter
                                            postgres_interpreter->ExplicitTransactionBlock(),
                                            query_type);
         if (query_type == network::QueryType::QUERY_BEGIN) {
-            if (!(postgres_interpreter->ExplicitTransactionBlock()))
+            if (!(postgres_interpreter->ExplicitTransactionBlock())) {
                 postgres_interpreter->SetExplicitTransactionBlock();
+            }
         } else {
             postgres_interpreter->ResetTransactionState();
         }
@@ -658,10 +660,10 @@ Transition ExecuteCommand::Exec(const common::ManagedPointer<ProtocolInterpreter
     return Transition::PROCEED;
 }
 
-Transition SyncCommand::Exec(common::ManagedPointer<ProtocolInterpreter>    interpreter,
-                             common::ManagedPointer<PostgresPacketWriter>   out,
-                             common::ManagedPointer<trafficcop::TrafficCop> t_cop,
-                             common::ManagedPointer<ConnectionContext>      connection) {
+auto SyncCommand::Exec(common::ManagedPointer<ProtocolInterpreter>    interpreter,
+                       common::ManagedPointer<PostgresPacketWriter>   out,
+                       common::ManagedPointer<trafficcop::TrafficCop> t_cop,
+                       common::ManagedPointer<ConnectionContext>      connection) -> Transition {
     const auto postgres_interpreter = interpreter.CastManagedPointerTo<network::PostgresProtocolInterpreter>();
     if (!postgres_interpreter->ExplicitTransactionBlock()
         && !(connection->TransactionState() == network::NetworkTransactionStateType::IDLE)) {
@@ -676,10 +678,10 @@ Transition SyncCommand::Exec(common::ManagedPointer<ProtocolInterpreter>    inte
     return Transition::PROCEED;
 }
 
-Transition CloseCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>    interpreter,
-                              const common::ManagedPointer<PostgresPacketWriter>   out,
-                              const common::ManagedPointer<trafficcop::TrafficCop> t_cop,
-                              const common::ManagedPointer<ConnectionContext>      connection) {
+auto CloseCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>  interpreter,
+                        const common::ManagedPointer<PostgresPacketWriter> out,
+                        const common::ManagedPointer<trafficcop::TrafficCop> /*t_cop*/,
+                        const common::ManagedPointer<ConnectionContext> /*connection*/) -> Transition {
     const auto postgres_interpreter = interpreter.CastManagedPointerTo<network::PostgresProtocolInterpreter>();
     NOISEPAGE_ASSERT(!postgres_interpreter->WaitingForSync(),
                      "We shouldn't be trying to execute commands while waiting for Sync message. This should have been "
@@ -701,10 +703,10 @@ Transition CloseCommand::Exec(const common::ManagedPointer<ProtocolInterpreter> 
     return Transition::PROCEED;
 }
 
-Transition TerminateCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>    interpreter,
-                                  const common::ManagedPointer<PostgresPacketWriter>   out,
-                                  const common::ManagedPointer<trafficcop::TrafficCop> t_cop,
-                                  const common::ManagedPointer<ConnectionContext>      connection) {
+Transition TerminateCommand::Exec(const common::ManagedPointer<ProtocolInterpreter> interpreter,
+                                  const common::ManagedPointer<PostgresPacketWriter> /*out*/,
+                                  const common::ManagedPointer<trafficcop::TrafficCop> /*t_cop*/,
+                                  const common::ManagedPointer<ConnectionContext> /*connection*/) {
     // Postgres doesn't send any sort of response for the Terminate command
     // We don't do removal of the temp namespace at the Command level because it's possible that we don't receive a
     // Terminate packet to generate the Command from, and instead closed the connection due to timeout
@@ -712,10 +714,10 @@ Transition TerminateCommand::Exec(const common::ManagedPointer<ProtocolInterpret
 }
 
 // (Matt): this seems to only exist for testing
-Transition EmptyCommand::Exec(common::ManagedPointer<ProtocolInterpreter>    interpreter,
-                              common::ManagedPointer<PostgresPacketWriter>   out,
-                              common::ManagedPointer<trafficcop::TrafficCop> t_cop,
-                              common::ManagedPointer<ConnectionContext>      connection) {
+Transition EmptyCommand::Exec(common::ManagedPointer<ProtocolInterpreter>  interpreter,
+                              common::ManagedPointer<PostgresPacketWriter> out,
+                              common::ManagedPointer<trafficcop::TrafficCop> /*t_cop*/,
+                              common::ManagedPointer<ConnectionContext> /*connection*/) {
     NETWORK_LOG_TRACE("Empty Command");
     out->WriteEmptyQueryResponse();
     out->WriteReadyForQuery(NetworkTransactionStateType::IDLE);

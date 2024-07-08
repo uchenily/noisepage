@@ -13,7 +13,7 @@ class ConnectionHandleStateMachineTransition {
 public:
     // clang-format off
   /** Implement transition for ConnState::READ. */
-  static ConnectionHandle::StateMachine::TransitionResult TransitionForRead(Transition transition) {
+  static auto TransitionForRead(Transition transition) -> ConnectionHandle::StateMachine::TransitionResult {
     switch (transition) {
       case Transition::NEED_READ:           return {ConnState::READ, WaitForRead};
       case Transition::NEED_READ_TIMEOUT:   return {ConnState::READ, WaitForReadWithTimeout};
@@ -28,7 +28,7 @@ public:
   }
 
   /** Implement transition for ConnState::PROCESS. */
-  static ConnectionHandle::StateMachine::TransitionResult TransitionForProcess(Transition transition) {
+  static auto TransitionForProcess(Transition transition) -> ConnectionHandle::StateMachine::TransitionResult {
     switch (transition) {
       case Transition::NEED_READ:           return {ConnState::READ, TryRead};
       case Transition::NEED_READ_TIMEOUT:   return {ConnState::READ, WaitForReadWithTimeout};
@@ -41,7 +41,7 @@ public:
   }
 
   /** Implement transition for ConnState::WRITE. */
-  static ConnectionHandle::StateMachine::TransitionResult TransitionForWrite(Transition transition) {
+  static auto TransitionForWrite(Transition transition) -> ConnectionHandle::StateMachine::TransitionResult {
     switch (transition) {
         // Allegedly, NEED_READ happens during ssl-rehandshake with the client.
       case Transition::NEED_READ:           return {ConnState::WRITE, WaitForRead};
@@ -54,9 +54,9 @@ public:
   }
 
   /** Implement transition for ConnState::CLOSING. */
-  static ConnectionHandle::StateMachine::TransitionResult TransitionForClosing(Transition transition) {
+  static auto TransitionForClosing(Transition transition) -> ConnectionHandle::StateMachine::TransitionResult {
     switch (transition) {
-      case Transition::NEED_READ:           return {ConnState::WRITE, WaitForRead};
+      case Transition::NEED_READ:           return {ConnState::WRITE, WaitForRead}; // ?
       case Transition::NEED_WRITE:          return {ConnState::WRITE, WaitForWrite};
       case Transition::TERMINATE:           return {ConnState::CLOSING, TryCloseConnection};
       case Transition::WAKEUP:              return {ConnState::CLOSING, TryCloseConnection};
@@ -69,7 +69,7 @@ private:
     /** Define a function (ManagedPointer<ConnectionHandle> -> Transition) that calls the underlying handle's function.
      */
 #define DEF_HANDLE_WRAPPER_FN(function_name)                                                                           \
-    static Transition function_name(const common::ManagedPointer<ConnectionHandle> handle) {                           \
+    static auto function_name(const common::ManagedPointer<ConnectionHandle> handle) -> Transition {                   \
         return handle->function_name();                                                                                \
     }
 
@@ -82,33 +82,33 @@ private:
 #undef DEF_HANDLE_WRAPPER_FN
 
     /** Wait for the connection to become readable. */
-    static Transition WaitForRead(const common::ManagedPointer<ConnectionHandle> handle) {
+    static auto WaitForRead(const common::ManagedPointer<ConnectionHandle> handle) -> Transition {
         handle->UpdateEventFlags(EV_READ | EV_PERSIST);
         return Transition::NONE;
     }
 
     /** Wait for the connection to become writable. */
-    static Transition WaitForWrite(const common::ManagedPointer<ConnectionHandle> handle) {
+    static auto WaitForWrite(const common::ManagedPointer<ConnectionHandle> handle) -> Transition {
         // Wait for the connection to become writable.
         handle->UpdateEventFlags(EV_WRITE | EV_PERSIST);
         return Transition::NONE;
     }
 
     /** Wait for the connection to become readable, or until a timeout happens. */
-    static Transition WaitForReadWithTimeout(const common::ManagedPointer<ConnectionHandle> handle) {
+    static auto WaitForReadWithTimeout(const common::ManagedPointer<ConnectionHandle> handle) -> Transition {
         handle->UpdateEventFlags(EV_READ | EV_PERSIST | EV_TIMEOUT, READ_TIMEOUT);
         return Transition::NONE;
     }
 
     /** Stop listening to network events. This is used when control is completely ceded to Terrier, hence the name. */
-    static Transition WaitForTerrier(const common::ManagedPointer<ConnectionHandle> handle) {
+    static auto WaitForTerrier(const common::ManagedPointer<ConnectionHandle> handle) -> Transition {
         handle->StopReceivingNetworkEvent();
         return Transition::NONE;
     }
 };
 
-ConnectionHandle::StateMachine::TransitionResult ConnectionHandle::StateMachine::Delta(ConnState  state,
-                                                                                       Transition transition) {
+auto ConnectionHandle::StateMachine::Delta(ConnState state, Transition transition)
+    -> ConnectionHandle::StateMachine::TransitionResult {
     // clang-format off
   switch (state) {
     case ConnState::READ:      return ConnectionHandleStateMachineTransition::TransitionForRead(transition);
@@ -166,8 +166,8 @@ void ConnectionHandle::RegisterToReceiveEvents() {
         this);
 }
 
-void ConnectionHandle::HandleEvent(int fd, int16_t flags) {
-    Transition t;
+void ConnectionHandle::HandleEvent(int /*fd*/, int16_t flags) {
+    Transition t{};
     if ((flags & EV_TIMEOUT) != 0) {
         // If the event was a timeout, this implies that the connection timed out. Terminate to disconnect.
         t = Transition::TERMINATE;
@@ -178,18 +178,18 @@ void ConnectionHandle::HandleEvent(int fd, int16_t flags) {
     state_machine_.Accept(t, common::ManagedPointer<ConnectionHandle>(this));
 }
 
-Transition ConnectionHandle::TryRead() {
+auto ConnectionHandle::TryRead() -> Transition {
     return io_wrapper_->FillReadBuffer();
 }
 
-Transition ConnectionHandle::TryWrite() {
+auto ConnectionHandle::TryWrite() -> Transition {
     if (io_wrapper_->ShouldFlush()) {
         return io_wrapper_->FlushAllWrites();
     }
     return Transition::PROCEED;
 }
 
-Transition ConnectionHandle::Process() {
+auto ConnectionHandle::Process() -> Transition {
     auto transition = protocol_interpreter_->Process(io_wrapper_->GetReadBuffer(),
                                                      io_wrapper_->GetWriteQueue(),
                                                      traffic_cop_,
@@ -197,7 +197,7 @@ Transition ConnectionHandle::Process() {
     return transition;
 }
 
-Transition ConnectionHandle::GetResult() {
+auto ConnectionHandle::GetResult() -> Transition {
     // Wait until a network event happens.
     EventUtil::EventAdd(network_event_, EventUtil::WAIT_FOREVER);
     // TODO(WAN): It is not clear to me what this function is doing. If someone figures it out, please update comment.
@@ -205,12 +205,13 @@ Transition ConnectionHandle::GetResult() {
     return Transition::PROCEED;
 }
 
-Transition ConnectionHandle::TryCloseConnection() {
+auto ConnectionHandle::TryCloseConnection() -> Transition {
     // Flush out any pending writes before closing the connection. In theory this should just be error messages and not
     // partial query data, but I don't completely understand the network state machine. This is mostly to make sure we
     // flush error messages on connection startup. @see PostgresProtocolInterpreter::ProcessStartup's error states
-    if (io_wrapper_->ShouldFlush())
+    if (io_wrapper_->ShouldFlush()) {
         TryWrite();
+    }
     // Stop the protocol interpreter.
     protocol_interpreter_->Teardown(io_wrapper_->GetReadBuffer(),
                                     io_wrapper_->GetWriteQueue(),

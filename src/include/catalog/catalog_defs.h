@@ -64,6 +64,6 @@ bool IsTempOid(strongtype value) {
     return (value.UnderlyingValue() & catalog::TEMP_OID_MASK) > 0;
 }
 
-constexpr char DEFAULT_DATABASE[] = "noisepage";
+constexpr std::string_view DEFAULT_DATABASE = "noisepage";
 
 } // namespace noisepage::catalog
