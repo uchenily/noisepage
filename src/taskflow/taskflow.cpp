@@ -57,10 +57,10 @@ struct CommitCallbackArg {
     std::atomic<uint8_t> persist_countdown_; ///< A countdown latch for what else needs to persist.
     std::promise<bool>   ready_to_commit_;   ///< Set this promise to true to wake up the thread for commit.
 
-    explicit CommitCallbackArg(const transaction::TransactionPolicy &policy) {
+    explicit CommitCallbackArg(const transaction::TransactionPolicy &policy)
+        : persist_countdown_(0) {
         // The value for the persist_countdown_ field.
         // Note that the field will be decremented exactly once every time a commit callback is invoked.
-        persist_countdown_ = 0;
 
         // Cases: Durability, Replication
         // - DISABLE, DISABLE => 1. The callback is invoked on LogCommit in TransactionManager.
@@ -187,10 +187,10 @@ void Taskflow::ExecuteTransactionStatement(const common::ManagedPointer<network:
     out->WriteCommandComplete(query_type, 0);
 }
 
-std::unique_ptr<optimizer::OptimizeResult>
-Taskflow::OptimizeBoundQuery(const common::ManagedPointer<network::ConnectionContext>             connection_ctx,
-                             const common::ManagedPointer<parser::ParseResult>                    query,
-                             common::ManagedPointer<std::vector<parser::ConstantValueExpression>> parameters) const {
+auto Taskflow::OptimizeBoundQuery(const common::ManagedPointer<network::ConnectionContext>             connection_ctx,
+                                  const common::ManagedPointer<parser::ParseResult>                    query,
+                                  common::ManagedPointer<std::vector<parser::ConstantValueExpression>> parameters) const
+    -> std::unique_ptr<optimizer::OptimizeResult> {
     NOISEPAGE_ASSERT(connection_ctx->TransactionState() == network::NetworkTransactionStateType::BLOCK,
                      "Not in a valid txn. This should have been caught before calling this function.");
 
@@ -204,8 +204,8 @@ Taskflow::OptimizeBoundQuery(const common::ManagedPointer<network::ConnectionCon
                                   parameters);
 }
 
-TaskflowResult Taskflow::ExecuteSetStatement(common::ManagedPointer<network::ConnectionContext> connection_ctx,
-                                             common::ManagedPointer<network::Statement>         statement) const {
+auto Taskflow::ExecuteSetStatement(common::ManagedPointer<network::ConnectionContext> connection_ctx,
+                                   common::ManagedPointer<network::Statement> statement) const -> TaskflowResult {
     NOISEPAGE_ASSERT(connection_ctx->TransactionState() == network::NetworkTransactionStateType::IDLE,
                      "This is a non-transactional operation and we should not be in a transaction.");
     NOISEPAGE_ASSERT(statement->GetQueryType() == network::QueryType::QUERY_SET,
@@ -233,9 +233,9 @@ TaskflowResult Taskflow::ExecuteSetStatement(common::ManagedPointer<network::Con
     return {ResultType::COMPLETE, 0u};
 }
 
-TaskflowResult Taskflow::ExecuteShowStatement(common::ManagedPointer<network::ConnectionContext>    connection_ctx,
-                                              common::ManagedPointer<network::PostgresPacketWriter> out,
-                                              common::ManagedPointer<network::Statement>            statement) const {
+auto Taskflow::ExecuteShowStatement(common::ManagedPointer<network::ConnectionContext>    connection_ctx,
+                                    common::ManagedPointer<network::PostgresPacketWriter> out,
+                                    common::ManagedPointer<network::Statement> statement) const -> TaskflowResult {
     NOISEPAGE_ASSERT(connection_ctx->TransactionState() == network::NetworkTransactionStateType::IDLE,
                      "This is a non-transactional operation and we should not be in a transaction.");
     NOISEPAGE_ASSERT(statement->GetQueryType() == network::QueryType::QUERY_SHOW,
@@ -259,9 +259,9 @@ TaskflowResult Taskflow::ExecuteShowStatement(common::ManagedPointer<network::Co
     return {ResultType::COMPLETE, 0u};
 }
 
-TaskflowResult Taskflow::ExecuteCreateStatement(const common::ManagedPointer<network::ConnectionContext> connection_ctx,
-                                                const common::ManagedPointer<planner::AbstractPlanNode>  physical_plan,
-                                                const noisepage::network::QueryType query_type) const {
+auto Taskflow::ExecuteCreateStatement(const common::ManagedPointer<network::ConnectionContext> connection_ctx,
+                                      const common::ManagedPointer<planner::AbstractPlanNode>  physical_plan,
+                                      const noisepage::network::QueryType query_type) const -> TaskflowResult {
     NOISEPAGE_ASSERT(connection_ctx->TransactionState() == network::NetworkTransactionStateType::BLOCK,
                      "Not in a valid txn. This should have been caught before calling this function.");
     NOISEPAGE_ASSERT(
@@ -321,9 +321,9 @@ TaskflowResult Taskflow::ExecuteCreateStatement(const common::ManagedPointer<net
                               common::ErrorCode::ERRCODE_DATA_EXCEPTION)};
 }
 
-TaskflowResult Taskflow::ExecuteDropStatement(const common::ManagedPointer<network::ConnectionContext> connection_ctx,
-                                              const common::ManagedPointer<planner::AbstractPlanNode>  physical_plan,
-                                              const noisepage::network::QueryType query_type) const {
+auto Taskflow::ExecuteDropStatement(const common::ManagedPointer<network::ConnectionContext> connection_ctx,
+                                    const common::ManagedPointer<planner::AbstractPlanNode>  physical_plan,
+                                    const noisepage::network::QueryType query_type) const -> TaskflowResult {
     NOISEPAGE_ASSERT(connection_ctx->TransactionState() == network::NetworkTransactionStateType::BLOCK,
                      "Not in a valid txn. This should have been caught before calling this function.");
     NOISEPAGE_ASSERT(
@@ -383,10 +383,9 @@ TaskflowResult Taskflow::ExecuteDropStatement(const common::ManagedPointer<netwo
                               common::ErrorCode::ERRCODE_DATA_EXCEPTION)};
 }
 
-TaskflowResult
-Taskflow::ExecuteExplainStatement(const common::ManagedPointer<network::ConnectionContext>    connection_ctx,
-                                  const common::ManagedPointer<network::PostgresPacketWriter> out,
-                                  const common::ManagedPointer<network::Portal>               portal) const {
+auto Taskflow::ExecuteExplainStatement(const common::ManagedPointer<network::ConnectionContext>    connection_ctx,
+                                       const common::ManagedPointer<network::PostgresPacketWriter> out,
+                                       const common::ManagedPointer<network::Portal> portal) const -> TaskflowResult {
     NOISEPAGE_ASSERT(connection_ctx->TransactionState() == network::NetworkTransactionStateType::BLOCK,
                      "Not in a valid txn. This should have been caught before calling this function.");
 
@@ -432,9 +431,9 @@ Taskflow::ExecuteExplainStatement(const common::ManagedPointer<network::Connecti
     return {ResultType::COMPLETE, 0u};
 }
 
-std::variant<std::unique_ptr<parser::ParseResult>, common::ErrorData>
-Taskflow::ParseQuery(const std::string                                       &query,
-                     const common::ManagedPointer<network::ConnectionContext> connection_ctx) const {
+auto Taskflow::ParseQuery(const std::string &query,
+                          const common::ManagedPointer<network::ConnectionContext> /*connection_ctx*/) const
+    -> std::variant<std::unique_ptr<parser::ParseResult>, common::ErrorData> {
     std::variant<std::unique_ptr<parser::ParseResult>, common::ErrorData> result;
     try {
         auto parse_result = parser::PostgresParser::BuildParseTree(query);
@@ -449,10 +448,10 @@ Taskflow::ParseQuery(const std::string                                       &qu
     return result;
 }
 
-TaskflowResult
-Taskflow::BindQuery(const common::ManagedPointer<network::ConnectionContext>                   connection_ctx,
-                    const common::ManagedPointer<network::Statement>                           statement,
-                    const common::ManagedPointer<std::vector<parser::ConstantValueExpression>> parameters) const {
+auto Taskflow::BindQuery(const common::ManagedPointer<network::ConnectionContext>                   connection_ctx,
+                         const common::ManagedPointer<network::Statement>                           statement,
+                         const common::ManagedPointer<std::vector<parser::ConstantValueExpression>> parameters) const
+    -> TaskflowResult {
     NOISEPAGE_ASSERT(connection_ctx->TransactionState() == network::NetworkTransactionStateType::BLOCK,
                      "Not in a valid txn. This should have been caught before calling this function.");
 
@@ -494,9 +493,9 @@ Taskflow::BindQuery(const common::ManagedPointer<network::ConnectionContext>    
     return {ResultType::COMPLETE, 0u};
 }
 
-TaskflowResult Taskflow::CodegenPhysicalPlan(const common::ManagedPointer<network::ConnectionContext>    connection_ctx,
-                                             const common::ManagedPointer<network::PostgresPacketWriter> out,
-                                             const common::ManagedPointer<network::Portal>               portal) const {
+auto Taskflow::CodegenPhysicalPlan(const common::ManagedPointer<network::ConnectionContext> connection_ctx,
+                                   const common::ManagedPointer<network::PostgresPacketWriter> /*writer*/,
+                                   const common::ManagedPointer<network::Portal> portal) const -> TaskflowResult {
     NOISEPAGE_ASSERT(connection_ctx->TransactionState() == network::NetworkTransactionStateType::BLOCK,
                      "Not in a valid txn. This should have been caught before calling this function.");
     // For an EXPLAIN statement, the query type is the type of the wrapped SQL statement.
@@ -564,9 +563,9 @@ TaskflowResult Taskflow::CodegenPhysicalPlan(const common::ManagedPointer<networ
     return {ResultType::COMPLETE, 0u};
 }
 
-TaskflowResult Taskflow::RunExecutableQuery(const common::ManagedPointer<network::ConnectionContext>    connection_ctx,
-                                            const common::ManagedPointer<network::PostgresPacketWriter> out,
-                                            const common::ManagedPointer<network::Portal>               portal) const {
+auto Taskflow::RunExecutableQuery(const common::ManagedPointer<network::ConnectionContext>    connection_ctx,
+                                  const common::ManagedPointer<network::PostgresPacketWriter> out,
+                                  const common::ManagedPointer<network::Portal> portal) const -> TaskflowResult {
     NOISEPAGE_ASSERT(connection_ctx->TransactionState() == network::NetworkTransactionStateType::BLOCK,
                      "Not in a valid txn. This should have been caught before calling this function.");
     const auto query_type = portal->GetStatement()->GetQueryType();
@@ -599,7 +598,7 @@ TaskflowResult Taskflow::RunExecutableQuery(const common::ManagedPointer<network
         auto                            db_oid = analyze_plan->GetDatabaseOid();
         auto                            table_oid = analyze_plan->GetTableOid();
         std::vector<catalog::col_oid_t> col_oids = analyze_plan->GetColumnOids();
-        connection_ctx->Transaction()->RegisterCommitAction([=]() {
+        connection_ctx->Transaction()->RegisterCommitAction([this, db_oid, table_oid, col_oids]() {
             stats_storage_->MarkStatsStale(db_oid, table_oid, col_oids);
         });
     }
@@ -687,8 +686,8 @@ TaskflowResult Taskflow::RunExecutableQuery(const common::ManagedPointer<network
                               common::ErrorCode::ERRCODE_T_R_SERIALIZATION_FAILURE)};
 }
 
-std::pair<catalog::db_oid_t, catalog::namespace_oid_t>
-Taskflow::CreateTempNamespace(const network::connection_id_t connection_id, const std::string &database_name) {
+auto Taskflow::CreateTempNamespace(const network::connection_id_t connection_id, const std::string &database_name)
+    -> std::pair<catalog::db_oid_t, catalog::namespace_oid_t> {
     auto *const txn = txn_manager_->BeginTransaction();
     txn->SetReplicationPolicy(transaction::ReplicationPolicy::DISABLE);
 
@@ -714,7 +713,7 @@ Taskflow::CreateTempNamespace(const network::connection_id_t connection_id, cons
     return {db_oid, ns_oid};
 }
 
-bool Taskflow::DropTempNamespace(const catalog::db_oid_t db_oid, const catalog::namespace_oid_t ns_oid) {
+auto Taskflow::DropTempNamespace(const catalog::db_oid_t db_oid, const catalog::namespace_oid_t ns_oid) -> bool {
     NOISEPAGE_ASSERT(db_oid != catalog::INVALID_DATABASE_OID,
                      "Called DropTempNamespace() with an invalid database oid.");
     NOISEPAGE_ASSERT(ns_oid != catalog::INVALID_NAMESPACE_OID,

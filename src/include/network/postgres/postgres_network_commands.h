@@ -18,7 +18,7 @@ public:
      * @return The next transition for the client's state machine
      */
     virtual auto Exec(common::ManagedPointer<ProtocolInterpreter>  interpreter,
-                      common::ManagedPointer<PostgresPacketWriter> out,
+                      common::ManagedPointer<PostgresPacketWriter> writer,
                       common::ManagedPointer<taskflow::Taskflow>   taskflow,
                       common::ManagedPointer<ConnectionContext>    connection) -> Transition
         = 0;
@@ -39,7 +39,7 @@ protected:
         explicit COMMAND(const common::ManagedPointer<InputPacket> in)                                                 \
             : PostgresNetworkCommand(in, flush) {}                                                                     \
         auto Exec(common::ManagedPointer<ProtocolInterpreter>  interpreter,                                            \
-                  common::ManagedPointer<PostgresPacketWriter> out,                                                    \
+                  common::ManagedPointer<PostgresPacketWriter> writer,                                                 \
                   common::ManagedPointer<taskflow::Taskflow>   taskflow,                                               \
                   common::ManagedPointer<ConnectionContext>    connection) -> Transition override;                        \
     }

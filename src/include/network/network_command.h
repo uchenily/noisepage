@@ -20,7 +20,7 @@ public:
     /**
      * @return Whether or not to flush the output network packets from this on completion
      */
-    bool FlushOnComplete() {
+    auto FlushOnComplete() const -> bool {
         return flush_on_complete_;
     }
 
@@ -36,13 +36,13 @@ protected:
      * @param flush Whether or not to flush the outuput packets on completion
      */
     NetworkCommand(const common::ManagedPointer<InputPacket> in, bool flush)
-        : in_(in->buf_->ReadIntoView(in->len_))
+        : reader_(in->buf_->ReadIntoView(in->len_))
         , flush_on_complete_(flush) {}
 
     /**
      * The ReadBufferView to read input packets from
      */
-    ReadBufferView in_;
+    ReadBufferView reader_;
 
 private:
     bool flush_on_complete_;
