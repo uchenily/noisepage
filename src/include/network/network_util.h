@@ -17,7 +17,7 @@ public:
      *
      * @warning This logic relies on ordering of values in the enum's definition and is documented there as well.
      */
-    static bool TransactionalQueryType(const QueryType type) {
+    static auto TransactionalQueryType(const QueryType type) -> bool {
         return type <= QueryType::QUERY_ROLLBACK;
     }
 
@@ -25,7 +25,7 @@ public:
      * @param type query type from the parser
      * @return true if the statement should NOT be bound nor optimized.
      */
-    static bool SkipBindQueryType(const QueryType type) {
+    static auto SkipBindQueryType(const QueryType type) -> bool {
         return type == QueryType::QUERY_SET || type == QueryType::QUERY_SHOW;
     }
 
@@ -33,7 +33,7 @@ public:
      * @param type query type from the parser
      * @return true if a SELECT, INSERT, UPDATE, DELETE, or ANALYZE. Order of QueryType enum matters here.
      */
-    static bool DMLQueryType(const QueryType type) {
+    static auto DMLQueryType(const QueryType type) -> bool {
         return type >= QueryType::QUERY_SELECT && type <= QueryType::QUERY_ANALYZE;
     }
 
@@ -41,7 +41,7 @@ public:
      * @param type query type from the parser
      * @return true if a CREATE. Order of QueryType enum matters here.
      */
-    static bool CreateQueryType(const QueryType type) {
+    static auto CreateQueryType(const QueryType type) -> bool {
         return type >= QueryType::QUERY_CREATE_TABLE && type <= QueryType::QUERY_CREATE_VIEW;
     }
 
@@ -49,7 +49,7 @@ public:
      * @param type query type from the parser
      * @return true if a DROP. Order of QueryType enum matters here.
      */
-    static bool DropQueryType(const QueryType type) {
+    static auto DropQueryType(const QueryType type) -> bool {
         return type >= QueryType::QUERY_DROP_TABLE && type <= QueryType::QUERY_DROP_VIEW;
     }
 
@@ -57,7 +57,7 @@ public:
      * @param type query type from the parser
      * @return true if a CREATE or DROP. Order of QueryType enum matters here.
      */
-    static bool DDLQueryType(const QueryType type) {
+    static auto DDLQueryType(const QueryType type) -> bool {
         return type >= QueryType::QUERY_CREATE_TABLE && type <= QueryType::QUERY_DROP_VIEW;
     }
 
@@ -66,7 +66,7 @@ public:
      * @return true for statement types that aren't run in a txn, currently SET but other internal queries might be
      * added
      */
-    static bool NonTransactionalQueryType(const QueryType type) {
+    static auto NonTransactionalQueryType(const QueryType type) -> bool {
         return type == QueryType::QUERY_SET || type == QueryType::QUERY_SHOW;
     }
 
@@ -74,7 +74,7 @@ public:
      * @param type query type from the parser
      * @return true if a query that is current not implemented in the system. Order of QueryType enum matters here.
      */
-    static bool UnsupportedQueryType(const QueryType type) {
+    static auto UnsupportedQueryType(const QueryType type) -> bool {
         return type > QueryType::QUERY_SHOW;
     }
 };

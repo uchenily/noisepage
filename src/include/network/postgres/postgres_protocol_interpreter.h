@@ -43,7 +43,7 @@ public:
         /**
          * @return an instance of the protocol interpreter
          */
-        std::unique_ptr<ProtocolInterpreter> Get() override {
+        auto Get() -> std::unique_ptr<ProtocolInterpreter> override {
             return std::make_unique<PostgresProtocolInterpreter>(command_factory_);
         }
 
@@ -66,10 +66,10 @@ public:
      * @param context connection-specific (not protocol) state
      * @return next transition for ConnectionHandle's state machine
      */
-    Transition Process(common::ManagedPointer<ReadBuffer>         in,
-                       common::ManagedPointer<WriteQueue>         out,
-                       common::ManagedPointer<taskflow::Taskflow> taskflow,
-                       common::ManagedPointer<ConnectionContext>  context) override;
+    auto Process(common::ManagedPointer<ReadBuffer>         in,
+                 common::ManagedPointer<WriteQueue>         out,
+                 common::ManagedPointer<taskflow::Taskflow> taskflow,
+                 common::ManagedPointer<ConnectionContext>  context) -> Transition override;
 
     /**
      * Closes any protocol-specific state. We currently use this to remove the temporary namespace for Postgres.
@@ -111,15 +111,15 @@ public:
      * @param context where to stash connection-specific state
      * @return transition::PROCEED if it succeeded, transition::TERMINATE otherwise
      */
-    Transition ProcessStartup(common::ManagedPointer<ReadBuffer>         in,
-                              common::ManagedPointer<WriteQueue>         out,
-                              common::ManagedPointer<taskflow::Taskflow> taskflow,
-                              common::ManagedPointer<ConnectionContext>  context);
+    auto ProcessStartup(common::ManagedPointer<ReadBuffer>         in,
+                        common::ManagedPointer<WriteQueue>         out,
+                        common::ManagedPointer<taskflow::Taskflow> taskflow,
+                        common::ManagedPointer<ConnectionContext>  context) -> Transition;
 
     /**
      * @return true if the current transaction was initiated with a BEGIN statement
      */
-    bool ExplicitTransactionBlock() const {
+    auto ExplicitTransactionBlock() const -> bool {
         return explicit_txn_block_;
     }
 
@@ -135,7 +135,7 @@ public:
      * @return true if the system should ignore all messages until a Sync is received, caused by an error state in the
      * Extended Query protocol
      */
-    bool WaitingForSync() const {
+    auto WaitingForSync() const -> bool {
         return waiting_for_sync_;
     }
 
@@ -159,10 +159,11 @@ public:
      * @param name statement to look up
      * @return managed pointer to statement if it exists, nullptr otherwise
      */
-    common::ManagedPointer<network::Statement> GetStatement(const std::string &name) const {
+    auto GetStatement(const std::string &name) const -> common::ManagedPointer<network::Statement> {
         const auto it = statements_.find(name);
-        if (it != statements_.end())
-            return common::ManagedPointer(it->second);
+        if (it != statements_.end()) {
+            return {it->second};
+        }
         return nullptr;
     }
 
@@ -177,7 +178,7 @@ public:
      * @param query_text key to look up
      * @return Statement if it exists in the cache, otherwise nullptr
      */
-    common::ManagedPointer<network::Statement> LookupStatementInCache(const std::string &query_text) const {
+    auto LookupStatementInCache(const std::string &query_text) const -> common::ManagedPointer<network::Statement> {
         return cache_.Lookup(query_text);
     }
 
@@ -206,10 +207,11 @@ public:
      * @param name portal to look up
      * @return managed pointer to portal if it exists, nullptr otherwise
      */
-    common::ManagedPointer<network::Portal> GetPortal(const std::string &name) const {
+    auto GetPortal(const std::string &name) const -> common::ManagedPointer<network::Portal> {
         const auto it = portals_.find(name);
-        if (it != portals_.end())
+        if (it != portals_.end()) {
             return common::ManagedPointer(it->second);
+        }
         return nullptr;
     }
 
@@ -235,7 +237,7 @@ protected:
      * Header format: 1 byte message type (only if non-startup)
      *              + 4 byte message size (inclusive of these 4 bytes)
      */
-    size_t GetPacketHeaderSize() override;
+    auto GetPacketHeaderSize() -> size_t override;
 
     /**
      * @see ProtocolInterpreter::SetPacketMessageType

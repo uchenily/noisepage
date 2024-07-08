@@ -220,6 +220,7 @@ auto SimpleQueryCommand::Exec(const common::ManagedPointer<ProtocolInterpreter> 
                             common::ErrorCode::ERRCODE_FEATURE_NOT_SUPPORTED});
         writer->WriteCommandComplete(query_type, 0);
     } else {
+        // NOTE(x): most case
         // Try to bind the parsed statement
         const auto bind_result = taskflow->BindQuery(connection, common::ManagedPointer(statement), nullptr);
 

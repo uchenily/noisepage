@@ -7,7 +7,6 @@
 
 #include "common/managed_pointer.h"
 #include "execution/compiler/executable_query.h"
-#include "network/postgres/statement.h"
 #include "parser/postgresparser.h"
 #include "planner/plannodes/abstract_plan_node.h"
 #include "taskflow/taskflow_util.h"
@@ -47,14 +46,14 @@ public:
     /**
      * @return true if the statement is empty
      */
-    bool Empty() const {
+    auto Empty() const -> bool {
         return parse_result_->Empty();
     }
 
     /**
      * @return managed pointer to the output of the parser for this statement
      */
-    common::ManagedPointer<parser::ParseResult> ParseResult() const {
+    auto ParseResult() const -> common::ManagedPointer<parser::ParseResult> {
         return common::ManagedPointer(parse_result_);
     }
 
@@ -62,21 +61,21 @@ public:
      * @return managed pointer to the  root statement of the ParseResult. Just shorthand for
      * ParseResult->GetStatement(0)
      */
-    common::ManagedPointer<parser::SQLStatement> RootStatement() const {
-        return common::ManagedPointer(root_statement_);
+    auto RootStatement() const -> common::ManagedPointer<parser::SQLStatement> {
+        return {root_statement_};
     }
 
     /**
      * @return vector of the statements parameters (if any)
      */
-    const std::vector<execution::sql::SqlTypeId> &ParamTypes() const {
+    auto ParamTypes() const -> const std::vector<execution::sql::SqlTypeId> & {
         return param_types_;
     }
 
     /**
      * @return QueryType of the root statement of the ParseResult
      */
-    QueryType GetQueryType() const {
+    auto GetQueryType() const -> QueryType {
         return type_;
     }
 
@@ -85,28 +84,28 @@ public:
      * null-terminated to pass the underlying C-string to libpgquery methods. std::string_view does not guarantee
      * null-termination. We could add a std::string_view accessor for performance if we can justify it.
      */
-    const std::string &GetQueryText() const {
+    auto GetQueryText() const -> const std::string & {
         return query_text_;
     }
 
     /**
      * @return the optimize result of the query
      */
-    common::ManagedPointer<optimizer::OptimizeResult> OptimizeResult() const {
+    auto OptimizeResult() const -> common::ManagedPointer<optimizer::OptimizeResult> {
         return common::ManagedPointer(optimize_result_);
     }
 
     /**
      * @return the optimized physical plan for this query
      */
-    common::ManagedPointer<planner::AbstractPlanNode> PhysicalPlan() const {
+    auto PhysicalPlan() const -> common::ManagedPointer<planner::AbstractPlanNode> {
         return optimize_result_->GetPlanNode();
     }
 
     /**
      * @return the compiled executable query
      */
-    common::ManagedPointer<execution::compiler::ExecutableQuery> GetExecutableQuery() const {
+    auto GetExecutableQuery() const -> common::ManagedPointer<execution::compiler::ExecutableQuery> {
         return common::ManagedPointer(executable_query_);
     }
 
@@ -139,7 +138,7 @@ public:
      * @return output from the binder if Statement has parameters to fast-path convert for future
      * bindings
      */
-    const std::vector<execution::sql::SqlTypeId> &GetDesiredParamTypes() const {
+    auto GetDesiredParamTypes() const -> const std::vector<execution::sql::SqlTypeId> & {
         return desired_param_types_;
     }
 
