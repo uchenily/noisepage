@@ -293,3 +293,4 @@ script/testing/junit/lib/
 !script/testing/junit/lib/postgresql-42.2.14.jar
 
 .cache
+.gdb_history
