@@ -56,7 +56,7 @@ public:
      * Look up a TPL function in this module by its ID
      * @return A pointer to the function's info if it exists; null otherwise
      */
-    const FunctionInfo *GetFuncInfoById(const FunctionId func_id) const {
+    auto GetFuncInfoById(const FunctionId func_id) const -> const FunctionInfo * {
         return bytecode_module_->GetFuncInfoById(func_id);
     }
 
@@ -65,7 +65,7 @@ public:
      * @param name The name of the function to lookup
      * @return A pointer to the function's info if it exists; null otherwise
      */
-    const FunctionInfo *GetFuncInfoByName(const std::string &name) const {
+    auto GetFuncInfoByName(const std::string &name) const -> const FunctionInfo * {
         return bytecode_module_->LookupFuncInfoByName(name);
     }
 
@@ -81,7 +81,7 @@ public:
      * @return True if the function was found and the output parameter was set.
      */
     template <typename Ret, typename... ArgTypes>
-    bool GetFunction(const std::string &name, ExecutionMode exec_mode, std::function<Ret(ArgTypes...)> *func);
+    auto GetFunction(const std::string &name, ExecutionMode exec_mode, std::function<Ret(ArgTypes...)> *func) -> bool;
 
     /**
      * Return the raw function implementation for the function in this module with the given function
@@ -94,7 +94,7 @@ public:
      * @param func_id The ID of the function the caller wants.
      * @return The function address if it exists; null otherwise.
      */
-    void *GetRawFunctionImpl(const FunctionId func_id) const {
+    auto GetRawFunctionImpl(const FunctionId func_id) const -> void * {
         NOISEPAGE_ASSERT(func_id < bytecode_module_->GetFunctionCount(), "Out-of-bounds function access");
         return functions_[func_id].load(std::memory_order_relaxed);
     }
@@ -102,12 +102,12 @@ public:
     /**
      * @return The TPL bytecode module.
      */
-    const BytecodeModule *GetBytecodeModule() const {
+    auto GetBytecodeModule() const -> const BytecodeModule * {
         return bytecode_module_.get();
     }
 
     /** @return The non-essential metadata for this module. */
-    const ModuleMetadata &GetMetadata() const {
+    auto GetMetadata() const -> const ModuleMetadata & {
         return metadata_;
     }
 
@@ -131,7 +131,7 @@ private:
             : mem_(std::move(mem)) {}
 
         // Access the raw trampoline code.
-        void *GetCode() const {
+        auto GetCode() const -> void * {
             return mem_.base();
         }
 
@@ -147,12 +147,12 @@ private:
     void CreateFunctionTrampoline(const FunctionInfo &func, Trampoline *trampoline);
 
     // Access the bytecode trampoline for the function with the given ID.
-    void *GetBytecodeImpl(const FunctionId func_id) const {
+    auto GetBytecodeImpl(const FunctionId func_id) const -> void * {
         return bytecode_trampolines_[func_id].GetCode();
     }
 
     // Access the compiled implementation of the function with the given ID.
-    void *GetCompiledImpl(const FunctionId func_id) const {
+    auto GetCompiledImpl(const FunctionId func_id) const -> void * {
         if (jit_module_ == nullptr) {
             return nullptr;
         }
@@ -209,8 +209,9 @@ namespace detail {
 } // namespace detail
 
 template <typename Ret, typename... ArgTypes>
-inline bool
-Module::GetFunction(const std::string &name, const ExecutionMode exec_mode, std::function<Ret(ArgTypes...)> *func) {
+inline auto Module::GetFunction(const std::string               &name,
+                                const ExecutionMode              exec_mode,
+                                std::function<Ret(ArgTypes...)> *func) -> bool {
     // Lookup function
     const FunctionInfo *func_info = bytecode_module_->LookupFuncInfoByName(name);
 

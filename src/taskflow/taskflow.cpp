@@ -45,7 +45,6 @@
 #include "planner/plannodes/drop_table_plan_node.h"
 #include "settings/settings_manager.h"
 #include "settings/settings_param.h"
-#include "storage/recovery/replication_log_provider.h"
 #include "taskflow/taskflow_defs.h"
 #include "taskflow/taskflow_util.h"
 #include "transaction/transaction_manager.h"
@@ -69,8 +68,8 @@ struct CommitCallbackArg {
         // - SYNC, ASYNC => 2. The callback is invoked by DiskLogConsumerTask and PrimaryReplicationManager.
         // - SYNC, SYNC => 2. The callback is invoked by DiskLogConsumerTask and PrimaryReplicationManager.
 
-        NOISEPAGE_ASSERT(!(policy.durability_ == transaction::DurabilityPolicy::ASYNC
-                           && policy.replication_ == transaction::ReplicationPolicy::SYNC),
+        NOISEPAGE_ASSERT((policy.durability_ != transaction::DurabilityPolicy::ASYNC
+                          || policy.replication_ != transaction::ReplicationPolicy::SYNC),
                          "Haven't reasoned about this case.");
 
         const transaction::DurabilityPolicy  &dur = policy.durability_;
@@ -90,17 +89,20 @@ struct CommitCallbackArg {
     }
 };
 
-static void CommitCallback(void *const callback_arg) {
-    auto *const   cb_arg = reinterpret_cast<CommitCallbackArg *const>(callback_arg);
-    const uint8_t count_before_sub = cb_arg->persist_countdown_.fetch_sub(1);
-    NOISEPAGE_ASSERT(count_before_sub != 0,
-                     "Every component should have invoked the callback already. The policy may not have been correctly "
-                     "initialized?");
-    const bool was_last_callback = count_before_sub == 1;
-    if (was_last_callback) {
-        cb_arg->ready_to_commit_.set_value(true);
+namespace {
+    void CommitCallback(void *const callback_arg) {
+        auto *const   cb_arg = reinterpret_cast<CommitCallbackArg *const>(callback_arg);
+        const uint8_t count_before_sub = cb_arg->persist_countdown_.fetch_sub(1);
+        NOISEPAGE_ASSERT(
+            count_before_sub != 0,
+            "Every component should have invoked the callback already. The policy may not have been correctly "
+            "initialized?");
+        const bool was_last_callback = count_before_sub == 1;
+        if (was_last_callback) {
+            cb_arg->ready_to_commit_.set_value(true);
+        }
     }
-}
+} // namespace
 
 void Taskflow::BeginTransaction(const common::ManagedPointer<network::ConnectionContext> connection_ctx) const {
     NOISEPAGE_ASSERT(connection_ctx->TransactionState() == network::NetworkTransactionStateType::IDLE,
