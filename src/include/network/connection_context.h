@@ -33,7 +33,7 @@ public:
         db_name_.clear();
         temp_namespace_oid_ = catalog::INVALID_NAMESPACE_OID;
         txn_ = nullptr;
-        accessor_ = nullptr;
+        catalog_accessor_ = nullptr;
         callback_ = nullptr;
         callback_arg_ = nullptr;
         catalog_cache_.Reset(transaction::INITIAL_TXN_TIMESTAMP);
@@ -43,21 +43,21 @@ public:
      * @return unique identifier (among currently open connections, not over the lifetime of the system) for this
      * connection
      */
-    connection_id_t GetConnectionID() const {
+    auto GetConnectionID() const -> connection_id_t {
         return connection_id_;
     }
 
     /**
      * @return database name. It should be in cmdline_args_ as well, this just makes it quicker to find
      */
-    const std::string &GetDatabaseName() const {
+    auto GetDatabaseName() const -> const std::string & {
         return db_name_;
     }
 
     /**
      * @return database OID connected to, or INVALID_DATABASE_OID in the event of failure
      */
-    catalog::db_oid_t GetDatabaseOid() const {
+    auto GetDatabaseOid() const -> catalog::db_oid_t {
         return db_oid_;
     }
 
@@ -65,7 +65,7 @@ public:
      * @return temporary namespace OID that was generated at connection, or INVALID_NAMESPACE_OID in the event of
      * failure
      */
-    catalog::namespace_oid_t GetTempNamespaceOid() const {
+    auto GetTempNamespaceOid() const -> catalog::namespace_oid_t {
         return temp_namespace_oid_;
     }
 
@@ -104,14 +104,14 @@ public:
     /**
      * @return const reference to cmdline_args_ for reading values back out
      */
-    const std::unordered_map<std::string, std::string> &CommandLineArgs() const {
+    auto CommandLineArgs() const -> const std::unordered_map<std::string, std::string> & {
         return cmdline_args_;
     }
 
     /**
      * @return mutable reference to cmdline_args_. For PostgresProtocolInterpreter during setup
      */
-    std::unordered_map<std::string, std::string> &CommandLineArgs() {
+    auto CommandLineArgs() -> std::unordered_map<std::string, std::string> & {
         return cmdline_args_;
     }
 
@@ -121,7 +121,7 @@ public:
      * @return transaction state
      * @see NetworkTransactionStateType definition for state definitions
      */
-    NetworkTransactionStateType TransactionState() const {
+    auto TransactionState() const -> NetworkTransactionStateType {
         if (txn_ != nullptr) {
             if (txn_->MustAbort()) {
                 return NetworkTransactionStateType::FAIL;
@@ -134,7 +134,7 @@ public:
     /**
      * @return managed pointer to the connection's current txn (may be nullptr if none running)
      */
-    common::ManagedPointer<transaction::TransactionContext> Transaction() const {
+    auto Transaction() const -> common::ManagedPointer<transaction::TransactionContext> {
         return txn_;
     }
 
@@ -150,11 +150,11 @@ public:
     /**
      * @return current CatalogAccesor for connection
      */
-    common::ManagedPointer<catalog::CatalogAccessor> Accessor() const {
-        NOISEPAGE_ASSERT(accessor_ != nullptr, "Requesting CatalogAccessor that doesn't exist yet.");
+    auto CatalogAccessor() const -> common::ManagedPointer<catalog::CatalogAccessor> {
+        NOISEPAGE_ASSERT(catalog_accessor_ != nullptr, "Requesting CatalogAccessor that doesn't exist yet.");
         // TODO(Matt): I'd like an assert here that the accessor's txn matches the connection context's txn, but the
         // accessor doesn't expose a getter.
-        return common::ManagedPointer(accessor_);
+        return common::ManagedPointer(catalog_accessor_);
     }
 
     /**
@@ -162,8 +162,8 @@ public:
      * @warning this should only be used by Taskflow::BeginTransaction and Taskflow::EndTransaction
      * @warning it should match the txn used for this ConnectionContext's current txn
      */
-    void SetAccessor(std::unique_ptr<catalog::CatalogAccessor> accessor) {
-        accessor_ = std::move(accessor);
+    void SetCatalogAccessor(std::unique_ptr<catalog::CatalogAccessor> accessor) {
+        catalog_accessor_ = std::move(accessor);
     }
 
     /**
@@ -180,7 +180,7 @@ public:
      * @return handle to the ConnectionHandle callback to issue a libevent wakeup in the event of WAIT_ON_NOISEPAGE
      * state. Currently not used, but may in the future for asynchronous execution.
      */
-    network::NetworkCallback Callback() const {
+    auto Callback() const -> network::NetworkCallback {
         return callback_;
     }
 
@@ -188,14 +188,14 @@ public:
      * @return args to the ConnectionHandle callback to issue a libevent wakeup in the event of WAIT_ON_NOISEPAGE
      * state. Currently not used, but may in the future for asynchronous execution.
      */
-    void *CallbackArg() const {
+    auto CallbackArg() const -> void * {
         return callback_arg_;
     }
 
     /**
      * @return CatalogCache to be injected into requests for CatalogAcessors
      */
-    common::ManagedPointer<catalog::CatalogCache> GetCatalogCache() {
+    auto GetCatalogCache() -> common::ManagedPointer<catalog::CatalogCache> {
         return common::ManagedPointer(&catalog_cache_);
     }
 
@@ -238,7 +238,7 @@ private:
      * The ConnectionContext owns this, and I don't expect that should ever change. It's life cycle dominates objects
      * later in the pipeline so this is a reasonable owner and will just hand out ManagedPointers for other components.
      */
-    std::unique_ptr<catalog::CatalogAccessor> accessor_ = nullptr;
+    std::unique_ptr<catalog::CatalogAccessor> catalog_accessor_ = nullptr;
 
     /**
      * ConnectionHandle callback stuff to issue a libevent wakeup in the event of WAIT_ON_NOISEPAGE state. Currently

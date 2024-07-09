@@ -1,5 +1,5 @@
 build:
-    cmake --build build
+    cmake --build build --target noisepage -- -j 12
 
 setup:
     cmake -GNinja -Bbuild -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug -DNOISEPAGE_UNITY_BUILD=OFF

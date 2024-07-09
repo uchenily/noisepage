@@ -57,7 +57,7 @@ public:
      * @param name Alias name
      */
     explicit AliasType(std::string &&name)
-        : name_{name}
+        : name_{std::move(name)}
         , serial_no_{0}
         , serial_valid_{false} {}
 
@@ -74,7 +74,7 @@ public:
      * Gets the name of this alias
      * @return Name of this alias
      */
-    const std::string &GetName() const {
+    auto GetName() const -> const std::string & {
         return name_;
     }
 
@@ -89,14 +89,14 @@ public:
     /**
      * @return Whether or not the serial number of this alias is valid
      */
-    bool IsSerialNoValid() const {
+    auto IsSerialNoValid() const -> bool {
         return serial_valid_;
     }
 
     /**
      * @return The serial number of this alias
      */
-    alias_oid_t GetSerialNo() const {
+    auto GetSerialNo() const -> alias_oid_t {
         return serial_no_;
     }
 
@@ -114,7 +114,7 @@ public:
      * @param other The alias we are comparing against
      * @return Whether or not these two aliases are considered equal as documented above
      */
-    bool operator==(const AliasType &other) const {
+    auto operator==(const AliasType &other) const -> bool {
         bool names_equal = (name_ == other.name_);
         if (!serial_valid_ || !other.serial_valid_) {
             return names_equal;
@@ -127,14 +127,14 @@ public:
      * @param other The alias we are comparing against
      * @return Whether or not these two aliases are considered not equal as documented above
      */
-    bool operator!=(const AliasType &other) const {
+    auto operator!=(const AliasType &other) const -> bool {
         return !(*this == other);
     }
 
     /**
      * @return Whether this alias's name is empty
      */
-    bool Empty() const {
+    auto Empty() const -> bool {
         return name_.empty();
     }
 
@@ -149,7 +149,7 @@ public:
          * @param q second alias we are comparing against p
          * @return false if p is strictly considered "less" than q
          */
-        bool operator()(const AliasType &p, const AliasType &q) const {
+        auto operator()(const AliasType &p, const AliasType &q) const -> bool {
             return p.GetSerialNo() < q.GetSerialNo();
         }
     };
@@ -158,7 +158,7 @@ public:
      * Convert AliasType to JSON
      * @return JSON version of AliasType
      */
-    nlohmann::json ToJson() const;
+    auto ToJson() const -> nlohmann::json;
 
     /**
      * Create AliasType from a JSON
@@ -263,21 +263,21 @@ public:
     /**
      * Hashes the current abstract expression.
      */
-    virtual common::hash_t Hash() const;
+    virtual auto Hash() const -> common::hash_t;
 
     /**
      * Logical equality check.
      * @param rhs other
      * @return true if the two expressions are logically equal
      */
-    virtual bool operator==(const AbstractExpression &rhs) const;
+    virtual auto operator==(const AbstractExpression &rhs) const -> bool;
 
     /**
      * Logical inequality check.
      * @param rhs other
      * @return true if the two expressions are logically not equal
      */
-    virtual bool operator!=(const AbstractExpression &rhs) const {
+    virtual auto operator!=(const AbstractExpression &rhs) const -> bool {
         return !operator==(rhs);
     }
 
@@ -291,53 +291,54 @@ public:
      */
     // It is incorrect to supply a default implementation here since that will return an object
     // of base type AbstractExpression instead of the desired non-abstract type.
-    virtual std::unique_ptr<AbstractExpression> Copy() const = 0;
+    virtual auto Copy() const -> std::unique_ptr<AbstractExpression> = 0;
 
     /**
      * Creates a copy of the current AbstractExpression with new children implanted.
      * The children should not be owned by any other AbstractExpression.
      * @param children New children to be owned by the copy
      */
-    virtual std::unique_ptr<AbstractExpression>
-    CopyWithChildren(std::vector<std::unique_ptr<AbstractExpression>> &&children) const = 0;
+    virtual auto CopyWithChildren(std::vector<std::unique_ptr<AbstractExpression>> &&children) const
+        -> std::unique_ptr<AbstractExpression>
+        = 0;
 
     /**
      * @return type of this expression
      */
-    ExpressionType GetExpressionType() const {
+    auto GetExpressionType() const -> ExpressionType {
         return expression_type_;
     }
 
     /**
      * @return type of the return value
      */
-    execution::sql::SqlTypeId GetReturnValueType() const {
+    auto GetReturnValueType() const -> execution::sql::SqlTypeId {
         return return_value_type_;
     }
 
     /**
      * @return number of children in this abstract expression
      */
-    size_t GetChildrenSize() const {
+    auto GetChildrenSize() const -> size_t {
         return children_.size();
     }
 
     /**
      * @return children of this abstract expression
      */
-    std::vector<common::ManagedPointer<AbstractExpression>> GetChildren() const;
+    auto GetChildren() const -> std::vector<common::ManagedPointer<AbstractExpression>>;
 
     /**
      * @param index index of child
      * @return child of abstract expression at that index
      */
-    common::ManagedPointer<AbstractExpression> GetChild(uint64_t index) const {
+    auto GetChild(uint64_t index) const -> common::ManagedPointer<AbstractExpression> {
         NOISEPAGE_ASSERT(index < children_.size(), "Index must be in bounds.");
         return common::ManagedPointer(children_[index]);
     }
 
     /** @return Name of the expression. */
-    const std::string &GetExpressionName() const {
+    auto GetExpressionName() const -> const std::string & {
         return expression_name_;
     }
 
@@ -347,14 +348,14 @@ public:
     virtual void DeriveExpressionName();
 
     /** @return alias name of this abstract expression */
-    const std::string &GetAliasName() const {
+    auto GetAliasName() const -> const std::string & {
         return alias_.GetName();
     }
 
     /**
      * @return The full alias type of this abstract expression
      */
-    const AliasType &GetAlias() const {
+    auto GetAlias() const -> const AliasType & {
         return alias_;
     }
 
@@ -377,12 +378,13 @@ public:
      * @param v Visitor pattern for the expression
      */
     virtual void AcceptChildren(common::ManagedPointer<binder::SqlNodeVisitor> v) {
-        for (auto &child : children_)
+        for (auto &child : children_) {
             child->Accept(v);
+        }
     }
 
     /** @return the sub-query depth level (SEE COMMENT in depth_) */
-    int GetDepth() const {
+    auto GetDepth() const -> int {
         return depth_;
     }
 
@@ -390,13 +392,13 @@ public:
      * Derive the sub-query depth level of the current expression
      * @return the derived depth (SEE COMMENT in depth_)
      */
-    virtual int DeriveDepth();
+    virtual auto DeriveDepth() -> int;
 
     /** @return true iff the current expression contains a subquery
      * DeriveSubqueryFlag() MUST be called between modifications to this expression or its children for this
      * function to return a meaningful value.
      * */
-    bool HasSubquery() const {
+    auto HasSubquery() const -> bool {
         return has_subquery_;
     }
 
@@ -404,19 +406,19 @@ public:
      * Derive if there's sub-query in the current expression
      * @return true iff the current expression contains a subquery
      */
-    virtual bool DeriveSubqueryFlag();
+    virtual auto DeriveSubqueryFlag() -> bool;
 
     /**
      * Derived expressions should call this base method
      * @return expression serialized to json
      */
-    virtual nlohmann::json ToJson() const;
+    virtual auto ToJson() const -> nlohmann::json;
 
     /**
      * Derived expressions should call this base method
      * @param j json to deserialize
      */
-    virtual std::vector<std::unique_ptr<AbstractExpression>> FromJson(const nlohmann::json &j);
+    virtual auto FromJson(const nlohmann::json &j) -> std::vector<std::unique_ptr<AbstractExpression>>;
 
     /**
      * @param expression_type Set the expression type of the current expression
@@ -442,13 +444,13 @@ protected:
     void SetChild(int index, common::ManagedPointer<AbstractExpression> expr);
 
     /** Type of the current expression */
-    ExpressionType expression_type_;
+    ExpressionType expression_type_{ExpressionType::INVALID};
     /** MUTABLE Name of the current expression */
     std::string expression_name_;
     /** Alias of the current expression */
     AliasType alias_;
     /** Type of the return value */
-    execution::sql::SqlTypeId return_value_type_;
+    execution::sql::SqlTypeId return_value_type_{execution::sql::SqlTypeId::Invalid};
 
     /**
      * MUTABLE Sub-query depth level for the current expression.
@@ -495,7 +497,7 @@ struct JSONDeserializeExprIntermediate {
  * @param json json to deserialize
  * @return intermediate result for deserialized JSON
  */
-JSONDeserializeExprIntermediate DeserializeExpression(const nlohmann::json &j);
+auto DeserializeExpression(const nlohmann::json &j) -> JSONDeserializeExprIntermediate;
 
 } // namespace noisepage::parser
 
@@ -510,7 +512,7 @@ struct hash<noisepage::parser::AbstractExpression> {
      * @param expr the expression to hash
      * @return hash code of the given expression
      */
-    size_t operator()(const noisepage::parser::AbstractExpression &expr) const {
+    auto operator()(const noisepage::parser::AbstractExpression &expr) const -> size_t {
         return expr.Hash();
     }
 };
@@ -527,7 +529,7 @@ struct hash<noisepage::parser::AliasType> {
      * @param p Alias we are hashing
      * @return Hash value of alias, effectively the hash of the name
      */
-    size_t operator()(const noisepage::parser::AliasType &p) const {
+    auto operator()(const noisepage::parser::AliasType &p) const -> size_t {
         return std::hash<std::string>{}(p.GetName());
     }
 };

@@ -3,6 +3,7 @@
 
 namespace noisepage::common {
 
+// ManagedPointer类本身不负责管理对象的生命周期
 /**
  * A ManagedPointer points to an object whose life cycle is managed by some external entity. (e.g.
  * Catalog, SqlTable, GC) This class serves as a wrapper around the pointer to denote that the holder

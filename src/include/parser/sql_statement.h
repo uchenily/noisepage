@@ -44,35 +44,35 @@ namespace parser {
         /**
          * @return a copy of the table location information
          */
-        std::unique_ptr<TableInfo> Copy() {
+        auto Copy() -> std::unique_ptr<TableInfo> {
             return std::make_unique<TableInfo>(GetTableName(), GetNamespaceName(), GetDatabaseName());
         }
 
         /**
          * @return table name
          */
-        const std::string &GetTableName() {
+        auto GetTableName() -> const std::string & {
             return table_name_;
         }
 
         /**
          * @return namespace name
          */
-        const std::string &GetNamespaceName() {
+        auto GetNamespaceName() -> const std::string & {
             return namespace_name_;
         }
 
         /**
          * @return database name
          */
-        const std::string &GetDatabaseName() {
+        auto GetDatabaseName() -> const std::string & {
             return database_name_;
         }
 
         /**
          * @return the hashed value of this table info object
          */
-        common::hash_t Hash() const {
+        auto Hash() const -> common::hash_t {
             common::hash_t hash = common::HashUtil::Hash(table_name_);
             hash = common::HashUtil::CombineHashes(hash, common::HashUtil::Hash(namespace_name_));
             hash = common::HashUtil::CombineHashes(hash, common::HashUtil::Hash(database_name_));
@@ -84,11 +84,13 @@ namespace parser {
          * @param rhs other
          * @return true if the two TableInfo are logically equal
          */
-        bool operator==(const TableInfo &rhs) const {
-            if (table_name_ != rhs.table_name_)
+        auto operator==(const TableInfo &rhs) const -> bool {
+            if (table_name_ != rhs.table_name_) {
                 return false;
-            if (namespace_name_ != rhs.namespace_name_)
+            }
+            if (namespace_name_ != rhs.namespace_name_) {
                 return false;
+            }
             return database_name_ == rhs.database_name_;
         }
 
@@ -97,19 +99,19 @@ namespace parser {
          * @param rhs other
          * @return true if the two TableInfo logically unequal
          */
-        bool operator!=(const TableInfo &rhs) const {
+        auto operator!=(const TableInfo &rhs) const -> bool {
             return !(operator==(rhs));
         }
 
         /**
          * @return TableInfo serialized to json
          */
-        nlohmann::json ToJson() const;
+        auto ToJson() const -> nlohmann::json;
 
         /**
          * @param j json to deserialize
          */
-        std::vector<std::unique_ptr<AbstractExpression>> FromJson(const nlohmann::json &j);
+        auto FromJson(const nlohmann::json &j) -> std::vector<std::unique_ptr<AbstractExpression>>;
 
     private:
         friend class TableRefStatement;
@@ -143,7 +145,7 @@ namespace parser {
         /**
          * @return SQL statement type
          */
-        virtual StatementType GetType() const {
+        virtual auto GetType() const -> StatementType {
             return stmt_type_;
         }
 
@@ -160,15 +162,15 @@ namespace parser {
         /**
          * @return statement serialized to json
          */
-        virtual nlohmann::json ToJson() const;
+        virtual auto ToJson() const -> nlohmann::json;
 
         /**
          * @param j json to deserialize
          */
-        virtual std::vector<std::unique_ptr<parser::AbstractExpression>> FromJson(const nlohmann::json &j);
+        virtual auto FromJson(const nlohmann::json &j) -> std::vector<std::unique_ptr<parser::AbstractExpression>>;
 
     private:
-        StatementType stmt_type_;
+        StatementType stmt_type_{StatementType::INVALID};
     };
 
     DEFINE_JSON_HEADER_DECLARATIONS(SQLStatement);
@@ -185,8 +187,9 @@ namespace parser {
         TableRefStatement(const StatementType type, std::unique_ptr<TableInfo> table_info)
             : SQLStatement(type)
             , table_info_(std::move(table_info)) {
-            if (!table_info_)
+            if (!table_info_) {
                 table_info_ = std::make_unique<TableInfo>();
+            }
         }
 
         ~TableRefStatement() override = default;
@@ -194,21 +197,21 @@ namespace parser {
         /**
          * @return table name
          */
-        virtual const std::string &GetTableName() const {
+        virtual auto GetTableName() const -> const std::string & {
             return table_info_->GetTableName();
         }
 
         /**
          * @return namespace name
          */
-        virtual const std::string &GetNamespaceName() const {
+        virtual auto GetNamespaceName() const -> const std::string & {
             return table_info_->GetNamespaceName();
         }
 
         /**
          * @return database name
          */
-        virtual const std::string &GetDatabaseName() const {
+        virtual auto GetDatabaseName() const -> const std::string & {
             return table_info_->GetDatabaseName();
         }
 

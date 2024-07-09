@@ -167,11 +167,13 @@ void BindNodeVisitor::Visit(common::ManagedPointer<parser::CreateStatement> node
         }
         context_->AddNewTable(node->GetTableName(), node->GetColumns());
         for (const auto &col : node->GetColumns()) {
-            if (col->GetDefaultExpression() != nullptr)
+            if (col->GetDefaultExpression() != nullptr) {
                 col->GetDefaultExpression()->Accept(
                     common::ManagedPointer(this).CastManagedPointerTo<SqlNodeVisitor>());
-            if (col->GetCheckExpression() != nullptr)
+            }
+            if (col->GetCheckExpression() != nullptr) {
                 col->GetCheckExpression()->Accept(common::ManagedPointer(this).CastManagedPointerTo<SqlNodeVisitor>());
+            }
         }
         for (const auto &fk : node->GetForeignKeys()) {
             // foreign key does not have check exprssion nor default expression
@@ -186,9 +188,10 @@ void BindNodeVisitor::Visit(common::ManagedPointer<parser::CreateStatement> node
 
             // TODO(Ling): assuming no composite key? Do we support create type?
             //  Where should we check uniqueness constraint
-            if (src.size() != ref.size())
+            if (src.size() != ref.size()) {
                 throw BINDER_EXCEPTION("Number of columns in foreign key does not match number of reference columns",
                                        common::ErrorCode::ERRCODE_INVALID_FOREIGN_KEY);
+            }
 
             for (size_t i = 0; i < src.size(); i++) {
                 auto ref_col = catalog_accessor_->GetSchema(table_oid).GetColumn(ref[i]);
@@ -203,18 +206,20 @@ void BindNodeVisitor::Visit(common::ManagedPointer<parser::CreateStatement> node
                         find = true;
 
                         // check if their type matches
-                        if (ref_col.Type() != col->GetValueType())
+                        if (ref_col.Type() != col->GetValueType()) {
                             throw BINDER_EXCEPTION(
                                 fmt::format("Foreign key source column {} type does not match reference column type",
                                             src[i]),
                                 common::ErrorCode::ERRCODE_INVALID_FOREIGN_KEY);
+                        }
 
                         break;
                     }
                 }
-                if (!find)
+                if (!find) {
                     throw BINDER_EXCEPTION(fmt::format("Cannot find column {} in foreign key source", src[i]),
                                            common::ErrorCode::ERRCODE_INVALID_FOREIGN_KEY);
+                }
             }
         }
         break;
@@ -239,10 +244,11 @@ void BindNodeVisitor::Visit(common::ManagedPointer<parser::CreateStatement> node
                 // TODO(Matt): can an index attribute definition ever reference multiple tables? I don't think so. We
                 // should probably move this out of the loop.
                 auto tb_oid = catalog_accessor_->GetTableOid(node->GetTableName());
-                if (!BinderContext::ColumnInSchema(catalog_accessor_->GetSchema(tb_oid), attr.GetName()))
+                if (!BinderContext::ColumnInSchema(catalog_accessor_->GetSchema(tb_oid), attr.GetName())) {
                     throw BINDER_EXCEPTION(
                         fmt::format("No such column specified by the index attribute {}", attr.GetName()),
                         common::ErrorCode::ERRCODE_INVALID_OBJECT_DEFINITION);
+                }
             }
         }
         break;
@@ -257,8 +263,9 @@ void BindNodeVisitor::Visit(common::ManagedPointer<parser::CreateStatement> node
         //  and when it can have NEW reference, but I'm not sure how it actually works... need to add those check later
         context_->AddRegularTable(catalog_accessor_, db_oid_, node->GetNamespaceName(), node->GetTableName(), "old");
         context_->AddRegularTable(catalog_accessor_, db_oid_, node->GetNamespaceName(), node->GetTableName(), "new");
-        if (node->GetTriggerWhen() != nullptr)
+        if (node->GetTriggerWhen() != nullptr) {
             node->GetTriggerWhen()->Accept(common::ManagedPointer(this).CastManagedPointerTo<SqlNodeVisitor>());
+        }
         break;
     case parser::CreateStatement::CreateType::kSchema:
         // nothing for binder to handler
@@ -500,7 +507,7 @@ void BindNodeVisitor::Visit(common::ManagedPointer<parser::SelectStatement> node
             for (std::size_t i = 0; i < num_aliases; i++) {
                 const auto serial_no = parser::alias_oid_t(catalog_accessor_->GetNewTempOid());
                 columns[i]->SetAlias(parser::AliasType(column_aliases[i].GetName(), serial_no));
-                aliases.emplace_back(parser::AliasType(column_aliases[i].GetName(), serial_no));
+                aliases.emplace_back(column_aliases[i].GetName(), serial_no);
                 ref->cte_col_aliases_[i] = parser::AliasType(column_aliases[i].GetName(), serial_no);
             }
 
@@ -752,12 +759,12 @@ void BindNodeVisitor::Visit(common::ManagedPointer<parser::ComparisonExpression>
     SqlNodeVisitor::Visit(expr);
 
     // If any of the operands are typecasts, the typecast children should have been casted by now. Pull the children up.
-    for (size_t i = 0; i < expr->GetChildrenSize(); ++i) {
+    for (auto i = 0u; i < expr->GetChildrenSize(); ++i) {
         auto child = expr->GetChild(i);
         if (parser::ExpressionType::OPERATOR_CAST == child->GetExpressionType()) {
             NOISEPAGE_ASSERT(parser::ExpressionType::VALUE_CONSTANT == child->GetChild(0)->GetExpressionType(),
                              "We can only pull up ConstantValueExpression.");
-            expr->SetChild(i, child->GetChild(0));
+            expr->SetChild(static_cast<int>(i), child->GetChild(0));
         }
     }
 }
@@ -827,8 +834,9 @@ void BindNodeVisitor::Visit(common::ManagedPointer<parser::ParameterValueExpress
         = common::ManagedPointer(&((*(sherpa_->GetParameters()))[expr->GetValueIdx()]));
     const auto desired_type = sherpa_->GetDesiredType(expr.CastManagedPointerTo<parser::AbstractExpression>());
 
-    if (desired_type != execution::sql::SqlTypeId::Invalid)
+    if (desired_type != execution::sql::SqlTypeId::Invalid) {
         BinderUtil::CheckAndTryPromoteType(param, desired_type);
+    }
 
     expr->return_value_type_ = param->GetReturnValueType();
     sherpa_->SetDesiredParameterType(expr->GetValueIdx(), param->GetReturnValueType());
@@ -866,10 +874,12 @@ void BindNodeVisitor::Visit(UNUSED_ATTRIBUTE common::ManagedPointer<parser::Type
 void BindNodeVisitor::Visit(common::ManagedPointer<parser::GroupByDescription> node) {
     BINDER_LOG_TRACE("Visiting GroupByDescription ...");
     SqlNodeVisitor::Visit(node);
-    for (auto &col : node->GetColumns())
+    for (auto &col : node->GetColumns()) {
         col->Accept(common::ManagedPointer(this).CastManagedPointerTo<SqlNodeVisitor>());
-    if (node->GetHaving() != nullptr)
+    }
+    if (node->GetHaving() != nullptr) {
         node->GetHaving()->Accept(common::ManagedPointer(this).CastManagedPointerTo<SqlNodeVisitor>());
+    }
 }
 
 void BindNodeVisitor::Visit(common::ManagedPointer<parser::JoinDefinition> node) {
@@ -889,9 +899,11 @@ void BindNodeVisitor::Visit(UNUSED_ATTRIBUTE common::ManagedPointer<parser::Limi
 void BindNodeVisitor::Visit(common::ManagedPointer<parser::OrderByDescription> node) {
     BINDER_LOG_TRACE("Visiting OrderByDescription ...");
     SqlNodeVisitor::Visit(node);
-    for (auto &expr : node->GetOrderByExpressions())
-        if (expr != nullptr)
+    for (auto &expr : node->GetOrderByExpressions()) {
+        if (expr != nullptr) {
             expr->Accept(common::ManagedPointer(this).CastManagedPointerTo<SqlNodeVisitor>());
+        }
+    }
 }
 
 void BindNodeVisitor::Visit(common::ManagedPointer<parser::TableRef> node) {
@@ -999,12 +1011,14 @@ void BindNodeVisitor::InitTableRef(const common::ManagedPointer<parser::TableRef
 void BindNodeVisitor::ValidateDatabaseName(const std::string &db_name) {
     if (!(db_name.empty())) {
         const auto db_oid = catalog_accessor_->GetDatabaseOid(db_name);
-        if (db_oid == catalog::INVALID_DATABASE_OID)
+        if (db_oid == catalog::INVALID_DATABASE_OID) {
             throw BINDER_EXCEPTION(fmt::format("Database \"{}\" does not exist", db_name),
                                    common::ErrorCode::ERRCODE_UNDEFINED_DATABASE);
-        if (db_oid != db_oid_)
+        }
+        if (db_oid != db_oid_) {
             throw BINDER_EXCEPTION("cross-database references are not implemented: ",
                                    common::ErrorCode::ERRCODE_FEATURE_NOT_SUPPORTED);
+        }
     }
 }
 void BindNodeVisitor::ValidateAndCorrectInsertValues(

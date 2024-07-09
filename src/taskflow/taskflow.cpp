@@ -107,9 +107,9 @@ void Taskflow::BeginTransaction(const common::ManagedPointer<network::Connection
                      "Invalid ConnectionContext state, already in a transaction.");
     const auto txn = txn_manager_->BeginTransaction();
     connection_ctx->SetTransaction(common::ManagedPointer(txn));
-    connection_ctx->SetAccessor(catalog_->GetAccessor(common::ManagedPointer(txn),
-                                                      connection_ctx->GetDatabaseOid(),
-                                                      connection_ctx->GetCatalogCache()));
+    connection_ctx->SetCatalogAccessor(catalog_->GetAccessor(common::ManagedPointer(txn),
+                                                             connection_ctx->GetDatabaseOid(),
+                                                             connection_ctx->GetCatalogCache()));
 }
 
 void Taskflow::EndTransaction(const common::ManagedPointer<network::ConnectionContext> connection_ctx,
@@ -133,7 +133,7 @@ void Taskflow::EndTransaction(const common::ManagedPointer<network::ConnectionCo
         txn_manager_->Abort(txn.Get());
     }
     connection_ctx->SetTransaction(nullptr);
-    connection_ctx->SetAccessor(nullptr);
+    connection_ctx->SetCatalogAccessor(nullptr);
 }
 
 void Taskflow::ExecuteTransactionStatement(const common::ManagedPointer<network::ConnectionContext>    connection_ctx,
@@ -195,7 +195,7 @@ auto Taskflow::OptimizeBoundQuery(const common::ManagedPointer<network::Connecti
                      "Not in a valid txn. This should have been caught before calling this function.");
 
     return TaskflowUtil::Optimize(connection_ctx->Transaction(),
-                                  connection_ctx->Accessor(),
+                                  connection_ctx->CatalogAccessor(),
                                   query,
                                   connection_ctx->GetDatabaseOid(),
                                   stats_storage_,
@@ -274,7 +274,7 @@ auto Taskflow::ExecuteCreateStatement(const common::ManagedPointer<network::Conn
     case network::QueryType::QUERY_CREATE_TABLE: {
         if (execution::sql::DDLExecutors::CreateTableExecutor(
                 physical_plan.CastManagedPointerTo<planner::CreateTablePlanNode>(),
-                connection_ctx->Accessor(),
+                connection_ctx->CatalogAccessor(),
                 connection_ctx->GetDatabaseOid())) {
             return {ResultType::COMPLETE, 0u};
         }
@@ -283,7 +283,7 @@ auto Taskflow::ExecuteCreateStatement(const common::ManagedPointer<network::Conn
     case network::QueryType::QUERY_CREATE_DB: {
         if (execution::sql::DDLExecutors::CreateDatabaseExecutor(
                 physical_plan.CastManagedPointerTo<planner::CreateDatabasePlanNode>(),
-                connection_ctx->Accessor())) {
+                connection_ctx->CatalogAccessor())) {
             return {ResultType::COMPLETE, 0u};
         }
         break;
@@ -291,7 +291,7 @@ auto Taskflow::ExecuteCreateStatement(const common::ManagedPointer<network::Conn
     case network::QueryType::QUERY_CREATE_INDEX: {
         if (execution::sql::DDLExecutors::CreateIndexExecutor(
                 physical_plan.CastManagedPointerTo<planner::CreateIndexPlanNode>(),
-                connection_ctx->Accessor())) {
+                connection_ctx->CatalogAccessor())) {
             return {ResultType::COMPLETE, 0u};
         }
         break;
@@ -299,7 +299,7 @@ auto Taskflow::ExecuteCreateStatement(const common::ManagedPointer<network::Conn
     case network::QueryType::QUERY_CREATE_SCHEMA: {
         if (execution::sql::DDLExecutors::CreateNamespaceExecutor(
                 physical_plan.CastManagedPointerTo<planner::CreateNamespacePlanNode>(),
-                connection_ctx->Accessor())) {
+                connection_ctx->CatalogAccessor())) {
             return {ResultType::COMPLETE, 0u};
         }
         break;
@@ -336,7 +336,7 @@ auto Taskflow::ExecuteDropStatement(const common::ManagedPointer<network::Connec
     case network::QueryType::QUERY_DROP_TABLE: {
         if (execution::sql::DDLExecutors::DropTableExecutor(
                 physical_plan.CastManagedPointerTo<planner::DropTablePlanNode>(),
-                connection_ctx->Accessor())) {
+                connection_ctx->CatalogAccessor())) {
             return {ResultType::COMPLETE, 0u};
         }
         break;
@@ -344,7 +344,7 @@ auto Taskflow::ExecuteDropStatement(const common::ManagedPointer<network::Connec
     case network::QueryType::QUERY_DROP_DB: {
         if (execution::sql::DDLExecutors::DropDatabaseExecutor(
                 physical_plan.CastManagedPointerTo<planner::DropDatabasePlanNode>(),
-                connection_ctx->Accessor(),
+                connection_ctx->CatalogAccessor(),
                 connection_ctx->GetDatabaseOid())) {
             return {ResultType::COMPLETE, 0u};
         }
@@ -353,7 +353,7 @@ auto Taskflow::ExecuteDropStatement(const common::ManagedPointer<network::Connec
     case network::QueryType::QUERY_DROP_INDEX: {
         if (execution::sql::DDLExecutors::DropIndexExecutor(
                 physical_plan.CastManagedPointerTo<planner::DropIndexPlanNode>(),
-                connection_ctx->Accessor())) {
+                connection_ctx->CatalogAccessor())) {
             return {ResultType::COMPLETE, 0u};
         }
         break;
@@ -361,7 +361,7 @@ auto Taskflow::ExecuteDropStatement(const common::ManagedPointer<network::Connec
     case network::QueryType::QUERY_DROP_SCHEMA: {
         if (execution::sql::DDLExecutors::DropNamespaceExecutor(
                 physical_plan.CastManagedPointerTo<planner::DropNamespacePlanNode>(),
-                connection_ctx->Accessor())) {
+                connection_ctx->CatalogAccessor())) {
             return {ResultType::COMPLETE, 0u};
         }
         break;
@@ -458,7 +458,7 @@ auto Taskflow::BindQuery(const common::ManagedPointer<network::ConnectionContext
     try {
         if (statement->OptimizeResult() == nullptr || !UseQueryCache()) {
             // it's not cached, bind it
-            binder::BindNodeVisitor visitor(connection_ctx->Accessor(), connection_ctx->GetDatabaseOid());
+            binder::BindNodeVisitor visitor(connection_ctx->CatalogAccessor(), connection_ctx->GetDatabaseOid());
             if (parameters != nullptr && !parameters->empty()) {
                 std::vector<execution::sql::SqlTypeId> desired_param_types(
                     parameters->size()); // default construction of values is fine, Binding will overwrite it
@@ -538,7 +538,7 @@ auto Taskflow::CodegenPhysicalPlan(const common::ManagedPointer<network::Connect
     auto exec_query
         = execution::compiler::CompilationContext::Compile(*physical_plan,
                                                            exec_settings,
-                                                           connection_ctx->Accessor().Get(),
+                                                           connection_ctx->CatalogAccessor().Get(),
                                                            execution::compiler::CompilationMode::Interleaved,
                                                            std::nullopt,
                                                            portal->OptimizeResult()->GetPlanMetaData());
@@ -630,7 +630,7 @@ auto Taskflow::RunExecutableQuery(const common::ManagedPointer<network::Connecti
                                                                         connection_ctx->Transaction(),
                                                                         callback,
                                                                         physical_plan->GetOutputSchema().Get(),
-                                                                        connection_ctx->Accessor(),
+                                                                        connection_ctx->CatalogAccessor(),
                                                                         exec_settings,
                                                                         metrics,
                                                                         replication_manager_,
