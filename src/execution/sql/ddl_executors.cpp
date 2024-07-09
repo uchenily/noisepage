@@ -21,21 +21,21 @@
 
 namespace noisepage::execution::sql {
 
-bool DDLExecutors::CreateDatabaseExecutor(const common::ManagedPointer<planner::CreateDatabasePlanNode> node,
-                                          const common::ManagedPointer<catalog::CatalogAccessor>        accessor) {
+auto DDLExecutors::CreateDatabaseExecutor(const common::ManagedPointer<planner::CreateDatabasePlanNode> node,
+                                          const common::ManagedPointer<catalog::CatalogAccessor> accessor) -> bool {
     // Request permission from the Catalog to see if this a valid database name
     return accessor->CreateDatabase(node->GetDatabaseName()) != catalog::INVALID_DATABASE_OID;
 }
 
-bool DDLExecutors::CreateNamespaceExecutor(const common::ManagedPointer<planner::CreateNamespacePlanNode> node,
-                                           const common::ManagedPointer<catalog::CatalogAccessor>         accessor) {
+auto DDLExecutors::CreateNamespaceExecutor(const common::ManagedPointer<planner::CreateNamespacePlanNode> node,
+                                           const common::ManagedPointer<catalog::CatalogAccessor> accessor) -> bool {
     // Request permission from the Catalog to see if this a valid namespace name
     return accessor->CreateNamespace(node->GetNamespaceName()) != catalog::INVALID_NAMESPACE_OID;
 }
 
-bool DDLExecutors::CreateTableExecutor(const common::ManagedPointer<planner::CreateTablePlanNode> node,
+auto DDLExecutors::CreateTableExecutor(const common::ManagedPointer<planner::CreateTablePlanNode> node,
                                        const common::ManagedPointer<catalog::CatalogAccessor>     accessor,
-                                       const catalog::db_oid_t                                    connection_db) {
+                                       const catalog::db_oid_t connection_db) -> bool {
     // Request permission from the Catalog to see if this a valid namespace and table name
     const auto table_oid = accessor->CreateTable(node->GetNamespaceOid(), node->GetTableName(), *(node->GetSchema()));
     if (table_oid == catalog::INVALID_TABLE_OID) {
@@ -124,8 +124,8 @@ bool DDLExecutors::CreateTableExecutor(const common::ManagedPointer<planner::Cre
     return result;
 }
 
-bool DDLExecutors::CreateIndexExecutor(const common::ManagedPointer<planner::CreateIndexPlanNode> node,
-                                       const common::ManagedPointer<catalog::CatalogAccessor>     accessor) {
+auto DDLExecutors::CreateIndexExecutor(const common::ManagedPointer<planner::CreateIndexPlanNode> node,
+                                       const common::ManagedPointer<catalog::CatalogAccessor>     accessor) -> bool {
     return CreateIndex(accessor,
                        node->GetNamespaceOid(),
                        node->GetIndexName(),
@@ -133,9 +133,9 @@ bool DDLExecutors::CreateIndexExecutor(const common::ManagedPointer<planner::Cre
                        *(node->GetSchema()));
 }
 
-bool DDLExecutors::DropDatabaseExecutor(const common::ManagedPointer<planner::DropDatabasePlanNode> node,
+auto DDLExecutors::DropDatabaseExecutor(const common::ManagedPointer<planner::DropDatabasePlanNode> node,
                                         const common::ManagedPointer<catalog::CatalogAccessor>      accessor,
-                                        const catalog::db_oid_t                                     connection_db) {
+                                        const catalog::db_oid_t connection_db) -> bool {
     NOISEPAGE_ASSERT(
         connection_db != node->GetDatabaseOid(),
         "This command cannot be executed while connected to the target database. This should be checked in "
@@ -144,32 +144,32 @@ bool DDLExecutors::DropDatabaseExecutor(const common::ManagedPointer<planner::Dr
     return result;
 }
 
-bool DDLExecutors::DropNamespaceExecutor(const common::ManagedPointer<planner::DropNamespacePlanNode> node,
-                                         const common::ManagedPointer<catalog::CatalogAccessor>       accessor) {
+auto DDLExecutors::DropNamespaceExecutor(const common::ManagedPointer<planner::DropNamespacePlanNode> node,
+                                         const common::ManagedPointer<catalog::CatalogAccessor> accessor) -> bool {
     const bool result = accessor->DropNamespace(node->GetNamespaceOid());
     // TODO(Matt): CASCADE?
     return result;
 }
 
-bool DDLExecutors::DropTableExecutor(const common::ManagedPointer<planner::DropTablePlanNode> node,
-                                     const common::ManagedPointer<catalog::CatalogAccessor>   accessor) {
+auto DDLExecutors::DropTableExecutor(const common::ManagedPointer<planner::DropTablePlanNode> node,
+                                     const common::ManagedPointer<catalog::CatalogAccessor>   accessor) -> bool {
     const bool result = accessor->DropTable(node->GetTableOid());
     // TODO(Matt): CASCADE?
     return result;
 }
 
-bool DDLExecutors::DropIndexExecutor(const common::ManagedPointer<planner::DropIndexPlanNode> node,
-                                     const common::ManagedPointer<catalog::CatalogAccessor>   accessor) {
+auto DDLExecutors::DropIndexExecutor(const common::ManagedPointer<planner::DropIndexPlanNode> node,
+                                     const common::ManagedPointer<catalog::CatalogAccessor>   accessor) -> bool {
     const bool result = accessor->DropIndex(node->GetIndexOid());
     // TODO(Matt): CASCADE?
     return result;
 }
 
-bool DDLExecutors::CreateIndex(const common::ManagedPointer<catalog::CatalogAccessor> accessor,
+auto DDLExecutors::CreateIndex(const common::ManagedPointer<catalog::CatalogAccessor> accessor,
                                const catalog::namespace_oid_t                         ns,
                                const std::string                                     &name,
                                const catalog::table_oid_t                             table,
-                               const catalog::IndexSchema                            &input_schema) {
+                               const catalog::IndexSchema                            &input_schema) -> bool {
     // Request permission from the Catalog to see if this a valid namespace and table name
     const auto index_oid = accessor->CreateIndex(ns, table, name, input_schema);
     if (index_oid == catalog::INVALID_INDEX_OID) {

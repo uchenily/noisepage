@@ -7,9 +7,9 @@ namespace noisepage::network {
 /**
  * Utility class for static network or query-related functions
  */
-class NetworkUtil {
+class SqlUtil {
 public:
-    NetworkUtil() = delete;
+    SqlUtil() = delete;
 
     /**
      * @param type query type from the parser

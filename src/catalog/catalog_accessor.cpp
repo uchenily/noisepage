@@ -10,17 +10,17 @@
 #include "catalog/postgres/pg_proc.h"
 
 namespace noisepage::catalog {
-db_oid_t CatalogAccessor::GetDatabaseOid(std::string name) const {
+auto CatalogAccessor::GetDatabaseOid(std::string name) const -> db_oid_t {
     NormalizeObjectName(&name);
     return catalog_->GetDatabaseOid(txn_, name);
 }
 
-db_oid_t CatalogAccessor::CreateDatabase(std::string name) const {
+auto CatalogAccessor::CreateDatabase(std::string name) const -> db_oid_t {
     NormalizeObjectName(&name);
     return catalog_->CreateDatabase(txn_, name, true);
 }
 
-bool CatalogAccessor::DropDatabase(db_oid_t db) const {
+auto CatalogAccessor::DropDatabase(db_oid_t db) const -> bool {
     return catalog_->DeleteDatabase(txn_, db);
 }
 
@@ -31,63 +31,67 @@ void CatalogAccessor::SetSearchPath(std::vector<namespace_oid_t> namespaces) {
     search_path_ = std::move(namespaces);
 
     // Check if 'pg_catalog is explicitly set'
-    for (const auto &ns : search_path_)
-        if (ns == postgres::PgNamespace::NAMESPACE_CATALOG_NAMESPACE_OID)
+    for (const auto &ns : search_path_) {
+        if (ns == postgres::PgNamespace::NAMESPACE_CATALOG_NAMESPACE_OID) {
             return;
+        }
+    }
 
     search_path_.emplace(search_path_.begin(), postgres::PgNamespace::NAMESPACE_CATALOG_NAMESPACE_OID);
 }
 
-namespace_oid_t CatalogAccessor::GetNamespaceOid(std::string name) const {
-    if (name.empty())
+auto CatalogAccessor::GetNamespaceOid(std::string name) const -> namespace_oid_t {
+    if (name.empty()) {
         return catalog::postgres::PgNamespace::NAMESPACE_DEFAULT_NAMESPACE_OID;
+    }
     NormalizeObjectName(&name);
     return dbc_->GetNamespaceOid(txn_, name);
 }
 
-namespace_oid_t CatalogAccessor::CreateNamespace(std::string name) const {
+auto CatalogAccessor::CreateNamespace(std::string name) const -> namespace_oid_t {
     NormalizeObjectName(&name);
     return dbc_->CreateNamespace(txn_, name);
 }
 
-bool CatalogAccessor::DropNamespace(namespace_oid_t ns) const {
+auto CatalogAccessor::DropNamespace(namespace_oid_t ns) const -> bool {
     return dbc_->DeleteNamespace(txn_, ns);
 }
 
-table_oid_t CatalogAccessor::GetTableOid(std::string name) const {
+auto CatalogAccessor::GetTableOid(std::string name) const -> table_oid_t {
     NormalizeObjectName(&name);
     for (const auto &path : search_path_) {
         table_oid_t search_result = dbc_->GetTableOid(txn_, path, name);
-        if (search_result != INVALID_TABLE_OID)
+        if (search_result != INVALID_TABLE_OID) {
             return search_result;
+        }
     }
     return INVALID_TABLE_OID;
 }
 
-table_oid_t CatalogAccessor::GetTableOid(namespace_oid_t ns, std::string name) const {
+auto CatalogAccessor::GetTableOid(namespace_oid_t ns, std::string name) const -> table_oid_t {
     NormalizeObjectName(&name);
     return dbc_->GetTableOid(txn_, ns, name);
 }
 
-table_oid_t CatalogAccessor::CreateTable(namespace_oid_t ns, std::string name, const Schema &schema) const {
+auto CatalogAccessor::CreateTable(namespace_oid_t ns, std::string name, const Schema &schema) const -> table_oid_t {
     NormalizeObjectName(&name);
     return dbc_->CreateTable(txn_, ns, name, schema);
 }
 
-bool CatalogAccessor::RenameTable(table_oid_t table, std::string new_table_name) const {
+auto CatalogAccessor::RenameTable(table_oid_t table, std::string new_table_name) const -> bool {
     NormalizeObjectName(&new_table_name);
     return dbc_->RenameTable(txn_, table, new_table_name);
 }
 
-bool CatalogAccessor::DropTable(table_oid_t table) const {
+auto CatalogAccessor::DropTable(table_oid_t table) const -> bool {
     return dbc_->DeleteTable(txn_, table);
 }
 
-bool CatalogAccessor::SetTablePointer(table_oid_t table, storage::SqlTable *table_ptr) const {
+auto CatalogAccessor::SetTablePointer(table_oid_t table, storage::SqlTable *table_ptr) const -> bool {
     return dbc_->SetTablePointer(txn_, table, table_ptr);
 }
 
-common::ManagedPointer<storage::SqlTable> CatalogAccessor::GetTable(const table_oid_t table) const {
+auto CatalogAccessor::GetTable(const table_oid_t table) const -> common::ManagedPointer<storage::SqlTable> {
     if (UNLIKELY(catalog::IsTempOid(table))) {
         auto result = temp_tables_.find(table);
         NOISEPAGE_ASSERT(result != temp_tables_.end(), "temp_tables_ does not contain desired table");
@@ -105,11 +109,11 @@ common::ManagedPointer<storage::SqlTable> CatalogAccessor::GetTable(const table_
     return dbc_->GetTable(txn_, table);
 }
 
-bool CatalogAccessor::UpdateSchema(table_oid_t table, Schema *new_schema) const {
+auto CatalogAccessor::UpdateSchema(table_oid_t table, Schema *new_schema) const -> bool {
     return dbc_->UpdateSchema(txn_, table, new_schema);
 }
 
-const Schema &CatalogAccessor::GetSchema(const table_oid_t table) const {
+auto CatalogAccessor::GetSchema(const table_oid_t table) const -> const Schema & {
     if (UNLIKELY(catalog::IsTempOid(table))) {
         auto result = temp_schemas_.find(table);
         NOISEPAGE_ASSERT(result != temp_schemas_.end(), "temp_tables_ does not contain desired table");
@@ -118,11 +122,11 @@ const Schema &CatalogAccessor::GetSchema(const table_oid_t table) const {
     return dbc_->GetSchema(txn_, table);
 }
 
-std::vector<constraint_oid_t> CatalogAccessor::GetConstraints(table_oid_t table) const {
+auto CatalogAccessor::GetConstraints(table_oid_t table) const -> std::vector<constraint_oid_t> {
     return dbc_->GetConstraints(txn_, table);
 }
 
-std::vector<index_oid_t> CatalogAccessor::GetIndexOids(table_oid_t table) const {
+auto CatalogAccessor::GetIndexOids(table_oid_t table) const -> std::vector<index_oid_t> {
     if (cache_ != DISABLED) {
         auto cache_lookup = cache_->GetIndexOids(table);
         if (!cache_lookup.first) {
@@ -136,45 +140,48 @@ std::vector<index_oid_t> CatalogAccessor::GetIndexOids(table_oid_t table) const 
     return dbc_->GetIndexOids(txn_, table);
 }
 
-std::vector<std::pair<common::ManagedPointer<storage::index::Index>, const IndexSchema &>>
-CatalogAccessor::GetIndexes(const table_oid_t table) {
+auto CatalogAccessor::GetIndexes(const table_oid_t table)
+    -> std::vector<std::pair<common::ManagedPointer<storage::index::Index>, const IndexSchema &>> {
     return dbc_->GetIndexes(txn_, table);
 }
 
-index_oid_t CatalogAccessor::GetIndexOid(std::string name) const {
+auto CatalogAccessor::GetIndexOid(std::string name) const -> index_oid_t {
     NormalizeObjectName(&name);
     for (const auto &path : search_path_) {
         const index_oid_t search_result = dbc_->GetIndexOid(txn_, path, name);
-        if (search_result != INVALID_INDEX_OID)
+        if (search_result != INVALID_INDEX_OID) {
             return search_result;
+        }
     }
     return INVALID_INDEX_OID;
 }
 
-index_oid_t CatalogAccessor::GetIndexOid(namespace_oid_t ns, std::string name) const {
+auto CatalogAccessor::GetIndexOid(namespace_oid_t ns, std::string name) const -> index_oid_t {
     NormalizeObjectName(&name);
     return dbc_->GetIndexOid(txn_, ns, name);
 }
 
-index_oid_t
-CatalogAccessor::CreateIndex(namespace_oid_t ns, table_oid_t table, std::string name, const IndexSchema &schema) const {
+auto CatalogAccessor::CreateIndex(namespace_oid_t    ns,
+                                  table_oid_t        table,
+                                  std::string        name,
+                                  const IndexSchema &schema) const -> index_oid_t {
     NormalizeObjectName(&name);
     return dbc_->CreateIndex(txn_, ns, name, table, schema);
 }
 
-const IndexSchema &CatalogAccessor::GetIndexSchema(index_oid_t index) const {
+auto CatalogAccessor::GetIndexSchema(index_oid_t index) const -> const IndexSchema & {
     return dbc_->GetIndexSchema(txn_, index);
 }
 
-bool CatalogAccessor::DropIndex(index_oid_t index) const {
+auto CatalogAccessor::DropIndex(index_oid_t index) const -> bool {
     return dbc_->DeleteIndex(txn_, index);
 }
 
-bool CatalogAccessor::SetIndexPointer(index_oid_t index, storage::index::Index *index_ptr) const {
+auto CatalogAccessor::SetIndexPointer(index_oid_t index, storage::index::Index *index_ptr) const -> bool {
     return dbc_->SetIndexPointer(txn_, index, index_ptr);
 }
 
-common::ManagedPointer<storage::index::Index> CatalogAccessor::GetIndex(index_oid_t index) const {
+auto CatalogAccessor::GetIndex(index_oid_t index) const -> common::ManagedPointer<storage::index::Index> {
     if (cache_ != DISABLED) {
         auto index_ptr = cache_->GetIndex(index);
         if (index_ptr == nullptr) {
@@ -187,33 +194,33 @@ common::ManagedPointer<storage::index::Index> CatalogAccessor::GetIndex(index_oi
     return dbc_->GetIndex(txn_, index);
 }
 
-std::string_view CatalogAccessor::GetIndexName(index_oid_t index) const {
+auto CatalogAccessor::GetIndexName(index_oid_t index) const -> std::string_view {
     return dbc_->GetIndexName(txn_, index);
 }
 
-language_oid_t CatalogAccessor::CreateLanguage(const std::string &lanname) {
+auto CatalogAccessor::CreateLanguage(const std::string &lanname) -> language_oid_t {
     return dbc_->CreateLanguage(txn_, lanname);
 }
 
-language_oid_t CatalogAccessor::GetLanguageOid(const std::string &lanname) {
+auto CatalogAccessor::GetLanguageOid(const std::string &lanname) -> language_oid_t {
     return dbc_->GetLanguageOid(txn_, lanname);
 }
 
-bool CatalogAccessor::DropLanguage(language_oid_t language_oid) {
+auto CatalogAccessor::DropLanguage(language_oid_t language_oid) -> bool {
     return dbc_->DropLanguage(txn_, language_oid);
 }
 
-proc_oid_t CatalogAccessor::CreateProcedure(const std::string                             &procname,
-                                            const language_oid_t                           language_oid,
-                                            const namespace_oid_t                          procns,
-                                            const type_oid_t                               variadic_type,
-                                            const std::vector<std::string>                &args,
-                                            const std::vector<type_oid_t>                 &arg_types,
-                                            const std::vector<type_oid_t>                 &all_arg_types,
-                                            const std::vector<postgres::PgProc::ArgModes> &arg_modes,
-                                            const type_oid_t                               rettype,
-                                            const std::string                             &src,
-                                            const bool                                     is_aggregate) {
+auto CatalogAccessor::CreateProcedure(const std::string                             &procname,
+                                      const language_oid_t                           language_oid,
+                                      const namespace_oid_t                          procns,
+                                      const type_oid_t                               variadic_type,
+                                      const std::vector<std::string>                &args,
+                                      const std::vector<type_oid_t>                 &arg_types,
+                                      const std::vector<type_oid_t>                 &all_arg_types,
+                                      const std::vector<postgres::PgProc::ArgModes> &arg_modes,
+                                      const type_oid_t                               rettype,
+                                      const std::string                             &src,
+                                      const bool                                     is_aggregate) -> proc_oid_t {
     return dbc_->CreateProcedure(txn_,
                                  procname,
                                  language_oid,
@@ -228,11 +235,11 @@ proc_oid_t CatalogAccessor::CreateProcedure(const std::string                   
                                  is_aggregate);
 }
 
-bool CatalogAccessor::DropProcedure(proc_oid_t proc_oid) {
+auto CatalogAccessor::DropProcedure(proc_oid_t proc_oid) -> bool {
     return dbc_->DropProcedure(txn_, proc_oid);
 }
 
-proc_oid_t CatalogAccessor::GetProcOid(const std::string &procname, const std::vector<type_oid_t> &arg_types) {
+auto CatalogAccessor::GetProcOid(const std::string &procname, const std::vector<type_oid_t> &arg_types) -> proc_oid_t {
     proc_oid_t ret;
     for (auto ns_oid : search_path_) {
         ret = dbc_->GetProcOid(txn_, ns_oid, procname, arg_types);
@@ -243,29 +250,30 @@ proc_oid_t CatalogAccessor::GetProcOid(const std::string &procname, const std::v
     return catalog::INVALID_PROC_OID;
 }
 
-bool CatalogAccessor::SetFunctionContextPointer(proc_oid_t                                   proc_oid,
-                                                const execution::functions::FunctionContext *func_context) {
+auto CatalogAccessor::SetFunctionContextPointer(proc_oid_t                                   proc_oid,
+                                                const execution::functions::FunctionContext *func_context) -> bool {
     return dbc_->SetFunctionContextPointer(txn_, proc_oid, func_context);
 }
 
-common::ManagedPointer<execution::functions::FunctionContext> CatalogAccessor::GetFunctionContext(proc_oid_t proc_oid) {
+auto CatalogAccessor::GetFunctionContext(proc_oid_t proc_oid)
+    -> common::ManagedPointer<execution::functions::FunctionContext> {
     return dbc_->GetFunctionContext(txn_, proc_oid);
 }
 
-std::unique_ptr<optimizer::ColumnStatsBase> CatalogAccessor::GetColumnStatistics(table_oid_t table_oid,
-                                                                                 col_oid_t   col_oid) {
+auto CatalogAccessor::GetColumnStatistics(table_oid_t table_oid, col_oid_t col_oid)
+    -> std::unique_ptr<optimizer::ColumnStatsBase> {
     return dbc_->GetColumnStatistics(txn_, table_oid, col_oid);
 }
 
-optimizer::TableStats CatalogAccessor::GetTableStatistics(table_oid_t table_oid) {
+auto CatalogAccessor::GetTableStatistics(table_oid_t table_oid) -> optimizer::TableStats {
     return dbc_->GetTableStatistics(txn_, table_oid);
 }
 
-type_oid_t CatalogAccessor::GetTypeOidFromTypeId(execution::sql::SqlTypeId type) {
+auto CatalogAccessor::GetTypeOidFromTypeId(execution::sql::SqlTypeId type) -> type_oid_t {
     return dbc_->GetTypeOidForType(type);
 }
 
-common::ManagedPointer<storage::BlockStore> CatalogAccessor::GetBlockStore() const {
+auto CatalogAccessor::GetBlockStore() const -> common::ManagedPointer<storage::BlockStore> {
     // TODO(Matt): at some point we may decide to adjust the source  (i.e. each DatabaseCatalog has one), stick it in a
     // pg_tablespace table, or we may eliminate the concept entirely. This works for now to allow CREATE nodes to bind a
     // BlockStore

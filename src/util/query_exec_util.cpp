@@ -166,8 +166,7 @@ bool QueryExecUtil::ExecuteDDL(const std::string &query, bool what_if) {
     if (statement == nullptr) {
         return false;
     }
-    NOISEPAGE_ASSERT(!network::NetworkUtil::DMLQueryType(statement->GetQueryType()),
-                     "ExecuteDDL expects DDL statement");
+    NOISEPAGE_ASSERT(!network::SqlUtil::DMLQueryType(statement->GetQueryType()), "ExecuteDDL expects DDL statement");
 
     // Handle SET queries
     bool status = true;
@@ -254,7 +253,7 @@ bool QueryExecUtil::CompileQuery(const std::string                              
     }
 
     const common::ManagedPointer<planner::AbstractPlanNode> out_plan = result->OptimizeResult()->GetPlanNode();
-    NOISEPAGE_ASSERT(network::NetworkUtil::DMLQueryType(result->GetQueryType()), "ExecuteDML expects DML");
+    NOISEPAGE_ASSERT(network::SqlUtil::DMLQueryType(result->GetQueryType()), "ExecuteDML expects DML");
     common::ManagedPointer<planner::OutputSchema> schema = out_plan->GetOutputSchema();
 
     auto exec_query = execution::compiler::CompilationContext::Compile(*out_plan,

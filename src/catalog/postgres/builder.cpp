@@ -26,7 +26,7 @@ namespace noisepage::catalog::postgres {
 
 constexpr uint8_t MAX_NAME_LENGTH = 63; // This mimics PostgreSQL behavior
 
-Schema Builder::GetDatabaseTableSchema() {
+auto Builder::GetDatabaseTableSchema() -> Schema {
     std::vector<Schema::Column> columns;
 
     columns.emplace_back("datoid",
@@ -51,7 +51,7 @@ Schema Builder::GetDatabaseTableSchema() {
     return Schema(columns);
 }
 
-IndexSchema Builder::GetDatabaseOidIndexSchema() {
+auto Builder::GetDatabaseOidIndexSchema() -> IndexSchema {
     std::vector<IndexSchema::Column> columns;
 
     columns.emplace_back(
@@ -68,7 +68,7 @@ IndexSchema Builder::GetDatabaseOidIndexSchema() {
     return schema;
 }
 
-IndexSchema Builder::GetDatabaseNameIndexSchema() {
+auto Builder::GetDatabaseNameIndexSchema() -> IndexSchema {
     std::vector<IndexSchema::Column> columns;
 
     columns.emplace_back(
@@ -86,10 +86,10 @@ IndexSchema Builder::GetDatabaseNameIndexSchema() {
     return schema;
 }
 
-DatabaseCatalog *
-Builder::CreateDatabaseCatalog(const common::ManagedPointer<storage::BlockStore>       block_store,
-                               const db_oid_t                                          oid,
-                               const common::ManagedPointer<storage::GarbageCollector> garbage_collector) {
+auto Builder::CreateDatabaseCatalog(const common::ManagedPointer<storage::BlockStore>       block_store,
+                                    const db_oid_t                                          oid,
+                                    const common::ManagedPointer<storage::GarbageCollector> garbage_collector)
+    -> DatabaseCatalog * {
     auto dbc = new DatabaseCatalog(oid, garbage_collector);
 
     dbc->pg_core_.namespaces_ = new storage::SqlTable(block_store, Builder::GetNamespaceTableSchema());
@@ -175,7 +175,7 @@ Builder::CreateDatabaseCatalog(const common::ManagedPointer<storage::BlockStore>
     return dbc;
 }
 
-Schema Builder::GetColumnTableSchema() {
+auto Builder::GetColumnTableSchema() -> Schema {
     std::vector<Schema::Column> columns;
 
     columns.emplace_back("attnum",
@@ -231,7 +231,7 @@ Schema Builder::GetColumnTableSchema() {
     return Schema(columns);
 }
 
-Schema Builder::GetClassTableSchema() {
+auto Builder::GetClassTableSchema() -> Schema {
     std::vector<Schema::Column> columns;
 
     columns.emplace_back("reloid",
@@ -290,7 +290,7 @@ Schema Builder::GetClassTableSchema() {
     return Schema(columns);
 }
 
-Schema Builder::GetConstraintTableSchema() {
+auto Builder::GetConstraintTableSchema() -> Schema {
     std::vector<Schema::Column> columns;
 
     columns.emplace_back("conoid",
@@ -370,7 +370,7 @@ Schema Builder::GetConstraintTableSchema() {
     return Schema(columns);
 }
 
-Schema Builder::GetIndexTableSchema() {
+auto Builder::GetIndexTableSchema() -> Schema {
     std::vector<Schema::Column> columns;
 
     columns.emplace_back("indoid",
@@ -436,7 +436,7 @@ Schema Builder::GetIndexTableSchema() {
     return Schema(columns);
 }
 
-Schema Builder::GetNamespaceTableSchema() {
+auto Builder::GetNamespaceTableSchema() -> Schema {
     std::vector<Schema::Column> columns;
 
     columns.emplace_back("nspoid",
@@ -455,7 +455,7 @@ Schema Builder::GetNamespaceTableSchema() {
     return Schema(columns);
 }
 
-Schema Builder::GetTypeTableSchema() {
+auto Builder::GetTypeTableSchema() -> Schema {
     std::vector<Schema::Column> columns;
 
     columns.emplace_back("typoid",
@@ -498,7 +498,7 @@ Schema Builder::GetTypeTableSchema() {
     return Schema(columns);
 }
 
-Schema Builder::GetLanguageTableSchema() {
+auto Builder::GetLanguageTableSchema() -> Schema {
     std::vector<Schema::Column> columns;
 
     columns.emplace_back("lanoid",
@@ -547,7 +547,7 @@ Schema Builder::GetLanguageTableSchema() {
     return Schema(columns);
 }
 
-IndexSchema Builder::GetNamespaceOidIndexSchema(db_oid_t db) {
+auto Builder::GetNamespaceOidIndexSchema(db_oid_t db) -> IndexSchema {
     std::vector<IndexSchema::Column> columns;
 
     columns.emplace_back("nspoid",
@@ -563,7 +563,7 @@ IndexSchema Builder::GetNamespaceOidIndexSchema(db_oid_t db) {
     return schema;
 }
 
-IndexSchema Builder::GetNamespaceNameIndexSchema(db_oid_t db) {
+auto Builder::GetNamespaceNameIndexSchema(db_oid_t db) -> IndexSchema {
     std::vector<IndexSchema::Column> columns;
 
     columns.emplace_back(
@@ -581,7 +581,7 @@ IndexSchema Builder::GetNamespaceNameIndexSchema(db_oid_t db) {
     return schema;
 }
 
-IndexSchema Builder::GetClassOidIndexSchema(db_oid_t db) {
+auto Builder::GetClassOidIndexSchema(db_oid_t db) -> IndexSchema {
     std::vector<IndexSchema::Column> columns;
 
     columns.emplace_back("reloid",
@@ -597,7 +597,7 @@ IndexSchema Builder::GetClassOidIndexSchema(db_oid_t db) {
     return schema;
 }
 
-IndexSchema Builder::GetClassNameIndexSchema(db_oid_t db) {
+auto Builder::GetClassNameIndexSchema(db_oid_t db) -> IndexSchema {
     std::vector<IndexSchema::Column> columns;
 
     columns.emplace_back("relnamespace",
@@ -620,7 +620,7 @@ IndexSchema Builder::GetClassNameIndexSchema(db_oid_t db) {
     return schema;
 }
 
-IndexSchema Builder::GetClassNamespaceIndexSchema(db_oid_t db) {
+auto Builder::GetClassNamespaceIndexSchema(db_oid_t db) -> IndexSchema {
     std::vector<IndexSchema::Column> columns;
 
     columns.emplace_back("relnamespace",
@@ -636,7 +636,7 @@ IndexSchema Builder::GetClassNamespaceIndexSchema(db_oid_t db) {
     return schema;
 }
 
-IndexSchema Builder::GetIndexOidIndexSchema(db_oid_t db) {
+auto Builder::GetIndexOidIndexSchema(db_oid_t db) -> IndexSchema {
     std::vector<IndexSchema::Column> columns;
 
     columns.emplace_back("indoid",
@@ -652,7 +652,7 @@ IndexSchema Builder::GetIndexOidIndexSchema(db_oid_t db) {
     return schema;
 }
 
-IndexSchema Builder::GetIndexTableIndexSchema(db_oid_t db) {
+auto Builder::GetIndexTableIndexSchema(db_oid_t db) -> IndexSchema {
     std::vector<IndexSchema::Column> columns;
 
     columns.emplace_back("indrelid",
@@ -668,7 +668,7 @@ IndexSchema Builder::GetIndexTableIndexSchema(db_oid_t db) {
     return schema;
 }
 
-IndexSchema Builder::GetColumnOidIndexSchema(db_oid_t db) {
+auto Builder::GetColumnOidIndexSchema(db_oid_t db) -> IndexSchema {
     std::vector<IndexSchema::Column> columns;
 
     columns.emplace_back("attrelid",
@@ -690,7 +690,7 @@ IndexSchema Builder::GetColumnOidIndexSchema(db_oid_t db) {
     return schema;
 }
 
-IndexSchema Builder::GetColumnNameIndexSchema(db_oid_t db) {
+auto Builder::GetColumnNameIndexSchema(db_oid_t db) -> IndexSchema {
     std::vector<IndexSchema::Column> columns;
 
     columns.emplace_back("attrelid",
@@ -713,7 +713,7 @@ IndexSchema Builder::GetColumnNameIndexSchema(db_oid_t db) {
     return schema;
 }
 
-IndexSchema Builder::GetTypeOidIndexSchema(db_oid_t db) {
+auto Builder::GetTypeOidIndexSchema(db_oid_t db) -> IndexSchema {
     std::vector<IndexSchema::Column> columns;
 
     columns.emplace_back("typoid",
@@ -729,7 +729,7 @@ IndexSchema Builder::GetTypeOidIndexSchema(db_oid_t db) {
     return schema;
 }
 
-IndexSchema Builder::GetTypeNameIndexSchema(db_oid_t db) {
+auto Builder::GetTypeNameIndexSchema(db_oid_t db) -> IndexSchema {
     std::vector<IndexSchema::Column> columns;
 
     columns.emplace_back("typnamespace",
@@ -752,7 +752,7 @@ IndexSchema Builder::GetTypeNameIndexSchema(db_oid_t db) {
     return schema;
 }
 
-IndexSchema Builder::GetTypeNamespaceIndexSchema(db_oid_t db) {
+auto Builder::GetTypeNamespaceIndexSchema(db_oid_t db) -> IndexSchema {
     std::vector<IndexSchema::Column> columns;
 
     columns.emplace_back("typnamespace",
@@ -768,7 +768,7 @@ IndexSchema Builder::GetTypeNamespaceIndexSchema(db_oid_t db) {
     return schema;
 }
 
-IndexSchema Builder::GetConstraintOidIndexSchema(db_oid_t db) {
+auto Builder::GetConstraintOidIndexSchema(db_oid_t db) -> IndexSchema {
     std::vector<IndexSchema::Column> columns;
 
     columns.emplace_back(
@@ -785,7 +785,7 @@ IndexSchema Builder::GetConstraintOidIndexSchema(db_oid_t db) {
     return schema;
 }
 
-IndexSchema Builder::GetConstraintNameIndexSchema(db_oid_t db) {
+auto Builder::GetConstraintNameIndexSchema(db_oid_t db) -> IndexSchema {
     std::vector<IndexSchema::Column> columns;
 
     columns.emplace_back(
@@ -810,7 +810,7 @@ IndexSchema Builder::GetConstraintNameIndexSchema(db_oid_t db) {
     return schema;
 }
 
-IndexSchema Builder::GetConstraintNamespaceIndexSchema(db_oid_t db) {
+auto Builder::GetConstraintNamespaceIndexSchema(db_oid_t db) -> IndexSchema {
     std::vector<IndexSchema::Column> columns;
 
     columns.emplace_back(
@@ -827,7 +827,7 @@ IndexSchema Builder::GetConstraintNamespaceIndexSchema(db_oid_t db) {
     return schema;
 }
 
-IndexSchema Builder::GetConstraintTableIndexSchema(db_oid_t db) {
+auto Builder::GetConstraintTableIndexSchema(db_oid_t db) -> IndexSchema {
     std::vector<IndexSchema::Column> columns;
 
     columns.emplace_back(
@@ -844,7 +844,7 @@ IndexSchema Builder::GetConstraintTableIndexSchema(db_oid_t db) {
     return schema;
 }
 
-IndexSchema Builder::GetConstraintIndexIndexSchema(db_oid_t db) {
+auto Builder::GetConstraintIndexIndexSchema(db_oid_t db) -> IndexSchema {
     std::vector<IndexSchema::Column> columns;
 
     columns.emplace_back(
@@ -861,7 +861,7 @@ IndexSchema Builder::GetConstraintIndexIndexSchema(db_oid_t db) {
     return schema;
 }
 
-IndexSchema Builder::GetConstraintForeignTableIndexSchema(db_oid_t db) {
+auto Builder::GetConstraintForeignTableIndexSchema(db_oid_t db) -> IndexSchema {
     std::vector<IndexSchema::Column> columns;
 
     columns.emplace_back(
@@ -878,7 +878,7 @@ IndexSchema Builder::GetConstraintForeignTableIndexSchema(db_oid_t db) {
     return schema;
 }
 
-IndexSchema Builder::GetLanguageOidIndexSchema(db_oid_t db) {
+auto Builder::GetLanguageOidIndexSchema(db_oid_t db) -> IndexSchema {
     std::vector<IndexSchema::Column> columns;
 
     columns.emplace_back("lanoid",
@@ -894,7 +894,7 @@ IndexSchema Builder::GetLanguageOidIndexSchema(db_oid_t db) {
     return schema;
 }
 
-IndexSchema Builder::GetLanguageNameIndexSchema(db_oid_t db) {
+auto Builder::GetLanguageNameIndexSchema(db_oid_t db) -> IndexSchema {
     std::vector<IndexSchema::Column> columns;
 
     columns.emplace_back("lanname",
@@ -911,7 +911,7 @@ IndexSchema Builder::GetLanguageNameIndexSchema(db_oid_t db) {
     return schema;
 }
 
-Schema Builder::GetStatisticTableSchema() {
+auto Builder::GetStatisticTableSchema() -> Schema {
     std::vector<Schema::Column> columns;
 
     columns.emplace_back("starelid",
@@ -959,7 +959,7 @@ Schema Builder::GetStatisticTableSchema() {
     return Schema(columns);
 }
 
-Schema Builder::GetProcTableSchema() {
+auto Builder::GetProcTableSchema() -> Schema {
     std::vector<Schema::Column> columns;
 
     columns.emplace_back("prooid",
@@ -1111,7 +1111,7 @@ Schema Builder::GetProcTableSchema() {
     return Schema(columns);
 }
 
-IndexSchema Builder::GetProcOidIndexSchema(db_oid_t db) {
+auto Builder::GetProcOidIndexSchema(db_oid_t db) -> IndexSchema {
     std::vector<IndexSchema::Column> columns;
 
     columns.emplace_back("prooid",
@@ -1127,7 +1127,7 @@ IndexSchema Builder::GetProcOidIndexSchema(db_oid_t db) {
     return schema;
 }
 
-IndexSchema Builder::GetProcNameIndexSchema(db_oid_t db) {
+auto Builder::GetProcNameIndexSchema(db_oid_t db) -> IndexSchema {
     std::vector<IndexSchema::Column> columns;
 
     columns.emplace_back("pronamespace",
@@ -1150,7 +1150,7 @@ IndexSchema Builder::GetProcNameIndexSchema(db_oid_t db) {
     return schema;
 }
 
-IndexSchema Builder::GetStatisticOidIndexSchema(db_oid_t db) {
+auto Builder::GetStatisticOidIndexSchema(db_oid_t db) -> IndexSchema {
     std::vector<IndexSchema::Column> columns;
 
     columns.emplace_back(
@@ -1174,14 +1174,14 @@ IndexSchema Builder::GetStatisticOidIndexSchema(db_oid_t db) {
     return schema;
 }
 
-storage::index::Index *Builder::BuildUniqueIndex(const IndexSchema &key_schema, index_oid_t oid) {
+auto Builder::BuildUniqueIndex(const IndexSchema &key_schema, index_oid_t /*oid*/) -> storage::index::Index * {
     NOISEPAGE_ASSERT(key_schema.Unique(), "KeySchema must represent a unique index.");
     storage::index::IndexBuilder index_builder;
     index_builder.SetKeySchema(key_schema);
     return index_builder.Build();
 }
 
-storage::index::Index *Builder::BuildLookupIndex(const IndexSchema &key_schema, index_oid_t oid) {
+auto Builder::BuildLookupIndex(const IndexSchema &key_schema, index_oid_t /*oid*/) -> storage::index::Index * {
     NOISEPAGE_ASSERT(!(key_schema.Unique()), "KeySchema must represent a non-unique index.");
     storage::index::IndexBuilder index_builder;
     index_builder.SetKeySchema(key_schema);

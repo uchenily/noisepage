@@ -56,14 +56,14 @@ void ExecutePortal(const common::ManagedPointer<network::ConnectionContext>    c
     const auto physical_plan = portal->OptimizeResult()->GetPlanNode();
 
     // This logic relies on ordering of values in the enum's definition and is documented there as well.
-    if (NetworkUtil::DMLQueryType(query_type)) {
+    if (SqlUtil::DMLQueryType(query_type)) {
         // DML query to put through codegen
         result = taskflow->CodegenPhysicalPlan(connection_ctx, writer, portal);
 
         // TODO(Matt): do something with result here in case codegen fails
 
         result = taskflow->RunExecutableQuery(connection_ctx, writer, portal);
-    } else if (NetworkUtil::CreateQueryType(query_type)) {
+    } else if (SqlUtil::CreateQueryType(query_type)) {
         if (explicit_txn_block && query_type == network::QueryType::QUERY_CREATE_DB) {
             writer->WriteError({common::ErrorSeverity::ERROR,
                                 "CREATE DATABASE cannot run inside a transaction block",
@@ -81,7 +81,7 @@ void ExecutePortal(const common::ManagedPointer<network::ConnectionContext>    c
         } else {
             result = taskflow->ExecuteCreateStatement(connection_ctx, physical_plan, query_type);
         }
-    } else if (NetworkUtil::DropQueryType(query_type)) {
+    } else if (SqlUtil::DropQueryType(query_type)) {
         if (explicit_txn_block && query_type == network::QueryType::QUERY_DROP_DB) {
             writer->WriteError({common::ErrorSeverity::ERROR,
                                 "DROP DATABASE cannot run inside a transaction block",
@@ -198,7 +198,7 @@ auto SimpleQueryCommand::Exec(const common::ManagedPointer<ProtocolInterpreter> 
     }
 
     // This logic relies on ordering of values in the enum's definition and is documented there as well.
-    if (NetworkUtil::TransactionalQueryType(query_type)) {
+    if (SqlUtil::TransactionalQueryType(query_type)) {
         taskflow->ExecuteTransactionStatement(connection,
                                               writer,
                                               postgres_interpreter->ExplicitTransactionBlock(),
@@ -214,7 +214,7 @@ auto SimpleQueryCommand::Exec(const common::ManagedPointer<ProtocolInterpreter> 
     }
 
     // This logic relies on ordering of values in the enum's definition and is documented there as well.
-    if (NetworkUtil::UnsupportedQueryType(query_type)) {
+    if (SqlUtil::UnsupportedQueryType(query_type)) {
         writer->WriteError({common::ErrorSeverity::NOTICE,
                             "we don't yet support that query type.",
                             common::ErrorCode::ERRCODE_FEATURE_NOT_SUPPORTED});
@@ -331,7 +331,7 @@ auto ParseCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>  inter
         return Transition::PROCEED;
     }
 
-    if (NetworkUtil::UnsupportedQueryType(statement->GetQueryType())) {
+    if (SqlUtil::UnsupportedQueryType(statement->GetQueryType())) {
         writer->WriteError({common::ErrorSeverity::NOTICE,
                             "we don't yet support that query type.",
                             common::ErrorCode::ERRCODE_FEATURE_NOT_SUPPORTED});
@@ -424,13 +424,13 @@ auto BindCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>  interp
 
     // Begin a transaction, regardless of statement type. If it's a BEGIN statement it's implicitly in this txn
     if (connection->TransactionState() == network::NetworkTransactionStateType::IDLE
-        && !NetworkUtil::NonTransactionalQueryType(query_type)) {
+        && !SqlUtil::NonTransactionalQueryType(query_type)) {
         NOISEPAGE_ASSERT(!postgres_interpreter->ExplicitTransactionBlock(),
                          "We shouldn't be in an explicit txn block is transaction state is IDLE.");
         taskflow->BeginTransaction(connection);
     }
 
-    if (NetworkUtil::TransactionalQueryType(query_type) || NetworkUtil::SkipBindQueryType(query_type)) {
+    if (SqlUtil::TransactionalQueryType(query_type) || SqlUtil::SkipBindQueryType(query_type)) {
         // Don't bind or optimize this statement
         postgres_interpreter->SetPortal(
             portal_name,
@@ -439,7 +439,7 @@ auto BindCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>  interp
         return Transition::PROCEED;
     }
 
-    if (NetworkUtil::UnsupportedQueryType(query_type)) {
+    if (SqlUtil::UnsupportedQueryType(query_type)) {
         // Don't begin an implicit txn in this case, and don't bind or optimize this statement. Just noop with a Notice
         // (not an Error) and proceed to reading more messages.
         postgres_interpreter->SetPortal(
@@ -452,7 +452,7 @@ auto BindCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>  interp
         return Transition::PROCEED;
     }
 
-    if (UNLIKELY(NetworkUtil::DDLQueryType(query_type))) {
+    if (UNLIKELY(SqlUtil::DDLQueryType(query_type))) {
         statement->ClearCachedObjects();
     }
 
@@ -624,7 +624,7 @@ auto ExecuteCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>  int
     }
 
     // This logic relies on ordering of values in the enum's definition and is documented there as well.
-    if (NetworkUtil::TransactionalQueryType(query_type)) {
+    if (SqlUtil::TransactionalQueryType(query_type)) {
         taskflow->ExecuteTransactionStatement(connection,
                                               writer,
                                               postgres_interpreter->ExplicitTransactionBlock(),
@@ -639,7 +639,7 @@ auto ExecuteCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>  int
         return Transition::PROCEED;
     }
 
-    if (NetworkUtil::UnsupportedQueryType(query_type)) {
+    if (SqlUtil::UnsupportedQueryType(query_type)) {
         // We don't yet support query types with values greater than this
         writer->WriteCommandComplete(query_type, 0);
         return Transition::PROCEED;

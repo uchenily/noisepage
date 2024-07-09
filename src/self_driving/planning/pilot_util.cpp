@@ -61,7 +61,7 @@ void PilotUtil::ApplyAction(const pilot::PlanningContext &planning_context,
         std::string query = sql_query;
         auto        parse_tree = parser::PostgresParser::BuildParseTree(sql_query);
         auto        statement = std::make_unique<network::Statement>(std::move(query), std::move(parse_tree));
-        is_query_ddl = network::NetworkUtil::DDLQueryType(statement->GetQueryType())
+        is_query_ddl = network::SqlUtil::DDLQueryType(statement->GetQueryType())
                        || statement->GetQueryType() == network::QueryType::QUERY_SET;
     }
 
