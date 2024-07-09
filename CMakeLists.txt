@@ -615,7 +615,7 @@ file(GLOB_RECURSE
         NOISEPAGE_SRCS                  # Store the list of files into the variable ${NOISEPAGE_SRCS}.
         CONFIGURE_DEPENDS               # See above. Ask CMake to regenerate the build system if these files change.
         ${PROJECT_SOURCE_DIR}/src/*.cpp
-        ${PROJECT_SOURCE_DIR}/src/include/*.h
+        ${PROJECT_SOURCE_DIR}/include/*.h
         ${PROJECT_SOURCE_DIR}/third_party/bwtree/*.cpp
         ${PROJECT_SOURCE_DIR}/third_party/bwtree/*.h
         )
@@ -648,7 +648,7 @@ target_compile_features(noisepage_objlib PUBLIC     # PUBLIC: all consumers of t
         cxx_std_17                                  # Require support for C++17.
         )
 target_include_directories(noisepage_objlib PUBLIC  # PUBLIC: all consumers of the library inherit the following.
-        ${PROJECT_SOURCE_DIR}/src/include           # Include NoisePage src/include/ headers.
+        ${PROJECT_SOURCE_DIR}/include               # Include NoisePage include/ headers.
         )
 target_include_directories(noisepage_objlib SYSTEM PUBLIC   # SYSTEM PUBLIC: inherit without error checking.
         ${LLVM_INCLUDE_DIRS}                                # Include LLVM headers.
@@ -790,7 +790,7 @@ endif ()
 # Run the build-support script that generates and optimizes bitcode.
 add_custom_command(
         OUTPUT "${CMAKE_BINARY_DIR}/bin/bytecode_handlers_ir.bc"
-        DEPENDS gen_opt_bc "${PROJECT_SOURCE_DIR}/src/include/execution/vm/bytecodes.h" "${PROJECT_SOURCE_DIR}/src/include/execution/vm/bytecode_handlers.h"
+        DEPENDS gen_opt_bc "${PROJECT_SOURCE_DIR}/include/execution/vm/bytecodes.h" "${PROJECT_SOURCE_DIR}/include/execution/vm/bytecode_handlers.h"
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         COMMAND ${BUILD_SUPPORT_DIR}/generate-bitcodes.sh ${PROJECT_SOURCE_DIR} ${CMAKE_BINARY_DIR} ${CLANG}
 )
@@ -1325,7 +1325,7 @@ else ()
             # gen_opt_bc also cleans up the modules to add the odr to all functions.
             # On top of that, many are marked ALWAYS_INLINE to force physical inlining into the VM.
             # These are hand-selected by Prashanth based on profiling.
-            | grep --invert-match -e 'src/include/execution/.*:.*inline\\b.*'
+            | grep --invert-match -e 'include/execution/.*:.*inline\\b.*'
             | grep --invert-match -e 'src/execution/ast/context.cpp.*:.*inline\\b.*'
             | grep --invert-match -e 'src/execution/vm/vm.cpp.*:.*inline\\b.*'
 
