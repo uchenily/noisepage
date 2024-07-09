@@ -92,6 +92,7 @@ auto Builder::CreateDatabaseCatalog(const common::ManagedPointer<storage::BlockS
     -> DatabaseCatalog * {
     auto dbc = new DatabaseCatalog(oid, garbage_collector);
 
+    // delete?
     dbc->pg_core_.namespaces_ = new storage::SqlTable(block_store, Builder::GetNamespaceTableSchema());
     dbc->pg_core_.classes_ = new storage::SqlTable(block_store, Builder::GetClassTableSchema());
     dbc->pg_core_.indexes_ = new storage::SqlTable(block_store, Builder::GetIndexTableSchema());
