@@ -1,8 +1,9 @@
 #include "execution/sql/sorter.h"
 
 #include <llvm/ADT/STLExtras.h>
+#include <tbb/global_control.h>
+#include <tbb/info.h>
 #include <tbb/parallel_for_each.h>
-#include <tbb/task_scheduler_init.h>
 
 #include <algorithm>
 #include <queue>
@@ -36,13 +37,13 @@ Sorter::Sorter(exec::ExecutionContext *exec_ctx, ComparisonFunction cmp_fn, uint
 
 Sorter::~Sorter() = default;
 
-byte *Sorter::AllocInputTuple() {
+auto Sorter::AllocInputTuple() -> byte * {
     byte *ret = tuple_storage_.Append();
     tuples_.push_back(ret);
     return ret;
 }
 
-byte *Sorter::AllocInputTupleTopK(UNUSED_ATTRIBUTE uint64_t top_k) {
+auto Sorter::AllocInputTupleTopK(UNUSED_ATTRIBUTE uint64_t top_k) -> byte * {
     return AllocInputTuple();
 }
 
@@ -181,7 +182,7 @@ void Sorter::SortParallel(ThreadStateContainer *thread_state_container, std::siz
 
     const uint64_t num_tuples = std::accumulate(tl_sorters.begin(),
                                                 tl_sorters.end(),
-                                                uint64_t(0),
+                                                static_cast<uint64_t>(0),
                                                 [](const auto partial, const auto *sorter) {
                                                     return partial + sorter->GetTupleCount();
                                                 });
@@ -232,8 +233,9 @@ void Sorter::SortParallel(ThreadStateContainer *thread_state_container, std::siz
 #ifndef NDEBUG
     std::string msg = "Issuing parallel sort. Sorter sizes: ";
     std::for_each(tl_sorters.begin(), tl_sorters.end(), [first = true, &msg](auto *sorter) mutable {
-        if (!first)
+        if (!first) {
             msg += ",";
+        }
         first = false;
         msg += std::to_string(sorter->GetTupleCount());
     });
@@ -250,9 +252,11 @@ void Sorter::SortParallel(ThreadStateContainer *thread_state_container, std::siz
     util::StageTimer<std::milli> timer;
     timer.EnterStage("Parallel Sort Thread-Local Instances");
 
-    tbb::task_scheduler_init sched;
+    // tbb::global_control global_limit(tbb::global_control::max_allowed_parallelism, tbb::info::default_concurrency());
+    tbb::global_control global_limit(tbb::global_control::max_allowed_parallelism, 4);
     {
-        size_t num_threads = tbb::task_scheduler_init::default_num_threads();
+        // size_t num_threads = tbb::info::default_concurrency();
+        size_t num_threads = 4;
         size_t num_tasks = tl_sorters.size();
         size_t num_concurrent = std::min(num_threads, num_tasks);
         exec_ctx_->SetNumConcurrentEstimate(num_concurrent);
@@ -376,7 +380,8 @@ void Sorter::SortParallel(ThreadStateContainer *thread_state_container, std::siz
     };
 
     {
-        size_t num_threads = tbb::task_scheduler_init::default_num_threads();
+        // size_t num_threads = tbb::info::default_concurrency();
+        size_t num_threads = 4;
         size_t num_tasks = merge_work.size();
         size_t concurrent = std::min(num_threads, num_tasks);
         exec_ctx_->SetNumConcurrentEstimate(concurrent);

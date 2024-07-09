@@ -3,7 +3,8 @@
 #include <llvm/Support/CommandLine.h>
 #include <llvm/Support/MemoryBuffer.h>
 #include <llvm/Support/Path.h>
-#include <tbb/task_scheduler_init.h>
+#include <tbb/global_control.h>
+#include <tbb/info.h>
 #include <unistd.h>
 
 #include <algorithm>
@@ -60,7 +61,8 @@ llvm::cl::opt<std::string> OUTPUT_NAME("output-name", llvm::cl::desc("Print the 
 llvm::cl::opt<std::string> HANDLERS_PATH("handlers-path", llvm::cl::desc("Path to the bytecode handlers bitcode file"), llvm::cl::init("./bytecode_handlers_ir.bc"), llvm::cl::cat(TPL_OPTIONS_CATEGORY));  // NOLINT
 // clang-format on
 
-tbb::task_scheduler_init scheduler;
+// tbb::global_control global_limit(tbb::global_control::max_allowed_parallelism, tbb::info::default_concurrency());
+tbb::global_control global_limit(tbb::global_control::max_allowed_parallelism, 4);
 
 namespace noisepage::execution {
 
@@ -128,18 +130,24 @@ static void CompileAndRun(const std::string &source, const std::string &name = "
     parsing::Scanner scanner(source.data(), source.length());
     parsing::Parser  parser(&scanner, &context);
 
-    double parse_ms = 0.0,      // Time to parse the source
-        typecheck_ms = 0.0,     // Time to perform semantic analysis
-        codegen_ms = 0.0,       // Time to generate TBC
-        interp_exec_ms = 0.0,   // Time to execute the program in fully interpreted mode
-        adaptive_exec_ms = 0.0, // Time to execute the program in adaptive mode
-        jit_exec_ms = 0.0;      // Time to execute the program in JIT excluding compilation time
+    // Time to parse the source
+    double parse_ms = 0.0;
+    // Time to perform semantic analysis
+    double typecheck_ms = 0.0;
+    // Time to generate TBC
+    double codegen_ms = 0.0;
+    // Time to execute the program in fully interpreted mode
+    double interp_exec_ms = 0.0;
+    // Time to execute the program in adaptive mode
+    double adaptive_exec_ms = 0.0;
+    // Time to execute the program in JIT excluding compilation time
+    double jit_exec_ms = 0.0;
 
     //
     // Parse
     //
 
-    ast::AstNode *root;
+    ast::AstNode *root = nullptr;
     {
         util::ScopedTimer<std::milli> timer(&parse_ms);
         root = parser.Parse();
@@ -355,9 +363,6 @@ void InitTPL(std::string_view bytecode_handlers_path) {
  */
 void ShutdownTPL() {
     noisepage::execution::vm::LLVMEngine::Shutdown();
-
-    scheduler.terminate();
-
     EXECUTION_LOG_INFO("TPL cleanly shutdown ...");
 }
 

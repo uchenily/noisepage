@@ -1,8 +1,9 @@
 #include "execution/sql/join_hash_table.h"
 
 #include <llvm/ADT/STLExtras.h>
+
+#include <tbb/info.h>
 #include <tbb/parallel_for_each.h>
-#include <tbb/task_scheduler_init.h>
 
 #include <algorithm>
 #include <limits>
@@ -39,7 +40,7 @@ JoinHashTable::JoinHashTable(const exec::ExecutionSettings &exec_settings,
 // Needed because we forward-declared HLL from libcount
 JoinHashTable::~JoinHashTable() = default;
 
-byte *JoinHashTable::AllocInputTuple(const hash_t hash) {
+auto JoinHashTable::AllocInputTuple(const hash_t hash) -> byte * {
     // Add to unique_count estimation
     hll_estimator_->Update(hash);
 
@@ -86,7 +87,6 @@ namespace {
                       uint64_t                                        begin_read_idx,
                       uint64_t                                        end_read_idx)
             : entry_size_(entries->ElementSize())
-            , buf_idx_(0)
             , max_elems_(std::min(max_elems, BUFFER_SIZE_IN_BYTES / entry_size_) - 1)
             , temp_buf_(buffer_ + (max_elems_ * entry_size_))
             , read_idx_(begin_read_idx)
@@ -98,13 +98,13 @@ namespace {
 
         // Return a pointer to the element at the given index in the buffer.
         template <typename T = byte>
-        T *BufEntryAt(uint64_t idx) {
+        auto BufEntryAt(uint64_t idx) -> T * {
             return reinterpret_cast<T *>(buffer_ + (idx * entry_size_));
         }
 
         // Has the given entry been processed? In other words, is the input entry in
         // its final location in the entry array?
-        bool IsProcessed(const HashTableEntry *entry) const {
+        auto IsProcessed(const HashTableEntry *entry) const -> bool {
             return (entry->cht_slot_ & PROCESSED_BIT) != 0u;
         }
 
@@ -114,7 +114,7 @@ namespace {
         }
 
         // Has the given entry been buffered in this reorder buffer?
-        bool IsBuffered(const HashTableEntry *entry) const {
+        auto IsBuffered(const HashTableEntry *entry) const -> bool {
             return (entry->cht_slot_ & BUFFERED_BIT) != 0u;
         }
 
@@ -125,7 +125,7 @@ namespace {
 
         // Fill this reorder buffer with as many entries as possible. Each entry that
         // is inserted is marked/tagged as buffered.
-        bool Fill() {
+        auto Fill() -> bool {
             while (buf_idx_ < max_elems_ && read_idx_ < end_read_idx_) {
                 auto *entry = reinterpret_cast<HashTableEntry *>((*entries_)[read_idx_++]);
 
@@ -147,12 +147,12 @@ namespace {
         }
 
         // Return the number of currently buffered entries
-        uint64_t GetNumEntries() const {
+        auto GetNumEntries() const -> uint64_t {
             return buf_idx_;
         }
 
         // Return the pointer buffer used for temporary copies
-        byte *GetTempBuffer() const {
+        auto GetTempBuffer() const -> byte * {
             return temp_buf_;
         }
 
@@ -161,10 +161,10 @@ namespace {
         const uint64_t entry_size_;
 
         // Buffer space for entries
-        byte buffer_[BUFFER_SIZE_IN_BYTES];
+        byte buffer_[BUFFER_SIZE_IN_BYTES]{};
 
         // The index into the buffer where the next element is written
-        uint64_t buf_idx_;
+        uint64_t buf_idx_{};
 
         // The maximum number of elements to buffer
         const uint64_t max_elems_;
@@ -627,7 +627,8 @@ void JoinHashTable::MergeParallel(ThreadStateContainer *thread_state_container, 
                             num_elem_estimate,
                             DEFAULT_MIN_SIZE_FOR_PARALLEL_MERGE);
 
-        size_t num_threads = tbb::task_scheduler_init::default_num_threads();
+        // size_t num_threads = tbb::info::default_concurrency();
+        size_t num_threads = 4;
         size_t num_tasks = tl_join_tables.size();
         auto   estimate = std::min(num_threads, num_tasks);
         exec_ctx_->SetNumConcurrentEstimate(estimate);
