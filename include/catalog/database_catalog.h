@@ -32,19 +32,19 @@ namespace index {
 
 namespace noisepage::catalog {
 /**
- * DatabaseCatalog stores all of the metadata about user tables and user defined database objects
- * so that other parts of the system (i.e., binder, optimizer, and execution engine)
- * can reason about and execute operations on these objects.
+ * DatabaseCatalog 存储了有关用户表(user tables)和用户定义的数据库对象(user-defined database objects)的所有元数据
+ * 所以系统的其他部分(i.e., binder, optimizer, and execution engine)
+ * 可以对这些对象进行推理并执行操作.
  *
- * @warning     Only Catalog, CatalogAccessor, and RecoveryManager should be using the interface below.
- *              All other code should use the CatalogAccessor API, which:
- *              - enforces scoping to a specific database, and
- *              - handles namespace resolution for finding tables within that database.
+ * @warning     只有Catalog、CatalogAccessor和RecoveryManager应该使用下面的接口
+ *              所有其他代码都应该使用CatalogAccessor API, 因为它:
+ *              - 限定作用域到特定数据库
+ *              - 处理在该数据库中查找表的命名空间解析(namespace resolution)
  */
 class DatabaseCatalog {
 public:
     /**
-     * @brief Bootstrap the entire catalog with default entries.
+     * @brief 用默认entry启动整个catalog
      * @param txn         The transaction to bootstrap in.
      */
     void Bootstrap(common::ManagedPointer<transaction::TransactionContext> txn);
@@ -54,7 +54,7 @@ public:
         -> namespace_oid_t;
     /** @brief Delete the specified namespace. @see PgCoreImpl::DeleteNamespace */
     auto DeleteNamespace(common::ManagedPointer<transaction::TransactionContext> txn, namespace_oid_t ns_oid) -> bool;
-    /** @brief Get the OID of the specified namespace. @see PgCoreImpl::GetNamespaceOid */
+    /** @brief 获取指定命名空间的oid @see PgCoreImpl::GetNamespaceOid */
     auto GetNamespaceOid(common::ManagedPointer<transaction::TransactionContext> txn, const std::string &name)
         -> namespace_oid_t;
 
@@ -71,43 +71,41 @@ public:
                      const std::string                                      &name) -> bool;
 
     /**
-     * @brief Set the location of the underlying storage for the specified table.
+     * @brief 为指定表设置底层存储的位置(the location of the underlying storage)
      *
      * @param txn         The transaction for the operation.
      * @param table       The OID of the table in the catalog.
      * @param table_ptr   The pointer to the underlying storage in memory.
      * @return            True if the operation was successful. False otherwise.
      *
-     * @warning   The SqlTable pointer that is passed in must be on the heap as the catalog will take
-     *            ownership of it and schedule its deletion with the GC at the appropriate time.
-     * @warning   It is unsafe to call delete on the SqlTable pointer after calling this function.
-     *            This is regardless of the return status.
+     * @warning   传入的SqlTable指针必须位于堆上, 因为catalog将获得它的所有权(ownership),
+     *            并在适当的时候调度(schedule)GC删除它.
+     * @warning   调用此函数后, 在SqlTable指针上调用delete是不安全的. 这与返回状态无关.
      */
     auto SetTablePointer(common::ManagedPointer<transaction::TransactionContext> txn,
                          table_oid_t                                             table,
                          const storage::SqlTable                                *table_ptr) -> bool;
     /**
-     * @brief Set the location of the underlying implementation for the specified index.
+     * @brief 为指定索引设置底层实现的位置(the location of the underlying implementation)
      *
      * @param txn         The transaction for the operation.
      * @param index       The OID of the index in the catalog.
      * @param index_ptr   The pointer to the underlying index implementation in memory.
      * @return            True if the operation was successful. False otherwise.
      *
-     * @warning   The Index pointer that is passed in must be on the heap as the catalog will take
-     *            ownership of it and schedule its deletion with the GC at the appropriate time.
-     * @warning   It is unsafe to call delete on the Index pointer after calling this function.
-     *            This is regardless of the return status.
+     * @warning   传入的Index指针必须在堆上, 因为catalog将获得它的所有权(ownership),
+     * 并在适当的时候通过GC调度(schedule)删除它.
+     * @warning   在调用此函数后对索引指针调用delete是不安全的. 这与返回状态无关.
      */
     auto SetIndexPointer(common::ManagedPointer<transaction::TransactionContext> txn,
                          index_oid_t                                             index,
                          storage::index::Index                                  *index_ptr) -> bool;
 
-    /** @brief Get the OID for the specified table, or INVALID_TABLE_OID if no such REGULAR_TABLE exists. */
+    /** @brief 获取指定表的OID, 如果不存在这样的REGULAR_TABLE, 则返回INVALID_TABLE_OID */
     auto GetTableOid(common::ManagedPointer<transaction::TransactionContext> txn,
                      namespace_oid_t                                         ns,
                      const std::string                                      &name) -> table_oid_t;
-    /** @brief Get the OID for the specified index, or INVALID_INDEX_OID if no such INDEX exists. */
+    /** @brief 获取指定索引的OID, 如果不存在这样的索引, 则返回INVALID_INDEX_OID. (x: OID应该是object id的意思) */
     auto GetIndexOid(common::ManagedPointer<transaction::TransactionContext> txn,
                      namespace_oid_t                                         ns,
                      const std::string                                      &name) -> index_oid_t;
@@ -130,21 +128,21 @@ public:
         -> const IndexSchema &;
 
     /**
-     * @brief Update the schema of the table.
+     * @brief 更新表的模式(schema)
      *
-     * Apply a new schema to the given table.
-     * The changes will modify the latest schema as provided by the catalog.
-     * There is no guarantee that the OIDs for modified columns will be stable across a schema change.
+     * 对给定表应用新的schema
+     * 这些更改将修改catalog提供的最新schema
+     * 不保证修改后列(column)的oid在模式更改期间是稳定的
      *
      * @param txn         The transaction to update the table's schema in.
      * @param table       The table whose schema should be updated.
      * @param new_schema  The new schema to update the table to.
      * @return            True if the update succeeded. False otherwise.
      *
-     * @warning           The catalog accessor assumes it takes ownership of the schema object that is passed.
-     *                    As such, there is no guarantee that the pointer is still valid when this function returns.
-     *                    If the caller needs to reference the schema object after this call, the caller should use
-     *                    the GetSchema function to obtain the authoritative schema for this table.
+     * @warning           catalog assessor 假定它拥有传入的schema对象的所有权(ownership)
+     *                    因此, 不保证该函数返回时指针仍然有效.
+     *                    如果调用者在调用之后需要引用schema对象,
+     *                    那么调用者应该使用GetSchema函数来获取该表的可靠(authoritative) schema.
      */
     auto UpdateSchema(common::ManagedPointer<transaction::TransactionContext> txn,
                       table_oid_t                                             table,
@@ -168,7 +166,7 @@ public:
     /** @return The type_oid_t that corresponds to the internal TypeId. */
     auto GetTypeOidForType(execution::sql::SqlTypeId type) -> type_oid_t;
 
-    /** @brief Get a list of all of the constraints for the specified table. */
+    /** @brief 获取表的所有约束(constraint)列表 */
     auto GetConstraints(common::ManagedPointer<transaction::TransactionContext> txn, table_oid_t table)
         -> std::vector<constraint_oid_t>;
 
@@ -209,12 +207,12 @@ public:
     auto GetFunctionContext(common::ManagedPointer<transaction::TransactionContext> txn, proc_oid_t proc_oid)
         -> common::ManagedPointer<execution::functions::FunctionContext>;
 
-    /** @brief Get the statistics for the specified column. @see PgStatisticImpl::GetColumnStatistics */
+    /** @brief 获取指定列的统计信息(statistics). @see PgStatisticImpl::GetColumnStatistics */
     auto GetColumnStatistics(common::ManagedPointer<transaction::TransactionContext> txn,
                              table_oid_t                                             table_oid,
                              col_oid_t col_oid) -> std::unique_ptr<optimizer::ColumnStatsBase>;
 
-    /** @brief Get the statistics for the specified table. @see PgStatisticImpl::GetTableStatistics */
+    /** @brief 获取指定表的统计信息(statistics). @see PgStatisticImpl::GetTableStatistics */
     auto GetTableStatistics(common::ManagedPointer<transaction::TransactionContext> txn, table_oid_t table_oid)
         -> optimizer::TableStats;
 
@@ -226,8 +224,9 @@ private:
     static constexpr uint32_t TEARDOWN_MAX_TUPLES = 100;
 
     /**
-     * DatabaseCatalog methods generally handle coarse-grained locking. The various PgXXXImpl classes need to invoke
-     * private DatabaseCatalog methods such as CreateTableEntry and CreateIndexEntry during the Bootstrap process.
+     * DatabaseCatalog methods generally handle coarse-grained(粗粒度) locking. The various PgXXXImpl classes need to
+     * invoke private DatabaseCatalog methods such as CreateTableEntry and CreateIndexEntry during the Bootstrap
+     * process.
      */
     ///@{
     friend class postgres::PgCoreImpl;
@@ -242,8 +241,8 @@ private:
     friend class storage::RecoveryManager; ///< Directly modifies DatabaseCatalog's tables.
 
     // Miscellaneous state.
-    std::atomic<uint32_t>                 next_oid_;   ///< The next OID, shared across different pg tables.
-    std::atomic<transaction::timestamp_t> write_lock_; ///< Used to prevent concurrent DDL change.
+    std::atomic<uint32_t> next_oid_;                   ///< The next OID, shared across different pg tables.
+    std::atomic<transaction::timestamp_t> write_lock_; ///< Used to prevent concurrent DDL change.(防止并发DDL修改)
     const db_oid_t db_oid_; ///< The OID of the database that this DatabaseCatalog is established in.
     const common::ManagedPointer<storage::GarbageCollector> garbage_collector_; ///< The garbage collector used.
 
@@ -255,32 +254,32 @@ private:
     postgres::PgProcImpl       pg_proc_;       ///< Procedures: pg_proc.
     postgres::PgStatisticImpl  pg_stat_;       ///< Statistics: pg_statistic.
 
-    /** @brief Create a new DatabaseCatalog. Does not create any tables until Bootstrap is called. */
+    /** @brief 创建一个新的DatabaseCataLog. 在调用Bootstrap之前不会创建任何表 */
     DatabaseCatalog(db_oid_t oid, common::ManagedPointer<storage::GarbageCollector> garbage_collector);
 
     /**
-     * @brief Create all of the ProjectedRowInitializer and ProjectionMap objects for the catalog.
+     * @brief 为catalog创建所有的ProjectedRowInitializer和ProjectionMap对象
      *        The initializers and maps can be stashed because the catalog should not undergo schema changes at runtime.
      */
     void BootstrapPRIs();
 
-    /** @brief Cleanup the tables and indexes maintained by the DatabaseCatalog. */
+    /** @brief 清理DatabaseCatalog维护的表和索引 */
     void TearDown(common::ManagedPointer<transaction::TransactionContext> txn);
 
     /**
-     * @brief Lock the DatabaseCatalog to disallow concurrent DDL changes.
+     * @brief Lock the DatabaseCatalog to disallow concurrent DDL changes. (锁定DatabaseCatalog以禁止并发DDL更改)
      *
-     * Internal function to DatabaseCatalog to disallow concurrent DDL changes.
-     * This also disallows older txns to enact DDL changes after a newer transaction has committed one.
-     * This effectively follows the same timestamp ordering logic as the version pointer MVCC stuff in the storage
-     * layer. It also serializes all DDL within a database.
+     * DatabaseCatalog的内部函数，禁止并发DDL更改
+     * 也不允许旧的事务在新事务提交(commit)了DDL更改之后执行(enact)更改
+     * 这有效地遵循了(effectively folows)与存储层中的版本指针MVCC相同的时间戳排序逻辑(timestamp ordering logic),
+     * 它还序列化(serializes)数据库中的所有DDL
      *
-     * @param txn     Requesting transaction.
-     *                Used to inspect the timestamp and register commit/abort events to release the lock if acquired.
-     * @return        True if the lock was acquired. False otherwise.
+     * @param txn     请求事务
+     *                用于检查(inspect)时间戳(timestamp)和注册提交/中止事件(register commit/abort
+     * events)，以便在获得锁时释放锁。
+     * @return        如果获得了锁, 则为True. 否则False
      *
-     * @warning       This requires that commit actions be performed after the commit time is stored
-     *                in the TransactionContext's FinishTime.
+     * @warning       这要求在提交时间(commit time)存储在TransactionContext的FinishTime之后执行提交操作
      */
     auto TryLock(common::ManagedPointer<transaction::TransactionContext> txn) -> bool;
 
@@ -297,14 +296,14 @@ private:
         } while (!next_oid_.compare_exchange_weak(expected, desired));
     }
 
-    /** @brief Wrapper around calling CreateTableEntry and SetTablePointer. */
+    /** @brief 对CreateTableEntry和SetTablePointer的封装 */
     void BootstrapTable(common::ManagedPointer<transaction::TransactionContext> txn,
                         table_oid_t                                             table_oid,
                         namespace_oid_t                                         ns_oid,
                         const std::string                                      &name,
                         const Schema                                           &schema,
                         common::ManagedPointer<storage::SqlTable>               table_ptr);
-    /** @brief Wrapper around calling CreateIndexEntry and SetIndexPointer. */
+    /** @brief 对CreateIndexEntry和SetIndexPointer的封装 */
     void BootstrapIndex(common::ManagedPointer<transaction::TransactionContext> txn,
                         namespace_oid_t                                         ns_oid,
                         table_oid_t                                             table_oid,
@@ -314,7 +313,7 @@ private:
                         common::ManagedPointer<storage::index::Index>           index_ptr);
 
     /**
-     * @brief Create a new table entry WITHOUT TAKING THE DDL LOCK. Used by other members of DatabaseCatalog.
+     * @brief 创建一个不带DDL锁(WITHOUT TAKING THE DDL LOCK)的新表项(table entry). 由DatabaseCatalog的其他成员使用.
      * @see   PgCoreImpl::CreateTableEntry
      */
     auto CreateTableEntry(common::ManagedPointer<transaction::TransactionContext> txn,
@@ -323,7 +322,7 @@ private:
                           const std::string                                      &name,
                           const Schema                                           &schema) -> bool;
     /**
-     * @brief Create a new table entry WITHOUT TAKING THE DDL LOCK. Used by other members of DatabaseCatalog.
+     * @brief 创建一个不带DDL锁(WITHOUT TAKING THE DDL LOCK)的新索引项(index entry). 由DatabaseCataLog的其他成员使用.
      * @see   PgCoreImpl::CreateIndexEntry
      */
     auto CreateIndexEntry(common::ManagedPointer<transaction::TransactionContext> txn,
@@ -341,9 +340,9 @@ private:
                                    table_oid_t                                             table_oid,
                                    const Schema                                           &schema);
     /**
-     * @brief Delete all of the indexes for a given table.
+     * @brief 删除给定表的所有索引
      *
-     * This is currently designed as an internal function, though it could be exposed via CatalogAccessor if desired.
+     * 这目前被设计为一个内部函数, 不过如果需要的话, 也可以通过CatalogAccessor公开它
      *
      * @param txn     The transaction to perform the deletions in.
      * @param table   The OID of the table to remove all indexes for.
@@ -357,7 +356,7 @@ private:
         -> std::vector<Column>;
 
     /**
-     * @brief Set the schema of a table in pg_class.
+     * @brief 在pg_class中设置表的schema
      *
      * @tparam CallerType     The type of the caller. Should only be used by recovery!
      * @param txn             The transaction to perform the schema change in.
@@ -374,7 +373,7 @@ private:
     }
 
     /**
-     * @brief Set the schema of an index in pg_class.
+     * @brief 在pg_class中设置索引的schema
      *
      * @tparam CallerType     The type of the caller. Should only be used by recovery!
      * @param txn             The transaction to perform the schema change in.
@@ -390,7 +389,7 @@ private:
         return SetClassPointer(txn, oid, schema, postgres::PgClass::REL_SCHEMA.oid_);
     }
 
-    /** @brief Set REL_PTR for the specified pg_class column. @see PgCoreImpl::SetClassPointer */
+    /** @brief 为指定的pg_class列设置REL_PTR. @see PgCoreImpl::SetClassPointer */
     template <typename ClassOid, typename Ptr>
     auto SetClassPointer(common::ManagedPointer<transaction::TransactionContext> txn,
                          ClassOid                                                oid,
