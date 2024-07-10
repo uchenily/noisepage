@@ -21,16 +21,17 @@
 
 namespace noisepage::taskflow {
 
-std::unique_ptr<optimizer::OptimizeResult>
-TaskflowUtil::Optimize(const common::ManagedPointer<transaction::TransactionContext>        txn,
-                       const common::ManagedPointer<catalog::CatalogAccessor>               accessor,
-                       const common::ManagedPointer<parser::ParseResult>                    query,
-                       const catalog::db_oid_t                                              db_oid,
-                       common::ManagedPointer<optimizer::StatsStorage>                      stats_storage,
-                       std::unique_ptr<optimizer::AbstractCostModel>                        cost_model,
-                       const uint64_t                                                       optimizer_timeout,
-                       common::ManagedPointer<std::vector<parser::ConstantValueExpression>> parameters) {
-    // Optimizer transforms annotated ParseResult to logical expressions (ephemeral Optimizer structure)
+auto TaskflowUtil::Optimize(const common::ManagedPointer<transaction::TransactionContext>        txn,
+                            const common::ManagedPointer<catalog::CatalogAccessor>               accessor,
+                            const common::ManagedPointer<parser::ParseResult>                    query,
+                            const catalog::db_oid_t                                              db_oid,
+                            common::ManagedPointer<optimizer::StatsStorage>                      stats_storage,
+                            std::unique_ptr<optimizer::AbstractCostModel>                        cost_model,
+                            const uint64_t                                                       optimizer_timeout,
+                            common::ManagedPointer<std::vector<parser::ConstantValueExpression>> parameters)
+    -> std::unique_ptr<optimizer::OptimizeResult> {
+    // Optimizer transforms annotated(带注释的) ParseResult to logical expressions (ephemeral Optimizer
+    // structure[临时优化器结构])
     optimizer::QueryToOperatorTransformer transformer(accessor, db_oid);
     auto                                  query_statement = query->GetStatement(0);
 
@@ -41,6 +42,7 @@ TaskflowUtil::Optimize(const common::ManagedPointer<transaction::TransactionCont
         const auto explain_stmt = query_statement.CastManagedPointerTo<parser::ExplainStatement>();
         query_statement = explain_stmt->GetSQLStatement();
     }
+    // query语句转为逻辑表达式
     auto logical_exprs = transformer.ConvertToOpExpression(query_statement, query);
 
     // TODO(Matt): is the cost model to use going to become an arg to this function eventually?
@@ -52,27 +54,28 @@ TaskflowUtil::Optimize(const common::ManagedPointer<transaction::TransactionCont
     // If any more logic like this is needed in the future, we should break this into its own function somewhere since
     // this is Optimizer-specific stuff.
 
-    const auto type = query->GetStatement(0)->GetType();
-    if (type == parser::StatementType::SELECT) {
-        const auto sel_stmt = query->GetStatement(0).CastManagedPointerTo<parser::SelectStatement>();
+    const auto stmt_type = query->GetStatement(0)->GetType();
+    if (stmt_type == parser::StatementType::SELECT) {
+        const auto select_stmt = query->GetStatement(0).CastManagedPointerTo<parser::SelectStatement>();
 
         // Output
-        output = sel_stmt->GetSelectColumns(); // TODO(Matt): this is making a local copy. Revisit the life cycle and
+        // TODO(Matt): this is making a local copy. Revisit the life cycle and
         // immutability of all of these Optimizer inputs to reduce copies.
+        output = select_stmt->GetSelectColumns();
 
-        CollectSelectProperties(sel_stmt, &property_set);
-    } else if (type == parser::StatementType::INSERT
+        CollectSelectProperties(select_stmt, &property_set);
+    } else if (stmt_type == parser::StatementType::INSERT
                && query->GetStatement(0).CastManagedPointerTo<parser::InsertStatement>()->GetSelect() != nullptr) {
-        const auto sel_stmt = query->GetStatement(0).CastManagedPointerTo<parser::InsertStatement>()->GetSelect();
+        const auto insert_stmt = query->GetStatement(0).CastManagedPointerTo<parser::InsertStatement>()->GetSelect();
 
         // Inset into select output will be pushed down to select
-        output = sel_stmt->GetSelectColumns(); // TODO(Matt): this is making a local copy. Revisit the life cycle and
+        output = insert_stmt->GetSelectColumns(); // TODO(Matt): this is making a local copy. Revisit the life cycle and
         // immutability of all of these Optimizer inputs to reduce copies.
 
-        CollectSelectProperties(sel_stmt, &property_set);
+        CollectSelectProperties(insert_stmt, &property_set);
     }
 
-    auto query_info = optimizer::QueryInfo(type, std::move(output), &property_set);
+    auto query_info = optimizer::QueryInfo(stmt_type, std::move(output), &property_set);
     // TODO(Matt): QueryInfo holding a raw pointer to PropertySet obfuscates the required life cycle of PropertySet
 
     // Optimize, consuming the logical expressions in the process
@@ -110,7 +113,8 @@ void TaskflowUtil::CollectSelectProperties(common::ManagedPointer<parser::Select
     }
 }
 
-network::QueryType TaskflowUtil::QueryTypeForStatement(const common::ManagedPointer<parser::SQLStatement> statement) {
+auto TaskflowUtil::QueryTypeForStatement(const common::ManagedPointer<parser::SQLStatement> statement)
+    -> network::QueryType {
     const auto statement_type = statement->GetType();
     switch (statement_type) {
     case parser::StatementType::TRANSACTION: {

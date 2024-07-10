@@ -25,13 +25,13 @@ void Optimizer::Reset() {
     context_ = std::make_unique<OptimizerContext>(common::ManagedPointer(cost_model_));
 }
 
-std::unique_ptr<OptimizeResult>
-Optimizer::BuildPlanTree(transaction::TransactionContext                                     *txn,
-                         catalog::CatalogAccessor                                            *accessor,
-                         StatsStorage                                                        *storage,
-                         QueryInfo                                                            query_info,
-                         std::unique_ptr<AbstractOptimizerNode>                               op_tree,
-                         common::ManagedPointer<std::vector<parser::ConstantValueExpression>> parameters) {
+auto Optimizer::BuildPlanTree(transaction::TransactionContext                                     *txn,
+                              catalog::CatalogAccessor                                            *accessor,
+                              StatsStorage                                                        *storage,
+                              QueryInfo                                                            query_info,
+                              std::unique_ptr<AbstractOptimizerNode>                               op_tree,
+                              common::ManagedPointer<std::vector<parser::ConstantValueExpression>> parameters)
+    -> std::unique_ptr<OptimizeResult> {
     context_->SetTxn(txn);
     context_->SetCatalogAccessor(accessor);
     context_->SetStatsStorage(storage);
@@ -144,13 +144,12 @@ void Optimizer::ElectCTELeader(common::ManagedPointer<planner::AbstractPlanNode>
     }
 }
 
-std::unique_ptr<planner::AbstractPlanNode>
-Optimizer::ChooseBestPlan(transaction::TransactionContext                                       *txn,
-                          catalog::CatalogAccessor                                              *accessor,
-                          group_id_t                                                             id,
-                          PropertySet                                                           *required_props,
-                          const std::vector<common::ManagedPointer<parser::AbstractExpression>> &required_cols,
-                          PlanGenerator                                                         *generator) {
+auto Optimizer::ChooseBestPlan(transaction::TransactionContext                                       *txn,
+                               catalog::CatalogAccessor                                              *accessor,
+                               group_id_t                                                             id,
+                               PropertySet                                                           *required_props,
+                               const std::vector<common::ManagedPointer<parser::AbstractExpression>> &required_cols,
+                               PlanGenerator *generator) -> std::unique_ptr<planner::AbstractPlanNode> {
     Group *group = context_->GetMemo().GetGroupByID(id);
     auto   gexpr = group->GetBestExpression(required_props);
 

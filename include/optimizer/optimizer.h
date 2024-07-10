@@ -20,7 +20,7 @@ namespace planner {
 
 namespace catalog {
     class CatalogAccessor;
-}
+} // namespace catalog
 
 namespace transaction {
     class TransactionContext;
@@ -61,13 +61,13 @@ namespace optimizer {
          * @param parameters parameters for the query, can be nullptr if there are no parameters
          * @returns execution plan
          */
-        std::unique_ptr<OptimizeResult>
-        BuildPlanTree(transaction::TransactionContext                                     *txn,
-                      catalog::CatalogAccessor                                            *accessor,
-                      StatsStorage                                                        *storage,
-                      QueryInfo                                                            query_info,
-                      std::unique_ptr<AbstractOptimizerNode>                               op_tree,
-                      common::ManagedPointer<std::vector<parser::ConstantValueExpression>> parameters) override;
+        auto BuildPlanTree(transaction::TransactionContext                                     *txn,
+                           catalog::CatalogAccessor                                            *accessor,
+                           StatsStorage                                                        *storage,
+                           QueryInfo                                                            query_info,
+                           std::unique_ptr<AbstractOptimizerNode>                               op_tree,
+                           common::ManagedPointer<std::vector<parser::ConstantValueExpression>> parameters)
+            -> std::unique_ptr<OptimizeResult> override;
 
         /**
          * Reset the optimizer state
@@ -94,13 +94,12 @@ namespace optimizer {
          * @param plan_generator Plan generator
          * @returns Lowest cost plan
          */
-        std::unique_ptr<planner::AbstractPlanNode>
-        ChooseBestPlan(transaction::TransactionContext                                       *txn,
-                       catalog::CatalogAccessor                                              *accessor,
-                       group_id_t                                                             id,
-                       PropertySet                                                           *required_props,
-                       const std::vector<common::ManagedPointer<parser::AbstractExpression>> &required_cols,
-                       PlanGenerator                                                         *plan_generator);
+        auto ChooseBestPlan(transaction::TransactionContext                                       *txn,
+                            catalog::CatalogAccessor                                              *accessor,
+                            group_id_t                                                             id,
+                            PropertySet                                                           *required_props,
+                            const std::vector<common::ManagedPointer<parser::AbstractExpression>> &required_cols,
+                            PlanGenerator *plan_generator) -> std::unique_ptr<planner::AbstractPlanNode>;
 
         /**
          * Execute elements of given optimization task stack and ensure that we

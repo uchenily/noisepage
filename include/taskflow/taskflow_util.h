@@ -1,7 +1,6 @@
 #pragma once
 
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "catalog/catalog_defs.h"
@@ -11,7 +10,7 @@
 
 namespace noisepage::catalog {
 class CatalogAccessor;
-}
+} // namespace noisepage::catalog
 
 namespace noisepage::parser {
 class ConstantValueExpression;
@@ -22,7 +21,7 @@ class SelectStatement;
 
 namespace noisepage::planner {
 class AbstractPlanNode;
-}
+} // namespace noisepage::planner
 
 namespace noisepage::optimizer {
 class StatsStorage;
@@ -32,7 +31,7 @@ class PropertySet;
 
 namespace noisepage::transaction {
 class TransactionContext;
-}
+} // namespace noisepage::transaction
 
 namespace noisepage::taskflow {
 
@@ -54,22 +53,22 @@ public:
      * @param parameters parameters for the query, can be nullptr if there are no parameters
      * @return physical plan that can be executed
      */
-    static std::unique_ptr<optimizer::OptimizeResult>
-    Optimize(common::ManagedPointer<transaction::TransactionContext>              txn,
-             common::ManagedPointer<catalog::CatalogAccessor>                     accessor,
-             common::ManagedPointer<parser::ParseResult>                          query,
-             catalog::db_oid_t                                                    db_oid,
-             common::ManagedPointer<optimizer::StatsStorage>                      stats_storage,
-             std::unique_ptr<optimizer::AbstractCostModel>                        cost_model,
-             uint64_t                                                             optimizer_timeout,
-             common::ManagedPointer<std::vector<parser::ConstantValueExpression>> parameters);
+    static auto Optimize(common::ManagedPointer<transaction::TransactionContext>              txn,
+                         common::ManagedPointer<catalog::CatalogAccessor>                     accessor,
+                         common::ManagedPointer<parser::ParseResult>                          query,
+                         catalog::db_oid_t                                                    db_oid,
+                         common::ManagedPointer<optimizer::StatsStorage>                      stats_storage,
+                         std::unique_ptr<optimizer::AbstractCostModel>                        cost_model,
+                         uint64_t                                                             optimizer_timeout,
+                         common::ManagedPointer<std::vector<parser::ConstantValueExpression>> parameters)
+        -> std::unique_ptr<optimizer::OptimizeResult>;
 
     /**
      * Converts parser statement types (which rely on multiple enums) to a single QueryType enum from the network layer
      * @param statement
      * @return
      */
-    static network::QueryType QueryTypeForStatement(common::ManagedPointer<parser::SQLStatement> statement);
+    static auto QueryTypeForStatement(common::ManagedPointer<parser::SQLStatement> statement) -> network::QueryType;
 
 private:
     static void CollectSelectProperties(common::ManagedPointer<parser::SelectStatement> sel_stmt,
