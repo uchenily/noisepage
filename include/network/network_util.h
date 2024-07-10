@@ -18,6 +18,9 @@ public:
      * @warning This logic relies on ordering of values in the enum's definition and is documented there as well.
      */
     static auto TransactionalQueryType(const QueryType type) -> bool {
+        // QUERY_BEGIN
+        // QUERY_COMMIT
+        // QUERY_ROLLBACK
         return type <= QueryType::QUERY_ROLLBACK;
     }
 
@@ -75,6 +78,14 @@ public:
      * @return true if a query that is current not implemented in the system. Order of QueryType enum matters here.
      */
     static auto UnsupportedQueryType(const QueryType type) -> bool {
+        // QUERY_RENAME
+        // QUERY_ALTER
+        // QUERY_DROP_PREPARED_STATEMENT
+        // QUERY_PREPARE
+        // QUERY_EXECUTE
+        // QUERY_COPY
+        // QUERY_OTHER
+        // QUERY_INVALID
         return type > QueryType::QUERY_SHOW;
     }
 };

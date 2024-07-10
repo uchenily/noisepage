@@ -123,6 +123,11 @@ auto SimpleQueryCommand::Exec(const common::ManagedPointer<ProtocolInterpreter> 
     postgres_interpreter->CloseStatement("");
     postgres_interpreter->ClosePortal("");
 
+    // 这里就是psql发送过来的命令
+    // CREATE DATABASE ...
+    // CREATE TABLE ...
+    // INSERT INTO ...
+    // SELECT * FROM ...
     auto query_text = reader_.ReadString();
 
     auto parse_result = taskflow->ParseQuery(query_text, connection);
@@ -194,6 +199,7 @@ auto SimpleQueryCommand::Exec(const common::ManagedPointer<ProtocolInterpreter> 
     if (connection->TransactionState() == network::NetworkTransactionStateType::IDLE) {
         NOISEPAGE_ASSERT(!postgres_interpreter->ExplicitTransactionBlock(),
                          "We shouldn't be in an explicit txn block is transaction state is IDLE.");
+        // 从这个地方开始, 开启事务
         taskflow->BeginTransaction(connection);
     }
 
@@ -221,11 +227,12 @@ auto SimpleQueryCommand::Exec(const common::ManagedPointer<ProtocolInterpreter> 
         writer->WriteCommandComplete(query_type, 0);
     } else {
         // NOTE(x): most case
-        // Try to bind the parsed statement
+        // 尝试绑定已解析的语句(parsed statement)
         const auto bind_result = taskflow->BindQuery(connection, common::ManagedPointer(statement), nullptr);
 
+        // SQL语句执行的核心部分
         if (bind_result.type_ == taskflow::ResultType::COMPLETE) {
-            // Binding succeeded, optimize to generate a physical plan and then execute
+            // 绑定成功, 优化生成physical plan然后执行
             auto optimize_result = taskflow->OptimizeBoundQuery(connection, statement->ParseResult(), nullptr);
 
             statement->SetOptimizeResult(std::move(optimize_result));
@@ -263,8 +270,8 @@ auto SimpleQueryCommand::Exec(const common::ManagedPointer<ProtocolInterpreter> 
     }
 
     if (!postgres_interpreter->ExplicitTransactionBlock()) {
-        // Single statement transaction should be ended before returning
-        // decide whether the txn should be committed or aborted based on the MustAbort flag, and then end the txn
+        // 单语句事务应该在返回之前结束
+        // 根据MustAbort标志决定是提交还是终止事务, 然后结束事务
         taskflow->EndTransaction(connection,
                                  connection->Transaction()->MustAbort() ? network::QueryType::QUERY_ROLLBACK
                                                                         : network::QueryType::QUERY_COMMIT);

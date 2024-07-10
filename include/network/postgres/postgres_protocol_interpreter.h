@@ -191,8 +191,8 @@ public:
     }
 
     /**
-     * close a Statement. We don't care about return value since it's not an error to call Close on non-existent
-     * statement. Also closes any portals constructed from this statement (if any)
+     * 关闭语句(statement). 我们不关心返回值, 因为对不存在的statement调用close并不是错误,
+     * 还关闭从该statement构造的任何portal(如果有的话)
      * @param name statement to be removed
      */
     void CloseStatement(const std::string &name) {
