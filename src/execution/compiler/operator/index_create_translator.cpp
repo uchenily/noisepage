@@ -294,7 +294,7 @@ void IndexCreateTranslator::IndexInsert(WorkContext *ctx, FunctionBuilder *funct
 
         // col_expr comes from the base table so we need to use TableSchema to get the correct scan_offset.
         // col_expr = @VPIGet(vpi_var_, attr_sql_type, true, oid)
-        auto cve = stored_expr.CastManagedPointerTo<const parser::ColumnValueExpression>();
+        auto cve = stored_expr.CastTo<const parser::ColumnValueExpression>();
         NOISEPAGE_ASSERT(cve->GetColumnOid() != catalog::INVALID_COLUMN_OID, "CREATE INDEX column oid not bound");
         NOISEPAGE_ASSERT(oid_offset.find(cve->GetColumnOid()) != oid_offset.end(), "CREATE INDEX missing column scan");
         auto       &tbl_col = table_schema_.GetColumn(cve->GetColumnOid());

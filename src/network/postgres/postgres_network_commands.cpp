@@ -27,8 +27,7 @@ void WriteShowRowDescription(const common::ManagedPointer<PostgresPacketWriter> 
                              const common::ManagedPointer<network::Statement>   statement) {
     // TODO(WAN): This code exists because the SHOW statement does not go through the optimizer and therefore does not
     //  have a corresponding OutputSchema to go through the usual (SELECT) code path in DescribeCommand.
-    const auto &show_stmt [[maybe_unused]]
-    = statement->RootStatement().CastManagedPointerTo<parser::VariableShowStatement>();
+    const auto &show_stmt [[maybe_unused]] = statement->RootStatement().CastTo<parser::VariableShowStatement>();
 
     const std::string &param_name = show_stmt->GetName();
     auto               expr = std::make_unique<parser::ConstantValueExpression>(execution::sql::SqlTypeId::Varchar);
@@ -114,7 +113,7 @@ auto SimpleQueryCommand::Exec(const common::ManagedPointer<ProtocolInterpreter> 
                               const common::ManagedPointer<PostgresPacketWriter> writer,
                               const common::ManagedPointer<taskflow::Taskflow>   taskflow,
                               const common::ManagedPointer<ConnectionContext>    connection) -> Transition {
-    const auto postgres_interpreter = interpreter.CastManagedPointerTo<network::PostgresProtocolInterpreter>();
+    const auto postgres_interpreter = interpreter.CastTo<network::PostgresProtocolInterpreter>();
     NOISEPAGE_ASSERT(!postgres_interpreter->WaitingForSync(),
                      "We shouldn't be trying to execute commands while waiting for Sync message. This should have been "
                      "caught at the protocol interpreter Process() level.");
@@ -285,7 +284,7 @@ auto ParseCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>  inter
                         const common::ManagedPointer<PostgresPacketWriter> writer,
                         const common::ManagedPointer<taskflow::Taskflow>   taskflow,
                         const common::ManagedPointer<ConnectionContext>    connection) -> Transition {
-    const auto postgres_interpreter = interpreter.CastManagedPointerTo<network::PostgresProtocolInterpreter>();
+    const auto postgres_interpreter = interpreter.CastTo<network::PostgresProtocolInterpreter>();
     NOISEPAGE_ASSERT(!postgres_interpreter->WaitingForSync(),
                      "We shouldn't be trying to execute commands while waiting for Sync message. This should have been "
                      "caught at the protocol interpreter Process() level.");
@@ -369,7 +368,7 @@ auto BindCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>  interp
         common::thread_context.resource_tracker_.Start();
     }
 
-    const auto postgres_interpreter = interpreter.CastManagedPointerTo<network::PostgresProtocolInterpreter>();
+    const auto postgres_interpreter = interpreter.CastTo<network::PostgresProtocolInterpreter>();
     NOISEPAGE_ASSERT(!postgres_interpreter->WaitingForSync(),
                      "We shouldn't be trying to execute commands while waiting for Sync message. This should have been "
                      "caught at the protocol interpreter Process() level.");
@@ -519,7 +518,7 @@ auto DescribeCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>  in
                            const common::ManagedPointer<PostgresPacketWriter> writer,
                            const common::ManagedPointer<taskflow::Taskflow> /*taskflow*/,
                            const common::ManagedPointer<ConnectionContext> /*connection*/) -> Transition {
-    const auto postgres_interpreter = interpreter.CastManagedPointerTo<network::PostgresProtocolInterpreter>();
+    const auto postgres_interpreter = interpreter.CastTo<network::PostgresProtocolInterpreter>();
     NOISEPAGE_ASSERT(!postgres_interpreter->WaitingForSync(),
                      "We shouldn't be trying to execute commands while waiting for Sync message. This should have been "
                      "caught at the protocol interpreter Process() level.");
@@ -579,7 +578,7 @@ auto ExecuteCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>  int
         common::thread_context.resource_tracker_.Start();
     }
 
-    const auto postgres_interpreter = interpreter.CastManagedPointerTo<network::PostgresProtocolInterpreter>();
+    const auto postgres_interpreter = interpreter.CastTo<network::PostgresProtocolInterpreter>();
     NOISEPAGE_ASSERT(!postgres_interpreter->WaitingForSync(),
                      "We shouldn't be trying to execute commands while waiting for Sync message. This should have been "
                      "caught at the protocol interpreter Process() level.");
@@ -675,7 +674,7 @@ auto SyncCommand::Exec(common::ManagedPointer<ProtocolInterpreter>  interpreter,
                        common::ManagedPointer<PostgresPacketWriter> writer,
                        common::ManagedPointer<taskflow::Taskflow>   taskflow,
                        common::ManagedPointer<ConnectionContext>    connection) -> Transition {
-    const auto postgres_interpreter = interpreter.CastManagedPointerTo<network::PostgresProtocolInterpreter>();
+    const auto postgres_interpreter = interpreter.CastTo<network::PostgresProtocolInterpreter>();
     if (!postgres_interpreter->ExplicitTransactionBlock()
         && !(connection->TransactionState() == network::NetworkTransactionStateType::IDLE)) {
         taskflow->EndTransaction(connection,
@@ -693,7 +692,7 @@ auto CloseCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>  inter
                         const common::ManagedPointer<PostgresPacketWriter> writer,
                         const common::ManagedPointer<taskflow::Taskflow> /*taskflow*/,
                         const common::ManagedPointer<ConnectionContext> /*connection*/) -> Transition {
-    const auto postgres_interpreter = interpreter.CastManagedPointerTo<network::PostgresProtocolInterpreter>();
+    const auto postgres_interpreter = interpreter.CastTo<network::PostgresProtocolInterpreter>();
     NOISEPAGE_ASSERT(!postgres_interpreter->WaitingForSync(),
                      "We shouldn't be trying to execute commands while waiting for Sync message. This should have been "
                      "caught at the protocol interpreter Process() level.");

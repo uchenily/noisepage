@@ -148,7 +148,7 @@ public:
      * @return ManagedPointer holding the new type
      */
     template <class NewType>
-    auto CastManagedPointerTo() const -> ManagedPointer<NewType> {
+    auto CastTo() const -> ManagedPointer<NewType> {
         // Either "Underlying is a valid NewType" or "Underlying is base class of NewType".
         static_assert(std::is_convertible_v<Underlying *, NewType *> || std::is_base_of_v<Underlying, NewType>);
         return ManagedPointer<NewType>(reinterpret_cast<NewType *>(underlying_));

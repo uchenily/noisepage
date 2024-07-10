@@ -240,7 +240,7 @@ double StatsCalculator::CalculateSelectivityForPredicate(Group            *group
         selectivity = 1 - CalculateSelectivityForPredicate(group, predicate_table_stats, expr->GetChild(0));
     } else if (expr->GetExpressionType() == parser::ExpressionType::VALUE_CONSTANT) {
         NOISEPAGE_ASSERT(expr->GetChildrenSize() == 0, "CVE should have no child.");
-        auto cve = expr.CastManagedPointerTo<parser::ConstantValueExpression>();
+        auto cve = expr.CastTo<parser::ConstantValueExpression>();
         NOISEPAGE_ASSERT(
             cve->GetReturnValueType() == execution::sql::SqlTypeId::Boolean,
             "Single child ConstantValueExpression should be a boolean since WHERE clauses must resolve to boolean.");
@@ -253,8 +253,8 @@ double StatsCalculator::CalculateSelectivityForPredicate(Group            *group
     } else if (expr->GetChildrenSize() == 1
                && expr->GetChild(0)->GetExpressionType() == parser::ExpressionType::COLUMN_VALUE) {
         auto           child_expr = expr->GetChild(0);
-        auto           col_name = child_expr.CastManagedPointerTo<parser::ColumnValueExpression>()->GetFullName();
-        auto           col_oid = child_expr.CastManagedPointerTo<parser::ColumnValueExpression>()->GetColumnOid();
+        auto           col_name = child_expr.CastTo<parser::ColumnValueExpression>()->GetFullName();
+        auto           col_oid = child_expr.CastTo<parser::ColumnValueExpression>()->GetColumnOid();
         auto           expr_type = expr->GetExpressionType();
         ValueCondition condition(col_oid, col_name, expr_type, nullptr);
         selectivity = SelectivityUtil::ComputeSelectivity(predicate_table_stats, condition);
@@ -275,8 +275,8 @@ double StatsCalculator::CalculateSelectivityForPredicate(Group            *group
         int  right_index = expr->GetChild(0)->GetExpressionType() == parser::ExpressionType::COLUMN_VALUE ? 1 : 0;
         auto left_expr = expr->GetChild(1 - right_index);
         NOISEPAGE_ASSERT(left_expr->GetExpressionType() == parser::ExpressionType::COLUMN_VALUE, "CVE expected");
-        auto col_name = left_expr.CastManagedPointerTo<parser::ColumnValueExpression>()->GetFullName();
-        auto col_oid = left_expr.CastManagedPointerTo<parser::ColumnValueExpression>()->GetColumnOid();
+        auto col_name = left_expr.CastTo<parser::ColumnValueExpression>()->GetFullName();
+        auto col_oid = left_expr.CastTo<parser::ColumnValueExpression>()->GetColumnOid();
 
         auto expr_type = expr->GetExpressionType();
         if (right_index == 0) {
@@ -285,11 +285,11 @@ double StatsCalculator::CalculateSelectivityForPredicate(Group            *group
 
         std::unique_ptr<parser::ConstantValueExpression> value;
         if (expr->GetChild(right_index)->GetExpressionType() == parser::ExpressionType::VALUE_CONSTANT) {
-            auto cve = expr->GetChild(right_index).CastManagedPointerTo<parser::ConstantValueExpression>();
+            auto cve = expr->GetChild(right_index).CastTo<parser::ConstantValueExpression>();
             value = std::unique_ptr<parser::ConstantValueExpression>{
                 reinterpret_cast<parser::ConstantValueExpression *>(cve->Copy().release())};
         } else {
-            auto pve = expr->GetChild(right_index).CastManagedPointerTo<parser::ParameterValueExpression>();
+            auto pve = expr->GetChild(right_index).CastTo<parser::ParameterValueExpression>();
             NOISEPAGE_ASSERT(context_->GetParams() != nullptr, "Query expected to have parameters");
             NOISEPAGE_ASSERT(context_->GetParams()->size() > pve->GetValueIdx(),
                              "Query expected to have enough parameters");

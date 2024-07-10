@@ -37,11 +37,11 @@ TEST_F(CreateIndexOptionsTest, BPlusTreeOptions) {
     ASSERT_EQ(test_2_idx_both->Type(), storage::index::IndexType::BPLUSTREE);
 
     auto test_2_idx_upper_bpt_index
-        = test_2_idx_upper.CastManagedPointerTo<storage::index::BPlusTreeIndex<storage::index::CompactIntsKey<8>>>();
+        = test_2_idx_upper.CastTo<storage::index::BPlusTreeIndex<storage::index::CompactIntsKey<8>>>();
     auto test_2_idx_lower_bpt_index
-        = test_2_idx_lower.CastManagedPointerTo<storage::index::BPlusTreeIndex<storage::index::CompactIntsKey<8>>>();
+        = test_2_idx_lower.CastTo<storage::index::BPlusTreeIndex<storage::index::CompactIntsKey<8>>>();
     auto test_2_idx_both_bpt_index
-        = test_2_idx_both.CastManagedPointerTo<storage::index::BPlusTreeIndex<storage::index::CompactIntsKey<8>>>();
+        = test_2_idx_both.CastTo<storage::index::BPlusTreeIndex<storage::index::CompactIntsKey<8>>>();
 
     ASSERT_EQ(test_2_idx_upper_bpt_index->GetInnerNodeSizeUpperThreshold(), 256);
     ASSERT_EQ(test_2_idx_lower_bpt_index->GetInnerNodeSizeLowerThreshold(), 4);

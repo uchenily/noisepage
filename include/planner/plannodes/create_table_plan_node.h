@@ -525,7 +525,7 @@ public:
                 check_cols.push_back(col->GetColumnName());
 
                 common::ManagedPointer<parser::ConstantValueExpression> const_expr_elem
-                    = (col->GetCheckExpression()->GetChild(1)).CastManagedPointerTo<parser::ConstantValueExpression>();
+                    = (col->GetCheckExpression()->GetChild(1)).CastTo<parser::ConstantValueExpression>();
                 auto tmp_value = *const_expr_elem;
 
                 CheckInfo check_info(check_cols,

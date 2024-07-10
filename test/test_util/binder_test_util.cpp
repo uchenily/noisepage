@@ -13,7 +13,7 @@ BinderTestUtil::ParseToSelectStatement(const std::string &sql) {
         // Just die, don't really care how
         throw std::runtime_error{""};
     }
-    auto select = parse_tree->GetStatement(0).CastManagedPointerTo<parser::SelectStatement>();
+    auto select = parse_tree->GetStatement(0).CastTo<parser::SelectStatement>();
     return std::make_pair(std::move(parse_tree), select);
 }
 

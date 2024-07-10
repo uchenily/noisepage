@@ -56,12 +56,12 @@ messenger::connection_id_t ReplicationManager::GetNodeConnection(const std::stri
 
 common::ManagedPointer<PrimaryReplicationManager> ReplicationManager::GetAsPrimary() {
     NOISEPAGE_ASSERT(IsPrimary(), "This should only be called from the primary node!");
-    return common::ManagedPointer(this).CastManagedPointerTo<PrimaryReplicationManager>();
+    return common::ManagedPointer(this).CastTo<PrimaryReplicationManager>();
 }
 
 common::ManagedPointer<ReplicaReplicationManager> ReplicationManager::GetAsReplica() {
     NOISEPAGE_ASSERT(IsReplica(), "This should only be called from a replica node!");
-    return common::ManagedPointer(this).CastManagedPointerTo<ReplicaReplicationManager>();
+    return common::ManagedPointer(this).CastTo<ReplicaReplicationManager>();
 }
 
 void ReplicationManager::BuildReplicationNetwork(const std::string &replication_hosts_path) {

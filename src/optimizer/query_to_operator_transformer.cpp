@@ -40,7 +40,7 @@ auto QueryToOperatorTransformer::ConvertToOpExpression(common::ManagedPointer<pa
     output_expr_ = nullptr;
     parse_result_ = parse_result;
 
-    op->Accept(common::ManagedPointer(this).CastManagedPointerTo<SqlNodeVisitor>());
+    op->Accept(common::ManagedPointer(this).CastTo<SqlNodeVisitor>());
     return std::move(output_expr_);
 }
 
@@ -78,7 +78,7 @@ void QueryToOperatorTransformer::Visit(common::ManagedPointer<parser::SelectStat
 
     if (!op->GetSelectWith().empty()) {
         for (auto with : op->GetSelectWith()) {
-            with->Accept(common::ManagedPointer(this).CastManagedPointerTo<SqlNodeVisitor>());
+            with->Accept(common::ManagedPointer(this).CastTo<SqlNodeVisitor>());
             // SELECT statement has CTE, register CTE table name
             cte_table_name_.push_back(with->GetAlias().GetName());
             cte_type_.push_back(with->GetCteType());
@@ -170,7 +170,7 @@ void QueryToOperatorTransformer::Visit(common::ManagedPointer<parser::SelectStat
 
     if (op->GetSelectTable() != nullptr) {
         // SELECT with FROM
-        op->GetSelectTable()->Accept(common::ManagedPointer(this).CastManagedPointerTo<SqlNodeVisitor>());
+        op->GetSelectTable()->Accept(common::ManagedPointer(this).CastTo<SqlNodeVisitor>());
     } else {
         // SELECT without FROM
         output_expr_ = std::make_unique<OperatorNode>(LogicalGet::Make().RegisterWithTxnContext(txn_context),
@@ -285,10 +285,10 @@ void QueryToOperatorTransformer::Visit(common::ManagedPointer<parser::SelectStat
 
         for (auto with : op->GetSelectWith()) {
             // Get the logical tree for the query which is used to compute the CTE table
-            with->Accept(common::ManagedPointer(this).CastManagedPointerTo<SqlNodeVisitor>());
+            with->Accept(common::ManagedPointer(this).CastTo<SqlNodeVisitor>());
             // Add CTE table query to first LogicalCteScan found in tree
             // TODO(tanujnay112) think about this more, there might be a better way
-            FindFirstCTEScanNode(common::ManagedPointer(child_expr).CastManagedPointerTo<AbstractOptimizerNode>(),
+            FindFirstCTEScanNode(common::ManagedPointer(child_expr).CastTo<AbstractOptimizerNode>(),
                                  with->GetAlias().GetName());
         }
 
@@ -298,7 +298,7 @@ void QueryToOperatorTransformer::Visit(common::ManagedPointer<parser::SelectStat
 
     if (op->GetUnionSelect() != nullptr) {
         auto left_expr = std::move(output_expr_);
-        op->GetUnionSelect()->Accept(common::ManagedPointer(this).CastManagedPointerTo<SqlNodeVisitor>());
+        op->GetUnionSelect()->Accept(common::ManagedPointer(this).CastTo<SqlNodeVisitor>());
         auto right_expr = std::move(output_expr_);
         // TODO(Kyle): below we just hard-code the is_all flag, we need to fix this
         // by getting the parser to represent whether it is UNION or UNION ALL
@@ -316,11 +316,11 @@ void QueryToOperatorTransformer::Visit(common::ManagedPointer<parser::SelectStat
 void QueryToOperatorTransformer::Visit(common::ManagedPointer<parser::JoinDefinition> node) {
     OPTIMIZER_LOG_DEBUG("Transforming JoinDefinition to operators ...");
     // Get left operator
-    node->GetLeftTable()->Accept(common::ManagedPointer(this).CastManagedPointerTo<SqlNodeVisitor>());
+    node->GetLeftTable()->Accept(common::ManagedPointer(this).CastTo<SqlNodeVisitor>());
     auto left_expr = std::move(output_expr_);
 
     // Get right operator
-    node->GetRightTable()->Accept(common::ManagedPointer(this).CastManagedPointerTo<SqlNodeVisitor>());
+    node->GetRightTable()->Accept(common::ManagedPointer(this).CastTo<SqlNodeVisitor>());
     auto right_expr = std::move(output_expr_);
 
     // Construct join operator
@@ -398,7 +398,7 @@ void QueryToOperatorTransformer::Visit(common::ManagedPointer<parser::TableRef> 
 
         auto alias_to_expr_map = ConstructSelectElementMap(node->GetSelect()->GetSelectColumns());
 
-        node->GetSelect()->Accept(common::ManagedPointer(this).CastManagedPointerTo<SqlNodeVisitor>());
+        node->GetSelect()->Accept(common::ManagedPointer(this).CastTo<SqlNodeVisitor>());
 
         auto child_expr = std::move(output_expr_);
         output_expr_ = std::make_unique<OperatorNode>(
@@ -408,18 +408,18 @@ void QueryToOperatorTransformer::Visit(common::ManagedPointer<parser::TableRef> 
         output_expr_->PushChild(std::move(child_expr));
     } else if (node->GetJoin() != nullptr) {
         // Explicit Join
-        node->GetJoin()->Accept(common::ManagedPointer(this).CastManagedPointerTo<SqlNodeVisitor>());
+        node->GetJoin()->Accept(common::ManagedPointer(this).CastTo<SqlNodeVisitor>());
     } else if (node->GetList().size() > 1) {
         // Multiple tables (Implicit Join)
         // Create a join operator between the first two tables
-        node->GetList().at(0)->Accept(common::ManagedPointer(this).CastManagedPointerTo<SqlNodeVisitor>());
+        node->GetList().at(0)->Accept(common::ManagedPointer(this).CastTo<SqlNodeVisitor>());
         auto prev_expr = std::move(output_expr_);
         // Build a left deep join tree
         for (size_t i = 1; i < node->GetList().size(); i++) {
             // Start at i = 1 due to the Accept() above
             auto list_elem = node->GetList().at(i);
 
-            list_elem->Accept(common::ManagedPointer(this).CastManagedPointerTo<SqlNodeVisitor>());
+            list_elem->Accept(common::ManagedPointer(this).CastTo<SqlNodeVisitor>());
             auto join_expr
                 = std::make_unique<OperatorNode>(LogicalInnerJoin::Make().RegisterWithTxnContext(txn_context),
                                                  std::vector<std::unique_ptr<AbstractOptimizerNode>>{},
@@ -655,7 +655,7 @@ void QueryToOperatorTransformer::Visit(common::ManagedPointer<parser::InsertStat
                 .RegisterWithTxnContext(txn_context),
             std::vector<std::unique_ptr<AbstractOptimizerNode>>{},
             txn_context);
-        op->GetSelect()->Accept(common::ManagedPointer(this).CastManagedPointerTo<SqlNodeVisitor>());
+        op->GetSelect()->Accept(common::ManagedPointer(this).CastTo<SqlNodeVisitor>());
 
         insert_expr->PushChild(std::move(output_expr_));
         output_expr_ = std::move(insert_expr);
@@ -830,9 +830,9 @@ void QueryToOperatorTransformer::Visit(common::ManagedPointer<parser::CopyStatem
 
     } else {
         if (op->GetSelectStatement() != nullptr) {
-            op->GetSelectStatement()->Accept(common::ManagedPointer(this).CastManagedPointerTo<SqlNodeVisitor>());
+            op->GetSelectStatement()->Accept(common::ManagedPointer(this).CastTo<SqlNodeVisitor>());
         } else {
-            op->GetCopyTable()->Accept(common::ManagedPointer(this).CastManagedPointerTo<SqlNodeVisitor>());
+            op->GetCopyTable()->Accept(common::ManagedPointer(this).CastTo<SqlNodeVisitor>());
         }
         auto export_op = std::make_unique<OperatorNode>(LogicalExportExternalFile::Make(op->GetExternalFileFormat(),
                                                                                         op->GetFilePath(),
@@ -880,7 +880,7 @@ void QueryToOperatorTransformer::Visit(common::ManagedPointer<parser::Comparison
     OPTIMIZER_LOG_DEBUG("Transforming ComparisonExpression to operators ...");
     auto expr_type = expr->GetExpressionType();
     if (expr->GetExpressionType() == parser::ExpressionType::COMPARE_IN) {
-        GenerateSubqueryTree(expr.CastManagedPointerTo<parser::AbstractExpression>(), 1, false);
+        GenerateSubqueryTree(expr.CastTo<parser::AbstractExpression>(), 1, false);
     } else if (expr_type == parser::ExpressionType::COMPARE_EQUAL
                || expr_type == parser::ExpressionType::COMPARE_NOT_EQUAL
                || expr_type == parser::ExpressionType::COMPARE_GREATER_THAN
@@ -892,23 +892,23 @@ void QueryToOperatorTransformer::Visit(common::ManagedPointer<parser::Comparison
             throw NOT_IMPLEMENTED_EXCEPTION("Comparisons between sub-selects are not supported");
         }
         // Transform if either child is sub-query
-        GenerateSubqueryTree(expr.CastManagedPointerTo<parser::AbstractExpression>(), 0, true)
-            || GenerateSubqueryTree(expr.CastManagedPointerTo<parser::AbstractExpression>(), 1, true);
+        GenerateSubqueryTree(expr.CastTo<parser::AbstractExpression>(), 0, true)
+            || GenerateSubqueryTree(expr.CastTo<parser::AbstractExpression>(), 1, true);
     }
-    expr->AcceptChildren(common::ManagedPointer(this).CastManagedPointerTo<SqlNodeVisitor>());
+    expr->AcceptChildren(common::ManagedPointer(this).CastTo<SqlNodeVisitor>());
 }
 
 void QueryToOperatorTransformer::Visit(common::ManagedPointer<parser::OperatorExpression> expr) {
     OPTIMIZER_LOG_DEBUG("Transforming OperatorNode to operators ...");
     // TODO(boweic): We may want to do the rewrite (exist -> in) in the binder
     if (expr->GetExpressionType() == parser::ExpressionType::OPERATOR_EXISTS) {
-        if (GenerateSubqueryTree(expr.CastManagedPointerTo<parser::AbstractExpression>(), 0, false)) {
+        if (GenerateSubqueryTree(expr.CastTo<parser::AbstractExpression>(), 0, false)) {
             // Already reset the child to column, we need to transform exist to not-null to preserve semantic
             expr->SetExpressionType(parser::ExpressionType::OPERATOR_IS_NOT_NULL);
         }
     }
 
-    expr->AcceptChildren(common::ManagedPointer(this).CastManagedPointerTo<SqlNodeVisitor>());
+    expr->AcceptChildren(common::ManagedPointer(this).CastTo<SqlNodeVisitor>());
 }
 
 auto QueryToOperatorTransformer::RequireAggregation(common::ManagedPointer<parser::SelectStatement> op) -> bool {
@@ -956,7 +956,7 @@ void QueryToOperatorTransformer::CollectPredicates(common::ManagedPointer<parser
     // Accept will change the expression, e.g. (a in (select b from test)) into
     // (a IN test.b), after the rewrite, we can extract the table aliases
     // information correctly
-    expr->Accept(common::ManagedPointer(this).CastManagedPointerTo<SqlNodeVisitor>());
+    expr->Accept(common::ManagedPointer(this).CastTo<SqlNodeVisitor>());
     QueryToOperatorTransformer::ExtractPredicates(expr, predicates);
 }
 
@@ -1038,7 +1038,7 @@ auto QueryToOperatorTransformer::GenerateSubqueryTree(common::ManagedPointer<par
         return false;
     }
 
-    auto sub_select = subquery_expr.CastManagedPointerTo<parser::SubqueryExpression>()->GetSubselect();
+    auto sub_select = subquery_expr.CastTo<parser::SubqueryExpression>()->GetSubselect();
     if (!QueryToOperatorTransformer::IsSupportedSubSelect(sub_select)) {
         throw NOT_IMPLEMENTED_EXCEPTION("Sub-select not supported");
     }
@@ -1063,7 +1063,7 @@ auto QueryToOperatorTransformer::GenerateSubqueryTree(common::ManagedPointer<par
         op_expr->PushChild(std::move(output_expr_));
     }
 
-    sub_select->Accept(common::ManagedPointer(this).CastManagedPointerTo<SqlNodeVisitor>());
+    sub_select->Accept(common::ManagedPointer(this).CastTo<SqlNodeVisitor>());
 
     // Push subquery output
     op_expr->PushChild(std::move(output_expr_));
@@ -1093,7 +1093,7 @@ void QueryToOperatorTransformer::ExtractPredicates(common::ManagedPointer<parser
 void QueryToOperatorTransformer::GenerateTableAliasSet(const common::ManagedPointer<parser::AbstractExpression> expr,
                                                        std::unordered_set<parser::AliasType> *table_alias_set) {
     if (expr->GetExpressionType() == parser::ExpressionType::COLUMN_VALUE) {
-        table_alias_set->insert(expr.CastManagedPointerTo<const parser::ColumnValueExpression>()->GetTableAlias());
+        table_alias_set->insert(expr.CastTo<const parser::ColumnValueExpression>()->GetTableAlias());
     } else {
         for (const auto &child : expr->GetChildren()) {
             QueryToOperatorTransformer::GenerateTableAliasSet(child, table_alias_set);
@@ -1128,7 +1128,7 @@ auto QueryToOperatorTransformer::ConstructSelectElementMap(
         if (!expr->GetAlias().Empty()) {
             alias = expr->GetAlias();
         } else if (expr->GetExpressionType() == parser::ExpressionType::COLUMN_VALUE) {
-            auto tv_expr = expr.CastManagedPointerTo<parser::ColumnValueExpression>();
+            auto tv_expr = expr.CastTo<parser::ColumnValueExpression>();
             alias = parser::AliasType(tv_expr->GetColumnName());
         } else {
             continue;

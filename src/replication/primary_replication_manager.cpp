@@ -21,7 +21,7 @@ void PrimaryReplicationManager::EventLoop(common::ManagedPointer<messenger::Mess
                                           common::ManagedPointer<BaseReplicationMessage> msg) {
     switch (msg->GetMessageType()) {
     case ReplicationMessageType::TXN_APPLIED: {
-        Handle(zmq_msg, *msg.CastManagedPointerTo<TxnAppliedMsg>());
+        Handle(zmq_msg, *msg.CastTo<TxnAppliedMsg>());
         break;
     }
     default: {

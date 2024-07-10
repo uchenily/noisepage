@@ -309,14 +309,14 @@ void OperatingUnitRecorder::AggregateFeatures(selfdriving::ExecutionOperatingUni
             if (child_translator->Op()->GetPlanNodeType() == planner::PlanNodeType::PROJECTION) {
                 auto output = child_translator->Op()->GetOutputSchema()->GetColumn(0).GetExpr();
                 if (output && output->GetExpressionType() == parser::ExpressionType::FUNCTION) {
-                    auto f_expr = output.CastManagedPointerTo<const parser::FunctionExpression>();
+                    auto f_expr = output.CastTo<const parser::FunctionExpression>();
                     if (f_expr->GetFuncName() == "nprunnersemitint" || f_expr->GetFuncName() == "nprunnersemitreal") {
                         auto child = f_expr->GetChild(0);
                         NOISEPAGE_ASSERT(child, "NpRunnersEmit should have children");
                         NOISEPAGE_ASSERT(child->GetExpressionType() == parser::ExpressionType::VALUE_CONSTANT,
                                          "Child should be constants");
 
-                        auto cve = child.CastManagedPointerTo<const parser::ConstantValueExpression>();
+                        auto cve = child.CastTo<const parser::ConstantValueExpression>();
                         num_rows = cve->GetInteger().val_;
                     }
                 }
@@ -547,7 +547,7 @@ void OperatingUnitRecorder::Visit(const planner::CreateIndexPlanNode *plan) {
 
     AggregateFeatures(plan_feature_type_, key_size, num_keys, plan, 1, 1);
 
-    auto translator = current_translator_.CastManagedPointerTo<execution::compiler::IndexCreateTranslator>();
+    auto translator = current_translator_.CastTo<execution::compiler::IndexCreateTranslator>();
     if (translator->GetPipeline()->IsParallel()) {
         // Only want to record CREATE_INDEX_MAIN if the operator executes in parallel
         AggregateFeatures(ExecutionOperatingUnitType::CREATE_INDEX_MAIN, key_size, num_keys, plan, 1, 1);
@@ -620,7 +620,7 @@ void OperatingUnitRecorder::VisitAbstractJoinPlanNode(const planner::AbstractJoi
 }
 
 void OperatingUnitRecorder::Visit(const planner::HashJoinPlanNode *plan) {
-    auto translator = current_translator_.CastManagedPointerTo<execution::compiler::HashJoinTranslator>();
+    auto translator = current_translator_.CastTo<execution::compiler::HashJoinTranslator>();
 
     // Build
     if (translator->IsLeftPipeline(*current_pipeline_)) {
@@ -837,7 +837,7 @@ void OperatingUnitRecorder::Visit(const planner::CteScanPlanNode *plan) {
 }
 
 void OperatingUnitRecorder::Visit(const planner::OrderByPlanNode *plan) {
-    auto translator = current_translator_.CastManagedPointerTo<execution::compiler::SortTranslator>();
+    auto translator = current_translator_.CastTo<execution::compiler::SortTranslator>();
 
     if (translator->IsBuildPipeline(*current_pipeline_)) {
         // SORT_BUILD will operate on sort keys
@@ -884,10 +884,10 @@ void OperatingUnitRecorder::Visit(const planner::ProjectionPlanNode *plan) {
 
 void OperatingUnitRecorder::Visit(const planner::AggregatePlanNode *plan) {
     if (plan->IsStaticAggregation()) {
-        auto translator = current_translator_.CastManagedPointerTo<execution::compiler::StaticAggregationTranslator>();
+        auto translator = current_translator_.CastTo<execution::compiler::StaticAggregationTranslator>();
         RecordAggregateTranslator(translator, plan);
     } else {
-        auto translator = current_translator_.CastManagedPointerTo<execution::compiler::HashAggregationTranslator>();
+        auto translator = current_translator_.CastTo<execution::compiler::HashAggregationTranslator>();
         RecordAggregateTranslator(translator, plan);
     }
 }

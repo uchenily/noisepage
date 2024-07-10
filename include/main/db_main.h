@@ -462,10 +462,10 @@ public:
 
             std::unique_ptr<storage::LogManager> log_manager = DISABLED;
             if (use_logging_) {
-                auto rep_manager_ptr = network_identity_ == "primary"
-                                           ? common::ManagedPointer(replication_manager)
-                                                 .CastManagedPointerTo<replication::PrimaryReplicationManager>()
-                                           : nullptr;
+                auto rep_manager_ptr
+                    = network_identity_ == "primary"
+                          ? common::ManagedPointer(replication_manager).CastTo<replication::PrimaryReplicationManager>()
+                          : nullptr;
                 log_manager
                     = std::make_unique<storage::LogManager>(wal_file_path_,
                                                             wal_num_buffers_,
@@ -530,11 +530,10 @@ public:
 
             std::unique_ptr<storage::RecoveryManager> recovery_manager = DISABLED;
             if (use_replication_) {
-                auto log_provider = replication_manager->IsPrimary()
-                                        ? nullptr
-                                        : replication_manager->GetAsReplica()
-                                              ->GetReplicationLogProvider()
-                                              .CastManagedPointerTo<storage::AbstractLogProvider>();
+                auto log_provider = replication_manager->IsPrimary() ? nullptr
+                                                                     : replication_manager->GetAsReplica()
+                                                                           ->GetReplicationLogProvider()
+                                                                           .CastTo<storage::AbstractLogProvider>();
                 recovery_manager = std::make_unique<storage::RecoveryManager>(
                     log_provider,
                     catalog_layer->GetCatalog(),

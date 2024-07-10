@@ -60,11 +60,10 @@ void LogManager::PersistAndStop() {
     // the log file, and persisted. The order in which we shut down the tasks is important, we must first serialize,
     // then shutdown the disk consumer task (reverse order of Start())
     auto result [[maybe_unused]]
-    = thread_registry_->StopTask(this, log_serializer_task_.CastManagedPointerTo<common::DedicatedThreadTask>());
+    = thread_registry_->StopTask(this, log_serializer_task_.CastTo<common::DedicatedThreadTask>());
     NOISEPAGE_ASSERT(result, "LogSerializerTask should have been stopped");
 
-    result
-        = thread_registry_->StopTask(this, disk_log_writer_task_.CastManagedPointerTo<common::DedicatedThreadTask>());
+    result = thread_registry_->StopTask(this, disk_log_writer_task_.CastTo<common::DedicatedThreadTask>());
     NOISEPAGE_ASSERT(result, "DiskLogConsumerTask should have been stopped");
     NOISEPAGE_ASSERT(filled_buffer_queue_.Empty(), "disk log consumer task should have processed all filled buffers\n");
 

@@ -139,7 +139,7 @@ void SeqScanTranslator::GenerateFilterClauseFunctions(util::RegionVector<ast::Fu
         ast::Expr *vector_proj = builder.GetParameterByPosition(1);
         ast::Expr *tid_list = builder.GetParameterByPosition(2);
         if (parser::ExpressionUtil::IsColumnCompareWithConst(*predicate)) {
-            auto cve = predicate->GetChild(0).CastManagedPointerTo<parser::ColumnValueExpression>();
+            auto cve = predicate->GetChild(0).CastTo<parser::ColumnValueExpression>();
             auto translator = GetCompilationContext()->LookupTranslator(*predicate->GetChild(1));
             auto col_index = GetColOidIndex(cve->GetColumnOid());
             auto const_val = translator->DeriveValue(nullptr, nullptr);
@@ -154,10 +154,10 @@ void SeqScanTranslator::GenerateFilterClauseFunctions(util::RegionVector<ast::Fu
                                               tid_list));  // TID list
         } else if (parser::ExpressionUtil::IsColumnCompareWithParam(*predicate)) {
             // TODO(WAN): temporary hacky implementation, poke Prashanth...
-            auto cve = predicate->GetChild(0).CastManagedPointerTo<parser::ColumnValueExpression>();
+            auto cve = predicate->GetChild(0).CastTo<parser::ColumnValueExpression>();
             auto col_index = GetColOidIndex(cve->GetColumnOid());
 
-            auto         param_val = predicate->GetChild(1).CastManagedPointerTo<parser::ParameterValueExpression>();
+            auto         param_val = predicate->GetChild(1).CastTo<parser::ParameterValueExpression>();
             auto         param_idx = param_val->GetValueIdx();
             ast::Builtin builtin;
             switch (param_val->GetReturnValueType()) {

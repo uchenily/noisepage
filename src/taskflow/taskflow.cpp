@@ -213,14 +213,13 @@ auto Taskflow::ExecuteSetStatement(common::ManagedPointer<network::ConnectionCon
     NOISEPAGE_ASSERT(statement->GetQueryType() == network::QueryType::QUERY_SET,
                      "ExecuteSetStatement called with invalid QueryType.");
 
-    const auto &set_stmt = statement->RootStatement().CastManagedPointerTo<parser::VariableSetStatement>();
+    const auto &set_stmt = statement->RootStatement().CastTo<parser::VariableSetStatement>();
 
     try {
         if (set_stmt->IsSetDefault()) {
             // TODO(WAN): Annoyingly, a copy is done for default_val because of differences in const qualifiers.
             parser::ConstantValueExpression default_val = settings_manager_->GetDefault(set_stmt->GetParameterName());
-            auto                            default_val_ptr
-                = common::ManagedPointer(&default_val).CastManagedPointerTo<parser::AbstractExpression>();
+            auto default_val_ptr = common::ManagedPointer(&default_val).CastTo<parser::AbstractExpression>();
             settings_manager_->SetParameter(set_stmt->GetParameterName(), {default_val_ptr});
         } else {
             settings_manager_->SetParameter(set_stmt->GetParameterName(), set_stmt->GetValues());
@@ -243,8 +242,7 @@ auto Taskflow::ExecuteShowStatement(common::ManagedPointer<network::ConnectionCo
     NOISEPAGE_ASSERT(statement->GetQueryType() == network::QueryType::QUERY_SHOW,
                      "ExecuteSetStatement called with invalid QueryType.");
 
-    const auto &show_stmt [[maybe_unused]]
-    = statement->RootStatement().CastManagedPointerTo<parser::VariableShowStatement>();
+    const auto &show_stmt [[maybe_unused]] = statement->RootStatement().CastTo<parser::VariableShowStatement>();
 
     const std::string         &param_name = show_stmt->GetName();
     settings::Param            param = settings_manager_->GetParam(param_name);
@@ -274,33 +272,31 @@ auto Taskflow::ExecuteCreateStatement(const common::ManagedPointer<network::Conn
         "ExecuteCreateStatement called with invalid QueryType.");
     switch (query_type) {
     case network::QueryType::QUERY_CREATE_TABLE: {
-        if (execution::sql::DDLExecutors::CreateTableExecutor(
-                physical_plan.CastManagedPointerTo<planner::CreateTablePlanNode>(),
-                connection_ctx->CatalogAccessor(),
-                connection_ctx->GetDatabaseOid())) {
+        if (execution::sql::DDLExecutors::CreateTableExecutor(physical_plan.CastTo<planner::CreateTablePlanNode>(),
+                                                              connection_ctx->CatalogAccessor(),
+                                                              connection_ctx->GetDatabaseOid())) {
             return {ResultType::COMPLETE, 0u};
         }
         break;
     }
     case network::QueryType::QUERY_CREATE_DB: {
         if (execution::sql::DDLExecutors::CreateDatabaseExecutor(
-                physical_plan.CastManagedPointerTo<planner::CreateDatabasePlanNode>(),
+                physical_plan.CastTo<planner::CreateDatabasePlanNode>(),
                 connection_ctx->CatalogAccessor())) {
             return {ResultType::COMPLETE, 0u};
         }
         break;
     }
     case network::QueryType::QUERY_CREATE_INDEX: {
-        if (execution::sql::DDLExecutors::CreateIndexExecutor(
-                physical_plan.CastManagedPointerTo<planner::CreateIndexPlanNode>(),
-                connection_ctx->CatalogAccessor())) {
+        if (execution::sql::DDLExecutors::CreateIndexExecutor(physical_plan.CastTo<planner::CreateIndexPlanNode>(),
+                                                              connection_ctx->CatalogAccessor())) {
             return {ResultType::COMPLETE, 0u};
         }
         break;
     }
     case network::QueryType::QUERY_CREATE_SCHEMA: {
         if (execution::sql::DDLExecutors::CreateNamespaceExecutor(
-                physical_plan.CastManagedPointerTo<planner::CreateNamespacePlanNode>(),
+                physical_plan.CastTo<planner::CreateNamespacePlanNode>(),
                 connection_ctx->CatalogAccessor())) {
             return {ResultType::COMPLETE, 0u};
         }
@@ -336,34 +332,30 @@ auto Taskflow::ExecuteDropStatement(const common::ManagedPointer<network::Connec
         "ExecuteDropStatement called with invalid QueryType.");
     switch (query_type) {
     case network::QueryType::QUERY_DROP_TABLE: {
-        if (execution::sql::DDLExecutors::DropTableExecutor(
-                physical_plan.CastManagedPointerTo<planner::DropTablePlanNode>(),
-                connection_ctx->CatalogAccessor())) {
+        if (execution::sql::DDLExecutors::DropTableExecutor(physical_plan.CastTo<planner::DropTablePlanNode>(),
+                                                            connection_ctx->CatalogAccessor())) {
             return {ResultType::COMPLETE, 0u};
         }
         break;
     }
     case network::QueryType::QUERY_DROP_DB: {
-        if (execution::sql::DDLExecutors::DropDatabaseExecutor(
-                physical_plan.CastManagedPointerTo<planner::DropDatabasePlanNode>(),
-                connection_ctx->CatalogAccessor(),
-                connection_ctx->GetDatabaseOid())) {
+        if (execution::sql::DDLExecutors::DropDatabaseExecutor(physical_plan.CastTo<planner::DropDatabasePlanNode>(),
+                                                               connection_ctx->CatalogAccessor(),
+                                                               connection_ctx->GetDatabaseOid())) {
             return {ResultType::COMPLETE, 0u};
         }
         break;
     }
     case network::QueryType::QUERY_DROP_INDEX: {
-        if (execution::sql::DDLExecutors::DropIndexExecutor(
-                physical_plan.CastManagedPointerTo<planner::DropIndexPlanNode>(),
-                connection_ctx->CatalogAccessor())) {
+        if (execution::sql::DDLExecutors::DropIndexExecutor(physical_plan.CastTo<planner::DropIndexPlanNode>(),
+                                                            connection_ctx->CatalogAccessor())) {
             return {ResultType::COMPLETE, 0u};
         }
         break;
     }
     case network::QueryType::QUERY_DROP_SCHEMA: {
-        if (execution::sql::DDLExecutors::DropNamespaceExecutor(
-                physical_plan.CastManagedPointerTo<planner::DropNamespacePlanNode>(),
-                connection_ctx->CatalogAccessor())) {
+        if (execution::sql::DDLExecutors::DropNamespaceExecutor(physical_plan.CastTo<planner::DropNamespacePlanNode>(),
+                                                                connection_ctx->CatalogAccessor())) {
             return {ResultType::COMPLETE, 0u};
         }
         break;
@@ -396,8 +388,7 @@ auto Taskflow::ExecuteExplainStatement(const common::ManagedPointer<network::Con
     std::vector<planner::OutputSchema::Column> output_columns;
     output_columns.emplace_back("QUERY PLAN", execution::sql::SqlTypeId::Varchar, nullptr);
 
-    const auto format
-        = portal->GetStatement()->RootStatement().CastManagedPointerTo<parser::ExplainStatement>()->GetFormat();
+    const auto  format = portal->GetStatement()->RootStatement().CastTo<parser::ExplainStatement>()->GetFormat();
     std::string plan_string;
     if (format == parser::ExplainStatementFormat::JSON) {
         plan_string = portal->OptimizeResult()->GetPlanNode()->ToJson().dump(4);
@@ -480,7 +471,7 @@ auto Taskflow::BindQuery(const common::ManagedPointer<network::ConnectionContext
         // TODO(Matt): this is a hack to get IF EXISTS to work with our tests, we actually need better support in
         // PostgresParser and the binder should return more state back to the taskflow to figure out what to do
         if ((statement->RootStatement()->GetType() == parser::StatementType::DROP
-             && statement->RootStatement().CastManagedPointerTo<parser::DropStatement>()->IsIfExists())) {
+             && statement->RootStatement().CastTo<parser::DropStatement>()->IsIfExists())) {
             return {ResultType::NOTICE,
                     common::ErrorData(common::ErrorSeverity::NOTICE,
                                       "binding failed with an IF EXISTS clause, skipping statement",
@@ -503,10 +494,8 @@ auto Taskflow::CodegenPhysicalPlan(const common::ManagedPointer<network::Connect
     // For an EXPLAIN statement, the query type is the type of the wrapped SQL statement.
     const auto query_type [[maybe_unused]]
     = portal->GetStatement()->GetQueryType() == network::QueryType::QUERY_EXPLAIN
-          ? taskflow::TaskflowUtil::QueryTypeForStatement(portal->GetStatement()
-                                                              ->RootStatement()
-                                                              .CastManagedPointerTo<parser::ExplainStatement>()
-                                                              ->GetSQLStatement())
+          ? taskflow::TaskflowUtil::QueryTypeForStatement(
+              portal->GetStatement()->RootStatement().CastTo<parser::ExplainStatement>()->GetSQLStatement())
           : portal->GetStatement()->GetQueryType();
     const auto physical_plan = portal->OptimizeResult()->GetPlanNode();
 
@@ -528,7 +517,7 @@ auto Taskflow::CodegenPhysicalPlan(const common::ManagedPointer<network::Connect
     // Set any compilation settings based on the original query type.
     if (portal->GetStatement()->GetQueryType() == network::QueryType::QUERY_EXPLAIN) {
         execution::compiler::CompilerSettings settings;
-        auto stmt = portal->GetStatement()->RootStatement().CastManagedPointerTo<parser::ExplainStatement>();
+        auto stmt = portal->GetStatement()->RootStatement().CastTo<parser::ExplainStatement>();
         if (stmt->GetFormat() == parser::ExplainStatementFormat::TPL) {
             settings.SetShouldCaptureTPL(true);
         } else if (stmt->GetFormat() == parser::ExplainStatementFormat::TBC) {
@@ -596,7 +585,7 @@ auto Taskflow::RunExecutableQuery(const common::ManagedPointer<network::Connecti
      * StatsStorage. So once ANALYZE commits, we need to mark the columns updated as dirty in StatsStorage.
      */
     if (query_type == network::QueryType::QUERY_ANALYZE) {
-        const auto                      analyze_plan = physical_plan.CastManagedPointerTo<planner::AnalyzePlanNode>();
+        const auto                      analyze_plan = physical_plan.CastTo<planner::AnalyzePlanNode>();
         auto                            db_oid = analyze_plan->GetDatabaseOid();
         auto                            table_oid = analyze_plan->GetTableOid();
         std::vector<catalog::col_oid_t> col_oids = analyze_plan->GetColumnOids();

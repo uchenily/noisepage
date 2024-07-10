@@ -686,14 +686,13 @@ public:
 
                 // If this expr is a column value, add it to the queue
                 if (expr->GetExpressionType() == parser::ExpressionType::COLUMN_VALUE) {
-                    indexed_oids_.push_back(
-                        expr.CastManagedPointerTo<const parser::ColumnValueExpression>()->GetColumnOid());
+                    indexed_oids_.push_back(expr.CastTo<const parser::ColumnValueExpression>()->GetColumnOid());
                 }
 
                 // Add children to queue
                 for (const auto &child : expr->GetChildren()) {
                     NOISEPAGE_ASSERT(child != nullptr, "We should not be adding missing expressions to the queue");
-                    expr_queue.emplace_back(child.CastManagedPointerTo<const parser::AbstractExpression>());
+                    expr_queue.emplace_back(child.CastTo<const parser::AbstractExpression>());
                 }
             }
         }

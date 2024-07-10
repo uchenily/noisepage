@@ -183,7 +183,7 @@ public:
          * @return default value expression
          */
         common::ManagedPointer<const parser::AbstractExpression> StoredExpression() const {
-            return common::ManagedPointer(default_value_).CastManagedPointerTo<const parser::AbstractExpression>();
+            return common::ManagedPointer(default_value_).CastTo<const parser::AbstractExpression>();
         }
 
         /**
@@ -261,9 +261,7 @@ public:
             NOISEPAGE_ASSERT(
                 default_value_ == nullptr || default_value_->GetReturnValueType() != execution::sql::SqlTypeId::Invalid
                     || (default_value_->GetReturnValueType() == execution::sql::SqlTypeId::Invalid
-                        && common::ManagedPointer(default_value_)
-                               .CastManagedPointerTo<parser::ConstantValueExpression>()
-                               ->IsNull()),
+                        && common::ManagedPointer(default_value_).CastTo<parser::ConstantValueExpression>()->IsNull()),
                 "Default value either: 1) shouldn't exist 2) shouldn't have INVALID type 3) UNLESS it's NULL.");
             // TODO(Matt): I don't love that last part that NULL default values come out of the parser with
             // TypeId::INVALID.

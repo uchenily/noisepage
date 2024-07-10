@@ -94,8 +94,7 @@ void ConnectionDispatcherTask::Terminate() {
     // Clean up the all the ConnectionHandlerTask instances.
     for (const auto &handler_task : handlers_) {
         const bool is_task_stopped [[maybe_unused]]
-        = thread_registry_->StopTask(dedicated_thread_owner_,
-                                     handler_task.CastManagedPointerTo<common::DedicatedThreadTask>());
+        = thread_registry_->StopTask(dedicated_thread_owner_, handler_task.CastTo<common::DedicatedThreadTask>());
         NOISEPAGE_ASSERT(is_task_stopped, "Failed to stop ConnectionHandlerTask.");
     }
 }

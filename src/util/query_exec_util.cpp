@@ -171,7 +171,7 @@ bool QueryExecUtil::ExecuteDDL(const std::string &query, bool what_if) {
     // Handle SET queries
     bool status = true;
     if (statement->GetQueryType() == network::QueryType::QUERY_SET) {
-        const auto &set_stmt = statement->RootStatement().CastManagedPointerTo<parser::VariableSetStatement>();
+        const auto &set_stmt = statement->RootStatement().CastTo<parser::VariableSetStatement>();
         settings_->SetParameter(set_stmt->GetParameterName(), set_stmt->GetValues());
         status = true;
     } else {
@@ -190,12 +190,12 @@ bool QueryExecUtil::ExecuteDDL(const std::string &query, bool what_if) {
         case network::QueryType::QUERY_DROP_INDEX:
             // Drop index does not need execution of compiled query
             status = execution::sql::DDLExecutors::DropIndexExecutor(
-                out_plan.CastManagedPointerTo<planner::DropIndexPlanNode>(),
+                out_plan.CastTo<planner::DropIndexPlanNode>(),
                 common::ManagedPointer<catalog::CatalogAccessor>(accessor));
             break;
         case network::QueryType::QUERY_CREATE_INDEX:
             status = execution::sql::DDLExecutors::CreateIndexExecutor(
-                out_plan.CastManagedPointerTo<planner::CreateIndexPlanNode>(),
+                out_plan.CastTo<planner::CreateIndexPlanNode>(),
                 common::ManagedPointer<catalog::CatalogAccessor>(accessor));
 
             if (status) {

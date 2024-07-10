@@ -156,7 +156,7 @@ protected:
 
         trivial_cost_model_ = std::make_unique<optimizer::TrivialCostModel>();
         optimizer_context_ = std::make_unique<optimizer::OptimizerContext>(
-            common::ManagedPointer(trivial_cost_model_).CastManagedPointerTo<optimizer::AbstractCostModel>());
+            common::ManagedPointer(trivial_cost_model_).CastTo<optimizer::AbstractCostModel>());
         // TODO(WAN): footgun API
         optimizer_context_->SetTxn(txn_);
         optimizer_context_->SetCatalogAccessor(accessor_.get());
@@ -247,13 +247,11 @@ TEST_F(OperatorTransformerTest, InsertStatementSimpleTest) {
     EXPECT_EQ(std::vector<catalog::col_oid_t>({catalog::col_oid_t(1), catalog::col_oid_t(2)}),
               logical_insert->GetColumns());
 
-    auto insert_value_a1
-        = logical_insert->GetValues().Get()[0][0][0].CastManagedPointerTo<parser::ConstantValueExpression>();
+    auto insert_value_a1 = logical_insert->GetValues().Get()[0][0][0].CastTo<parser::ConstantValueExpression>();
     EXPECT_EQ(insert_value_a1->GetReturnValueType(), execution::sql::SqlTypeId::Integer);
     EXPECT_EQ(insert_value_a1->Peek<int64_t>(), 5);
 
-    auto insert_value_a2
-        = logical_insert->GetValues().Get()[0][0][1].CastManagedPointerTo<parser::ConstantValueExpression>();
+    auto insert_value_a2 = logical_insert->GetValues().Get()[0][0][1].CastTo<parser::ConstantValueExpression>();
     EXPECT_EQ(insert_value_a2->GetReturnValueType(), execution::sql::SqlTypeId::Varchar);
     EXPECT_EQ(insert_value_a2->Peek<std::string_view>(), "MY DATA");
 }
@@ -320,7 +318,7 @@ TEST_F(OperatorTransformerTest, UpdateStatementSimpleTest) {
 
     auto update_clause = logical_update->GetUpdateClauses()[0].Get();
     EXPECT_EQ("a1", update_clause->GetColumnName());
-    auto constant = update_clause->GetUpdateValue().CastManagedPointerTo<parser::ConstantValueExpression>();
+    auto constant = update_clause->GetUpdateValue().CastTo<parser::ConstantValueExpression>();
     EXPECT_EQ(constant->GetReturnValueType(), execution::sql::SqlTypeId::Integer);
     EXPECT_EQ(constant->Peek<int64_t>(), 999);
 
@@ -351,8 +349,7 @@ TEST_F(OperatorTransformerTest, SelectStatementAggregateTest) {
     // Test LogicalAggregateAndGroupBy
     auto logical_aggregate_and_group_by
         = operator_tree_->Contents()->GetContentsAs<optimizer::LogicalAggregateAndGroupBy>();
-    auto column_expr
-        = logical_aggregate_and_group_by->GetColumns()[0].CastManagedPointerTo<parser::ColumnValueExpression>();
+    auto column_expr = logical_aggregate_and_group_by->GetColumns()[0].CastTo<parser::ColumnValueExpression>();
     EXPECT_EQ("b2", column_expr->GetColumnName());
 
     // Test LogicalGet
@@ -417,9 +414,7 @@ TEST_F(OperatorTransformerTest, SelectStatementOrderByTest) {
     EXPECT_EQ(2, logical_limit->GetLimit());
     EXPECT_EQ(1, logical_limit->GetOffset());
     EXPECT_EQ(optimizer::OrderByOrderingType::ASC, logical_limit->GetSortDirections()[0]);
-    EXPECT_EQ(
-        "b2",
-        logical_limit->GetSortExpressions()[0].CastManagedPointerTo<parser::ColumnValueExpression>()->GetColumnName());
+    EXPECT_EQ("b2", logical_limit->GetSortExpressions()[0].CastTo<parser::ColumnValueExpression>()->GetColumnName());
 
     // Test LogicalGet
     auto logical_get = operator_tree_->GetChildren()[0]->Contents()->GetContentsAs<optimizer::LogicalGet>();
@@ -877,8 +872,8 @@ TEST_F(OperatorTransformerTest, CreateDatabaseTest) {
     std::vector<std::unique_ptr<optimizer::AbstractOptimizerNode>> transformed;
 
     optimizer::LogicalCreateDatabaseToPhysicalCreateDatabase rule;
-    EXPECT_TRUE(rule.Check(optree_ptr.CastManagedPointerTo<optimizer::AbstractOptimizerNode>(), op_ctx));
-    rule.Transform(optree_ptr.CastManagedPointerTo<optimizer::AbstractOptimizerNode>(), &transformed, op_ctx);
+    EXPECT_TRUE(rule.Check(optree_ptr.CastTo<optimizer::AbstractOptimizerNode>(), op_ctx));
+    rule.Transform(optree_ptr.CastTo<optimizer::AbstractOptimizerNode>(), &transformed, op_ctx);
 
     auto op = transformed[0]->Contents();
     EXPECT_EQ(op->GetOpType(), optimizer::OpType::CREATEDATABASE);
@@ -905,7 +900,7 @@ TEST_F(OperatorTransformerTest, CreateDatabaseTest) {
                                                   std::move(children_expr_map),
                                                   planner::PlanMetaData::PlanNodeMetaData());
     EXPECT_EQ(plan_node->GetPlanNodeType(), planner::PlanNodeType::CREATE_DATABASE);
-    auto cdpn = common::ManagedPointer(plan_node).CastManagedPointerTo<planner::CreateDatabasePlanNode>();
+    auto cdpn = common::ManagedPointer(plan_node).CastTo<planner::CreateDatabasePlanNode>();
     EXPECT_EQ(cdpn->GetDatabaseName(), "c");
 }
 
@@ -932,7 +927,7 @@ TEST_F(OperatorTransformerTest, CreateTableTest) {
     // Test logical create
     auto logical_create = operator_tree_->Contents()->GetContentsAs<optimizer::LogicalCreateTable>();
     EXPECT_EQ(ns_oid, logical_create->GetNamespaceOid());
-    auto create_stmt = statement.CastManagedPointerTo<parser::CreateStatement>();
+    auto create_stmt = statement.CastTo<parser::CreateStatement>();
     EXPECT_EQ(logical_create->GetColumns(), create_stmt->GetColumns());
     EXPECT_EQ(logical_create->GetForeignKeys(), create_stmt->GetForeignKeys());
 
@@ -942,7 +937,7 @@ TEST_F(OperatorTransformerTest, CreateTableTest) {
 
     optimizer::LogicalCreateTableToPhysicalCreateTable rule;
     EXPECT_TRUE(rule.Check(optree_ptr, op_ctx));
-    rule.Transform(optree_ptr.CastManagedPointerTo<optimizer::AbstractOptimizerNode>(), &transformed, op_ctx);
+    rule.Transform(optree_ptr.CastTo<optimizer::AbstractOptimizerNode>(), &transformed, op_ctx);
 
     auto op = transformed[0]->Contents();
     EXPECT_EQ(op->GetOpType(), optimizer::OpType::CREATETABLE);
@@ -994,17 +989,16 @@ TEST_F(OperatorTransformerTest, CreateTableTest) {
 
     auto def_expr = ct->GetColumns()[3]->GetDefaultExpression();
     EXPECT_EQ(def_expr->GetExpressionType(), parser::ExpressionType::VALUE_CONSTANT);
-    EXPECT_EQ(*(def_expr.CastManagedPointerTo<parser::ConstantValueExpression>()),
+    EXPECT_EQ(*(def_expr.CastTo<parser::ConstantValueExpression>()),
               parser::ConstantValueExpression(execution::sql::SqlTypeId::Integer, execution::sql::Integer(14)));
 
     auto chk_expr = ct->GetColumns()[3]->GetCheckExpression();
     EXPECT_EQ(chk_expr->GetExpressionType(), parser::ExpressionType::COMPARE_LESS_THAN);
     EXPECT_EQ(chk_expr->GetChild(0)->GetExpressionType(), parser::ExpressionType::COLUMN_VALUE);
-    EXPECT_EQ(chk_expr->GetChild(0).CastManagedPointerTo<parser::ColumnValueExpression>()->GetTableAlias(),
-              parser::AliasType("c"));
-    EXPECT_EQ(chk_expr->GetChild(0).CastManagedPointerTo<parser::ColumnValueExpression>()->GetColumnName(), "c4");
+    EXPECT_EQ(chk_expr->GetChild(0).CastTo<parser::ColumnValueExpression>()->GetTableAlias(), parser::AliasType("c"));
+    EXPECT_EQ(chk_expr->GetChild(0).CastTo<parser::ColumnValueExpression>()->GetColumnName(), "c4");
     EXPECT_EQ(chk_expr->GetChild(1)->GetExpressionType(), parser::ExpressionType::VALUE_CONSTANT);
-    EXPECT_EQ(*(chk_expr->GetChild(1).CastManagedPointerTo<parser::ConstantValueExpression>()),
+    EXPECT_EQ(*(chk_expr->GetChild(1).CastTo<parser::ConstantValueExpression>()),
               parser::ConstantValueExpression(execution::sql::SqlTypeId::Integer, execution::sql::Integer(100)));
     planner::PlanMetaData    plan_meta_data{};
     optimizer::PlanGenerator plan_generator(common::ManagedPointer<planner::PlanMetaData>{&plan_meta_data});
@@ -1024,7 +1018,7 @@ TEST_F(OperatorTransformerTest, CreateTableTest) {
                                                   std::move(children_expr_map),
                                                   planner::PlanMetaData::PlanNodeMetaData());
     EXPECT_EQ(plan_node->GetPlanNodeType(), planner::PlanNodeType::CREATE_TABLE);
-    auto ctpn = common::ManagedPointer(plan_node).CastManagedPointerTo<planner::CreateTablePlanNode>();
+    auto ctpn = common::ManagedPointer(plan_node).CastTo<planner::CreateTablePlanNode>();
 
     EXPECT_EQ(ctpn->GetTableName(), "c");
     EXPECT_EQ(ctpn->GetSchema()->GetColumns().size(), 4);
@@ -1099,17 +1093,17 @@ TEST_F(OperatorTransformerTest, CreateIndexTest) {
     EXPECT_EQ(logical_create->GetIndexType(), parser::IndexType::BPLUSTREE);
     EXPECT_EQ(logical_create->GetIndexName(), "idx_d");
     EXPECT_TRUE(logical_create->IsUnique());
-    auto create_stmt = statement.CastManagedPointerTo<parser::CreateStatement>();
+    auto create_stmt = statement.CastTo<parser::CreateStatement>();
     EXPECT_EQ(logical_create->GetIndexAttr().size(), 2);
     EXPECT_EQ(logical_create->GetIndexAttr()[0], create_stmt->GetIndexAttributes()[0].GetExpression());
-    auto col_attr = logical_create->GetIndexAttr()[1].CastManagedPointerTo<parser::ColumnValueExpression>();
+    auto col_attr = logical_create->GetIndexAttr()[1].CastTo<parser::ColumnValueExpression>();
     EXPECT_EQ(col_attr->GetTableAlias(), parser::AliasType("a"));
     EXPECT_EQ(col_attr->GetTableOid(), table_a_oid_);
     EXPECT_EQ(col_attr->GetColumnName(), "a1");
     EXPECT_EQ(col_attr->GetColumnOid(), col_a1_oid);
     EXPECT_EQ(col_attr->GetDatabaseOid(), db_oid_);
 
-    col_attr = logical_create->GetIndexAttr()[0]->GetChild(0).CastManagedPointerTo<parser::ColumnValueExpression>();
+    col_attr = logical_create->GetIndexAttr()[0]->GetChild(0).CastTo<parser::ColumnValueExpression>();
     EXPECT_EQ(col_attr->GetTableAlias(), parser::AliasType("a"));
     EXPECT_EQ(col_attr->GetTableOid(), table_a_oid_);
     EXPECT_EQ(col_attr->GetColumnName(), "a2");
@@ -1122,7 +1116,7 @@ TEST_F(OperatorTransformerTest, CreateIndexTest) {
 
     optimizer::LogicalCreateIndexToPhysicalCreateIndex rule;
     EXPECT_TRUE(rule.Check(optree_ptr, op_ctx));
-    rule.Transform(optree_ptr.CastManagedPointerTo<optimizer::AbstractOptimizerNode>(), &transformed, op_ctx);
+    rule.Transform(optree_ptr.CastTo<optimizer::AbstractOptimizerNode>(), &transformed, op_ctx);
 
     auto op = transformed[0]->Contents();
     EXPECT_EQ(op->GetOpType(), optimizer::OpType::CREATEINDEX);
@@ -1136,16 +1130,15 @@ TEST_F(OperatorTransformerTest, CreateIndexTest) {
 
     auto child0 = ci->GetSchema()->GetColumns()[0].StoredExpression();
     EXPECT_EQ(child0->GetExpressionType(), parser::ExpressionType::FUNCTION);
-    EXPECT_EQ(child0.CastManagedPointerTo<const parser::FunctionExpression>()->GetFuncName(), "lower");
+    EXPECT_EQ(child0.CastTo<const parser::FunctionExpression>()->GetFuncName(), "lower");
     EXPECT_EQ(child0->GetChildren().size(), 1);
     EXPECT_EQ(child0->GetChildren()[0]->GetExpressionType(), parser::ExpressionType::COLUMN_VALUE);
-    EXPECT_EQ(child0->GetChildren()[0].CastManagedPointerTo<parser::ColumnValueExpression>()->GetColumnName(), "a2");
-    EXPECT_EQ(child0->GetChildren()[0].CastManagedPointerTo<parser::ColumnValueExpression>()->GetColumnOid(),
-              col_a2_oid);
+    EXPECT_EQ(child0->GetChildren()[0].CastTo<parser::ColumnValueExpression>()->GetColumnName(), "a2");
+    EXPECT_EQ(child0->GetChildren()[0].CastTo<parser::ColumnValueExpression>()->GetColumnOid(), col_a2_oid);
     auto child1 = ci->GetSchema()->GetColumns()[1].StoredExpression();
     EXPECT_EQ(child1->GetExpressionType(), parser::ExpressionType::COLUMN_VALUE);
-    EXPECT_EQ(child1.CastManagedPointerTo<const parser::ColumnValueExpression>()->GetColumnName(), "a1");
-    EXPECT_EQ(child1.CastManagedPointerTo<const parser::ColumnValueExpression>()->GetColumnOid(), col_a1_oid);
+    EXPECT_EQ(child1.CastTo<const parser::ColumnValueExpression>()->GetColumnName(), "a1");
+    EXPECT_EQ(child1.CastTo<const parser::ColumnValueExpression>()->GetColumnOid(), col_a1_oid);
 
     planner::PlanMetaData    plan_meta_data{};
     optimizer::PlanGenerator plan_generator(common::ManagedPointer<planner::PlanMetaData>{&plan_meta_data});
@@ -1165,7 +1158,7 @@ TEST_F(OperatorTransformerTest, CreateIndexTest) {
                                                   std::move(children_expr_map),
                                                   planner::PlanMetaData::PlanNodeMetaData());
     EXPECT_EQ(plan_node->GetPlanNodeType(), planner::PlanNodeType::CREATE_INDEX);
-    auto cipn = common::ManagedPointer(plan_node).CastManagedPointerTo<planner::CreateIndexPlanNode>();
+    auto cipn = common::ManagedPointer(plan_node).CastTo<planner::CreateIndexPlanNode>();
     EXPECT_EQ(cipn->GetIndexName(), "idx_d");
     EXPECT_EQ(cipn->GetNamespaceOid(), ns_oid);
     EXPECT_EQ(cipn->GetTableOid(), table_a_oid_);
@@ -1198,7 +1191,7 @@ TEST_F(OperatorTransformerTest, CreateFunctionTest) {
 
     // Test logical create
     auto logical_create = operator_tree_->Contents()->GetContentsAs<optimizer::LogicalCreateFunction>();
-    auto create_stmt = statement.CastManagedPointerTo<parser::CreateFunctionStatement>();
+    auto create_stmt = statement.CastTo<parser::CreateFunctionStatement>();
     EXPECT_EQ(logical_create->GetNamespaceOid(), ns_oid);
     EXPECT_EQ(logical_create->GetFunctionName(), create_stmt->GetFuncName());
     EXPECT_EQ(logical_create->GetFunctionBody(), create_stmt->GetFuncBody());
@@ -1220,7 +1213,7 @@ TEST_F(OperatorTransformerTest, CreateFunctionTest) {
 
     optimizer::LogicalCreateFunctionToPhysicalCreateFunction rule;
     EXPECT_TRUE(rule.Check(optree_ptr, op_ctx));
-    rule.Transform(optree_ptr.CastManagedPointerTo<optimizer::AbstractOptimizerNode>(), &transformed, op_ctx);
+    rule.Transform(optree_ptr.CastTo<optimizer::AbstractOptimizerNode>(), &transformed, op_ctx);
 
     auto op = transformed[0]->Contents();
     EXPECT_EQ(op->GetOpType(), optimizer::OpType::CREATEFUNCTION);
@@ -1258,7 +1251,7 @@ TEST_F(OperatorTransformerTest, CreateFunctionTest) {
                                                   std::move(children_expr_map),
                                                   planner::PlanMetaData::PlanNodeMetaData());
     EXPECT_EQ(plan_node->GetPlanNodeType(), planner::PlanNodeType::CREATE_FUNC);
-    auto cfpn = common::ManagedPointer(plan_node).CastManagedPointerTo<planner::CreateFunctionPlanNode>();
+    auto cfpn = common::ManagedPointer(plan_node).CastTo<planner::CreateFunctionPlanNode>();
     EXPECT_EQ(cfpn->GetNamespaceOid(), ns_oid);
     EXPECT_EQ(cfpn->GetFunctionName(), create_stmt->GetFuncName());
     EXPECT_EQ(cfpn->GetFunctionBody(), create_stmt->GetFuncBody());
@@ -1300,7 +1293,7 @@ TEST_F(OperatorTransformerTest, CreateNamespaceTest) {
 
     optimizer::LogicalCreateNamespaceToPhysicalCreateNamespace rule;
     EXPECT_TRUE(rule.Check(optree_ptr, op_ctx));
-    rule.Transform(optree_ptr.CastManagedPointerTo<optimizer::AbstractOptimizerNode>(), &transformed, op_ctx);
+    rule.Transform(optree_ptr.CastTo<optimizer::AbstractOptimizerNode>(), &transformed, op_ctx);
 
     auto op = transformed[0]->Contents();
     EXPECT_EQ(op->GetOpType(), optimizer::OpType::CREATENAMESPACE);
@@ -1327,7 +1320,7 @@ TEST_F(OperatorTransformerTest, CreateNamespaceTest) {
                                                   std::move(children_expr_map),
                                                   planner::PlanMetaData::PlanNodeMetaData());
     EXPECT_EQ(plan_node->GetPlanNodeType(), planner::PlanNodeType::CREATE_NAMESPACE);
-    auto cnpn = common::ManagedPointer(plan_node).CastManagedPointerTo<planner::CreateNamespacePlanNode>();
+    auto cnpn = common::ManagedPointer(plan_node).CastTo<planner::CreateNamespacePlanNode>();
     EXPECT_EQ(cnpn->GetNamespaceName(), "e");
 }
 
@@ -1361,7 +1354,7 @@ TEST_F(OperatorTransformerTest, CreateViewTest) {
 
     optimizer::LogicalCreateViewToPhysicalCreateView rule;
     EXPECT_TRUE(rule.Check(optree_ptr, op_ctx));
-    rule.Transform(optree_ptr.CastManagedPointerTo<optimizer::AbstractOptimizerNode>(), &transformed, op_ctx);
+    rule.Transform(optree_ptr.CastTo<optimizer::AbstractOptimizerNode>(), &transformed, op_ctx);
 
     auto op = transformed[0]->Contents();
     EXPECT_EQ(op->GetOpType(), optimizer::OpType::CREATEVIEW);
@@ -1377,9 +1370,9 @@ TEST_F(OperatorTransformerTest, CreateViewTest) {
     auto sc0 = cv->GetViewQuery()->GetSelectCondition()->GetChild(0);
     auto sc1 = cv->GetViewQuery()->GetSelectCondition()->GetChild(1);
     EXPECT_EQ(sc0->GetExpressionType(), parser::ExpressionType::COLUMN_VALUE);
-    EXPECT_EQ(sc0.CastManagedPointerTo<parser::ColumnValueExpression>()->GetColumnName(), "a1");
+    EXPECT_EQ(sc0.CastTo<parser::ColumnValueExpression>()->GetColumnName(), "a1");
     EXPECT_EQ(sc1->GetExpressionType(), parser::ExpressionType::VALUE_CONSTANT);
-    EXPECT_EQ(*(sc1.CastManagedPointerTo<parser::ConstantValueExpression>()),
+    EXPECT_EQ(*(sc1.CastTo<parser::ConstantValueExpression>()),
               parser::ConstantValueExpression(execution::sql::SqlTypeId::Integer, execution::sql::Integer(4)));
 
     planner::PlanMetaData    plan_meta_data{};
@@ -1400,7 +1393,7 @@ TEST_F(OperatorTransformerTest, CreateViewTest) {
                                                   std::move(children_expr_map),
                                                   planner::PlanMetaData::PlanNodeMetaData());
     EXPECT_EQ(plan_node->GetPlanNodeType(), planner::PlanNodeType::CREATE_VIEW);
-    auto cvpn = common::ManagedPointer(plan_node).CastManagedPointerTo<planner::CreateViewPlanNode>();
+    auto cvpn = common::ManagedPointer(plan_node).CastTo<planner::CreateViewPlanNode>();
     EXPECT_EQ(cvpn->GetDatabaseOid(), db_oid_);
     EXPECT_EQ(cvpn->GetNamespaceOid(), ns_oid);
     EXPECT_EQ(cvpn->GetViewName(), "a_view");
@@ -1409,9 +1402,9 @@ TEST_F(OperatorTransformerTest, CreateViewTest) {
     auto scpn0 = cvpn->GetViewQuery()->GetSelectCondition()->GetChild(0);
     auto scpn1 = cvpn->GetViewQuery()->GetSelectCondition()->GetChild(1);
     EXPECT_EQ(scpn0->GetExpressionType(), parser::ExpressionType::COLUMN_VALUE);
-    EXPECT_EQ(scpn0.CastManagedPointerTo<parser::ColumnValueExpression>()->GetColumnName(), "a1");
+    EXPECT_EQ(scpn0.CastTo<parser::ColumnValueExpression>()->GetColumnName(), "a1");
     EXPECT_EQ(scpn1->GetExpressionType(), parser::ExpressionType::VALUE_CONSTANT);
-    EXPECT_EQ(*(scpn1.CastManagedPointerTo<parser::ConstantValueExpression>()),
+    EXPECT_EQ(*(scpn1.CastTo<parser::ConstantValueExpression>()),
               parser::ConstantValueExpression(execution::sql::SqlTypeId::Integer, execution::sql::Integer(4)));
 }
 
@@ -1439,7 +1432,7 @@ TEST_F(OperatorTransformerTest, CreateTriggerTest) {
 
     // Test logical create
     auto logical_create = operator_tree_->Contents()->GetContentsAs<optimizer::LogicalCreateTrigger>();
-    auto create_stmt = statement.CastManagedPointerTo<parser::CreateStatement>();
+    auto create_stmt = statement.CastTo<parser::CreateStatement>();
     EXPECT_EQ(logical_create->GetTriggerName(), "check_update");
     EXPECT_EQ(logical_create->GetTriggerType(), create_stmt->GetTriggerType());
     EXPECT_EQ(logical_create->GetTriggerColumns().size(), create_stmt->GetTriggerColumns().size());
@@ -1449,8 +1442,8 @@ TEST_F(OperatorTransformerTest, CreateTriggerTest) {
     EXPECT_EQ(logical_create->GetTriggerFuncName(), create_stmt->GetTriggerFuncNames());
     EXPECT_EQ(logical_create->GetTriggerArgs(), create_stmt->GetTriggerArgs());
     EXPECT_EQ(logical_create->GetTriggerWhen()->GetChildrenSize(), 2);
-    auto col1 = logical_create->GetTriggerWhen()->GetChild(0).CastManagedPointerTo<parser::ColumnValueExpression>();
-    auto col2 = logical_create->GetTriggerWhen()->GetChild(1).CastManagedPointerTo<parser::ColumnValueExpression>();
+    auto col1 = logical_create->GetTriggerWhen()->GetChild(0).CastTo<parser::ColumnValueExpression>();
+    auto col2 = logical_create->GetTriggerWhen()->GetChild(1).CastTo<parser::ColumnValueExpression>();
     EXPECT_EQ(col1->GetTableOid(), table_a_oid_);
     EXPECT_EQ(col2->GetTableOid(), table_a_oid_);
     EXPECT_EQ(col1->GetColumnOid(), col_a1_oid);
@@ -1464,7 +1457,7 @@ TEST_F(OperatorTransformerTest, CreateTriggerTest) {
 
     optimizer::LogicalCreateTriggerToPhysicalCreateTrigger rule;
     EXPECT_TRUE(rule.Check(optree_ptr, op_ctx));
-    rule.Transform(optree_ptr.CastManagedPointerTo<optimizer::AbstractOptimizerNode>(), &transformed, op_ctx);
+    rule.Transform(optree_ptr.CastTo<optimizer::AbstractOptimizerNode>(), &transformed, op_ctx);
 
     auto op = transformed[0]->Contents();
     EXPECT_EQ(op->GetOpType(), optimizer::OpType::CREATETRIGGER);
@@ -1480,8 +1473,8 @@ TEST_F(OperatorTransformerTest, CreateTriggerTest) {
     EXPECT_EQ(ct->GetTriggerFuncName(), create_stmt->GetTriggerFuncNames());
     EXPECT_EQ(ct->GetTriggerArgs(), create_stmt->GetTriggerArgs());
     EXPECT_EQ(ct->GetTriggerWhen()->GetChildrenSize(), 2);
-    auto ctc1 = ct->GetTriggerWhen()->GetChild(0).CastManagedPointerTo<parser::ColumnValueExpression>();
-    auto ctc2 = ct->GetTriggerWhen()->GetChild(1).CastManagedPointerTo<parser::ColumnValueExpression>();
+    auto ctc1 = ct->GetTriggerWhen()->GetChild(0).CastTo<parser::ColumnValueExpression>();
+    auto ctc2 = ct->GetTriggerWhen()->GetChild(1).CastTo<parser::ColumnValueExpression>();
     EXPECT_EQ(ctc1->GetTableOid(), table_a_oid_);
     EXPECT_EQ(ctc2->GetTableOid(), table_a_oid_);
     EXPECT_EQ(ctc1->GetColumnOid(), col_a1_oid);
@@ -1507,7 +1500,7 @@ TEST_F(OperatorTransformerTest, CreateTriggerTest) {
                                                   std::move(children_expr_map),
                                                   planner::PlanMetaData::PlanNodeMetaData());
     EXPECT_EQ(plan_node->GetPlanNodeType(), planner::PlanNodeType::CREATE_TRIGGER);
-    auto ctpn = common::ManagedPointer(plan_node).CastManagedPointerTo<planner::CreateTriggerPlanNode>();
+    auto ctpn = common::ManagedPointer(plan_node).CastTo<planner::CreateTriggerPlanNode>();
     EXPECT_EQ(ctpn->GetTriggerName(), "check_update");
     EXPECT_EQ(ctpn->GetTriggerType(), create_stmt->GetTriggerType());
     EXPECT_EQ(ctpn->GetTriggerColumns().size(), create_stmt->GetTriggerColumns().size());
@@ -1517,8 +1510,8 @@ TEST_F(OperatorTransformerTest, CreateTriggerTest) {
     EXPECT_EQ(ctpn->GetTriggerFuncName(), create_stmt->GetTriggerFuncNames());
     EXPECT_EQ(ctpn->GetTriggerArgs(), create_stmt->GetTriggerArgs());
     EXPECT_EQ(ctpn->GetTriggerWhen()->GetChildrenSize(), 2);
-    auto ctpnc1 = ct->GetTriggerWhen()->GetChild(0).CastManagedPointerTo<parser::ColumnValueExpression>();
-    auto ctpnc2 = ct->GetTriggerWhen()->GetChild(1).CastManagedPointerTo<parser::ColumnValueExpression>();
+    auto ctpnc1 = ct->GetTriggerWhen()->GetChild(0).CastTo<parser::ColumnValueExpression>();
+    auto ctpnc2 = ct->GetTriggerWhen()->GetChild(1).CastTo<parser::ColumnValueExpression>();
     EXPECT_EQ(ctpnc1->GetTableOid(), table_a_oid_);
     EXPECT_EQ(ctpnc2->GetTableOid(), table_a_oid_);
     EXPECT_EQ(ctpnc1->GetColumnOid(), col_a1_oid);
@@ -1555,7 +1548,7 @@ TEST_F(OperatorTransformerTest, DropDatabaseTest) {
 
     optimizer::LogicalDropDatabaseToPhysicalDropDatabase rule;
     EXPECT_TRUE(rule.Check(optree_ptr, op_ctx));
-    rule.Transform(optree_ptr.CastManagedPointerTo<optimizer::AbstractOptimizerNode>(), &transformed, op_ctx);
+    rule.Transform(optree_ptr.CastTo<optimizer::AbstractOptimizerNode>(), &transformed, op_ctx);
 
     auto op = transformed[0]->Contents();
     EXPECT_EQ(op->GetOpType(), optimizer::OpType::DROPDATABASE);
@@ -1582,7 +1575,7 @@ TEST_F(OperatorTransformerTest, DropDatabaseTest) {
                                                   std::move(children_expr_map),
                                                   planner::PlanMetaData::PlanNodeMetaData());
     EXPECT_EQ(plan_node->GetPlanNodeType(), planner::PlanNodeType::DROP_DATABASE);
-    auto ddpn = common::ManagedPointer(plan_node).CastManagedPointerTo<planner::DropDatabasePlanNode>();
+    auto ddpn = common::ManagedPointer(plan_node).CastTo<planner::DropDatabasePlanNode>();
     EXPECT_EQ(ddpn->GetDatabaseOid(), db_oid_);
 }
 
@@ -1614,7 +1607,7 @@ TEST_F(OperatorTransformerTest, DropTableTest) {
 
     optimizer::LogicalDropTableToPhysicalDropTable rule;
     EXPECT_TRUE(rule.Check(optree_ptr, op_ctx));
-    rule.Transform(optree_ptr.CastManagedPointerTo<optimizer::AbstractOptimizerNode>(), &transformed, op_ctx);
+    rule.Transform(optree_ptr.CastTo<optimizer::AbstractOptimizerNode>(), &transformed, op_ctx);
 
     auto op = transformed[0]->Contents();
     EXPECT_EQ(op->GetOpType(), optimizer::OpType::DROPTABLE);
@@ -1641,7 +1634,7 @@ TEST_F(OperatorTransformerTest, DropTableTest) {
                                                   std::move(children_expr_map),
                                                   planner::PlanMetaData::PlanNodeMetaData());
     EXPECT_EQ(plan_node->GetPlanNodeType(), planner::PlanNodeType::DROP_TABLE);
-    auto dtpn = common::ManagedPointer(plan_node).CastManagedPointerTo<planner::DropTablePlanNode>();
+    auto dtpn = common::ManagedPointer(plan_node).CastTo<planner::DropTablePlanNode>();
     EXPECT_EQ(dtpn->GetTableOid(), table_a_oid_);
 }
 
@@ -1672,7 +1665,7 @@ TEST_F(OperatorTransformerTest, DropIndexTest) {
 
     optimizer::LogicalDropIndexToPhysicalDropIndex rule;
     EXPECT_TRUE(rule.Check(optree_ptr, op_ctx));
-    rule.Transform(optree_ptr.CastManagedPointerTo<optimizer::AbstractOptimizerNode>(), &transformed, op_ctx);
+    rule.Transform(optree_ptr.CastTo<optimizer::AbstractOptimizerNode>(), &transformed, op_ctx);
 
     auto op = transformed[0]->Contents();
     EXPECT_EQ(op->GetOpType(), optimizer::OpType::DROPINDEX);
@@ -1699,7 +1692,7 @@ TEST_F(OperatorTransformerTest, DropIndexTest) {
                                                   std::move(children_expr_map),
                                                   planner::PlanMetaData::PlanNodeMetaData());
     EXPECT_EQ(plan_node->GetPlanNodeType(), planner::PlanNodeType::DROP_INDEX);
-    auto dipn = common::ManagedPointer(plan_node).CastManagedPointerTo<planner::DropIndexPlanNode>();
+    auto dipn = common::ManagedPointer(plan_node).CastTo<planner::DropIndexPlanNode>();
     EXPECT_EQ(dipn->GetIndexOid(), a_index_oid_);
 }
 
@@ -1729,7 +1722,7 @@ TEST_F(OperatorTransformerTest, DropNamespaceIfExistsWhereExistTest) {
 
     optimizer::LogicalDropNamespaceToPhysicalDropNamespace rule;
     EXPECT_TRUE(rule.Check(optree_ptr, op_ctx));
-    rule.Transform(optree_ptr.CastManagedPointerTo<optimizer::AbstractOptimizerNode>(), &transformed, op_ctx);
+    rule.Transform(optree_ptr.CastTo<optimizer::AbstractOptimizerNode>(), &transformed, op_ctx);
 
     auto op = transformed[0]->Contents();
     EXPECT_EQ(op->GetOpType(), optimizer::OpType::DROPNAMESPACE);
@@ -1756,7 +1749,7 @@ TEST_F(OperatorTransformerTest, DropNamespaceIfExistsWhereExistTest) {
                                                   std::move(children_expr_map),
                                                   planner::PlanMetaData::PlanNodeMetaData());
     EXPECT_EQ(plan_node->GetPlanNodeType(), planner::PlanNodeType::DROP_NAMESPACE);
-    auto dnpn = common::ManagedPointer(plan_node).CastManagedPointerTo<planner::DropNamespacePlanNode>();
+    auto dnpn = common::ManagedPointer(plan_node).CastTo<planner::DropNamespacePlanNode>();
     EXPECT_EQ(dnpn->GetNamespaceOid(), catalog::postgres::PgNamespace::NAMESPACE_DEFAULT_NAMESPACE_OID);
 }
 
@@ -1786,7 +1779,7 @@ TEST_F(OperatorTransformerTest, DropNamespaceIfExistsWhereNotExistTest) {
 
     optimizer::LogicalDropNamespaceToPhysicalDropNamespace rule;
     EXPECT_TRUE(rule.Check(optree_ptr, op_ctx));
-    rule.Transform(optree_ptr.CastManagedPointerTo<optimizer::AbstractOptimizerNode>(), &transformed, op_ctx);
+    rule.Transform(optree_ptr.CastTo<optimizer::AbstractOptimizerNode>(), &transformed, op_ctx);
 
     auto op = transformed[0]->Contents();
     EXPECT_EQ(op->GetOpType(), optimizer::OpType::DROPNAMESPACE);
@@ -1813,7 +1806,7 @@ TEST_F(OperatorTransformerTest, DropNamespaceIfExistsWhereNotExistTest) {
                                                   std::move(children_expr_map),
                                                   planner::PlanMetaData::PlanNodeMetaData());
     EXPECT_EQ(plan_node->GetPlanNodeType(), planner::PlanNodeType::DROP_NAMESPACE);
-    auto dnpn = common::ManagedPointer(plan_node).CastManagedPointerTo<planner::DropNamespacePlanNode>();
+    auto dnpn = common::ManagedPointer(plan_node).CastTo<planner::DropNamespacePlanNode>();
     EXPECT_EQ(dnpn->GetNamespaceOid(), catalog::INVALID_NAMESPACE_OID);
 }
 
@@ -1843,7 +1836,7 @@ TEST_F(OperatorTransformerTest, DISABLED_DropTriggerIfExistsWhereNotExistTest) {
 
     optimizer::LogicalDropTriggerToPhysicalDropTrigger rule;
     EXPECT_TRUE(rule.Check(optree_ptr, op_ctx));
-    rule.Transform(optree_ptr.CastManagedPointerTo<optimizer::AbstractOptimizerNode>(), &transformed, op_ctx);
+    rule.Transform(optree_ptr.CastTo<optimizer::AbstractOptimizerNode>(), &transformed, op_ctx);
 
     auto op = transformed[0]->Contents();
     EXPECT_EQ(op->GetOpType(), optimizer::OpType::DROPVIEW);
@@ -1870,7 +1863,7 @@ TEST_F(OperatorTransformerTest, DISABLED_DropTriggerIfExistsWhereNotExistTest) {
                                                   std::move(children_expr_map),
                                                   planner::PlanMetaData::PlanNodeMetaData());
     EXPECT_EQ(plan_node->GetPlanNodeType(), planner::PlanNodeType::DROP_VIEW);
-    auto dtpn = common::ManagedPointer(plan_node).CastManagedPointerTo<planner::DropTriggerPlanNode>();
+    auto dtpn = common::ManagedPointer(plan_node).CastTo<planner::DropTriggerPlanNode>();
     EXPECT_EQ(dtpn->GetTriggerOid(), catalog::INVALID_TRIGGER_OID);
 }
 
@@ -1900,7 +1893,7 @@ TEST_F(OperatorTransformerTest, DISABLED_DropViewIfExistsWhereNotExistTest) {
 
     optimizer::LogicalDropViewToPhysicalDropView rule;
     EXPECT_TRUE(rule.Check(optree_ptr, op_ctx));
-    rule.Transform(optree_ptr.CastManagedPointerTo<optimizer::AbstractOptimizerNode>(), &transformed, op_ctx);
+    rule.Transform(optree_ptr.CastTo<optimizer::AbstractOptimizerNode>(), &transformed, op_ctx);
 
     auto op = transformed[0]->Contents();
     EXPECT_EQ(op->GetOpType(), optimizer::OpType::DROPVIEW);
@@ -1927,7 +1920,7 @@ TEST_F(OperatorTransformerTest, DISABLED_DropViewIfExistsWhereNotExistTest) {
                                                   std::move(children_expr_map),
                                                   planner::PlanMetaData::PlanNodeMetaData());
     EXPECT_EQ(plan_node->GetPlanNodeType(), planner::PlanNodeType::DROP_VIEW);
-    auto dvpn = common::ManagedPointer(plan_node).CastManagedPointerTo<planner::DropViewPlanNode>();
+    auto dvpn = common::ManagedPointer(plan_node).CastTo<planner::DropViewPlanNode>();
     EXPECT_EQ(dvpn->GetViewOid(), catalog::INVALID_VIEW_OID);
 }
 
@@ -2000,7 +1993,7 @@ TEST_F(OperatorTransformerTest, AnalyzeTest) {
                                                   std::move(children_expr_map),
                                                   planner::PlanMetaData::PlanNodeMetaData());
     EXPECT_EQ(plan_node->GetPlanNodeType(), planner::PlanNodeType::ANALYZE);
-    auto analyze_plan = common::ManagedPointer(plan_node).CastManagedPointerTo<planner::AnalyzePlanNode>();
+    auto analyze_plan = common::ManagedPointer(plan_node).CastTo<planner::AnalyzePlanNode>();
     EXPECT_EQ(analyze_plan->GetColumnOids().size(), 1);
     EXPECT_EQ(analyze_plan->GetColumnOids().at(0), col_a1_oid);
     EXPECT_EQ(analyze_plan->GetTableOid(), table_a_oid_);
@@ -2079,7 +2072,7 @@ TEST_F(OperatorTransformerTest, AnalyzeTest2) {
                                                   std::move(children_expr_map),
                                                   planner::PlanMetaData::PlanNodeMetaData());
     EXPECT_EQ(plan_node->GetPlanNodeType(), planner::PlanNodeType::ANALYZE);
-    auto analyze_plan = common::ManagedPointer(plan_node).CastManagedPointerTo<planner::AnalyzePlanNode>();
+    auto analyze_plan = common::ManagedPointer(plan_node).CastTo<planner::AnalyzePlanNode>();
     EXPECT_EQ(analyze_plan->GetColumnOids().size(), 2);
     EXPECT_EQ(analyze_plan->GetColumnOids().at(0), col_a1_oid);
     EXPECT_EQ(analyze_plan->GetColumnOids().at(1), col_a2_oid);

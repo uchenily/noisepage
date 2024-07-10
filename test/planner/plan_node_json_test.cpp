@@ -115,7 +115,7 @@ TEST(PlanNodeJsonTest, AggregatePlanNodeJsonTest) {
 
     // Deserialize plan node
     auto deserialized = DeserializePlanNode(json);
-    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastManagedPointerTo<AggregatePlanNode>();
+    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastTo<AggregatePlanNode>();
     EXPECT_TRUE(deserialized_plan != nullptr);
     EXPECT_EQ(PlanNodeType::AGGREGATE, deserialized_plan->GetPlanNodeType());
     EXPECT_EQ(*plan_node, *deserialized_plan);
@@ -143,7 +143,7 @@ TEST(PlanNodeJsonTest, AnalyzePlanNodeJsonTest) {
 
     // Deserialize plan node
     auto deserialized = DeserializePlanNode(json);
-    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastManagedPointerTo<AnalyzePlanNode>();
+    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastTo<AnalyzePlanNode>();
     EXPECT_TRUE(deserialized_plan != nullptr);
     EXPECT_EQ(PlanNodeType::ANALYZE, deserialized_plan->GetPlanNodeType());
     EXPECT_EQ(*plan_node, *deserialized_plan);
@@ -161,8 +161,7 @@ TEST(PlanNodeJsonTest, CreateDatabasePlanNodeTest) {
 
     // Deserialize plan node
     auto deserialized = DeserializePlanNode(json);
-    auto deserialized_plan
-        = common::ManagedPointer(deserialized.result_).CastManagedPointerTo<CreateDatabasePlanNode>();
+    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastTo<CreateDatabasePlanNode>();
     EXPECT_TRUE(deserialized_plan != nullptr);
     EXPECT_EQ(PlanNodeType::CREATE_DATABASE, deserialized_plan->GetPlanNodeType());
     EXPECT_EQ(*plan_node, *deserialized_plan);
@@ -191,8 +190,7 @@ TEST(PlanNodeJsonTest, CreateFunctionPlanNodeTest) {
 
     // Deserialize plan node
     auto deserialized = DeserializePlanNode(json);
-    auto deserialized_plan
-        = common::ManagedPointer(deserialized.result_).CastManagedPointerTo<CreateFunctionPlanNode>();
+    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastTo<CreateFunctionPlanNode>();
     EXPECT_TRUE(deserialized_plan != nullptr);
     EXPECT_EQ(PlanNodeType::CREATE_FUNC, deserialized_plan->GetPlanNodeType());
     EXPECT_EQ(*plan_node, *deserialized_plan);
@@ -214,7 +212,7 @@ TEST(PlanNodeJsonTest, CreateIndexPlanNodeTest) {
 
     // Deserialize plan node
     auto deserialized = DeserializePlanNode(json);
-    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastManagedPointerTo<CreateIndexPlanNode>();
+    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastTo<CreateIndexPlanNode>();
     EXPECT_TRUE(deserialized_plan != nullptr);
     EXPECT_EQ(PlanNodeType::CREATE_INDEX, deserialized_plan->GetPlanNodeType());
     EXPECT_EQ(*plan_node, *deserialized_plan);
@@ -233,8 +231,7 @@ TEST(PlanNodeJsonTest, CreateNamespacePlanNodeTest) {
 
     // Deserialize plan node
     auto deserialized = DeserializePlanNode(json);
-    auto deserialized_plan
-        = common::ManagedPointer(deserialized.result_).CastManagedPointerTo<CreateNamespacePlanNode>();
+    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastTo<CreateNamespacePlanNode>();
     EXPECT_TRUE(deserialized_plan != nullptr);
     EXPECT_EQ(PlanNodeType::CREATE_NAMESPACE, deserialized_plan->GetPlanNodeType());
     EXPECT_EQ(*plan_node, *deserialized_plan);
@@ -336,10 +333,8 @@ TEST(PlanNodeJsonTest, CreateTablePlanNodeTest) {
     // Deserialize plan node
     auto deserialized_pk = DeserializePlanNode(pk_json);
     auto deserialized_no_pk = DeserializePlanNode(no_pk_json);
-    auto deserialized_pk_plan
-        = common::ManagedPointer(deserialized_pk.result_).CastManagedPointerTo<CreateTablePlanNode>();
-    auto deserialized_no_pk_plan
-        = common::ManagedPointer(deserialized_no_pk.result_).CastManagedPointerTo<CreateTablePlanNode>();
+    auto deserialized_pk_plan = common::ManagedPointer(deserialized_pk.result_).CastTo<CreateTablePlanNode>();
+    auto deserialized_no_pk_plan = common::ManagedPointer(deserialized_no_pk.result_).CastTo<CreateTablePlanNode>();
     EXPECT_TRUE(deserialized_pk_plan != nullptr);
     EXPECT_TRUE(deserialized_no_pk_plan != nullptr);
 
@@ -395,7 +390,7 @@ TEST(PlanNodeJsonTest, CreateTriggerPlanNodeTest) {
 
     // Deserialize plan node
     auto deserialized = DeserializePlanNode(json);
-    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastManagedPointerTo<CreateTriggerPlanNode>();
+    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastTo<CreateTriggerPlanNode>();
     EXPECT_TRUE(deserialized_plan != nullptr);
     EXPECT_EQ(PlanNodeType::CREATE_TRIGGER, deserialized_plan->GetPlanNodeType());
     EXPECT_EQ(*plan_node, *deserialized_plan);
@@ -419,7 +414,7 @@ TEST(PlanNodeJsonTest, CreateViewPlanNodeTest) {
 
     // Deserialize plan node
     auto deserialized = DeserializePlanNode(json);
-    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastManagedPointerTo<CreateViewPlanNode>();
+    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastTo<CreateViewPlanNode>();
     EXPECT_TRUE(deserialized_plan != nullptr);
     EXPECT_EQ(PlanNodeType::CREATE_VIEW, deserialized_plan->GetPlanNodeType());
     EXPECT_EQ(*plan_node, *deserialized_plan);
@@ -438,7 +433,7 @@ TEST(PlanNodeJsonTest, CSVScanPlanNodeTest) {
 
     // Deserialize plan node
     auto deserialized = DeserializePlanNode(json);
-    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastManagedPointerTo<CSVScanPlanNode>();
+    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastTo<CSVScanPlanNode>();
     EXPECT_TRUE(deserialized_plan != nullptr);
     EXPECT_EQ(PlanNodeType::CSVSCAN, deserialized_plan->GetPlanNodeType());
     EXPECT_EQ(*plan_node, *deserialized_plan);
@@ -458,7 +453,7 @@ TEST(PlanNodeJsonTest, DeletePlanNodeTest) {
 
     // Deserialize plan node
     auto deserialized = DeserializePlanNode(json);
-    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastManagedPointerTo<DeletePlanNode>();
+    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastTo<DeletePlanNode>();
     EXPECT_TRUE(deserialized_plan != nullptr);
     EXPECT_EQ(PlanNodeType::DELETE, deserialized_plan->GetPlanNodeType());
     EXPECT_EQ(*plan_node, *deserialized_plan);
@@ -477,7 +472,7 @@ TEST(PlanNodeJsonTest, DropDatabasePlanNodeTest) {
 
     // Deserialize plan node
     auto deserialized = DeserializePlanNode(json);
-    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastManagedPointerTo<DropDatabasePlanNode>();
+    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastTo<DropDatabasePlanNode>();
     EXPECT_TRUE(deserialized_plan != nullptr);
     EXPECT_EQ(PlanNodeType::DROP_DATABASE, deserialized_plan->GetPlanNodeType());
     EXPECT_EQ(*plan_node, *deserialized_plan);
@@ -488,8 +483,7 @@ TEST(PlanNodeJsonTest, DropDatabasePlanNodeTest) {
     auto                          plan_node2 = builder2.SetDatabaseOid(catalog::db_oid_t(9999)).Build();
     auto                          json2 = plan_node2->ToJson();
     auto                          deserialized2 = DeserializePlanNode(json2);
-    auto                          deserialized_plan2
-        = common::ManagedPointer(deserialized2.result_).CastManagedPointerTo<DropDatabasePlanNode>();
+    auto deserialized_plan2 = common::ManagedPointer(deserialized2.result_).CastTo<DropDatabasePlanNode>();
     EXPECT_NE(*plan_node, *deserialized_plan2);
     EXPECT_NE(*deserialized_plan, *deserialized_plan2);
     EXPECT_NE(plan_node->Hash(), deserialized_plan2->Hash());
@@ -507,7 +501,7 @@ TEST(PlanNodeJsonTest, DropIndexPlanNodeTest) {
 
     // Deserialize plan node
     auto deserialized = DeserializePlanNode(json);
-    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastManagedPointerTo<DropIndexPlanNode>();
+    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastTo<DropIndexPlanNode>();
     EXPECT_TRUE(deserialized_plan != nullptr);
     EXPECT_EQ(PlanNodeType::DROP_INDEX, deserialized_plan->GetPlanNodeType());
     EXPECT_EQ(*plan_node, *deserialized_plan);
@@ -526,7 +520,7 @@ TEST(PlanNodeJsonTest, DropNamespacePlanNodeTest) {
 
     // Deserialize plan node
     auto deserialized = DeserializePlanNode(json);
-    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastManagedPointerTo<DropNamespacePlanNode>();
+    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastTo<DropNamespacePlanNode>();
     EXPECT_TRUE(deserialized_plan != nullptr);
     EXPECT_EQ(PlanNodeType::DROP_NAMESPACE, deserialized_plan->GetPlanNodeType());
     EXPECT_EQ(*plan_node, *deserialized_plan);
@@ -545,7 +539,7 @@ TEST(PlanNodeJsonTest, DropTablePlanNodeTest) {
 
     // Deserialize plan node
     auto deserialized = DeserializePlanNode(json);
-    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastManagedPointerTo<DropTablePlanNode>();
+    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastTo<DropTablePlanNode>();
     EXPECT_TRUE(deserialized_plan != nullptr);
     EXPECT_EQ(PlanNodeType::DROP_TABLE, deserialized_plan->GetPlanNodeType());
     EXPECT_EQ(*plan_node, *deserialized_plan);
@@ -568,7 +562,7 @@ TEST(PlanNodeJsonTest, DropTriggerPlanNodeTest) {
 
     // Deserialize plan node
     auto deserialized = DeserializePlanNode(json);
-    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastManagedPointerTo<DropTriggerPlanNode>();
+    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastTo<DropTriggerPlanNode>();
     EXPECT_TRUE(deserialized_plan != nullptr);
     EXPECT_EQ(PlanNodeType::DROP_TRIGGER, deserialized_plan->GetPlanNodeType());
     EXPECT_EQ(*plan_node, *deserialized_plan);
@@ -588,7 +582,7 @@ TEST(PlanNodeJsonTest, DropViewPlanNodeTest) {
 
     // Deserialize plan node
     auto deserialized = DeserializePlanNode(json);
-    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastManagedPointerTo<DropViewPlanNode>();
+    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastTo<DropViewPlanNode>();
     EXPECT_TRUE(deserialized_plan != nullptr);
     EXPECT_EQ(PlanNodeType::DROP_VIEW, deserialized_plan->GetPlanNodeType());
     EXPECT_EQ(*plan_node, *deserialized_plan);
@@ -612,8 +606,7 @@ TEST(PlanNodeJsonTest, ExportExternalFilePlanNodeJsonTest) {
 
     // Deserialize plan node
     auto deserialized = DeserializePlanNode(json);
-    auto deserialized_plan
-        = common::ManagedPointer(deserialized.result_).CastManagedPointerTo<ExportExternalFilePlanNode>();
+    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastTo<ExportExternalFilePlanNode>();
     EXPECT_TRUE(deserialized_plan != nullptr);
     EXPECT_EQ(PlanNodeType::EXPORT_EXTERNAL_FILE, deserialized_plan->GetPlanNodeType());
     EXPECT_EQ(*plan_node, *deserialized_plan);
@@ -627,14 +620,12 @@ TEST(PlanNodeJsonTest, HashJoinPlanNodeJoinTest) {
     auto right_hash_key = std::make_unique<parser::ColumnValueExpression>(parser::AliasType("table2"), "col2");
     auto join_pred = PlanNodeJsonTest::BuildDummyPredicate();
     HashJoinPlanNode::Builder builder;
-    auto                      plan_node
-        = builder.SetOutputSchema(PlanNodeJsonTest::BuildDummyOutputSchema())
-              .SetJoinType(LogicalJoinType::INNER)
-              .SetJoinPredicate(common::ManagedPointer(join_pred))
-              .AddLeftHashKey(common::ManagedPointer(left_hash_key).CastManagedPointerTo<parser::AbstractExpression>())
-              .AddRightHashKey(
-                  common::ManagedPointer(right_hash_key).CastManagedPointerTo<parser::AbstractExpression>())
-              .Build();
+    auto                      plan_node = builder.SetOutputSchema(PlanNodeJsonTest::BuildDummyOutputSchema())
+                         .SetJoinType(LogicalJoinType::INNER)
+                         .SetJoinPredicate(common::ManagedPointer(join_pred))
+                         .AddLeftHashKey(common::ManagedPointer(left_hash_key).CastTo<parser::AbstractExpression>())
+                         .AddRightHashKey(common::ManagedPointer(right_hash_key).CastTo<parser::AbstractExpression>())
+                         .Build();
 
     // Serialize to Json
     auto json = plan_node->ToJson();
@@ -642,7 +633,7 @@ TEST(PlanNodeJsonTest, HashJoinPlanNodeJoinTest) {
 
     // Deserialize plan node
     auto deserialized = DeserializePlanNode(json);
-    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastManagedPointerTo<HashJoinPlanNode>();
+    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastTo<HashJoinPlanNode>();
     EXPECT_TRUE(deserialized_plan != nullptr);
     EXPECT_EQ(PlanNodeType::HASHJOIN, deserialized_plan->GetPlanNodeType());
     EXPECT_EQ(*plan_node, *deserialized_plan);
@@ -667,7 +658,7 @@ TEST(PlanNodeJsonTest, IndexScanPlanNodeJsonTest) {
 
     // Deserialize plan node
     auto deserialized = DeserializePlanNode(json);
-    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastManagedPointerTo<IndexScanPlanNode>();
+    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastTo<IndexScanPlanNode>();
     EXPECT_TRUE(deserialized_plan != nullptr);
     EXPECT_EQ(PlanNodeType::INDEXSCAN, deserialized_plan->GetPlanNodeType());
     EXPECT_EQ(*plan_node, *deserialized_plan);
@@ -713,7 +704,7 @@ TEST(PlanNodeJsonTest, InsertPlanNodeJsonTest) {
 
     // Deserialize plan node
     auto deserialized = DeserializePlanNode(json);
-    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastManagedPointerTo<InsertPlanNode>();
+    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastTo<InsertPlanNode>();
     EXPECT_TRUE(deserialized_plan != nullptr);
     EXPECT_EQ(PlanNodeType::INSERT, deserialized_plan->GetPlanNodeType());
     EXPECT_EQ(*plan_node, *deserialized_plan);
@@ -733,7 +724,7 @@ TEST(PlanNodeJsonTest, InsertPlanNodeJsonTest) {
     auto json2 = plan_node2->ToJson();
     EXPECT_FALSE(json2.is_null());
     auto deserialized2 = DeserializePlanNode(json2);
-    auto deserialized_plan2 = common::ManagedPointer(deserialized2.result_).CastManagedPointerTo<InsertPlanNode>();
+    auto deserialized_plan2 = common::ManagedPointer(deserialized2.result_).CastTo<InsertPlanNode>();
     EXPECT_TRUE(deserialized_plan2 != nullptr);
     EXPECT_EQ(PlanNodeType::INSERT, deserialized_plan2->GetPlanNodeType());
     EXPECT_NE(*plan_node, *deserialized_plan2);
@@ -756,7 +747,7 @@ TEST(PlanNodeJsonTest, LimitPlanNodeJsonTest) {
 
     // Deserialize plan node
     auto deserialized = DeserializePlanNode(json);
-    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastManagedPointerTo<LimitPlanNode>();
+    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastTo<LimitPlanNode>();
     EXPECT_TRUE(deserialized_plan != nullptr);
     EXPECT_EQ(PlanNodeType::LIMIT, deserialized_plan->GetPlanNodeType());
     EXPECT_EQ(*plan_node, *deserialized_plan);
@@ -779,8 +770,7 @@ TEST(PlanNodeJsonTest, NestedLoopJoinPlanNodeJoinTest) {
 
     // Deserialize plan node
     auto deserialized = DeserializePlanNode(json);
-    auto deserialized_plan
-        = common::ManagedPointer(deserialized.result_).CastManagedPointerTo<NestedLoopJoinPlanNode>();
+    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastTo<NestedLoopJoinPlanNode>();
     EXPECT_TRUE(deserialized_plan != nullptr);
     EXPECT_EQ(PlanNodeType::NESTLOOP, deserialized_plan->GetPlanNodeType());
     EXPECT_EQ(*plan_node, *deserialized_plan);
@@ -807,7 +797,7 @@ TEST(PlanNodeJsonTest, OrderByPlanNodeJsonTest) {
 
     // Deserialize plan node
     auto deserialized = DeserializePlanNode(json);
-    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastManagedPointerTo<OrderByPlanNode>();
+    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastTo<OrderByPlanNode>();
     EXPECT_TRUE(deserialized_plan != nullptr);
     EXPECT_EQ(PlanNodeType::ORDERBY, deserialized_plan->GetPlanNodeType());
     EXPECT_EQ(*plan_node, *deserialized_plan);
@@ -829,7 +819,7 @@ TEST(PlanNodeJsonTest, ProjectionPlanNodeJsonTest) {
 
     // Deserialize plan node
     auto deserialized = DeserializePlanNode(json);
-    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastManagedPointerTo<ProjectionPlanNode>();
+    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastTo<ProjectionPlanNode>();
     EXPECT_TRUE(deserialized_plan != nullptr);
     EXPECT_EQ(PlanNodeType::PROJECTION, deserialized_plan->GetPlanNodeType());
     EXPECT_EQ(*plan_node, *deserialized_plan);
@@ -851,7 +841,7 @@ TEST(PlanNodeJsonTest, ResultPlanNodeJsonTest) {
 
     // Deserialize plan node
     auto deserialized = DeserializePlanNode(json);
-    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastManagedPointerTo<ResultPlanNode>();
+    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastTo<ResultPlanNode>();
     EXPECT_TRUE(deserialized_plan != nullptr);
     EXPECT_EQ(PlanNodeType::RESULT, deserialized_plan->GetPlanNodeType());
     EXPECT_EQ(*plan_node, *deserialized_plan);
@@ -876,7 +866,7 @@ TEST(PlanNodeJsonTest, SeqScanPlanNodeJsonTest) {
 
     // Deserialize plan node
     auto deserialized = DeserializePlanNode(json);
-    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastManagedPointerTo<SeqScanPlanNode>();
+    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastTo<SeqScanPlanNode>();
     EXPECT_TRUE(deserialized_plan != nullptr);
     EXPECT_EQ(PlanNodeType::SEQSCAN, deserialized_plan->GetPlanNodeType());
     EXPECT_EQ(*plan_node, *deserialized_plan);
@@ -896,7 +886,7 @@ TEST(PlanNodeJsonTest, SetOpPlanNodeJsonTest) {
 
     // Deserialize plan node
     auto deserialized = DeserializePlanNode(json);
-    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastManagedPointerTo<SetOpPlanNode>();
+    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastTo<SetOpPlanNode>();
     EXPECT_TRUE(deserialized_plan != nullptr);
     EXPECT_EQ(PlanNodeType::SETOP, deserialized_plan->GetPlanNodeType());
     EXPECT_EQ(*plan_node, *deserialized_plan);
@@ -918,7 +908,7 @@ TEST(PlanNodeJsonTest, UpdatePlanNodeJsonTest) {
 
     // Deserialize plan node
     auto deserialized = DeserializePlanNode(json);
-    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastManagedPointerTo<UpdatePlanNode>();
+    auto deserialized_plan = common::ManagedPointer(deserialized.result_).CastTo<UpdatePlanNode>();
     EXPECT_TRUE(deserialized_plan != nullptr);
     EXPECT_EQ(PlanNodeType::UPDATE, deserialized_plan->GetPlanNodeType());
     EXPECT_EQ(*plan_node, *deserialized_plan);

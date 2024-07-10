@@ -51,11 +51,11 @@ TEST_F(TpccPlanNewOrderTests, UpdateDistrict) {
 
         EXPECT_EQ(update->GetSetClauses().size(), 1);
         EXPECT_EQ(update->GetSetClauses()[0].first, schema.GetColumn("d_next_o_id").Oid());
-        auto expr = update->GetSetClauses()[0].second.CastManagedPointerTo<parser::OperatorExpression>();
+        auto expr = update->GetSetClauses()[0].second.CastTo<parser::OperatorExpression>();
         EXPECT_EQ(expr->GetExpressionType(), parser::ExpressionType::OPERATOR_PLUS);
         EXPECT_EQ(expr->GetChild(0)->GetExpressionType(), parser::ExpressionType::VALUE_TUPLE);
         EXPECT_EQ(expr->GetChild(1)->GetExpressionType(), parser::ExpressionType::VALUE_CONSTANT);
-        auto cve = expr->GetChild(1).CastManagedPointerTo<parser::ConstantValueExpression>();
+        auto cve = expr->GetChild(1).CastTo<parser::ConstantValueExpression>();
         EXPECT_EQ(cve->Peek<int64_t>(), 1);
 
         // Idx Scan, full output schema
@@ -77,7 +77,7 @@ TEST_F(TpccPlanNewOrderTests, UpdateDistrict) {
         for (auto &col : schema.GetColumns()) {
             auto idx_scan_expr = idx_scan_schema->GetColumn(idx).GetExpr();
             EXPECT_EQ(idx_scan_expr->GetExpressionType(), parser::ExpressionType::COLUMN_VALUE);
-            auto idx_scan_expr_dve = idx_scan_expr.CastManagedPointerTo<parser::ColumnValueExpression>();
+            auto idx_scan_expr_dve = idx_scan_expr.CastTo<parser::ColumnValueExpression>();
             EXPECT_EQ(idx_scan_expr_dve->GetColumnOid(), col.Oid());
             oids.emplace_back(col.Oid());
             idx++;
@@ -131,34 +131,34 @@ TEST_F(TpccPlanNewOrderTests, UpdateStock) {
         }
 
         {
-            auto expr = update->GetSetClauses()[0].second.CastManagedPointerTo<parser::ConstantValueExpression>();
+            auto expr = update->GetSetClauses()[0].second.CastTo<parser::ConstantValueExpression>();
             EXPECT_EQ(expr->Peek<int64_t>(), 1);
         }
 
         {
-            auto expr = update->GetSetClauses()[1].second.CastManagedPointerTo<parser::OperatorExpression>();
+            auto expr = update->GetSetClauses()[1].second.CastTo<parser::OperatorExpression>();
             EXPECT_EQ(expr->GetExpressionType(), parser::ExpressionType::OPERATOR_PLUS);
             EXPECT_EQ(expr->GetChild(0)->GetExpressionType(), parser::ExpressionType::VALUE_TUPLE);
             EXPECT_EQ(expr->GetChild(1)->GetExpressionType(), parser::ExpressionType::VALUE_CONSTANT);
-            auto cve = expr->GetChild(1).CastManagedPointerTo<parser::ConstantValueExpression>();
+            auto cve = expr->GetChild(1).CastTo<parser::ConstantValueExpression>();
             EXPECT_EQ(cve->Peek<int64_t>(), 1);
         }
 
         {
-            auto expr = update->GetSetClauses()[2].second.CastManagedPointerTo<parser::OperatorExpression>();
+            auto expr = update->GetSetClauses()[2].second.CastTo<parser::OperatorExpression>();
             EXPECT_EQ(expr->GetExpressionType(), parser::ExpressionType::OPERATOR_PLUS);
             EXPECT_EQ(expr->GetChild(0)->GetExpressionType(), parser::ExpressionType::VALUE_TUPLE);
             EXPECT_EQ(expr->GetChild(1)->GetExpressionType(), parser::ExpressionType::VALUE_CONSTANT);
-            auto cve = expr->GetChild(1).CastManagedPointerTo<parser::ConstantValueExpression>();
+            auto cve = expr->GetChild(1).CastTo<parser::ConstantValueExpression>();
             EXPECT_EQ(cve->Peek<int64_t>(), 1);
         }
 
         {
-            auto expr = update->GetSetClauses()[3].second.CastManagedPointerTo<parser::OperatorExpression>();
+            auto expr = update->GetSetClauses()[3].second.CastTo<parser::OperatorExpression>();
             EXPECT_EQ(expr->GetExpressionType(), parser::ExpressionType::OPERATOR_PLUS);
             EXPECT_EQ(expr->GetChild(0)->GetExpressionType(), parser::ExpressionType::VALUE_TUPLE);
             EXPECT_EQ(expr->GetChild(1)->GetExpressionType(), parser::ExpressionType::VALUE_CONSTANT);
-            auto cve = expr->GetChild(1).CastManagedPointerTo<parser::ConstantValueExpression>();
+            auto cve = expr->GetChild(1).CastTo<parser::ConstantValueExpression>();
             EXPECT_EQ(cve->Peek<int64_t>(), 1);
         }
 
@@ -181,7 +181,7 @@ TEST_F(TpccPlanNewOrderTests, UpdateStock) {
         for (auto &col : schema.GetColumns()) {
             auto idx_scan_expr = idx_scan_schema->GetColumn(idx).GetExpr();
             EXPECT_EQ(idx_scan_expr->GetExpressionType(), parser::ExpressionType::COLUMN_VALUE);
-            auto idx_scan_expr_dve = idx_scan_expr.CastManagedPointerTo<parser::ColumnValueExpression>();
+            auto idx_scan_expr_dve = idx_scan_expr.CastTo<parser::ColumnValueExpression>();
             EXPECT_EQ(idx_scan_expr_dve->GetColumnOid(), col.Oid());
             oids.emplace_back(col.Oid());
             idx++;

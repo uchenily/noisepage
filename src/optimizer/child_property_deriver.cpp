@@ -191,7 +191,7 @@ void ChildPropertyDeriver::DeriveForJoin() {
                 ExprSet tuples;
                 parser::ExpressionUtil::GetTupleValueExprs(&tuples, sort_prop->GetSortColumn(idx));
                 for (auto &expr : tuples) {
-                    auto tv_expr = expr.CastManagedPointerTo<parser::ColumnValueExpression>();
+                    auto tv_expr = expr.CastTo<parser::ColumnValueExpression>();
 
                     // If a column is not in the prob table, we cannot fulfill the sort
                     // property in the requirement

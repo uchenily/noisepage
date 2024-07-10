@@ -39,11 +39,11 @@ void ReplicaReplicationManager::EventLoop(common::ManagedPointer<messenger::Mess
                                           common::ManagedPointer<BaseReplicationMessage> msg) {
     switch (msg->GetMessageType()) {
     case ReplicationMessageType::NOTIFY_OAT: {
-        Handle(zmq_msg, *msg.CastManagedPointerTo<NotifyOATMsg>());
+        Handle(zmq_msg, *msg.CastTo<NotifyOATMsg>());
         break;
     }
     case ReplicationMessageType::RECORDS_BATCH: {
-        Handle(zmq_msg, *msg.CastManagedPointerTo<RecordsBatchMsg>());
+        Handle(zmq_msg, *msg.CastTo<RecordsBatchMsg>());
         break;
     }
     default: {

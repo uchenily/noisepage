@@ -25,7 +25,7 @@ TaskManager::~TaskManager() {
 
     // Shutdown all the task runners
     for (auto task : task_runners_) {
-        thread_registry_->StopTask(this, task.CastManagedPointerTo<common::DedicatedThreadTask>());
+        thread_registry_->StopTask(this, task.CastTo<common::DedicatedThreadTask>());
     }
 }
 
@@ -60,7 +60,7 @@ void TaskManager::SetTaskPoolSize(int num_workers) {
         }
     } else if (unum_workers < task_runners_.size()) {
         while (unum_workers != task_runners_.size()) {
-            thread_registry_->StopTask(this, task_runners_.back().CastManagedPointerTo<common::DedicatedThreadTask>());
+            thread_registry_->StopTask(this, task_runners_.back().CastTo<common::DedicatedThreadTask>());
             task_runners_.pop_back();
         }
     }

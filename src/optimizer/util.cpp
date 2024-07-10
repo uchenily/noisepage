@@ -28,8 +28,8 @@ void OptimizerUtil::ExtractEquiJoinKeys(const std::vector<AnnotatedExpression> &
             // equi-join between two ColumnValueExpressions
             if (l_expr->GetExpressionType() == parser::ExpressionType::COLUMN_VALUE
                 && r_expr->GetExpressionType() == parser::ExpressionType::COLUMN_VALUE) {
-                auto l_tv_expr = l_expr.CastManagedPointerTo<parser::ColumnValueExpression>();
-                auto r_tv_expr = r_expr.CastManagedPointerTo<parser::ColumnValueExpression>();
+                auto l_tv_expr = l_expr.CastTo<parser::ColumnValueExpression>();
+                auto r_tv_expr = r_expr.CastTo<parser::ColumnValueExpression>();
 
                 // Assign keys based on left and right join tables
                 if (left_alias.find(l_tv_expr->GetTableAlias()) != left_alias.end()

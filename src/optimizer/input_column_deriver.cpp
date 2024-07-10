@@ -67,7 +67,7 @@ void InputColumnDeriver::Visit(const QueryDerivedScan *op) {
     std::vector<common::ManagedPointer<parser::AbstractExpression>> input_cols(output_cols.size());
     auto                                                            alias_expr_map = op->GetAliasToExprMap();
     for (auto &entry : output_cols_map) {
-        auto tv_expr = entry.first.CastManagedPointerTo<parser::ColumnValueExpression>();
+        auto tv_expr = entry.first.CastTo<parser::ColumnValueExpression>();
         output_cols[entry.second] = entry.first;
 
         // Get the actual expression
@@ -239,7 +239,7 @@ void InputColumnDeriver::Visit(const InnerIndexJoin *op) {
     for (auto &col : input_cols_set) {
         common::ManagedPointer<parser::ColumnValueExpression> tv_expr;
         if (col->GetExpressionType() == parser::ExpressionType::COLUMN_VALUE) {
-            tv_expr = col.CastManagedPointerTo<parser::ColumnValueExpression>();
+            tv_expr = col.CastTo<parser::ColumnValueExpression>();
         } else {
             NOISEPAGE_ASSERT(parser::ExpressionUtil::IsAggregateExpression(col), "col should be AggregateExpression");
 
@@ -252,7 +252,7 @@ void InputColumnDeriver::Visit(const InnerIndexJoin *op) {
             }
 
             // We get only the first ColumnValueExpression (should probably assert check this)
-            tv_expr = (*(tv_exprs.begin())).CastManagedPointerTo<parser::ColumnValueExpression>();
+            tv_expr = (*(tv_exprs.begin())).CastTo<parser::ColumnValueExpression>();
             NOISEPAGE_ASSERT(tv_exprs.size() == 1, "Uh oh, multiple TVEs in AggregateExpression found");
         }
 
@@ -509,7 +509,7 @@ void InputColumnDeriver::JoinHelper(const BaseOperatorNodeContents *op) {
     for (auto &col : input_cols_set) {
         common::ManagedPointer<parser::ColumnValueExpression> tv_expr;
         if (col->GetExpressionType() == parser::ExpressionType::COLUMN_VALUE) {
-            tv_expr = col.CastManagedPointerTo<parser::ColumnValueExpression>();
+            tv_expr = col.CastTo<parser::ColumnValueExpression>();
         } else {
             NOISEPAGE_ASSERT(parser::ExpressionUtil::IsAggregateExpression(col), "col should be AggregateExpression");
 
@@ -522,7 +522,7 @@ void InputColumnDeriver::JoinHelper(const BaseOperatorNodeContents *op) {
             }
 
             // We get only the first ColumnValueExpression (should probably assert check this)
-            tv_expr = (*(tv_exprs.begin())).CastManagedPointerTo<parser::ColumnValueExpression>();
+            tv_expr = (*(tv_exprs.begin())).CastTo<parser::ColumnValueExpression>();
             NOISEPAGE_ASSERT(tv_exprs.size() == 1, "Uh oh, multiple TVEs in AggregateExpression found");
         }
 

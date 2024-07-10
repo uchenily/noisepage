@@ -220,7 +220,7 @@ TEST(ExpressionTests, ConstantValueExpressionJsonTest) {
 
     auto string_val2 = execution::sql::ValueUtil::CreateStringVal(std::string_view("ConstantValueExpressionJsonTest"));
     EXPECT_EQ(
-        *(deserialized_expr.CastManagedPointerTo<ConstantValueExpression>()),
+        *(deserialized_expr.CastTo<ConstantValueExpression>()),
         ConstantValueExpression(execution::sql::SqlTypeId::Varchar, string_val2.first, std::move(string_val2.second)));
 }
 
@@ -246,7 +246,7 @@ TEST(ExpressionTests, NullConstantValueExpressionJsonTest) {
     auto deserialized = DeserializeExpression(json);
     auto deserialized_expr = common::ManagedPointer(deserialized.result_);
     EXPECT_EQ(*original_expr, *deserialized_expr);
-    EXPECT_TRUE(deserialized_expr.CastManagedPointerTo<ConstantValueExpression>()->IsNull());
+    EXPECT_TRUE(deserialized_expr.CastTo<ConstantValueExpression>()->IsNull());
 }
 
 // NOLINTNEXTLINE
@@ -340,7 +340,7 @@ TEST(ExpressionTests, ConjunctionExpressionJsonTest) {
     auto deserialized = DeserializeExpression(json);
     auto deserialized_expr = common::ManagedPointer(deserialized.result_);
     EXPECT_EQ(*c_expr_1, *deserialized_expr);
-    auto deserialized_c_expr_1 = deserialized_expr.CastManagedPointerTo<ConjunctionExpression>();
+    auto deserialized_c_expr_1 = deserialized_expr.CastTo<ConjunctionExpression>();
     EXPECT_EQ(c_expr_1->GetReturnValueType(), deserialized_c_expr_1->GetReturnValueType());
 
     delete c_expr_1;
@@ -478,7 +478,7 @@ TEST(ExpressionTests, AggregateExpressionJsonTest) {
     auto deserialized = DeserializeExpression(json);
     auto deserialized_expr = common::ManagedPointer(deserialized.result_);
     EXPECT_EQ(*original_expr, *deserialized_expr);
-    EXPECT_EQ(original_expr->IsDistinct(), deserialized_expr.CastManagedPointerTo<AggregateExpression>()->IsDistinct());
+    EXPECT_EQ(original_expr->IsDistinct(), deserialized_expr.CastTo<AggregateExpression>()->IsDistinct());
 }
 
 // NOLINTNEXTLINE
@@ -577,7 +577,7 @@ TEST(ExpressionTests, CaseExpressionJsonTest) {
 
     // Deserialize expression
     auto deserialized = DeserializeExpression(json);
-    auto deserialized_case_expr = common::ManagedPointer(deserialized.result_).CastManagedPointerTo<CaseExpression>();
+    auto deserialized_case_expr = common::ManagedPointer(deserialized.result_).CastTo<CaseExpression>();
     EXPECT_EQ(*case_expr, *deserialized_case_expr);
     EXPECT_EQ(case_expr->GetReturnValueType(), deserialized_case_expr->GetReturnValueType());
     EXPECT_TRUE(deserialized_case_expr->GetDefaultClause() != nullptr);
@@ -638,7 +638,7 @@ TEST(ExpressionTests, FunctionExpressionJsonTest) {
 
     // Deserialize expression
     auto deserialized = DeserializeExpression(json);
-    auto deserialized_expr = common::ManagedPointer(deserialized.result_).CastManagedPointerTo<FunctionExpression>();
+    auto deserialized_expr = common::ManagedPointer(deserialized.result_).CastTo<FunctionExpression>();
     EXPECT_EQ(*original_expr, *deserialized_expr);
     EXPECT_EQ(deserialized_expr->GetFuncName(), "Funhouse");
     EXPECT_EQ(deserialized_expr->GetReturnValueType(), fn_ret_type);
@@ -720,8 +720,7 @@ TEST(ExpressionTests, OperatorExpressionJsonTest) {
 
         // Deserialize expression
         auto deserialized = DeserializeExpression(json);
-        auto deserialized_expr
-            = common::ManagedPointer(deserialized.result_).CastManagedPointerTo<OperatorExpression>();
+        auto deserialized_expr = common::ManagedPointer(deserialized.result_).CastTo<OperatorExpression>();
         EXPECT_EQ(*original_expr, *deserialized_expr);
         EXPECT_EQ(deserialized_expr->GetExpressionType(), op);
         EXPECT_EQ(deserialized_expr->GetReturnValueType(), op_ret_type);
@@ -747,7 +746,7 @@ TEST(ExpressionTests, TypeCastExpressionJsonTest) {
 
     // Deserialize expression
     auto deserialized = DeserializeExpression(json);
-    auto deserialized_expr = common::ManagedPointer(deserialized.result_).CastManagedPointerTo<TypeCastExpression>();
+    auto deserialized_expr = common::ManagedPointer(deserialized.result_).CastTo<TypeCastExpression>();
     EXPECT_EQ(*original_expr, *deserialized_expr);
     EXPECT_EQ(deserialized_expr->GetExpressionType(), ExpressionType::OPERATOR_CAST);
     EXPECT_EQ(original_expr->GetReturnValueType(), deserialized_expr->GetReturnValueType());
@@ -793,8 +792,7 @@ TEST(ExpressionTests, ParameterValueExpressionJsonTest) {
 
     // Deserialize expression
     auto deserialized = DeserializeExpression(json);
-    auto deserialized_expr
-        = common::ManagedPointer(deserialized.result_).CastManagedPointerTo<ParameterValueExpression>();
+    auto deserialized_expr = common::ManagedPointer(deserialized.result_).CastTo<ParameterValueExpression>();
     EXPECT_EQ(*original_expr, *deserialized_expr);
     EXPECT_EQ(original_expr->GetValueIdx(), deserialized_expr->GetValueIdx());
 }
@@ -884,7 +882,7 @@ TEST(ExpressionTests, ColumnValueExpressionJsonTest) {
 
     // Deserialize expression
     auto deserialized = DeserializeExpression(json);
-    auto deserialized_expr = common::ManagedPointer(deserialized.result_).CastManagedPointerTo<ColumnValueExpression>();
+    auto deserialized_expr = common::ManagedPointer(deserialized.result_).CastTo<ColumnValueExpression>();
     EXPECT_EQ(*original_expr, *deserialized_expr);
     EXPECT_EQ(original_expr->GetColumnName(), deserialized_expr->GetColumnName());
     EXPECT_EQ(original_expr->GetTableAlias(), deserialized_expr->GetTableAlias());
@@ -900,8 +898,7 @@ TEST(ExpressionTests, ColumnValueExpressionJsonTest) {
 
     // Deserialize expression
     auto deserialized_2 = DeserializeExpression(json_2);
-    auto deserialized_expr_2
-        = common::ManagedPointer(deserialized_2.result_).CastManagedPointerTo<ColumnValueExpression>();
+    auto deserialized_expr_2 = common::ManagedPointer(deserialized_2.result_).CastTo<ColumnValueExpression>();
     EXPECT_EQ(*original_expr_2, *deserialized_expr_2);
     EXPECT_EQ(original_expr_2->GetAlias(), deserialized_expr_2->GetAlias());
     EXPECT_EQ(original_expr_2->GetColumnName(), deserialized_expr_2->GetColumnName());
@@ -917,8 +914,7 @@ TEST(ExpressionTests, ColumnValueExpressionJsonTest) {
 
     // Deserialize expression
     auto deserialized_3 = DeserializeExpression(json_3);
-    auto deserialized_expr_3
-        = common::ManagedPointer(deserialized_3.result_).CastManagedPointerTo<ColumnValueExpression>();
+    auto deserialized_expr_3 = common::ManagedPointer(deserialized_3.result_).CastTo<ColumnValueExpression>();
     EXPECT_EQ(*original_expr_3, *deserialized_expr_3);
     EXPECT_EQ(original_expr_3->GetAlias(), deserialized_expr_3->GetAlias());
     EXPECT_EQ(original_expr_3->GetColumnName(), deserialized_expr_3->GetColumnName());
@@ -974,8 +970,7 @@ TEST(ExpressionTests, DerivedValueExpressionJsonTest) {
 
     // Deserialize expression
     auto deserialized = DeserializeExpression(json);
-    auto deserialized_expr
-        = common::ManagedPointer(deserialized.result_).CastManagedPointerTo<DerivedValueExpression>();
+    auto deserialized_expr = common::ManagedPointer(deserialized.result_).CastTo<DerivedValueExpression>();
     EXPECT_EQ(*original_expr, *deserialized_expr);
     EXPECT_EQ(original_expr->GetTupleIdx(), deserialized_expr->GetTupleIdx());
     EXPECT_EQ(original_expr->GetValueIdx(), deserialized_expr->GetValueIdx());
@@ -1150,7 +1145,7 @@ TEST(ExpressionTests, SimpleSubqueryExpressionJsonTest) {
 
     // Deserialize expression
     auto deserialized = DeserializeExpression(json);
-    auto deserialized_expr = common::ManagedPointer(deserialized.result_).CastManagedPointerTo<SubqueryExpression>();
+    auto deserialized_expr = common::ManagedPointer(deserialized.result_).CastTo<SubqueryExpression>();
     EXPECT_EQ(*original_expr, *deserialized_expr);
     EXPECT_TRUE(deserialized_expr->GetSubselect() != nullptr);
     EXPECT_TRUE(deserialized_expr->GetSubselect()->GetSelectTable() != nullptr);
@@ -1181,7 +1176,7 @@ TEST(ExpressionTests, ComplexSubqueryExpressionJsonTest) {
 
     // Deserialize expression
     auto deserialized = DeserializeExpression(json);
-    auto deserialized_expr = common::ManagedPointer(deserialized.result_).CastManagedPointerTo<SubqueryExpression>();
+    auto deserialized_expr = common::ManagedPointer(deserialized.result_).CastTo<SubqueryExpression>();
     EXPECT_EQ(*original_expr, *deserialized_expr);
 
     // Check Limit

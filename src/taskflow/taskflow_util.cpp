@@ -39,7 +39,7 @@ auto TaskflowUtil::Optimize(const common::ManagedPointer<transaction::Transactio
     // statement; it should be the statement you're "explaining". In order to code this logic, we
     // have to extract the inside statement from the ExplainStatement interface.
     if (query_statement->GetType() == parser::StatementType::EXPLAIN) {
-        const auto explain_stmt = query_statement.CastManagedPointerTo<parser::ExplainStatement>();
+        const auto explain_stmt = query_statement.CastTo<parser::ExplainStatement>();
         query_statement = explain_stmt->GetSQLStatement();
     }
     // query语句转为逻辑表达式
@@ -56,7 +56,7 @@ auto TaskflowUtil::Optimize(const common::ManagedPointer<transaction::Transactio
 
     const auto stmt_type = query->GetStatement(0)->GetType();
     if (stmt_type == parser::StatementType::SELECT) {
-        const auto select_stmt = query->GetStatement(0).CastManagedPointerTo<parser::SelectStatement>();
+        const auto select_stmt = query->GetStatement(0).CastTo<parser::SelectStatement>();
 
         // Output
         // TODO(Matt): this is making a local copy. Revisit the life cycle and
@@ -65,8 +65,8 @@ auto TaskflowUtil::Optimize(const common::ManagedPointer<transaction::Transactio
 
         CollectSelectProperties(select_stmt, &property_set);
     } else if (stmt_type == parser::StatementType::INSERT
-               && query->GetStatement(0).CastManagedPointerTo<parser::InsertStatement>()->GetSelect() != nullptr) {
-        const auto insert_stmt = query->GetStatement(0).CastManagedPointerTo<parser::InsertStatement>()->GetSelect();
+               && query->GetStatement(0).CastTo<parser::InsertStatement>()->GetSelect() != nullptr) {
+        const auto insert_stmt = query->GetStatement(0).CastTo<parser::InsertStatement>()->GetSelect();
 
         // Inset into select output will be pushed down to select
         // TODO(Matt): this is making a local copy. Revisit the life cycle and
@@ -119,7 +119,7 @@ auto TaskflowUtil::QueryTypeForStatement(const common::ManagedPointer<parser::SQ
     const auto statement_type = statement->GetType();
     switch (statement_type) {
     case parser::StatementType::TRANSACTION: {
-        const auto txn_type = statement.CastManagedPointerTo<parser::TransactionStatement>()->GetTransactionType();
+        const auto txn_type = statement.CastTo<parser::TransactionStatement>()->GetTransactionType();
         switch (txn_type) {
         case parser::TransactionStatement::CommandType::kBegin:
             return network::QueryType::QUERY_BEGIN;
@@ -138,7 +138,7 @@ auto TaskflowUtil::QueryTypeForStatement(const common::ManagedPointer<parser::SQ
     case parser::StatementType::DELETE:
         return network::QueryType::QUERY_DELETE;
     case parser::StatementType::CREATE: {
-        const auto create_type = statement.CastManagedPointerTo<parser::CreateStatement>()->GetCreateType();
+        const auto create_type = statement.CastTo<parser::CreateStatement>()->GetCreateType();
         switch (create_type) {
         case parser::CreateStatement::CreateType::kTable:
             return network::QueryType::QUERY_CREATE_TABLE;
@@ -155,7 +155,7 @@ auto TaskflowUtil::QueryTypeForStatement(const common::ManagedPointer<parser::SQ
         }
     }
     case parser::StatementType::DROP: {
-        const auto drop_type = statement.CastManagedPointerTo<parser::DropStatement>()->GetDropType();
+        const auto drop_type = statement.CastTo<parser::DropStatement>()->GetDropType();
         switch (drop_type) {
         case parser::DropStatement::DropType::kDatabase:
             return network::QueryType::QUERY_DROP_DB;

@@ -12,7 +12,7 @@ namespace noisepage::optimizer {
 Operator::Operator() noexcept = default;
 
 Operator::Operator(common::ManagedPointer<BaseOperatorNodeContents> contents)
-    : AbstractOptimizerNodeContents(contents.CastManagedPointerTo<AbstractOptimizerNodeContents>()) {}
+    : AbstractOptimizerNodeContents(contents.CastTo<AbstractOptimizerNodeContents>()) {}
 
 Operator::Operator(Operator &&o) noexcept
     : AbstractOptimizerNodeContents(o.contents_) {}

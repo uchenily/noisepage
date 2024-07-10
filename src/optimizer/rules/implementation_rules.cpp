@@ -954,7 +954,7 @@ void LogicalCreateIndexToPhysicalCreateIndex::Transform(
         bool     nullable = false;
         uint16_t varlen_size = 0;
         if (attr->GetExpressionType() == parser::ExpressionType::COLUMN_VALUE) {
-            auto  cve = attr.CastManagedPointerTo<parser::ColumnValueExpression>();
+            auto  cve = attr.CastTo<parser::ColumnValueExpression>();
             auto &col = tbl_schema.GetColumn(cve->GetColumnOid());
             name = cve->GetColumnName();
             nullable = col.Nullable();

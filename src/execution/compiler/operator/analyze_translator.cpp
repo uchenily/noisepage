@@ -382,7 +382,7 @@ void AnalyzeTranslator::FillIndexPrKey(FunctionBuilder *function, ast::Identifie
         auto col_expr = col.StoredExpression();
         NOISEPAGE_ASSERT(col_expr->GetExpressionType() == parser::ExpressionType::COLUMN_VALUE,
                          "Index column stored expression should be a column value expression");
-        auto  col_cve = col_expr.CastManagedPointerTo<const parser::ColumnValueExpression>();
+        auto  col_cve = col_expr.CastTo<const parser::ColumnValueExpression>();
         auto  var = pg_statistic_column_lookup_.find(col_cve->GetColumnOid());
         auto *var_expr = codegen->MakeExpr(var->second);
         auto *set_key_call = codegen->PRSet(codegen->MakeExpr(index_projected_row),

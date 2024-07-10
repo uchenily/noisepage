@@ -38,7 +38,7 @@ bool IndexUtil::SatisfiesSortWithIndex(catalog::CatalogAccessor *accessor,
 
     for (size_t idx = 0; idx < sort_col_size; idx++) {
         // Compare col_oid_t directly due to "Base Column" requirement
-        auto tv_expr = prop->GetSortColumn(idx).CastManagedPointerTo<parser::ColumnValueExpression>();
+        auto tv_expr = prop->GetSortColumn(idx).CastTo<parser::ColumnValueExpression>();
 
         // Sort(a,b,c) cannot be fulfilled by Index(a,c,b)
         auto col_match = tv_expr->GetColumnOid() == mapped_cols[idx];
@@ -134,19 +134,19 @@ std::pair<bool, bool> IndexUtil::CheckPredicates(
             if (ltype == parser::ExpressionType::COLUMN_VALUE
                 && (rtype == parser::ExpressionType::VALUE_CONSTANT
                     || rtype == parser::ExpressionType::VALUE_PARAMETER)) {
-                tv_expr = expr->GetChild(0).CastManagedPointerTo<parser::ColumnValueExpression>();
+                tv_expr = expr->GetChild(0).CastTo<parser::ColumnValueExpression>();
                 idx_expr = expr->GetChild(1);
             } else if (rtype == parser::ExpressionType::COLUMN_VALUE
                        && (ltype == parser::ExpressionType::VALUE_CONSTANT
                            || ltype == parser::ExpressionType::VALUE_PARAMETER)) {
-                tv_expr = expr->GetChild(1).CastManagedPointerTo<parser::ColumnValueExpression>();
+                tv_expr = expr->GetChild(1).CastTo<parser::ColumnValueExpression>();
                 idx_expr = expr->GetChild(0);
                 type = parser::ExpressionUtil::ReverseComparisonExpressionType(type);
             } else if (allow_cves
                        && (ltype == parser::ExpressionType::COLUMN_VALUE
                            && rtype == parser::ExpressionType::COLUMN_VALUE)) {
-                auto lexpr = expr->GetChild(0).CastManagedPointerTo<parser::ColumnValueExpression>();
-                auto rexpr = expr->GetChild(1).CastManagedPointerTo<parser::ColumnValueExpression>();
+                auto lexpr = expr->GetChild(0).CastTo<parser::ColumnValueExpression>();
+                auto rexpr = expr->GetChild(1).CastTo<parser::ColumnValueExpression>();
                 if (lexpr->GetTableOid() == tbl_oid
                     && (rexpr->GetTableOid() != tbl_oid || lexpr->GetTableAlias() == tbl_alias)) {
                     tv_expr = lexpr;
@@ -283,7 +283,7 @@ bool IndexUtil::ConvertIndexKeyOidToColOid(catalog::CatalogAccessor             
 
     for (auto &column : schema.GetColumns()) {
         if (column.StoredExpression()->GetExpressionType() == parser::ExpressionType::COLUMN_VALUE) {
-            auto tv_expr = column.StoredExpression().CastManagedPointerTo<const parser::ColumnValueExpression>();
+            auto tv_expr = column.StoredExpression().CastTo<const parser::ColumnValueExpression>();
             if (tv_expr->GetColumnOid() != catalog::INVALID_COLUMN_OID) {
                 // IndexSchema's expression's col_oid is bound
                 col_oids->push_back(tv_expr->GetColumnOid());

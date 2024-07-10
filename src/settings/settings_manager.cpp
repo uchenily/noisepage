@@ -298,7 +298,7 @@ void SettingsManager::SetParameter(const std::string                            
                                      return expr->GetExpressionType() == parser::ExpressionType::VALUE_CONSTANT;
                                  }),
                      "Values should be constant value expressions.");
-    const auto &value = values[0].CastManagedPointerTo<parser::ConstantValueExpression>();
+    const auto &value = values[0].CastTo<parser::ConstantValueExpression>();
 
     // Check types. If the type of the value does not match the parameter's type, type casting / promotion is attempted.
     if (value->GetReturnValueType() != param_type) {

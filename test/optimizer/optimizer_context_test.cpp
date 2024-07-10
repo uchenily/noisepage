@@ -440,8 +440,8 @@ TEST_F(OptimizerContextTest, SingleWildcardTest) {
     EXPECT_EQ(binding->Contents()->GetContentsAs<Operator>(), join->Contents()->GetContentsAs<Operator>());
     EXPECT_EQ(binding->GetChildren().size(), 2);
 
-    auto left = binding->GetChildren()[0].CastManagedPointerTo<OperatorNode>();
-    auto right = binding->GetChildren()[1].CastManagedPointerTo<OperatorNode>();
+    auto left = binding->GetChildren()[0].CastTo<OperatorNode>();
+    auto right = binding->GetChildren()[1].CastTo<OperatorNode>();
     EXPECT_TRUE(*left == *right);
 
     auto leaf = binding->GetChildren()[0]->Contents()->GetContentsAs<LeafOperator>();

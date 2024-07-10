@@ -113,7 +113,7 @@ TpccPlanTest::Optimize(const std::string &query, catalog::table_oid_t tbl_oid, p
     auto optimizer = new optimizer::Optimizer(std::make_unique<optimizer::TrivialCostModel>(), task_execution_timeout_);
     std::unique_ptr<optimizer::OptimizeResult> optimize_result;
     if (stmt_type == parser::StatementType::SELECT) {
-        auto sel_stmt = stmt_list->GetStatement(0).CastManagedPointerTo<parser::SelectStatement>();
+        auto sel_stmt = stmt_list->GetStatement(0).CastTo<parser::SelectStatement>();
 
         // Output
         auto output = sel_stmt->GetSelectColumns();
@@ -141,7 +141,7 @@ TpccPlanTest::Optimize(const std::string &query, catalog::table_oid_t tbl_oid, p
             = optimizer->BuildPlanTree(txn_, accessor_, stats_storage_.Get(), query_info, std::move(plan), nullptr);
         delete property_set;
     } else if (stmt_type == parser::StatementType::INSERT) {
-        auto ins_stmt = stmt_list->GetStatement(0).CastManagedPointerTo<parser::InsertStatement>();
+        auto ins_stmt = stmt_list->GetStatement(0).CastTo<parser::InsertStatement>();
 
         auto                           &schema = accessor_->GetSchema(tbl_oid);
         std::vector<catalog::col_oid_t> col_oids;
@@ -228,7 +228,7 @@ void TpccPlanTest::OptimizeQuery(const std::string   &query,
                                                std::unique_ptr<planner::AbstractPlanNode> plan)) {
     BeginTransaction();
     auto stmt_list = parser::PostgresParser::BuildParseTree(query);
-    auto sel_stmt = stmt_list->GetStatement(0).CastManagedPointerTo<parser::SelectStatement>();
+    auto sel_stmt = stmt_list->GetStatement(0).CastTo<parser::SelectStatement>();
     auto plan = Optimize(query, tbl_oid, parser::StatementType::SELECT);
     Check(this, sel_stmt.Get(), tbl_oid, std::move(plan));
     EndTransaction(true);

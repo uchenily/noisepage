@@ -126,7 +126,7 @@ std::vector<std::unique_ptr<parser::AbstractExpression>> AggregatePlanNode::From
     auto groupby_term_jsons = j.at("groupby_terms").get<std::vector<nlohmann::json>>();
     for (const auto &json : groupby_term_jsons) {
         auto deserialized = parser::DeserializeExpression(json);
-        auto gb_ptr = common::ManagedPointer(deserialized.result_).CastManagedPointerTo<parser::AbstractExpression>();
+        auto gb_ptr = common::ManagedPointer(deserialized.result_).CastTo<parser::AbstractExpression>();
         groupby_terms_.emplace_back(gb_ptr);
         exprs.emplace_back(std::move(deserialized.result_));
         exprs.insert(exprs.end(),
@@ -138,7 +138,7 @@ std::vector<std::unique_ptr<parser::AbstractExpression>> AggregatePlanNode::From
     auto aggregate_term_jsons = j.at("aggregate_terms").get<std::vector<nlohmann::json>>();
     for (const auto &json : aggregate_term_jsons) {
         auto deserialized = parser::DeserializeExpression(json);
-        auto agg_ptr = common::ManagedPointer(deserialized.result_).CastManagedPointerTo<parser::AggregateExpression>();
+        auto agg_ptr = common::ManagedPointer(deserialized.result_).CastTo<parser::AggregateExpression>();
         aggregate_terms_.emplace_back(agg_ptr);
         exprs.emplace_back(std::move(deserialized.result_));
         exprs.insert(exprs.end(),

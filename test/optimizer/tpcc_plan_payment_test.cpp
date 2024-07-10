@@ -50,7 +50,7 @@ TEST_F(TpccPlanPaymentTests, UpdateWarehouse) {
         for (auto &col : schema.GetColumns()) {
             auto idx_scan_expr = idx_scan_schema->GetColumn(idx).GetExpr();
             EXPECT_EQ(idx_scan_expr->GetExpressionType(), parser::ExpressionType::COLUMN_VALUE);
-            auto idx_scan_expr_dve = idx_scan_expr.CastManagedPointerTo<parser::ColumnValueExpression>();
+            auto idx_scan_expr_dve = idx_scan_expr.CastTo<parser::ColumnValueExpression>();
             EXPECT_EQ(idx_scan_expr_dve->GetColumnOid(), col.Oid());
             oids.emplace_back(col.Oid());
             idx++;
@@ -105,7 +105,7 @@ TEST_F(TpccPlanPaymentTests, UpdateDistrict) {
         for (auto &col : schema.GetColumns()) {
             auto idx_scan_expr = idx_scan_schema->GetColumn(idx).GetExpr();
             EXPECT_EQ(idx_scan_expr->GetExpressionType(), parser::ExpressionType::COLUMN_VALUE);
-            auto idx_scan_expr_dve = idx_scan_expr.CastManagedPointerTo<parser::ColumnValueExpression>();
+            auto idx_scan_expr_dve = idx_scan_expr.CastTo<parser::ColumnValueExpression>();
             EXPECT_EQ(idx_scan_expr_dve->GetColumnOid(), col.Oid());
             oids.emplace_back(col.Oid());
             idx++;
@@ -155,10 +155,10 @@ TEST_F(TpccPlanPaymentTests, UpdateCustomerBalance) {
         EXPECT_EQ(update->GetSetClauses()[1].first, schema.GetColumn("c_ytd_payment").Oid());
         EXPECT_EQ(update->GetSetClauses()[2].first, schema.GetColumn("c_payment_cnt").Oid());
         EXPECT_EQ(update->GetSetClauses()[3].first, schema.GetColumn("c_data").Oid());
-        auto set0 = update->GetSetClauses()[0].second.CastManagedPointerTo<parser::ConstantValueExpression>();
-        auto set1 = update->GetSetClauses()[1].second.CastManagedPointerTo<parser::ConstantValueExpression>();
-        auto set2 = update->GetSetClauses()[2].second.CastManagedPointerTo<parser::ConstantValueExpression>();
-        auto set3 = update->GetSetClauses()[3].second.CastManagedPointerTo<parser::ConstantValueExpression>();
+        auto set0 = update->GetSetClauses()[0].second.CastTo<parser::ConstantValueExpression>();
+        auto set1 = update->GetSetClauses()[1].second.CastTo<parser::ConstantValueExpression>();
+        auto set2 = update->GetSetClauses()[2].second.CastTo<parser::ConstantValueExpression>();
+        auto set3 = update->GetSetClauses()[3].second.CastTo<parser::ConstantValueExpression>();
         EXPECT_EQ(set0->Peek<double>(), 1);
         EXPECT_EQ(set1->Peek<double>(), 2);
         EXPECT_EQ(set2->Peek<int64_t>(), 3);
@@ -183,7 +183,7 @@ TEST_F(TpccPlanPaymentTests, UpdateCustomerBalance) {
         for (auto &col : schema.GetColumns()) {
             auto idx_scan_expr = idx_scan_schema->GetColumn(idx).GetExpr();
             EXPECT_EQ(idx_scan_expr->GetExpressionType(), parser::ExpressionType::COLUMN_VALUE);
-            auto idx_scan_expr_dve = idx_scan_expr.CastManagedPointerTo<parser::ColumnValueExpression>();
+            auto idx_scan_expr_dve = idx_scan_expr.CastTo<parser::ColumnValueExpression>();
             EXPECT_EQ(idx_scan_expr_dve->GetColumnOid(), col.Oid());
             oids.emplace_back(col.Oid());
             idx++;

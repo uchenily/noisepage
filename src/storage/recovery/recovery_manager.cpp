@@ -39,7 +39,7 @@ void RecoveryManager::StartRecovery() {
 void RecoveryManager::WaitForRecoveryToFinish() {
     recovery_task_loop_again_ = false; // Stop looping RecoveryTask.
     NOISEPAGE_ASSERT(recovery_task_ != nullptr, "Recovery must already have been started");
-    if (!thread_registry_->StopTask(this, recovery_task_.CastManagedPointerTo<common::DedicatedThreadTask>())) {
+    if (!thread_registry_->StopTask(this, recovery_task_.CastTo<common::DedicatedThreadTask>())) {
         throw std::runtime_error("Recovery task termination failed");
     }
     recovery_task_ = nullptr;
@@ -79,7 +79,7 @@ void RecoveryManager::RecoverFromLogs(const common::ManagedPointer<AbstractLogPr
 
         if (replication_manager_ != DISABLED && replication_manager_->IsReplica()
             && log_provider->GetType() == AbstractLogProvider::LogProviderType::REPLICATION) {
-            auto rlp = log_provider.CastManagedPointerTo<ReplicationLogProvider>();
+            auto rlp = log_provider.CastTo<ReplicationLogProvider>();
             auto event = rlp->WaitUntilEvent();
 
             if (event == ReplicationLogProvider::ReplicationEvent::END) {

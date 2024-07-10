@@ -102,7 +102,7 @@ TEST(PlanNodeTest, HashJoinPlanTest) {
               .SetOutputSchema(PlanNodeTest::BuildOneColumnSchema("col1", execution::sql::SqlTypeId::Integer))
               .SetTableOid(catalog::table_oid_t(1))
               .SetDatabaseOid(catalog::db_oid_t(0))
-              .SetScanPredicate(common::ManagedPointer(scan_pred_1).CastManagedPointerTo<parser::AbstractExpression>())
+              .SetScanPredicate(common::ManagedPointer(scan_pred_1).CastTo<parser::AbstractExpression>())
               .SetIsForUpdateFlag(false)
               .Build();
 
@@ -119,7 +119,7 @@ TEST(PlanNodeTest, HashJoinPlanTest) {
               .SetOutputSchema(PlanNodeTest::BuildOneColumnSchema("col2", execution::sql::SqlTypeId::Integer))
               .SetTableOid(catalog::table_oid_t(2))
               .SetDatabaseOid(catalog::db_oid_t(0))
-              .SetScanPredicate(common::ManagedPointer(scan_pred_2).CastManagedPointerTo<parser::AbstractExpression>())
+              .SetScanPredicate(common::ManagedPointer(scan_pred_2).CastTo<parser::AbstractExpression>())
               .SetIsForUpdateFlag(false)
               .Build();
 
@@ -139,8 +139,7 @@ TEST(PlanNodeTest, HashJoinPlanTest) {
     auto hash_join_plan
         = hash_join_builder.SetJoinType(LogicalJoinType::INNER)
               .SetOutputSchema(PlanNodeTest::BuildOneColumnSchema("col1", execution::sql::SqlTypeId::Integer))
-              .SetJoinPredicate(
-                  common::ManagedPointer(cmp_expression).CastManagedPointerTo<parser::AbstractExpression>())
+              .SetJoinPredicate(common::ManagedPointer(cmp_expression).CastTo<parser::AbstractExpression>())
               .AddChild(std::move(seq_scan_1))
               .AddChild(std::move(seq_scan_2))
               .Build();

@@ -159,19 +159,19 @@ TEST_F(BinderCorrectnessTest, SelectStatementComplexTest) {
     auto parse_tree = parser::PostgresParser::BuildParseTree(select_sql);
     auto statement = parse_tree->GetStatements()[0];
     binder_->BindNameToNode(common::ManagedPointer(parse_tree), nullptr, nullptr);
-    auto select_stmt = statement.CastManagedPointerTo<parser::SelectStatement>();
+    auto select_stmt = statement.CastTo<parser::SelectStatement>();
     EXPECT_EQ(0, select_stmt->GetDepth());
 
     // Check select_list
     BINDER_LOG_DEBUG("Checking select list");
-    auto col_expr = select_stmt->GetSelectColumns()[0].CastManagedPointerTo<parser::ColumnValueExpression>();
+    auto col_expr = select_stmt->GetSelectColumns()[0].CastTo<parser::ColumnValueExpression>();
     EXPECT_EQ(col_expr->GetDatabaseOid(), db_oid_);             // A.a1
     EXPECT_EQ(col_expr->GetTableOid(), table_a_oid_);           // A.a1
     EXPECT_EQ(col_expr->GetColumnOid(), catalog::col_oid_t(1)); // A.a1; columns are indexed from 1
     EXPECT_EQ(execution::sql::SqlTypeId::Integer, col_expr->GetReturnValueType());
     EXPECT_EQ(0, col_expr->GetDepth());
 
-    col_expr = select_stmt->GetSelectColumns()[1].CastManagedPointerTo<parser::ColumnValueExpression>();
+    col_expr = select_stmt->GetSelectColumns()[1].CastTo<parser::ColumnValueExpression>();
     EXPECT_EQ(col_expr->GetDatabaseOid(), db_oid_);             // B.b2
     EXPECT_EQ(col_expr->GetTableOid(), table_b_oid_);           // B.b2
     EXPECT_EQ(col_expr->GetColumnOid(), catalog::col_oid_t(2)); // B.b2; columns are indexed from 1
@@ -184,7 +184,7 @@ TEST_F(BinderCorrectnessTest, SelectStatementComplexTest) {
                    ->GetJoin()
                    ->GetJoinCondition()
                    ->GetChild(0)
-                   .CastManagedPointerTo<parser::ColumnValueExpression>();
+                   .CastTo<parser::ColumnValueExpression>();
     EXPECT_EQ(col_expr->GetDatabaseOid(), db_oid_);             // A.a1
     EXPECT_EQ(col_expr->GetTableOid(), table_a_oid_);           // A.a1
     EXPECT_EQ(col_expr->GetColumnOid(), catalog::col_oid_t(1)); // A.a1; columns are indexed from 1
@@ -195,7 +195,7 @@ TEST_F(BinderCorrectnessTest, SelectStatementComplexTest) {
                    ->GetJoin()
                    ->GetJoinCondition()
                    ->GetChild(1)
-                   .CastManagedPointerTo<parser::ColumnValueExpression>();
+                   .CastTo<parser::ColumnValueExpression>();
 
     EXPECT_EQ(col_expr->GetDatabaseOid(), db_oid_);             // B.b1
     EXPECT_EQ(col_expr->GetTableOid(), table_b_oid_);           // B.b1
@@ -205,7 +205,7 @@ TEST_F(BinderCorrectnessTest, SelectStatementComplexTest) {
 
     // Check Where clause
     BINDER_LOG_DEBUG("Checking where clause");
-    col_expr = select_stmt->GetSelectCondition()->GetChild(0).CastManagedPointerTo<parser::ColumnValueExpression>();
+    col_expr = select_stmt->GetSelectCondition()->GetChild(0).CastTo<parser::ColumnValueExpression>();
     EXPECT_EQ(col_expr->GetDatabaseOid(), db_oid_);             // A.a1
     EXPECT_EQ(col_expr->GetTableOid(), table_a_oid_);           // A.a1
     EXPECT_EQ(col_expr->GetColumnOid(), catalog::col_oid_t(1)); // A.a1; columns are indexed from 1
@@ -214,24 +214,21 @@ TEST_F(BinderCorrectnessTest, SelectStatementComplexTest) {
 
     // Check Group By and Having
     BINDER_LOG_DEBUG("Checking group by");
-    col_expr = select_stmt->GetSelectGroupBy()->GetColumns()[0].CastManagedPointerTo<parser::ColumnValueExpression>();
+    col_expr = select_stmt->GetSelectGroupBy()->GetColumns()[0].CastTo<parser::ColumnValueExpression>();
     EXPECT_EQ(col_expr->GetDatabaseOid(), db_oid_);             // A.a1
     EXPECT_EQ(col_expr->GetTableOid(), table_a_oid_);           // A.a1
     EXPECT_EQ(col_expr->GetColumnOid(), catalog::col_oid_t(1)); // A.a1; columns are indexed from 1
     EXPECT_EQ(execution::sql::SqlTypeId::Integer, col_expr->GetReturnValueType());
     EXPECT_EQ(0, col_expr->GetDepth());
 
-    col_expr = select_stmt->GetSelectGroupBy()->GetColumns()[1].CastManagedPointerTo<parser::ColumnValueExpression>();
+    col_expr = select_stmt->GetSelectGroupBy()->GetColumns()[1].CastTo<parser::ColumnValueExpression>();
     EXPECT_EQ(col_expr->GetDatabaseOid(), db_oid_);             // B.b2
     EXPECT_EQ(col_expr->GetTableOid(), table_b_oid_);           // B.b2
     EXPECT_EQ(col_expr->GetColumnOid(), catalog::col_oid_t(2)); // B.b2; columns are indexed from 1
     EXPECT_EQ(execution::sql::SqlTypeId::Varchar, col_expr->GetReturnValueType());
     EXPECT_EQ(0, col_expr->GetDepth());
 
-    col_expr = select_stmt->GetSelectGroupBy()
-                   ->GetHaving()
-                   ->GetChild(0)
-                   .CastManagedPointerTo<parser::ColumnValueExpression>();
+    col_expr = select_stmt->GetSelectGroupBy()->GetHaving()->GetChild(0).CastTo<parser::ColumnValueExpression>();
     EXPECT_EQ(col_expr->GetDatabaseOid(), db_oid_);             // A.a1
     EXPECT_EQ(col_expr->GetTableOid(), table_a_oid_);           // A.a1
     EXPECT_EQ(col_expr->GetColumnOid(), catalog::col_oid_t(1)); // A.a1; columns are indexed from 1
@@ -240,9 +237,7 @@ TEST_F(BinderCorrectnessTest, SelectStatementComplexTest) {
 
     // Check Order By
     BINDER_LOG_DEBUG("Checking order by");
-    col_expr = select_stmt->GetSelectOrderBy()
-                   ->GetOrderByExpressions()[0]
-                   .CastManagedPointerTo<parser::ColumnValueExpression>();
+    col_expr = select_stmt->GetSelectOrderBy()->GetOrderByExpressions()[0].CastTo<parser::ColumnValueExpression>();
     EXPECT_EQ(col_expr->GetDatabaseOid(), db_oid_);             // A.a1
     EXPECT_EQ(col_expr->GetTableOid(), table_a_oid_);           // A.a1
     EXPECT_EQ(col_expr->GetColumnOid(), catalog::col_oid_t(1)); // A.a1; columns are indexed from 1
@@ -259,7 +254,7 @@ TEST_F(BinderCorrectnessTest, SelectStatementStarTest) {
     auto        parse_tree = parser::PostgresParser::BuildParseTree(select_sql);
     auto        statement = parse_tree->GetStatements()[0];
     binder_->BindNameToNode(common::ManagedPointer(parse_tree), nullptr, nullptr);
-    auto select_stmt = statement.CastManagedPointerTo<parser::SelectStatement>();
+    auto select_stmt = statement.CastTo<parser::SelectStatement>();
     EXPECT_EQ(0, select_stmt->GetDepth());
 
     // Check select_list
@@ -275,7 +270,7 @@ TEST_F(BinderCorrectnessTest, SelectStatementStarTest) {
     bool b1_exists = false;
     bool b2_exists = false;
     for (auto &col_abs_expr : columns) {
-        auto col_expr = col_abs_expr.CastManagedPointerTo<parser::ColumnValueExpression>();
+        auto col_expr = col_abs_expr.CastTo<parser::ColumnValueExpression>();
         EXPECT_EQ(0, col_expr->GetDepth());
         EXPECT_EQ(col_expr->GetDatabaseOid(), db_oid_);
 
@@ -323,7 +318,7 @@ TEST_F(BinderCorrectnessTest, SelectStatementStarNestedSelectTest) {
     auto parse_tree = parser::PostgresParser::BuildParseTree(select_sql);
     auto statement = parse_tree->GetStatements()[0];
     binder_->BindNameToNode(common::ManagedPointer(parse_tree), nullptr, nullptr);
-    auto select_stmt = statement.CastManagedPointerTo<parser::SelectStatement>();
+    auto select_stmt = statement.CastTo<parser::SelectStatement>();
     EXPECT_EQ(0, select_stmt->GetDepth());
 
     // Check select_list
@@ -341,7 +336,7 @@ TEST_F(BinderCorrectnessTest, SelectStatementStarNestedSelectTest) {
     bool c_b2_exists = false;
 
     for (auto &col_abs_expr : columns) {
-        auto col_expr = col_abs_expr.CastManagedPointerTo<parser::ColumnValueExpression>();
+        auto col_expr = col_abs_expr.CastTo<parser::ColumnValueExpression>();
         EXPECT_EQ(col_expr->GetDepth(), 0); // not from derived subquery
 
         if (col_expr->GetDatabaseOid() == db_oid_ && col_expr->GetTableOid() == table_a_oid_) {
@@ -396,7 +391,7 @@ TEST_F(BinderCorrectnessTest, SelectStatementStarNestedSelectTest) {
                         ->GetJoin()
                         ->GetJoinCondition()
                         ->GetChild(0)
-                        .CastManagedPointerTo<parser::ColumnValueExpression>();
+                        .CastTo<parser::ColumnValueExpression>();
     EXPECT_EQ(col_expr->GetColumnName(), "b1"); // C.B1
     EXPECT_EQ(col_expr->GetTableAlias(), parser::AliasType("c"));
     EXPECT_EQ(col_expr->GetDatabaseOid(), catalog::INVALID_DATABASE_OID);
@@ -409,7 +404,7 @@ TEST_F(BinderCorrectnessTest, SelectStatementStarNestedSelectTest) {
                    ->GetJoin()
                    ->GetJoinCondition()
                    ->GetChild(1)
-                   .CastManagedPointerTo<parser::ColumnValueExpression>();
+                   .CastTo<parser::ColumnValueExpression>();
     EXPECT_EQ(col_expr->GetColumnName(), "a1");                   // A.a1
     EXPECT_EQ(col_expr->GetTableAlias(), parser::AliasType("a")); // A.a1
     EXPECT_EQ(col_expr->GetDatabaseOid(), db_oid_);               // A.a1
@@ -420,11 +415,8 @@ TEST_F(BinderCorrectnessTest, SelectStatementStarNestedSelectTest) {
 
     // check right table
     BINDER_LOG_DEBUG("Checking nested table of the join");
-    auto right_tb = select_stmt->GetSelectTable()
-                        ->GetJoin()
-                        ->GetRightTable()
-                        ->GetSelect()
-                        .CastManagedPointerTo<parser::SelectStatement>();
+    auto right_tb
+        = select_stmt->GetSelectTable()->GetJoin()->GetRightTable()->GetSelect().CastTo<parser::SelectStatement>();
     EXPECT_EQ(right_tb->GetDepth(), 1); // 1 level subselect
     BINDER_LOG_DEBUG("Checking nested column select list");
 
@@ -437,7 +429,7 @@ TEST_F(BinderCorrectnessTest, SelectStatementStarNestedSelectTest) {
     bool b1_exists = false;
     bool b2_exists = false;
     for (auto &col_abs_expr : columns) {
-        col_expr = col_abs_expr.CastManagedPointerTo<parser::ColumnValueExpression>();
+        col_expr = col_abs_expr.CastTo<parser::ColumnValueExpression>();
         EXPECT_EQ(1, col_expr->GetDepth());
         EXPECT_EQ(col_expr->GetDatabaseOid(), db_oid_);
 
@@ -479,14 +471,14 @@ TEST_F(BinderCorrectnessTest, SelectStatementStarNestedSelectTest) {
     //  but the left and right column value expressions have correct depth;
     //  Left for the optimizer to decide if depth of the `ON A1 = B1` is necessary to be set to 1
 
-    col_expr = join->GetChild(0).CastManagedPointerTo<parser::ColumnValueExpression>();
+    col_expr = join->GetChild(0).CastTo<parser::ColumnValueExpression>();
     EXPECT_EQ(col_expr->GetDatabaseOid(), db_oid_);             // B.b1
     EXPECT_EQ(col_expr->GetTableOid(), table_b_oid_);           // B.b1
     EXPECT_EQ(col_expr->GetColumnOid(), catalog::col_oid_t(1)); // B.b1; columns are indexed from 1
     EXPECT_EQ(execution::sql::SqlTypeId::Integer, col_expr->GetReturnValueType());
     EXPECT_EQ(1, col_expr->GetDepth());
 
-    col_expr = join->GetChild(1).CastManagedPointerTo<parser::ColumnValueExpression>();
+    col_expr = join->GetChild(1).CastTo<parser::ColumnValueExpression>();
     EXPECT_EQ(col_expr->GetDatabaseOid(), db_oid_);             // A.a1
     EXPECT_EQ(col_expr->GetTableOid(), table_a_oid_);           // A.a1
     EXPECT_EQ(col_expr->GetColumnOid(), catalog::col_oid_t(1)); // A.a1; columns are indexed from 1
@@ -503,12 +495,12 @@ TEST_F(BinderCorrectnessTest, SelectStatementNestedColumnTest) {
     auto        parse_tree = parser::PostgresParser::BuildParseTree(select_sql);
     auto        statement = parse_tree->GetStatements()[0];
     binder_->BindNameToNode(common::ManagedPointer(parse_tree), nullptr, nullptr);
-    auto select_stmt = statement.CastManagedPointerTo<parser::SelectStatement>();
+    auto select_stmt = statement.CastTo<parser::SelectStatement>();
     EXPECT_EQ(0, select_stmt->GetDepth());
 
     // Check select_list
     BINDER_LOG_DEBUG("Checking select list");
-    auto col_expr = select_stmt->GetSelectColumns()[0].CastManagedPointerTo<parser::ColumnValueExpression>();
+    auto col_expr = select_stmt->GetSelectColumns()[0].CastTo<parser::ColumnValueExpression>();
     EXPECT_EQ(col_expr->GetDatabaseOid(), db_oid_);             // A.a1
     EXPECT_EQ(col_expr->GetTableOid(), table_a_oid_);           // A.a1
     EXPECT_EQ(col_expr->GetColumnOid(), catalog::col_oid_t(1)); // A.a1; columns are indexed from 1
@@ -516,14 +508,14 @@ TEST_F(BinderCorrectnessTest, SelectStatementNestedColumnTest) {
     EXPECT_EQ(0, col_expr->GetDepth());
 
     BINDER_LOG_DEBUG("Checking nested select in select list");
-    auto subquery = select_stmt->GetSelectColumns()[1].CastManagedPointerTo<parser::SubqueryExpression>();
+    auto subquery = select_stmt->GetSelectColumns()[1].CastTo<parser::SubqueryExpression>();
     EXPECT_EQ(subquery->GetDepth(), 1);
 
-    auto subselect = subquery->GetSubselect().CastManagedPointerTo<parser::SelectStatement>();
+    auto subselect = subquery->GetSubselect().CastTo<parser::SelectStatement>();
     EXPECT_EQ(subselect->GetDepth(), 1);
 
     BINDER_LOG_DEBUG("Checking select list in nested select in select list");
-    col_expr = subselect->GetSelectColumns()[0].CastManagedPointerTo<parser::ColumnValueExpression>();
+    col_expr = subselect->GetSelectColumns()[0].CastTo<parser::ColumnValueExpression>();
     EXPECT_EQ(col_expr->GetDatabaseOid(), db_oid_);             // B.b2
     EXPECT_EQ(col_expr->GetTableOid(), table_b_oid_);           // B.b2
     EXPECT_EQ(col_expr->GetColumnOid(), catalog::col_oid_t(2)); // B.b2; columns are indexed from 1
@@ -531,10 +523,10 @@ TEST_F(BinderCorrectnessTest, SelectStatementNestedColumnTest) {
     EXPECT_EQ(1, col_expr->GetDepth());
 
     BINDER_LOG_DEBUG("Checking where clause in nested select in select list");
-    auto where = subselect->GetSelectCondition().CastManagedPointerTo<parser::OperatorExpression>();
+    auto where = subselect->GetSelectCondition().CastTo<parser::OperatorExpression>();
     EXPECT_EQ(where->GetDepth(), 1);
 
-    col_expr = where->GetChild(0).CastManagedPointerTo<parser::ColumnValueExpression>();
+    col_expr = where->GetChild(0).CastTo<parser::ColumnValueExpression>();
     EXPECT_EQ(col_expr->GetDatabaseOid(), db_oid_);             // B.b2
     EXPECT_EQ(col_expr->GetTableOid(), table_b_oid_);           // B.b2
     EXPECT_EQ(col_expr->GetColumnOid(), catalog::col_oid_t(2)); // B.b2; columns are indexed from 1
@@ -559,15 +551,14 @@ TEST_F(BinderCorrectnessTest, SelectStatementDiffTableSameSchemaTest) {
     auto        parse_tree = parser::PostgresParser::BuildParseTree(select_sql);
     auto        statement = parse_tree->GetStatements()[0];
     binder_->BindNameToNode(common::ManagedPointer(parse_tree), nullptr, nullptr);
-    auto select_stmt = statement.CastManagedPointerTo<parser::SelectStatement>();
+    auto select_stmt = statement.CastTo<parser::SelectStatement>();
     BINDER_LOG_DEBUG("Checking where clause");
-    auto col_expr
-        = select_stmt->GetSelectCondition()->GetChild(0).CastManagedPointerTo<parser::ColumnValueExpression>();
+    auto col_expr = select_stmt->GetSelectCondition()->GetChild(0).CastTo<parser::ColumnValueExpression>();
     EXPECT_EQ(col_expr->GetDatabaseOid(), db_oid_);             // A.a1
     EXPECT_EQ(col_expr->GetTableOid(), table_a_oid_);           // A.a1
     EXPECT_EQ(col_expr->GetColumnOid(), catalog::col_oid_t(1)); // A.a1; columns are indexed from 1
 
-    col_expr = select_stmt->GetSelectCondition()->GetChild(1).CastManagedPointerTo<parser::ColumnValueExpression>();
+    col_expr = select_stmt->GetSelectCondition()->GetChild(1).CastTo<parser::ColumnValueExpression>();
     EXPECT_EQ(col_expr->GetDatabaseOid(), db_oid_);             // AA.a1
     EXPECT_EQ(col_expr->GetTableOid(), table_a_oid_);           // AA.a1
     EXPECT_EQ(col_expr->GetColumnOid(), catalog::col_oid_t(1)); // AA.a1; columns are indexed from 1
@@ -582,13 +573,13 @@ TEST_F(BinderCorrectnessTest, SelectStatementSelectListAliasTest) {
     auto        parse_tree = parser::PostgresParser::BuildParseTree(select_sql);
     auto        statement = parse_tree->GetStatements()[0];
     binder_->BindNameToNode(common::ManagedPointer(parse_tree), nullptr, nullptr);
-    auto select_stmt = statement.CastManagedPointerTo<parser::SelectStatement>();
-    auto col_expr = select_stmt->GetSelectColumns()[0].CastManagedPointerTo<parser::ColumnValueExpression>();
+    auto select_stmt = statement.CastTo<parser::SelectStatement>();
+    auto col_expr = select_stmt->GetSelectColumns()[0].CastTo<parser::ColumnValueExpression>();
     EXPECT_EQ(col_expr->GetDatabaseOid(), db_oid_);             // AA.a1
     EXPECT_EQ(col_expr->GetTableOid(), table_a_oid_);           // AA.a1
     EXPECT_EQ(col_expr->GetColumnOid(), catalog::col_oid_t(1)); // AA.a1; columns are indexed from 1
 
-    col_expr = select_stmt->GetSelectColumns()[1].CastManagedPointerTo<parser::ColumnValueExpression>();
+    col_expr = select_stmt->GetSelectColumns()[1].CastTo<parser::ColumnValueExpression>();
     EXPECT_EQ(col_expr->GetDatabaseOid(), db_oid_);             // b2
     EXPECT_EQ(col_expr->GetTableOid(), table_b_oid_);           // b2
     EXPECT_EQ(col_expr->GetColumnOid(), catalog::col_oid_t(2)); // b2; columns are indexed from 1
@@ -600,18 +591,17 @@ TEST_F(BinderCorrectnessTest, UpdateStatementSimpleTest) {
     auto        parse_tree = parser::PostgresParser::BuildParseTree(update_sql);
     auto        statement = parse_tree->GetStatements()[0];
     binder_->BindNameToNode(common::ManagedPointer(parse_tree), nullptr, nullptr);
-    auto update_stmt = statement.CastManagedPointerTo<parser::UpdateStatement>();
+    auto update_stmt = statement.CastTo<parser::UpdateStatement>();
 
     BINDER_LOG_DEBUG("Checking update clause");
     auto update_clause = update_stmt->GetUpdateClauses()[0].Get();
     EXPECT_EQ("a1", update_clause->GetColumnName());
-    auto constant = update_clause->GetUpdateValue().CastManagedPointerTo<parser::ConstantValueExpression>();
+    auto constant = update_clause->GetUpdateValue().CastTo<parser::ConstantValueExpression>();
     EXPECT_EQ(constant->GetReturnValueType(), execution::sql::SqlTypeId::Integer);
     EXPECT_EQ(constant->Peek<int64_t>(), 999);
 
     BINDER_LOG_DEBUG("Checking update condition");
-    auto col_expr
-        = update_stmt->GetUpdateCondition()->GetChild(0).CastManagedPointerTo<parser::ColumnValueExpression>();
+    auto col_expr = update_stmt->GetUpdateCondition()->GetChild(0).CastTo<parser::ColumnValueExpression>();
     EXPECT_EQ(col_expr->GetDatabaseOid(), db_oid_);             // a1
     EXPECT_EQ(col_expr->GetTableOid(), table_a_oid_);           // a1
     EXPECT_EQ(col_expr->GetColumnOid(), catalog::col_oid_t(1)); // a1; columns are indexed from 1
@@ -623,22 +613,16 @@ TEST_F(BinderCorrectnessTest, DeleteStatementWhereTest) {
     auto        parse_tree = parser::PostgresParser::BuildParseTree(delete_sql);
     auto        statement = parse_tree->GetStatements()[0];
     binder_->BindNameToNode(common::ManagedPointer(parse_tree), nullptr, nullptr);
-    auto delete_stmt = statement.CastManagedPointerTo<parser::DeleteStatement>();
+    auto delete_stmt = statement.CastTo<parser::DeleteStatement>();
 
     BINDER_LOG_DEBUG("Checking first condition in where clause");
-    auto col_expr = delete_stmt->GetDeleteCondition()
-                        ->GetChild(0)
-                        ->GetChild(1)
-                        .CastManagedPointerTo<parser::ColumnValueExpression>();
+    auto col_expr = delete_stmt->GetDeleteCondition()->GetChild(0)->GetChild(1).CastTo<parser::ColumnValueExpression>();
     EXPECT_EQ(col_expr->GetDatabaseOid(), db_oid_);             // b1
     EXPECT_EQ(col_expr->GetTableOid(), table_b_oid_);           // b1
     EXPECT_EQ(col_expr->GetColumnOid(), catalog::col_oid_t(1)); // b1; columns are indexed from 1
 
     BINDER_LOG_DEBUG("Checking second condition in where clause");
-    col_expr = delete_stmt->GetDeleteCondition()
-                   ->GetChild(1)
-                   ->GetChild(0)
-                   .CastManagedPointerTo<parser::ColumnValueExpression>();
+    col_expr = delete_stmt->GetDeleteCondition()->GetChild(1)->GetChild(0).CastTo<parser::ColumnValueExpression>();
     EXPECT_EQ(col_expr->GetDatabaseOid(), db_oid_);             // b2
     EXPECT_EQ(col_expr->GetTableOid(), table_b_oid_);           // b2
     EXPECT_EQ(col_expr->GetColumnOid(), catalog::col_oid_t(2)); // b2; columns are indexed from 1
@@ -657,14 +641,14 @@ TEST_F(BinderCorrectnessTest, AggregateSimpleTest) {
     auto        parse_tree = parser::PostgresParser::BuildParseTree(select_sql);
     auto        statement = parse_tree->GetStatements()[0];
     binder_->BindNameToNode(common::ManagedPointer(parse_tree), nullptr, nullptr);
-    auto select_stmt = statement.CastManagedPointerTo<parser::SelectStatement>();
+    auto select_stmt = statement.CastTo<parser::SelectStatement>();
     EXPECT_EQ(0, select_stmt->GetDepth());
 
-    auto agg_expr = select_stmt->GetSelectColumns()[0].CastManagedPointerTo<parser::AggregateExpression>();
+    auto agg_expr = select_stmt->GetSelectColumns()[0].CastTo<parser::AggregateExpression>();
     EXPECT_EQ(execution::sql::SqlTypeId::Integer, agg_expr->GetReturnValueType());
     EXPECT_EQ(0, agg_expr->GetDepth());
 
-    auto col_expr = agg_expr->GetChild(0).CastManagedPointerTo<parser::ColumnValueExpression>();
+    auto col_expr = agg_expr->GetChild(0).CastTo<parser::ColumnValueExpression>();
     EXPECT_EQ(col_expr->GetDatabaseOid(), db_oid_);             // B.b1
     EXPECT_EQ(col_expr->GetTableOid(), table_b_oid_);           // B.b1
     EXPECT_EQ(col_expr->GetColumnOid(), catalog::col_oid_t(1)); // B.b1; columns are indexed from 1
@@ -681,17 +665,17 @@ TEST_F(BinderCorrectnessTest, AggregateComplexTest) {
     auto        parse_tree = parser::PostgresParser::BuildParseTree(select_sql);
     auto        statement = parse_tree->GetStatements()[0];
     binder_->BindNameToNode(common::ManagedPointer(parse_tree), nullptr, nullptr);
-    auto select_stmt = statement.CastManagedPointerTo<parser::SelectStatement>();
+    auto select_stmt = statement.CastTo<parser::SelectStatement>();
     EXPECT_EQ(0, select_stmt->GetDepth());
 
-    auto subquery = select_stmt->GetSelectCondition()->GetChild(1).CastManagedPointerTo<parser::SubqueryExpression>();
-    auto subselect = subquery->GetSubselect().CastManagedPointerTo<parser::SelectStatement>();
+    auto subquery = select_stmt->GetSelectCondition()->GetChild(1).CastTo<parser::SubqueryExpression>();
+    auto subselect = subquery->GetSubselect().CastTo<parser::SelectStatement>();
 
-    auto agg_expr = subselect->GetSelectColumns()[0].CastManagedPointerTo<parser::AggregateExpression>();
+    auto agg_expr = subselect->GetSelectColumns()[0].CastTo<parser::AggregateExpression>();
     EXPECT_EQ(execution::sql::SqlTypeId::Integer, agg_expr->GetReturnValueType());
     EXPECT_EQ(1, agg_expr->GetDepth());
 
-    auto col_expr = agg_expr->GetChild(0).CastManagedPointerTo<parser::ColumnValueExpression>();
+    auto col_expr = agg_expr->GetChild(0).CastTo<parser::ColumnValueExpression>();
     EXPECT_EQ(col_expr->GetDatabaseOid(), db_oid_);             // B.b1
     EXPECT_EQ(col_expr->GetTableOid(), table_b_oid_);           // B.b1
     EXPECT_EQ(col_expr->GetColumnOid(), catalog::col_oid_t(1)); // B.b1; columns are indexed from 1
@@ -712,28 +696,28 @@ TEST_F(BinderCorrectnessTest, OperatorComplexTest) {
     auto        parse_tree = parser::PostgresParser::BuildParseTree(select_sql);
     auto        statement = parse_tree->GetStatements()[0];
     binder_->BindNameToNode(common::ManagedPointer(parse_tree), nullptr, nullptr);
-    auto select_stmt = statement.CastManagedPointerTo<parser::SelectStatement>();
+    auto select_stmt = statement.CastTo<parser::SelectStatement>();
     EXPECT_EQ(0, select_stmt->GetDepth());
 
-    auto op_expr = select_stmt->GetSelectCondition()->GetChild(0).CastManagedPointerTo<parser::OperatorExpression>();
+    auto op_expr = select_stmt->GetSelectCondition()->GetChild(0).CastTo<parser::OperatorExpression>();
     EXPECT_EQ(execution::sql::SqlTypeId::Integer, op_expr->GetReturnValueType());
     EXPECT_EQ(0, op_expr->GetDepth());
 
-    auto col_expr = op_expr->GetChild(1).CastManagedPointerTo<parser::ColumnValueExpression>();
+    auto col_expr = op_expr->GetChild(1).CastTo<parser::ColumnValueExpression>();
     EXPECT_EQ(col_expr->GetDatabaseOid(), db_oid_);             // a.a1
     EXPECT_EQ(col_expr->GetTableOid(), table_a_oid_);           // a.a1
     EXPECT_EQ(col_expr->GetColumnOid(), catalog::col_oid_t(1)); // a.a1; columns are indexed from 1
     EXPECT_EQ(0, col_expr->GetDepth());
     EXPECT_EQ(execution::sql::SqlTypeId::Integer, col_expr->GetReturnValueType());
 
-    auto subquery = select_stmt->GetSelectCondition()->GetChild(1).CastManagedPointerTo<parser::SubqueryExpression>();
-    auto subselect = subquery->GetSubselect().CastManagedPointerTo<parser::SelectStatement>();
+    auto subquery = select_stmt->GetSelectCondition()->GetChild(1).CastTo<parser::SubqueryExpression>();
+    auto subselect = subquery->GetSubselect().CastTo<parser::SelectStatement>();
 
-    op_expr = subselect->GetSelectColumns()[0].CastManagedPointerTo<parser::OperatorExpression>();
+    op_expr = subselect->GetSelectColumns()[0].CastTo<parser::OperatorExpression>();
     EXPECT_EQ(execution::sql::SqlTypeId::Integer, op_expr->GetReturnValueType());
     EXPECT_EQ(1, op_expr->GetDepth());
 
-    col_expr = op_expr->GetChild(0).CastManagedPointerTo<parser::ColumnValueExpression>();
+    col_expr = op_expr->GetChild(0).CastTo<parser::ColumnValueExpression>();
     EXPECT_EQ(col_expr->GetDatabaseOid(), db_oid_);             // B.b1
     EXPECT_EQ(col_expr->GetTableOid(), table_b_oid_);           // B.b1
     EXPECT_EQ(col_expr->GetColumnOid(), catalog::col_oid_t(1)); // B.b1; columns are indexed from 1
@@ -751,7 +735,7 @@ TEST_F(BinderCorrectnessTest, BindDepthTest) {
     auto        parse_tree = parser::PostgresParser::BuildParseTree(select_sql);
     auto        statement = parse_tree->GetStatements()[0];
     binder_->BindNameToNode(common::ManagedPointer(parse_tree), nullptr, nullptr);
-    auto select_stmt = statement.CastManagedPointerTo<parser::SelectStatement>();
+    auto select_stmt = statement.CastTo<parser::SelectStatement>();
 
     // Check select depthGetSelectCondition
     EXPECT_EQ(0, select_stmt->GetDepth());
@@ -778,7 +762,7 @@ TEST_F(BinderCorrectnessTest, BindDepthTest) {
     EXPECT_TRUE(in_sub_expr->HasSubquery());
 
     // SELECT b1 FROM B WHERE b1 = 2 AND b1 > (SELECT a1 FROM A WHERE a1 > 0)
-    auto in_sub_expr_select = in_sub_expr.CastManagedPointerTo<parser::SubqueryExpression>()->GetSubselect();
+    auto in_sub_expr_select = in_sub_expr.CastTo<parser::SubqueryExpression>()->GetSubselect();
     EXPECT_EQ(1, in_sub_expr_select->GetDepth());
 
     auto in_sub_expr_select_ele = in_sub_expr_select->GetSelectColumns()[0]; // b1
@@ -806,7 +790,7 @@ TEST_F(BinderCorrectnessTest, BindDepthTest) {
 
     // SELECT a1 FROM A WHERE a1 > 0
     auto in_sub_expr_select_where_right_sub_select
-        = in_sub_expr_select_where_right_sub.CastManagedPointerTo<parser::SubqueryExpression>()->GetSubselect();
+        = in_sub_expr_select_where_right_sub.CastTo<parser::SubqueryExpression>()->GetSubselect();
     EXPECT_EQ(2, in_sub_expr_select_where_right_sub_select->GetDepth());
 
     // WHERE a1 > 0
@@ -829,7 +813,7 @@ TEST_F(BinderCorrectnessTest, BindDepthTest) {
     EXPECT_TRUE(in_sub_expr->HasSubquery());
 
     // a select statement: SELECT b1 FROM B WHERE B.b1 = A.a1
-    auto exists_sub_expr_select = exists_sub_expr.CastManagedPointerTo<parser::SubqueryExpression>()->GetSubselect();
+    auto exists_sub_expr_select = exists_sub_expr.CastTo<parser::SubqueryExpression>()->GetSubselect();
     EXPECT_EQ(1, exists_sub_expr_select->GetDepth());
 
     // WHERE B.b1 = A.a1
@@ -872,14 +856,13 @@ TEST_F(BinderCorrectnessTest, CreateTableTest) {
     auto        parse_tree = parser::PostgresParser::BuildParseTree(create_sql);
     binder_->BindNameToNode(common::ManagedPointer(parse_tree), nullptr, nullptr);
 
-    auto create_stmt = parse_tree->GetStatements()[0].CastManagedPointerTo<parser::CreateStatement>();
+    auto create_stmt = parse_tree->GetStatements()[0].CastTo<parser::CreateStatement>();
     EXPECT_TRUE(create_stmt != nullptr);
     auto check_expr = create_stmt->GetColumns().at(3)->GetCheckExpression();
     EXPECT_TRUE(check_expr != nullptr);
-    auto comp_expr = check_expr.CastManagedPointerTo<parser::ComparisonExpression>();
+    auto comp_expr = check_expr.CastTo<parser::ComparisonExpression>();
     // check (c4 < 100)
-    EXPECT_EQ(comp_expr->GetChild(0).CastManagedPointerTo<parser::ColumnValueExpression>()->GetTableAlias(),
-              parser::AliasType("c"));
+    EXPECT_EQ(comp_expr->GetChild(0).CastTo<parser::ColumnValueExpression>()->GetTableAlias(), parser::AliasType("c"));
 }
 
 // NOLINTNEXTLINE
@@ -924,10 +907,10 @@ TEST_F(BinderCorrectnessTest, CreateTriggerTest) {
                              "EXECUTE PROCEDURE check_account_update(update_date);";
     auto        parse_tree = parser::PostgresParser::BuildParseTree(create_sql);
     auto        statement = parse_tree->GetStatements()[0];
-    auto        create_stmt = statement.CastManagedPointerTo<parser::CreateStatement>();
+    auto        create_stmt = statement.CastTo<parser::CreateStatement>();
     EXPECT_NO_THROW(binder_->BindNameToNode(common::ManagedPointer(parse_tree), nullptr, nullptr));
-    auto col1 = create_stmt->GetTriggerWhen()->GetChild(0).CastManagedPointerTo<parser::ColumnValueExpression>();
-    auto col2 = create_stmt->GetTriggerWhen()->GetChild(1).CastManagedPointerTo<parser::ColumnValueExpression>();
+    auto col1 = create_stmt->GetTriggerWhen()->GetChild(0).CastTo<parser::ColumnValueExpression>();
+    auto col2 = create_stmt->GetTriggerWhen()->GetChild(1).CastTo<parser::ColumnValueExpression>();
     EXPECT_EQ(col1->GetTableOid(), table_a_oid_);
     EXPECT_EQ(col2->GetTableOid(), table_a_oid_);
     EXPECT_EQ(col1->GetColumnOid(), catalog::col_oid_t(1));
@@ -945,19 +928,19 @@ TEST_F(BinderCorrectnessTest, CreateViewTest) {
     binder_->BindNameToNode(common::ManagedPointer(parse_tree), nullptr, nullptr);
 
     // Test logical create
-    auto create_stmt = statement.CastManagedPointerTo<parser::CreateStatement>();
+    auto create_stmt = statement.CastTo<parser::CreateStatement>();
     //  EXPECT_EQ(create_stmt->GetDatabaseName(), "test_db");
     auto view_query = create_stmt->GetViewQuery();
     //  EXPECT_EQ(view_query->GetSelectTable()->GetDatabaseName(), "test_db");
     EXPECT_EQ(view_query->GetSelectTable()->GetTableName(), "a");
-    auto cond_expr = view_query->GetSelectCondition().CastManagedPointerTo<parser::ComparisonExpression>();
+    auto cond_expr = view_query->GetSelectCondition().CastTo<parser::ComparisonExpression>();
     EXPECT_EQ(cond_expr->GetChildrenSize(), 2);
     EXPECT_EQ(cond_expr->GetReturnValueType(), execution::sql::SqlTypeId::Boolean);
     EXPECT_EQ(cond_expr->GetExpressionType(), parser::ExpressionType::COMPARE_EQUAL);
     EXPECT_EQ(cond_expr->GetChild(1)->GetExpressionType(), parser::ExpressionType::VALUE_CONSTANT);
-    auto const_expr = cond_expr->GetChild(1).CastManagedPointerTo<parser::ConstantValueExpression>();
+    auto const_expr = cond_expr->GetChild(1).CastTo<parser::ConstantValueExpression>();
     EXPECT_EQ(const_expr->GetReturnValueType(), execution::sql::SqlTypeId::Integer);
-    auto col_expr = cond_expr->GetChild(0).CastManagedPointerTo<parser::ColumnValueExpression>();
+    auto col_expr = cond_expr->GetChild(0).CastTo<parser::ColumnValueExpression>();
     EXPECT_EQ(col_expr->GetReturnValueType(), execution::sql::SqlTypeId::Integer);
     EXPECT_EQ(col_expr->GetTableOid(), table_a_oid_);
     EXPECT_EQ(col_expr->GetColumnOid(), catalog::col_oid_t(1));
@@ -975,9 +958,9 @@ TEST_F(BinderCorrectnessTest, SimpleFunctionCallTest) {
     auto statement = parse_tree->GetStatements()[0];
     binder_->BindNameToNode(common::ManagedPointer(parse_tree), nullptr, nullptr);
 
-    auto select_stmt = parse_tree->GetStatement(0).CastManagedPointerTo<parser::SelectStatement>();
+    auto select_stmt = parse_tree->GetStatement(0).CastTo<parser::SelectStatement>();
 
-    auto fun_expr = select_stmt->GetSelectColumns()[0].CastManagedPointerTo<parser::FunctionExpression>();
+    auto fun_expr = select_stmt->GetSelectColumns()[0].CastTo<parser::FunctionExpression>();
     auto proc_oid = fun_expr->GetProcOid();
     EXPECT_EQ(proc_oid,
               accessor_->GetProcOid("cot", {accessor_->GetTypeOidFromTypeId(execution::sql::SqlTypeId::Double)}));
@@ -1005,7 +988,7 @@ TEST_F(BinderCorrectnessTest, AnalyzeStatementSimpleTest) {
     EXPECT_EQ(parse_tree->NumStatements(), 1);
     auto statement = parse_tree->GetStatement(0);
     EXPECT_EQ(statement->GetType(), parser::StatementType::ANALYZE);
-    auto analyze = statement.CastManagedPointerTo<parser::AnalyzeStatement>();
+    auto analyze = statement.CastTo<parser::AnalyzeStatement>();
     EXPECT_EQ(analyze->GetAnalyzeTable()->GetTableName(), "a");
     EXPECT_EQ(analyze->GetColumns()->size(), 1);
     EXPECT_EQ(analyze->GetColumns()->at(0), "a1");
@@ -1026,7 +1009,7 @@ TEST_F(BinderCorrectnessTest, AnalyzeStatementSimpleNoColumnsTest) {
     EXPECT_EQ(parse_tree->NumStatements(), 1);
     auto statement = parse_tree->GetStatement(0);
     EXPECT_EQ(statement->GetType(), parser::StatementType::ANALYZE);
-    auto analyze = statement.CastManagedPointerTo<parser::AnalyzeStatement>();
+    auto analyze = statement.CastTo<parser::AnalyzeStatement>();
     EXPECT_EQ(analyze->GetAnalyzeTable()->GetTableName(), "a");
     EXPECT_EQ(analyze->GetColumns()->size(), 2);
     EXPECT_EQ(analyze->GetColumns()->at(0), "a1");
@@ -1137,13 +1120,13 @@ TEST_F(BinderCorrectnessTest, CTEStatementComplexTest) {
     const auto parse_tree = parser::PostgresParser::BuildParseTree(cte_sql);
     auto       statement = parse_tree->GetStatements()[0];
     EXPECT_NO_THROW(binder_->BindNameToNode(common::ManagedPointer(parse_tree), nullptr, nullptr));
-    auto cte_stmt = statement.CastManagedPointerTo<parser::SelectStatement>();
+    auto cte_stmt = statement.CastTo<parser::SelectStatement>();
     EXPECT_EQ(0, cte_stmt->GetDepth());
 
     // Check with_list
-    auto with_stmt = cte_stmt->GetSelectWith()[0]->GetSelect().CastManagedPointerTo<parser::SelectStatement>();
+    auto with_stmt = cte_stmt->GetSelectWith()[0]->GetSelect().CastTo<parser::SelectStatement>();
     EXPECT_EQ(1, with_stmt->GetDepth());
-    auto col_expr = with_stmt->GetSelectColumns()[0].CastManagedPointerTo<parser::ColumnValueExpression>();
+    auto col_expr = with_stmt->GetSelectColumns()[0].CastTo<parser::ColumnValueExpression>();
     EXPECT_EQ(col_expr->GetDatabaseOid(), db_oid_);             // A.a1
     EXPECT_EQ(col_expr->GetTableOid(), table_a_oid_);           // A.a1
     EXPECT_EQ(col_expr->GetColumnOid(), catalog::col_oid_t(1)); // A.a1; columns are indexed from 1
@@ -1151,7 +1134,7 @@ TEST_F(BinderCorrectnessTest, CTEStatementComplexTest) {
     EXPECT_EQ(1, col_expr->GetDepth());
 
     // Check select_list
-    col_expr = cte_stmt->GetSelectColumns()[0].CastManagedPointerTo<parser::ColumnValueExpression>();
+    col_expr = cte_stmt->GetSelectColumns()[0].CastTo<parser::ColumnValueExpression>();
     EXPECT_EQ(col_expr->GetDatabaseOid(), catalog::db_oid_t(0)); // c.a3
     EXPECT_EQ(col_expr->GetTableOid(), catalog::table_oid_t(0)); // c.a3
     EXPECT_EQ(execution::sql::SqlTypeId::Integer, col_expr->GetReturnValueType());
@@ -1159,7 +1142,7 @@ TEST_F(BinderCorrectnessTest, CTEStatementComplexTest) {
     EXPECT_EQ(col_expr->GetTableAlias().GetName(), "c");
     EXPECT_EQ(col_expr->GetColumnName(), "a3");
 
-    col_expr = cte_stmt->GetSelectColumns()[1].CastManagedPointerTo<parser::ColumnValueExpression>();
+    col_expr = cte_stmt->GetSelectColumns()[1].CastTo<parser::ColumnValueExpression>();
     EXPECT_EQ(col_expr->GetDatabaseOid(), db_oid_);             // B.b2
     EXPECT_EQ(col_expr->GetTableOid(), table_b_oid_);           // B.b2
     EXPECT_EQ(col_expr->GetColumnOid(), catalog::col_oid_t(2)); // B.b2; columns are indexed from 1
@@ -1172,7 +1155,7 @@ TEST_F(BinderCorrectnessTest, CTEStatementComplexTest) {
                    ->GetJoin()
                    ->GetJoinCondition()
                    ->GetChild(0)
-                   .CastManagedPointerTo<parser::ColumnValueExpression>();
+                   .CastTo<parser::ColumnValueExpression>();
     EXPECT_EQ(col_expr->GetDatabaseOid(), catalog::db_oid_t(0)); // c.a3
     EXPECT_EQ(col_expr->GetTableOid(), catalog::table_oid_t(0)); // c.a3
     EXPECT_EQ(execution::sql::SqlTypeId::Integer, col_expr->GetReturnValueType());
@@ -1184,7 +1167,7 @@ TEST_F(BinderCorrectnessTest, CTEStatementComplexTest) {
                    ->GetJoin()
                    ->GetJoinCondition()
                    ->GetChild(1)
-                   .CastManagedPointerTo<parser::ColumnValueExpression>();
+                   .CastTo<parser::ColumnValueExpression>();
 
     EXPECT_EQ(col_expr->GetDatabaseOid(), db_oid_);   // B.b1
     EXPECT_EQ(col_expr->GetTableOid(), table_b_oid_); // B.b1
@@ -1192,7 +1175,7 @@ TEST_F(BinderCorrectnessTest, CTEStatementComplexTest) {
     EXPECT_EQ(0, col_expr->GetDepth());
 
     // Check Where clause
-    col_expr = cte_stmt->GetSelectCondition()->GetChild(0).CastManagedPointerTo<parser::ColumnValueExpression>();
+    col_expr = cte_stmt->GetSelectCondition()->GetChild(0).CastTo<parser::ColumnValueExpression>();
     EXPECT_EQ(col_expr->GetDatabaseOid(), catalog::db_oid_t(0)); // c.a3
     EXPECT_EQ(col_expr->GetTableOid(), catalog::table_oid_t(0)); // c.a3
     EXPECT_EQ(execution::sql::SqlTypeId::Integer, col_expr->GetReturnValueType());
@@ -1201,7 +1184,7 @@ TEST_F(BinderCorrectnessTest, CTEStatementComplexTest) {
     EXPECT_EQ(col_expr->GetColumnName(), "a3");
 
     // Check Group By and Having
-    col_expr = cte_stmt->GetSelectGroupBy()->GetColumns()[0].CastManagedPointerTo<parser::ColumnValueExpression>();
+    col_expr = cte_stmt->GetSelectGroupBy()->GetColumns()[0].CastTo<parser::ColumnValueExpression>();
     EXPECT_EQ(col_expr->GetDatabaseOid(), catalog::db_oid_t(0)); // c.a3
     EXPECT_EQ(col_expr->GetTableOid(), catalog::table_oid_t(0)); // c.a3
     EXPECT_EQ(execution::sql::SqlTypeId::Integer, col_expr->GetReturnValueType());
@@ -1209,15 +1192,14 @@ TEST_F(BinderCorrectnessTest, CTEStatementComplexTest) {
     EXPECT_EQ(col_expr->GetTableAlias().GetName(), "c");
     EXPECT_EQ(col_expr->GetColumnName(), "a3");
 
-    col_expr = cte_stmt->GetSelectGroupBy()->GetColumns()[1].CastManagedPointerTo<parser::ColumnValueExpression>();
+    col_expr = cte_stmt->GetSelectGroupBy()->GetColumns()[1].CastTo<parser::ColumnValueExpression>();
     EXPECT_EQ(col_expr->GetDatabaseOid(), db_oid_);             // B.b2
     EXPECT_EQ(col_expr->GetTableOid(), table_b_oid_);           // B.b2
     EXPECT_EQ(col_expr->GetColumnOid(), catalog::col_oid_t(2)); // B.b2; columns are indexed from 1
     EXPECT_EQ(execution::sql::SqlTypeId::Varchar, col_expr->GetReturnValueType());
     EXPECT_EQ(0, col_expr->GetDepth());
 
-    col_expr
-        = cte_stmt->GetSelectGroupBy()->GetHaving()->GetChild(0).CastManagedPointerTo<parser::ColumnValueExpression>();
+    col_expr = cte_stmt->GetSelectGroupBy()->GetHaving()->GetChild(0).CastTo<parser::ColumnValueExpression>();
     EXPECT_EQ(col_expr->GetDatabaseOid(), catalog::db_oid_t(0)); // c.a3
     EXPECT_EQ(col_expr->GetTableOid(), catalog::table_oid_t(0)); // c.a3
     EXPECT_EQ(execution::sql::SqlTypeId::Integer, col_expr->GetReturnValueType());
@@ -1226,9 +1208,7 @@ TEST_F(BinderCorrectnessTest, CTEStatementComplexTest) {
     EXPECT_EQ(col_expr->GetColumnName(), "a3");
 
     // Check Order By
-    col_expr = cte_stmt->GetSelectOrderBy()
-                   ->GetOrderByExpressions()[0]
-                   .CastManagedPointerTo<parser::ColumnValueExpression>();
+    col_expr = cte_stmt->GetSelectOrderBy()->GetOrderByExpressions()[0].CastTo<parser::ColumnValueExpression>();
     EXPECT_EQ(col_expr->GetDatabaseOid(), catalog::db_oid_t(0)); // c.a3
     EXPECT_EQ(col_expr->GetTableOid(), catalog::table_oid_t(0)); // c.a3
     EXPECT_EQ(execution::sql::SqlTypeId::Integer, col_expr->GetReturnValueType());

@@ -46,7 +46,7 @@ public:
         // If our mofo is a ColumnValueExpression, then pull out our column ids
         auto etype = expr->GetExpressionType();
         if (etype == ExpressionType::COLUMN_VALUE) {
-            auto t_expr = expr.CastManagedPointerTo<ColumnValueExpression>();
+            auto t_expr = expr.CastTo<ColumnValueExpression>();
             col_oids->insert(t_expr->GetColumnOid());
         }
     }
@@ -59,7 +59,7 @@ public:
     static void GetAggregateExprs(std::vector<common::ManagedPointer<AggregateExpression>> *aggr_exprs,
                                   common::ManagedPointer<AbstractExpression>                expr) {
         if (ExpressionUtil::IsAggregateExpression(expr->GetExpressionType())) {
-            auto aggr_expr = expr.CastManagedPointerTo<AggregateExpression>();
+            auto aggr_expr = expr.CastTo<AggregateExpression>();
             aggr_exprs->push_back(aggr_expr);
         } else {
             for (const auto &child : expr->GetChildren())
@@ -415,7 +415,7 @@ public:
 
         if (expr->GetExpressionType() == ExpressionType::COLUMN_VALUE) {
             // Point to the correct column returned in the logical tuple underneath
-            auto c_tup_expr = expr.CastManagedPointerTo<ColumnValueExpression>();
+            auto c_tup_expr = expr.CastTo<ColumnValueExpression>();
             NOISEPAGE_ASSERT(children_size == 0, "ColumnValueExpression should have 0 children");
 
             int tuple_idx = 0;
@@ -439,7 +439,7 @@ public:
         } else if (IsAggregateExpression(expr->GetExpressionType())) {
             // if aggregate expression exists in the children expression map
             // make a derived value expression to avoid double computation
-            auto c_aggr_expr = expr.CastManagedPointerTo<AggregateExpression>();
+            auto c_aggr_expr = expr.CastTo<AggregateExpression>();
             NOISEPAGE_ASSERT(c_aggr_expr, "expr should be AggregateExpression");
 
             int tuple_idx = 0;
@@ -477,7 +477,7 @@ public:
             }
             */
         } else if (expr->GetExpressionType() == ExpressionType::OPERATOR_CASE_EXPR) {
-            auto case_expr = expr.CastManagedPointerTo<CaseExpression>();
+            auto case_expr = expr.CastTo<CaseExpression>();
             NOISEPAGE_ASSERT(children_size == 0, "CaseExpression should have 0 children");
 
             // Evaluate against WhenClause condition + result and store new

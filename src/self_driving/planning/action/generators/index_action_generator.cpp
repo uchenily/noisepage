@@ -156,14 +156,14 @@ bool IndexActionGenerator::GenerateIndexableColumns(
         common::ManagedPointer<parser::ColumnValueExpression> tv_expr;
         if (ltype == parser::ExpressionType::COLUMN_VALUE
             && (rtype == parser::ExpressionType::VALUE_CONSTANT || rtype == parser::ExpressionType::VALUE_PARAMETER)) {
-            tv_expr = expr->GetChild(0).CastManagedPointerTo<parser::ColumnValueExpression>();
+            tv_expr = expr->GetChild(0).CastTo<parser::ColumnValueExpression>();
         } else if (rtype == parser::ExpressionType::COLUMN_VALUE
                    && (ltype == parser::ExpressionType::VALUE_CONSTANT
                        || ltype == parser::ExpressionType::VALUE_PARAMETER)) {
-            tv_expr = expr->GetChild(1).CastManagedPointerTo<parser::ColumnValueExpression>();
+            tv_expr = expr->GetChild(1).CastTo<parser::ColumnValueExpression>();
         } else if (ltype == parser::ExpressionType::COLUMN_VALUE && rtype == parser::ExpressionType::COLUMN_VALUE) {
-            auto lexpr = expr->GetChild(0).CastManagedPointerTo<parser::ColumnValueExpression>();
-            auto rexpr = expr->GetChild(1).CastManagedPointerTo<parser::ColumnValueExpression>();
+            auto lexpr = expr->GetChild(0).CastTo<parser::ColumnValueExpression>();
+            auto rexpr = expr->GetChild(1).CastTo<parser::ColumnValueExpression>();
             if (lexpr->GetTableOid() == table_oid)
                 tv_expr = lexpr;
             else

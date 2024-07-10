@@ -152,7 +152,7 @@ std::vector<catalog::col_oid_t> PlanGenerator::GenerateColumnsForScan(const pars
         NOISEPAGE_ASSERT(output_expr->GetExpressionType() == parser::ExpressionType::COLUMN_VALUE,
                          "Scan columns should all be base table columns");
 
-        auto tve = output_expr.CastManagedPointerTo<parser::ColumnValueExpression>();
+        auto tve = output_expr.CastTo<parser::ColumnValueExpression>();
         auto col_id = tve->GetColumnOid();
 
         NOISEPAGE_ASSERT(col_id != catalog::INVALID_COLUMN_OID, "TVE should be base");
@@ -187,7 +187,7 @@ std::unique_ptr<planner::OutputSchema> PlanGenerator::GenerateScanOutputSchema(c
         NOISEPAGE_ASSERT(output_expr->GetExpressionType() == parser::ExpressionType::COLUMN_VALUE,
                          "Scan columns should all be base table columns");
 
-        auto tve = output_expr.CastManagedPointerTo<parser::ColumnValueExpression>();
+        auto tve = output_expr.CastTo<parser::ColumnValueExpression>();
 
         // output schema of a plan node is literally the columns of the table.
         // there is no such thing as an intermediate column here!
@@ -313,7 +313,7 @@ void PlanGenerator::Visit(const QueryDerivedScan *op) {
     std::vector<planner::OutputSchema::Column> columns;
     for (auto &output : output_cols_) {
         // We can assert this based on InputColumnDeriver::Visit(const QueryDerivedScan *op)
-        auto colve = output.CastManagedPointerTo<parser::ColumnValueExpression>();
+        auto colve = output.CastTo<parser::ColumnValueExpression>();
 
         // Get offset into child_expr_map
         auto expr = alias_expr_map.at(colve->GetAlias().IsSerialNoValid() ? colve->GetAlias()
@@ -947,7 +947,7 @@ void PlanGenerator::Visit(const Update *op) {
     // TODO(tanujnay112) can optimize if we stored updated column oids in the update nodes during binding
     // such that we didn't have to store string sets
     for (auto &cve : cves) {
-        if (update_column_names.find(cve.CastManagedPointerTo<parser::ColumnValueExpression>()->GetColumnName())
+        if (update_column_names.find(cve.CastTo<parser::ColumnValueExpression>()->GetColumnName())
             != update_column_names.end()) {
             indexed_update = true;
             break;
@@ -1208,7 +1208,7 @@ void PlanGenerator::Visit(const CteScan *cte_scan) {
 
         std::vector<planner::OutputSchema::Column> columns;
         for (auto &output_expr : output_cols_) {
-            auto tve = output_expr.CastManagedPointerTo<parser::ColumnValueExpression>();
+            auto tve = output_expr.CastTo<parser::ColumnValueExpression>();
 
             // output schema of a plan node is literally the columns of the table.
             // there is no such thing as an intermediate column here!
@@ -1243,7 +1243,7 @@ void PlanGenerator::Visit(const CteScan *cte_scan) {
         // make schema from output columns
         std::vector<planner::OutputSchema::Column> columns;
         for (auto &output_expr : output_cols_) {
-            auto tve = output_expr.CastManagedPointerTo<parser::ColumnValueExpression>();
+            auto tve = output_expr.CastTo<parser::ColumnValueExpression>();
 
             // output schema of a plan node is literally the columns of the table.
             // there is no such thing as an intermediate column here!

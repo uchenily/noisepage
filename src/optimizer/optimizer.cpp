@@ -88,12 +88,12 @@ void Optimizer::ElectCTELeader(common::ManagedPointer<planner::AbstractPlanNode>
                                common::ManagedPointer<planner::CteScanPlanNode> *leader) {
     // If the node is a reader from the desired table
     if ((plan->GetPlanNodeType() == planner::PlanNodeType::CTESCAN)
-        && (plan.CastManagedPointerTo<planner::CteScanPlanNode>()->GetTableOid() == table_oid)) {
+        && (plan.CastTo<planner::CteScanPlanNode>()->GetTableOid() == table_oid)) {
         if (plan->GetChildren().empty()) {
             // Set cte schema
             auto cte_scan_plan_node_set = dynamic_cast<planner::CteScanPlanNode *>(plan.Get());
             cte_scan_plan_node_set->SetTableSchema(context_->GetCTESchema(table_oid));
-            cte_scan_plan_node_set->SetLeader(leader->CastManagedPointerTo<const planner::CteScanPlanNode>());
+            cte_scan_plan_node_set->SetLeader(leader->CastTo<const planner::CteScanPlanNode>());
         } else {
             // Child bearing CTE node
             // Replace with leader
@@ -103,7 +103,7 @@ void Optimizer::ElectCTELeader(common::ManagedPointer<planner::AbstractPlanNode>
                 NOISEPAGE_ASSERT(adopted_children.size() == 1, "CTE leader should have 1 child");
                 (*leader)->AddChild(std::move(adopted_children[0]));
                 auto cte_scan = dynamic_cast<planner::CteScanPlanNode *>(plan.Get());
-                cte_scan->SetLeader(leader->CastManagedPointerTo<const planner::CteScanPlanNode>());
+                cte_scan->SetLeader(leader->CastTo<const planner::CteScanPlanNode>());
             }
         }
 
@@ -134,7 +134,7 @@ void Optimizer::ElectCTELeader(common::ManagedPointer<planner::AbstractPlanNode>
             *leader = common::ManagedPointer(new_leader);
             current_cte->AddChild(std::move(new_leader));
 
-            current_cte->SetLeader(leader->CastManagedPointerTo<const planner::CteScanPlanNode>());
+            current_cte->SetLeader(leader->CastTo<const planner::CteScanPlanNode>());
         }
     }
     auto children = plan->GetChildren();
