@@ -19,7 +19,7 @@
 
 namespace noisepage::transaction {
 class TransactionContext;
-}
+} // namespace noisepage::transaction
 
 namespace noisepage::storage {
 class GarbageCollector;
@@ -27,7 +27,7 @@ class RecoveryManager;
 class SqlTable;
 namespace index {
     class Index;
-}
+} // namespace index
 } // namespace noisepage::storage
 
 namespace noisepage::catalog {
@@ -50,25 +50,25 @@ public:
     void Bootstrap(common::ManagedPointer<transaction::TransactionContext> txn);
 
     /** @brief Create a new namespace, may fail with INVALID_NAMESPACE_OID. @see PgCoreImpl::CreateNamespace */
-    namespace_oid_t CreateNamespace(common::ManagedPointer<transaction::TransactionContext> txn,
-                                    const std::string                                      &name);
+    auto CreateNamespace(common::ManagedPointer<transaction::TransactionContext> txn, const std::string &name)
+        -> namespace_oid_t;
     /** @brief Delete the specified namespace. @see PgCoreImpl::DeleteNamespace */
-    bool DeleteNamespace(common::ManagedPointer<transaction::TransactionContext> txn, namespace_oid_t ns_oid);
+    auto DeleteNamespace(common::ManagedPointer<transaction::TransactionContext> txn, namespace_oid_t ns_oid) -> bool;
     /** @brief Get the OID of the specified namespace. @see PgCoreImpl::GetNamespaceOid */
-    namespace_oid_t GetNamespaceOid(common::ManagedPointer<transaction::TransactionContext> txn,
-                                    const std::string                                      &name);
+    auto GetNamespaceOid(common::ManagedPointer<transaction::TransactionContext> txn, const std::string &name)
+        -> namespace_oid_t;
 
     /** @brief Create a new table, may fail with INVALID_TABLE_OID. @see PgCoreImpl::CreateTable */
-    table_oid_t CreateTable(common::ManagedPointer<transaction::TransactionContext> txn,
-                            namespace_oid_t                                         ns,
-                            const std::string                                      &name,
-                            const Schema                                           &schema);
+    auto CreateTable(common::ManagedPointer<transaction::TransactionContext> txn,
+                     namespace_oid_t                                         ns,
+                     const std::string                                      &name,
+                     const Schema                                           &schema) -> table_oid_t;
     /** @brief Delete the specified table. @see PgCoreImpl::DeleteTable */
-    bool DeleteTable(common::ManagedPointer<transaction::TransactionContext> txn, table_oid_t table);
+    auto DeleteTable(common::ManagedPointer<transaction::TransactionContext> txn, table_oid_t table) -> bool;
     /** @brief Rename a table. @see PgCoreImpl::RenameTable */
-    bool RenameTable(common::ManagedPointer<transaction::TransactionContext> txn,
+    auto RenameTable(common::ManagedPointer<transaction::TransactionContext> txn,
                      table_oid_t                                             table,
-                     const std::string                                      &name);
+                     const std::string                                      &name) -> bool;
 
     /**
      * @brief Set the location of the underlying storage for the specified table.
@@ -83,9 +83,9 @@ public:
      * @warning   It is unsafe to call delete on the SqlTable pointer after calling this function.
      *            This is regardless of the return status.
      */
-    bool SetTablePointer(common::ManagedPointer<transaction::TransactionContext> txn,
+    auto SetTablePointer(common::ManagedPointer<transaction::TransactionContext> txn,
                          table_oid_t                                             table,
-                         const storage::SqlTable                                *table_ptr);
+                         const storage::SqlTable                                *table_ptr) -> bool;
     /**
      * @brief Set the location of the underlying implementation for the specified index.
      *
@@ -99,33 +99,35 @@ public:
      * @warning   It is unsafe to call delete on the Index pointer after calling this function.
      *            This is regardless of the return status.
      */
-    bool SetIndexPointer(common::ManagedPointer<transaction::TransactionContext> txn,
+    auto SetIndexPointer(common::ManagedPointer<transaction::TransactionContext> txn,
                          index_oid_t                                             index,
-                         storage::index::Index                                  *index_ptr);
+                         storage::index::Index                                  *index_ptr) -> bool;
 
     /** @brief Get the OID for the specified table, or INVALID_TABLE_OID if no such REGULAR_TABLE exists. */
-    table_oid_t GetTableOid(common::ManagedPointer<transaction::TransactionContext> txn,
-                            namespace_oid_t                                         ns,
-                            const std::string                                      &name);
+    auto GetTableOid(common::ManagedPointer<transaction::TransactionContext> txn,
+                     namespace_oid_t                                         ns,
+                     const std::string                                      &name) -> table_oid_t;
     /** @brief Get the OID for the specified index, or INVALID_INDEX_OID if no such INDEX exists. */
-    index_oid_t GetIndexOid(common::ManagedPointer<transaction::TransactionContext> txn,
-                            namespace_oid_t                                         ns,
-                            const std::string                                      &name);
+    auto GetIndexOid(common::ManagedPointer<transaction::TransactionContext> txn,
+                     namespace_oid_t                                         ns,
+                     const std::string                                      &name) -> index_oid_t;
 
     /** @brief Get the storage pointer for the specified table, or nullptr if no such REGULAR_TABLE exists. */
-    common::ManagedPointer<storage::SqlTable> GetTable(common::ManagedPointer<transaction::TransactionContext> txn,
-                                                       table_oid_t                                             table);
+    auto GetTable(common::ManagedPointer<transaction::TransactionContext> txn, table_oid_t table)
+        -> common::ManagedPointer<storage::SqlTable>;
     /** @brief Get the index pointer for the specified index, or nullptr if no such INDEX exists. */
-    common::ManagedPointer<storage::index::Index> GetIndex(common::ManagedPointer<transaction::TransactionContext> txn,
-                                                           index_oid_t index);
+    auto GetIndex(common::ManagedPointer<transaction::TransactionContext> txn, index_oid_t index)
+        -> common::ManagedPointer<storage::index::Index>;
 
     /** @brief Get the name of the specified index */
-    std::string_view GetIndexName(common::ManagedPointer<transaction::TransactionContext> txn, index_oid_t index);
+    auto GetIndexName(common::ManagedPointer<transaction::TransactionContext> txn, index_oid_t index)
+        -> std::string_view;
 
     /** @brief Get the schema for the specified table. */
-    const Schema &GetSchema(common::ManagedPointer<transaction::TransactionContext> txn, table_oid_t table);
+    auto GetSchema(common::ManagedPointer<transaction::TransactionContext> txn, table_oid_t table) -> const Schema &;
     /** @brief Get the index schema for the specified index. */
-    const IndexSchema &GetIndexSchema(common::ManagedPointer<transaction::TransactionContext> txn, index_oid_t index);
+    auto GetIndexSchema(common::ManagedPointer<transaction::TransactionContext> txn, index_oid_t index)
+        -> const IndexSchema &;
 
     /**
      * @brief Update the schema of the table.
@@ -144,77 +146,77 @@ public:
      *                    If the caller needs to reference the schema object after this call, the caller should use
      *                    the GetSchema function to obtain the authoritative schema for this table.
      */
-    bool
-    UpdateSchema(common::ManagedPointer<transaction::TransactionContext> txn, table_oid_t table, Schema *new_schema);
+    auto UpdateSchema(common::ManagedPointer<transaction::TransactionContext> txn,
+                      table_oid_t                                             table,
+                      Schema                                                 *new_schema) -> bool;
 
     /** @brief Create an index, may fail with INVALID_INDEX_OID. @see PgCoreImpl::CreateIndex */
-    index_oid_t CreateIndex(common::ManagedPointer<transaction::TransactionContext> txn,
-                            namespace_oid_t                                         ns,
-                            const std::string                                      &name,
-                            table_oid_t                                             table,
-                            const IndexSchema                                      &schema);
+    auto CreateIndex(common::ManagedPointer<transaction::TransactionContext> txn,
+                     namespace_oid_t                                         ns,
+                     const std::string                                      &name,
+                     table_oid_t                                             table,
+                     const IndexSchema                                      &schema) -> index_oid_t;
     /** @brief Delete the specified index. @see PgCoreImpl::DeleteIndex */
-    bool DeleteIndex(common::ManagedPointer<transaction::TransactionContext> txn, index_oid_t index);
+    auto DeleteIndex(common::ManagedPointer<transaction::TransactionContext> txn, index_oid_t index) -> bool;
     /** @brief Get all of the index OIDs for a specific table. @see PgCoreImpl::GetIndexOids */
-    std::vector<index_oid_t> GetIndexOids(common::ManagedPointer<transaction::TransactionContext> txn,
-                                          table_oid_t                                             table);
+    auto GetIndexOids(common::ManagedPointer<transaction::TransactionContext> txn, table_oid_t table)
+        -> std::vector<index_oid_t>;
     /** @brief More efficient way of getting all the indexes for a specific table. @see PgCoreImpl::GetIndexes */
-    std::vector<std::pair<common::ManagedPointer<storage::index::Index>, const IndexSchema &>>
-    GetIndexes(common::ManagedPointer<transaction::TransactionContext> txn, table_oid_t table);
+    auto GetIndexes(common::ManagedPointer<transaction::TransactionContext> txn, table_oid_t table)
+        -> std::vector<std::pair<common::ManagedPointer<storage::index::Index>, const IndexSchema &>>;
 
     /** @return The type_oid_t that corresponds to the internal TypeId. */
-    type_oid_t GetTypeOidForType(execution::sql::SqlTypeId type);
+    auto GetTypeOidForType(execution::sql::SqlTypeId type) -> type_oid_t;
 
     /** @brief Get a list of all of the constraints for the specified table. */
-    std::vector<constraint_oid_t> GetConstraints(common::ManagedPointer<transaction::TransactionContext> txn,
-                                                 table_oid_t                                             table);
+    auto GetConstraints(common::ManagedPointer<transaction::TransactionContext> txn, table_oid_t table)
+        -> std::vector<constraint_oid_t>;
 
     /** @brief Create a new language, may fail with INVALID_LANGUAGE_OID. @see PgLanguageImpl::CreateLanguage */
-    language_oid_t CreateLanguage(common::ManagedPointer<transaction::TransactionContext> txn,
-                                  const std::string                                      &lanname);
+    auto CreateLanguage(common::ManagedPointer<transaction::TransactionContext> txn, const std::string &lanname)
+        -> language_oid_t;
     /** @brief Drop the specified language. @see PgLanguageImpl::DropLanguage */
-    bool DropLanguage(common::ManagedPointer<transaction::TransactionContext> txn, language_oid_t oid);
+    auto DropLanguage(common::ManagedPointer<transaction::TransactionContext> txn, language_oid_t oid) -> bool;
     /** @brief Get the OID of the specified language. @see PgLanguageImpl::GetLanguageOid */
-    language_oid_t GetLanguageOid(common::ManagedPointer<transaction::TransactionContext> txn,
-                                  const std::string                                      &lanname);
+    auto GetLanguageOid(common::ManagedPointer<transaction::TransactionContext> txn, const std::string &lanname)
+        -> language_oid_t;
 
     /** @brief Create a new procedure, may fail with INVALID_PROC_OID. @see PgProcImpl::CreateProcedure */
-    proc_oid_t CreateProcedure(common::ManagedPointer<transaction::TransactionContext> txn,
-                               const std::string                                      &procname,
-                               language_oid_t                                          language_oid,
-                               namespace_oid_t                                         procns,
-                               type_oid_t                                              variadic_type,
-                               const std::vector<std::string>                         &args,
-                               const std::vector<type_oid_t>                          &arg_types,
-                               const std::vector<type_oid_t>                          &all_arg_types,
-                               const std::vector<postgres::PgProc::ArgModes>          &arg_modes,
-                               type_oid_t                                              rettype,
-                               const std::string                                      &src,
-                               bool                                                    is_aggregate);
+    auto CreateProcedure(common::ManagedPointer<transaction::TransactionContext> txn,
+                         const std::string                                      &procname,
+                         language_oid_t                                          language_oid,
+                         namespace_oid_t                                         procns,
+                         type_oid_t                                              variadic_type,
+                         const std::vector<std::string>                         &args,
+                         const std::vector<type_oid_t>                          &arg_types,
+                         const std::vector<type_oid_t>                          &all_arg_types,
+                         const std::vector<postgres::PgProc::ArgModes>          &arg_modes,
+                         type_oid_t                                              rettype,
+                         const std::string                                      &src,
+                         bool                                                    is_aggregate) -> proc_oid_t;
     /** @brief Drop the specified procedure. @see PgProcImpl::DropProcedure */
-    bool DropProcedure(common::ManagedPointer<transaction::TransactionContext> txn, proc_oid_t proc);
+    auto DropProcedure(common::ManagedPointer<transaction::TransactionContext> txn, proc_oid_t proc) -> bool;
     /** @brief Get the OID of the specified procedure. @see PgProcImpl::GetProcOid */
-    proc_oid_t GetProcOid(common::ManagedPointer<transaction::TransactionContext> txn,
-                          namespace_oid_t                                         procns,
-                          const std::string                                      &procname,
-                          const std::vector<type_oid_t>                          &all_arg_types);
+    auto GetProcOid(common::ManagedPointer<transaction::TransactionContext> txn,
+                    namespace_oid_t                                         procns,
+                    const std::string                                      &procname,
+                    const std::vector<type_oid_t>                          &all_arg_types) -> proc_oid_t;
     /** @brief Set the procedure context for the specified procedure. @see PgProcImpl::SetFunctionContextPointer */
-    bool SetFunctionContextPointer(common::ManagedPointer<transaction::TransactionContext> txn,
+    auto SetFunctionContextPointer(common::ManagedPointer<transaction::TransactionContext> txn,
                                    proc_oid_t                                              proc_oid,
-                                   const execution::functions::FunctionContext            *func_context);
+                                   const execution::functions::FunctionContext            *func_context) -> bool;
     /** @brief Get the procedure context for the specified procedure. @see PgProcImpl::GetFunctionContext */
-    common::ManagedPointer<execution::functions::FunctionContext>
-    GetFunctionContext(common::ManagedPointer<transaction::TransactionContext> txn, proc_oid_t proc_oid);
+    auto GetFunctionContext(common::ManagedPointer<transaction::TransactionContext> txn, proc_oid_t proc_oid)
+        -> common::ManagedPointer<execution::functions::FunctionContext>;
 
     /** @brief Get the statistics for the specified column. @see PgStatisticImpl::GetColumnStatistics */
-    std::unique_ptr<optimizer::ColumnStatsBase>
-    GetColumnStatistics(common::ManagedPointer<transaction::TransactionContext> txn,
-                        table_oid_t                                             table_oid,
-                        col_oid_t                                               col_oid);
+    auto GetColumnStatistics(common::ManagedPointer<transaction::TransactionContext> txn,
+                             table_oid_t                                             table_oid,
+                             col_oid_t col_oid) -> std::unique_ptr<optimizer::ColumnStatsBase>;
 
     /** @brief Get the statistics for the specified table. @see PgStatisticImpl::GetTableStatistics */
-    optimizer::TableStats GetTableStatistics(common::ManagedPointer<transaction::TransactionContext> txn,
-                                             table_oid_t                                             table_oid);
+    auto GetTableStatistics(common::ManagedPointer<transaction::TransactionContext> txn, table_oid_t table_oid)
+        -> optimizer::TableStats;
 
 private:
     /**
@@ -280,14 +282,15 @@ private:
      * @warning       This requires that commit actions be performed after the commit time is stored
      *                in the TransactionContext's FinishTime.
      */
-    bool TryLock(common::ManagedPointer<transaction::TransactionContext> txn);
+    auto TryLock(common::ManagedPointer<transaction::TransactionContext> txn) -> bool;
 
     /**
      * @brief Atomically update the next oid counter to the max of the current count and the provided next oid.
      * @param oid     The next oid to move the oid counter to.
      */
     void UpdateNextOid(uint32_t oid) {
-        uint32_t expected, desired;
+        uint32_t expected = 0;
+        uint32_t desired = 0;
         do {
             expected = next_oid_.load();
             desired = std::max(expected, oid);
@@ -314,21 +317,21 @@ private:
      * @brief Create a new table entry WITHOUT TAKING THE DDL LOCK. Used by other members of DatabaseCatalog.
      * @see   PgCoreImpl::CreateTableEntry
      */
-    bool CreateTableEntry(common::ManagedPointer<transaction::TransactionContext> txn,
+    auto CreateTableEntry(common::ManagedPointer<transaction::TransactionContext> txn,
                           table_oid_t                                             table_oid,
                           namespace_oid_t                                         ns_oid,
                           const std::string                                      &name,
-                          const Schema                                           &schema);
+                          const Schema                                           &schema) -> bool;
     /**
      * @brief Create a new table entry WITHOUT TAKING THE DDL LOCK. Used by other members of DatabaseCatalog.
      * @see   PgCoreImpl::CreateIndexEntry
      */
-    bool CreateIndexEntry(common::ManagedPointer<transaction::TransactionContext> txn,
+    auto CreateIndexEntry(common::ManagedPointer<transaction::TransactionContext> txn,
                           namespace_oid_t                                         ns_oid,
                           table_oid_t                                             table_oid,
                           index_oid_t                                             index_oid,
                           const std::string                                      &name,
-                          const IndexSchema                                      &schema);
+                          const IndexSchema                                      &schema) -> bool;
 
     /**
      * @brief Creates table statistics in pg_statistic. Should only be called on valid tables, currently only called by
@@ -346,11 +349,12 @@ private:
      * @param table   The OID of the table to remove all indexes for.
      * @return        True if the deletion succeeded. False otherwise.
      */
-    bool DeleteIndexes(common::ManagedPointer<transaction::TransactionContext> txn, table_oid_t table);
+    auto DeleteIndexes(common::ManagedPointer<transaction::TransactionContext> txn, table_oid_t table) -> bool;
 
     /** @brief Get all the columns for a particular pg_attribute entry. @see PgAttributeImpl::GetColumns */
     template <typename Column, typename ClassOid, typename ColOid>
-    std::vector<Column> GetColumns(common::ManagedPointer<transaction::TransactionContext> txn, ClassOid class_oid);
+    auto GetColumns(common::ManagedPointer<transaction::TransactionContext> txn, ClassOid class_oid)
+        -> std::vector<Column>;
 
     /**
      * @brief Set the schema of a table in pg_class.
@@ -362,9 +366,9 @@ private:
      * @return                True if the schema was set successfully. False otherwise.
      */
     template <typename CallerType>
-    bool SetTableSchemaPointer(common::ManagedPointer<transaction::TransactionContext> txn,
+    auto SetTableSchemaPointer(common::ManagedPointer<transaction::TransactionContext> txn,
                                table_oid_t                                             oid,
-                               const Schema                                           *schema) {
+                               const Schema                                           *schema) -> bool {
         static_assert(std::is_same_v<CallerType, storage::RecoveryManager>, "Only recovery should call this.");
         return SetClassPointer(txn, oid, schema, postgres::PgClass::REL_SCHEMA.oid_);
     }
@@ -379,18 +383,18 @@ private:
      * @return                True if the index schema was set successfully. False otherwise.
      */
     template <typename CallerType>
-    bool SetIndexSchemaPointer(common::ManagedPointer<transaction::TransactionContext> txn,
+    auto SetIndexSchemaPointer(common::ManagedPointer<transaction::TransactionContext> txn,
                                index_oid_t                                             oid,
-                               const IndexSchema                                      *schema) {
+                               const IndexSchema                                      *schema) -> bool {
         static_assert(std::is_same_v<CallerType, storage::RecoveryManager>, "Only recovery should call this.");
         return SetClassPointer(txn, oid, schema, postgres::PgClass::REL_SCHEMA.oid_);
     }
 
     /** @brief Set REL_PTR for the specified pg_class column. @see PgCoreImpl::SetClassPointer */
     template <typename ClassOid, typename Ptr>
-    bool SetClassPointer(common::ManagedPointer<transaction::TransactionContext> txn,
+    auto SetClassPointer(common::ManagedPointer<transaction::TransactionContext> txn,
                          ClassOid                                                oid,
                          const Ptr                                              *pointer,
-                         col_oid_t                                               class_col);
+                         col_oid_t                                               class_col) -> bool;
 };
 } // namespace noisepage::catalog
