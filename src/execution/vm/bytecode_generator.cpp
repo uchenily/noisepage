@@ -209,7 +209,7 @@ void BytecodeGenerator::VisitForStmt(ast::ForStmt *node) {
     loop_builder.JumpToHeader();
 }
 
-void BytecodeGenerator::VisitForInStmt(UNUSED_ATTRIBUTE ast::ForInStmt *node) {
+void BytecodeGenerator::VisitForInStmt([[maybe_unused]] ast::ForInStmt *node) {
     NOISEPAGE_ASSERT(false, "For-in statements not supported");
 }
 
@@ -627,7 +627,7 @@ void BytecodeGenerator::VisitSqlConversionCall(ast::CallExpr *call, ast::Builtin
     }
 }
 
-void BytecodeGenerator::VisitNullValueCall(ast::CallExpr *call, UNUSED_ATTRIBUTE ast::Builtin builtin) {
+void BytecodeGenerator::VisitNullValueCall(ast::CallExpr *call, [[maybe_unused]] ast::Builtin builtin) {
     switch (builtin) {
     case ast::Builtin::IsValNull: {
         LocalVar result = GetExecutionResult()->GetOrCreateDestination(call->GetType());
@@ -3549,7 +3549,7 @@ void BytecodeGenerator::VisitLitExpr(ast::LitExpr *node) {
     }
 }
 
-void BytecodeGenerator::VisitStructDecl(UNUSED_ATTRIBUTE ast::StructDecl *node) {
+void BytecodeGenerator::VisitStructDecl([[maybe_unused]] ast::StructDecl *node) {
     // Nothing to do
 }
 

@@ -495,7 +495,7 @@ public:
                 NOISEPAGE_ASSERT(tid_list->GetCapacity() <= common::Constants::K_DEFAULT_VECTOR_SIZE,
                                  "TID list too large");
                 alignas(common::Constants::CACHELINE_SIZE) sel_t sel_vector[common::Constants::K_DEFAULT_VECTOR_SIZE];
-                UNUSED_ATTRIBUTE uint64_t                        size = tid_list->ToSelectionVector(sel_vector);
+                [[maybe_unused]] uint64_t                        size = tid_list->ToSelectionVector(sel_vector);
                 for (uint64_t i = offset; i < count; i++) {
                     f(sel_vector[i], i);
                 }

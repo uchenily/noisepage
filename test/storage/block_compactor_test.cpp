@@ -250,7 +250,7 @@ TEST_F(BlockCompactorTest, GatherTest) {
                 // our table, and thus will always be equal
                 if (varlen == nullptr)
                     continue;
-                auto size UNUSED_ATTRIBUTE = varlen->Size();
+                auto size [[maybe_unused]] = varlen->Size();
                 // Safe to do plus 1, because length array will always have one more element
                 EXPECT_EQ(arrow_column.Offsets()[i + 1] - arrow_column.Offsets()[i], varlen->Size());
                 if (!varlen->IsInlined()) {
@@ -385,8 +385,8 @@ TEST_F(BlockCompactorTest, DictionaryCompressionTest) {
                 // our table, and thus will always be equal
                 if (varlen == nullptr)
                     continue;
-                auto size UNUSED_ATTRIBUTE = varlen->Size();
-                auto      dict_code = arrow_metadata.GetColumnInfo(layout, id).Indices()[i];
+                auto size [[maybe_unused]] = varlen->Size();
+                auto dict_code = arrow_metadata.GetColumnInfo(layout, id).Indices()[i];
                 // Safe to do plus 1, because length array will always have one more element
                 EXPECT_EQ(arrow_column.Offsets()[dict_code + 1] - arrow_column.Offsets()[dict_code], varlen->Size());
                 if (!varlen->IsInlined()) {

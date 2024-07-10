@@ -443,7 +443,7 @@ TEST_F(ChainingHashTableTest, DISABLED_PerfIteration) {
 
     uint32_t sum1 = 0, sum2 = 0;
 
-    UNUSED_ATTRIBUTE double taat_ms = Bench(5, [&]() {
+    [[maybe_unused]] double taat_ms = Bench(5, [&]() {
         ChainingHashTableIterator<false> iter(table);
         for (; iter.HasNext(); iter.Next()) {
             auto *row = reinterpret_cast<const TestEntry *>(iter.GetCurrentEntry());
@@ -451,7 +451,7 @@ TEST_F(ChainingHashTableTest, DISABLED_PerfIteration) {
         }
     });
 
-    UNUSED_ATTRIBUTE double vaat_ms = Bench(5, [&]() {
+    [[maybe_unused]] double vaat_ms = Bench(5, [&]() {
         MemoryPool                             pool(nullptr);
         ChainingHashTableVectorIterator<false> iter(table, &pool);
         for (; iter.HasNext(); iter.Next()) {

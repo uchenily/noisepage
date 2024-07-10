@@ -82,7 +82,7 @@ public:
         txn_manager_->Commit(insert_txn, transaction::TransactionUtil::EmptyCallback, nullptr);
     }
 
-    static void EmptySetterCallback(common::ManagedPointer<common::ActionContext> action_context UNUSED_ATTRIBUTE) {}
+    static void EmptySetterCallback(common::ManagedPointer<common::ActionContext> action_context [[maybe_unused]]) {}
 };
 
 /**

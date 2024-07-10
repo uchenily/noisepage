@@ -154,7 +154,7 @@ TEST_F(TableVectorIteratorTest, ParallelScanTest) {
     };
 
     // Scan function just counts all tuples it sees
-    auto scanner = [](UNUSED_ATTRIBUTE void *state, void *tls, TableVectorIterator *tvi) {
+    auto scanner = []([[maybe_unused]] void *state, void *tls, TableVectorIterator *tvi) {
         auto *counter = reinterpret_cast<Counter *>(tls);
         while (tvi->Advance()) {
             for (auto *vpi = tvi->GetVectorProjectionIterator(); vpi->HasNext(); vpi->Advance()) {

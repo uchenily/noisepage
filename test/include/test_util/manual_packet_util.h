@@ -63,7 +63,7 @@ public:
         serv_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
         serv_addr.sin_port = htons(port);
 
-        int64_t ret UNUSED_ATTRIBUTE = connect(socket_fd, reinterpret_cast<sockaddr *>(&serv_addr), sizeof(serv_addr));
+        int64_t ret [[maybe_unused]] = connect(socket_fd, reinterpret_cast<sockaddr *>(&serv_addr), sizeof(serv_addr));
         NOISEPAGE_ASSERT(ret >= 0, "Connector Error");
 
         auto                 io_socket = std::make_unique<NetworkIoWrapper>(socket_fd);
@@ -96,7 +96,7 @@ public:
         out_buffer[0] = 'X';
         int len = sizeof(int32_t) + sizeof(char);
         reinterpret_cast<int32_t *>(out_buffer + 1)[0] = htonl(len);
-        UNUSED_ATTRIBUTE auto result = write(socket_fd, out_buffer, len + 1);
+        [[maybe_unused]] auto result = write(socket_fd, out_buffer, len + 1);
         NOISEPAGE_ASSERT(result == len + 1, "Unsuccessful write");
     }
 

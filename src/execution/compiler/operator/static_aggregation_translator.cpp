@@ -308,7 +308,7 @@ void StaticAggregationTranslator::FinishPipelineWork(const Pipeline &pipeline, F
 }
 
 ast::Expr *StaticAggregationTranslator::GetChildOutput(WorkContext              *context,
-                                                       UNUSED_ATTRIBUTE uint32_t child_idx,
+                                                       [[maybe_unused]] uint32_t child_idx,
                                                        uint32_t                  attr_idx) const {
     if (IsProducePipeline(context->GetPipeline())) {
         auto *codegen = GetCodeGen();

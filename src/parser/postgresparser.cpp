@@ -1982,7 +1982,7 @@ std::unique_ptr<ExplainStatement> PostgresParser::ExplainTransform(ParseResult *
     if (root->options_ != nullptr) {
         for (ListCell *cell = root->options_->head; cell != nullptr; cell = cell->next) {
             NOISEPAGE_ASSERT(reinterpret_cast<Node *>(cell->data.ptr_value)->type == T_DefElem, "Expect a DefElem.");
-            const auto *const def_elem UNUSED_ATTRIBUTE = reinterpret_cast<DefElem *>(cell->data.ptr_value);
+            const auto *const def_elem [[maybe_unused]] = reinterpret_cast<DefElem *>(cell->data.ptr_value);
 
             if (strncmp(def_elem->defname_, k_format_tok, sizeof(k_format_tok)) == 0) {
                 const auto *const format_cstr = reinterpret_cast<value *>(def_elem->arg_)->val_.str_;

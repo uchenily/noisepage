@@ -69,8 +69,9 @@ auto TaskflowUtil::Optimize(const common::ManagedPointer<transaction::Transactio
         const auto insert_stmt = query->GetStatement(0).CastManagedPointerTo<parser::InsertStatement>()->GetSelect();
 
         // Inset into select output will be pushed down to select
-        output = insert_stmt->GetSelectColumns(); // TODO(Matt): this is making a local copy. Revisit the life cycle and
+        // TODO(Matt): this is making a local copy. Revisit the life cycle and
         // immutability of all of these Optimizer inputs to reduce copies.
+        output = insert_stmt->GetSelectColumns();
 
         CollectSelectProperties(insert_stmt, &property_set);
     }

@@ -58,7 +58,7 @@ bool BPlusTreeIndex<KeyType>::Insert(common::ManagedPointer<transaction::Transac
         "non-unique index shouldn't fail to insert. If it did, something went wrong deep inside the BPlusTree itself.");
     // Register an abort action with the txn context in case of rollback
     txn->RegisterAbortAction([=]() {
-        const bool UNUSED_ATTRIBUTE result = bplustree_->DeleteElement(bplustree_->GetElement(index_key, location));
+        [[maybe_unused]] const bool result = bplustree_->DeleteElement(bplustree_->GetElement(index_key, location));
 
         NOISEPAGE_ASSERT(result, "Delete on the index failed.");
     });
@@ -88,7 +88,7 @@ bool BPlusTreeIndex<KeyType>::InsertUnique(common::ManagedPointer<transaction::T
     if (result) {
         // Register an abort action with the txn context in case of rollback
         txn->RegisterAbortAction([=]() {
-            const bool UNUSED_ATTRIBUTE result = bplustree_->DeleteElement(bplustree_->GetElement(index_key, location));
+            [[maybe_unused]] const bool result = bplustree_->DeleteElement(bplustree_->GetElement(index_key, location));
             NOISEPAGE_ASSERT(result, "Delete on the index failed.");
         });
     } else {
@@ -116,7 +116,7 @@ void BPlusTreeIndex<KeyType>::Delete(common::ManagedPointer<transaction::Transac
     // Register a deferred action for the GC with txn manager. See base function comment.
     txn->RegisterCommitAction([=](transaction::DeferredActionManager *deferred_action_manager) {
         deferred_action_manager->RegisterDeferredAction([=]() {
-            const bool UNUSED_ATTRIBUTE result = bplustree_->DeleteElement(bplustree_->GetElement(index_key, location));
+            [[maybe_unused]] const bool result = bplustree_->DeleteElement(bplustree_->GetElement(index_key, location));
 
             NOISEPAGE_ASSERT(result, "Deferred delete on the index failed.");
         });

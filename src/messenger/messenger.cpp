@@ -120,7 +120,7 @@ ZmqMessage::ZmqMessage(std::string routing_id, std::string payload)
 
     NOISEPAGE_ASSERT(!payload_.empty(), "Payload must be defined for valid messages.");
     // TODO(WAN): atoi, stoull, from_chars, etc? Error checking in general.
-    UNUSED_ATTRIBUTE int check = std::sscanf(payload_.c_str(),
+    [[maybe_unused]] int check = std::sscanf(payload_.c_str(),
                                              "%" SCNu64 "-%" SCNu64 "-%" SCNu64 "-",
                                              &message_id,
                                              &source_cb_id,

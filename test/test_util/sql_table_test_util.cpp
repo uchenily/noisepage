@@ -268,10 +268,10 @@ void LargeSqlTableTestObject::PopulateInitialTables(uint16_t             num_dat
             NOISEPAGE_ASSERT(table_oid != catalog::INVALID_TABLE_OID, "Table creation should always succeed");
             delete schema;
             table_oids_[database_oid].emplace_back(table_oid);
-            auto        catalog_schema = db_catalog_ptr->GetSchema(common::ManagedPointer(initial_txn_), table_oid);
-            auto       *sql_table = new storage::SqlTable(common::ManagedPointer(block_store), catalog_schema);
-            auto result UNUSED_ATTRIBUTE
-                = db_catalog_ptr->SetTablePointer(common::ManagedPointer(initial_txn_), table_oid, sql_table);
+            auto  catalog_schema = db_catalog_ptr->GetSchema(common::ManagedPointer(initial_txn_), table_oid);
+            auto *sql_table = new storage::SqlTable(common::ManagedPointer(block_store), catalog_schema);
+            auto  result [[maybe_unused]]
+            = db_catalog_ptr->SetTablePointer(common::ManagedPointer(initial_txn_), table_oid, sql_table);
             NOISEPAGE_ASSERT(result, "Setting table pointer in catalog should succeed");
 
             // Create metadata object

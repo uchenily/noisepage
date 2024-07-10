@@ -48,7 +48,7 @@ public:
             auto *const pr = GetProjectedRow();
             generic_key_initializer.InitializeRow(pr);
 
-            UNUSED_ATTRIBUTE const auto &key_cols = key_schema.GetColumns();
+            [[maybe_unused]] const auto &key_cols = key_schema.GetColumns();
             NOISEPAGE_ASSERT(num_attrs > 0 && num_attrs <= key_cols.size(), "Number of attributes violates invariant");
 
             for (uint16_t i = 0; i < num_attrs; i++) {
@@ -211,10 +211,10 @@ public:
      * @returns whether this is less than other
      */
     bool PartialLessThan(const GenericKey<KeySize>            &rhs,
-                         UNUSED_ATTRIBUTE const IndexMetadata *metadata,
+                         [[maybe_unused]] const IndexMetadata *metadata,
                          size_t                                num_attrs) const {
         const auto                  &key_schema = GetIndexMetadata().GetSchema();
-        UNUSED_ATTRIBUTE const auto &key_cols = key_schema.GetColumns();
+        [[maybe_unused]] const auto &key_cols = key_schema.GetColumns();
         NOISEPAGE_ASSERT(num_attrs > 0 && num_attrs <= key_cols.size(), "Invalid num_attrs for generic key");
 
         for (uint16_t i = 0; i < num_attrs; i++) {

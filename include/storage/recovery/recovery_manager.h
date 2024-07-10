@@ -248,7 +248,7 @@ private:
                                                                         catalog::db_oid_t                db_oid) {
         auto db_catalog_ptr = catalog_->GetDatabaseCatalog(common::ManagedPointer(txn), db_oid);
         NOISEPAGE_ASSERT(db_catalog_ptr != nullptr, "No catalog for given database oid");
-        auto result UNUSED_ATTRIBUTE = db_catalog_ptr->TryLock(common::ManagedPointer(txn));
+        auto result [[maybe_unused]] = db_catalog_ptr->TryLock(common::ManagedPointer(txn));
         NOISEPAGE_ASSERT(result, "There should not be concurrent DDL changes during recovery.");
         return db_catalog_ptr;
     }

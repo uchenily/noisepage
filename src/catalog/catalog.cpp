@@ -184,7 +184,7 @@ auto Catalog::GetDatabaseOid(const common::ManagedPointer<transaction::Transacti
     NOISEPAGE_ASSERT(index_results.size() == 1, "Database name not unique in index");
 
     pr = get_database_oid_pri_.InitializeRow(buffer);
-    const auto result UNUSED_ATTRIBUTE = databases_->Select(common::ManagedPointer(txn), index_results[0], pr);
+    const auto result [[maybe_unused]] = databases_->Select(common::ManagedPointer(txn), index_results[0], pr);
     NOISEPAGE_ASSERT(result, "Index already verified visibility. This shouldn't fail.");
     const auto db_oid = *(reinterpret_cast<const db_oid_t *const>(pr->AccessForceNotNull(0)));
     delete[] buffer;
@@ -210,7 +210,7 @@ auto Catalog::GetDatabaseCatalog(const common::ManagedPointer<transaction::Trans
     NOISEPAGE_ASSERT(index_results.size() == 1, "Database name not unique in index");
 
     pr = get_database_catalog_pri_.InitializeRow(buffer);
-    const auto UNUSED_ATTRIBUTE result = databases_->Select(common::ManagedPointer(txn), index_results[0], pr);
+    [[maybe_unused]] const auto result = databases_->Select(common::ManagedPointer(txn), index_results[0], pr);
     NOISEPAGE_ASSERT(result, "Index scan did a visibility check, so Select shouldn't fail at this point.");
 
     const auto dbc = *(reinterpret_cast<DatabaseCatalog **>(pr->AccessForceNotNull(0)));
@@ -285,7 +285,7 @@ auto Catalog::CreateDatabaseEntry(const common::ManagedPointer<transaction::Tran
     // There's only a single column in the key, so there is no need to check OID to key column
     *(reinterpret_cast<db_oid_t *>(pr->AccessForceNotNull(0))) = db;
 
-    const bool UNUSED_ATTRIBUTE result
+    [[maybe_unused]] const bool result
         = databases_oid_index_->InsertUnique(common::ManagedPointer(txn), *pr, tupleslot);
     NOISEPAGE_ASSERT(result, "Assigned database OID failed to be unique");
 
@@ -316,7 +316,7 @@ auto Catalog::DeleteDatabaseEntry(const common::ManagedPointer<transaction::Tran
         "pushing logic here.");
 
     pr = delete_database_entry_pri_.InitializeRow(buffer);
-    const auto UNUSED_ATTRIBUTE result = databases_->Select(common::ManagedPointer(txn), index_results[0], pr);
+    [[maybe_unused]] const auto result = databases_->Select(common::ManagedPointer(txn), index_results[0], pr);
 
     NOISEPAGE_ASSERT(result, "Index scan did a visibility check, so Select shouldn't fail at this point.");
 

@@ -61,7 +61,7 @@ public:
         auto schema = accessor->GetSchema(table_oid);
         auto table = new storage::SqlTable(db_main_->GetStorageLayer()->GetBlockStore(), schema);
 
-        auto result UNUSED_ATTRIBUTE = accessor->SetTablePointer(table_oid, table);
+        auto result [[maybe_unused]] = accessor->SetTablePointer(table_oid, table);
         NOISEPAGE_ASSERT(result, "setting table pointer should not fail");
         auto idx_oid = AddIndex(accessor, table_oid, "test_table_idx", schema.GetColumn("id"));
         txn_manager_->Commit(txn, transaction::TransactionUtil::EmptyCallback, nullptr);
@@ -91,7 +91,7 @@ public:
         auto schema = accessor->GetSchema(table_oid);
         auto table = new storage::SqlTable(db_main_->GetStorageLayer()->GetBlockStore(), schema);
 
-        auto result UNUSED_ATTRIBUTE = accessor->SetTablePointer(table_oid, table);
+        auto result [[maybe_unused]] = accessor->SetTablePointer(table_oid, table);
         NOISEPAGE_ASSERT(result, "setting table pointer should not fail");
         std::vector<catalog::index_oid_t> idx_oids;
         idx_oids.reserve(num_indexes);
@@ -131,8 +131,8 @@ public:
 
         storage::index::IndexBuilder index_builder;
         index_builder.SetKeySchema(true_schema);
-        auto        index = index_builder.Build();
-        bool result UNUSED_ATTRIBUTE = accessor->SetIndexPointer(idx_oid, index);
+        auto index = index_builder.Build();
+        bool result [[maybe_unused]] = accessor->SetIndexPointer(idx_oid, index);
         NOISEPAGE_ASSERT(result, "setting index pointer should not fail");
         return idx_oid;
     }
@@ -158,7 +158,7 @@ BENCHMARK_DEFINE_F(CatalogBenchmark, GetDatabaseOid)(benchmark::State &state) {
 
     // NOLINTNEXTLINE
     for (auto _ : state) {
-        const auto test_oid UNUSED_ATTRIBUTE = catalog_->GetDatabaseOid(common::ManagedPointer(txn), "noisepage");
+        const auto test_oid [[maybe_unused]] = catalog_->GetDatabaseOid(common::ManagedPointer(txn), "noisepage");
         NOISEPAGE_ASSERT(test_oid == db_, "getting oid should not fail");
     }
 
@@ -172,7 +172,7 @@ BENCHMARK_DEFINE_F(CatalogBenchmark, GetDatabaseCatalog)(benchmark::State &state
 
     // NOLINTNEXTLINE
     for (auto _ : state) {
-        const auto dbc UNUSED_ATTRIBUTE = catalog_->GetDatabaseCatalog(common::ManagedPointer(txn), db_);
+        const auto dbc [[maybe_unused]] = catalog_->GetDatabaseCatalog(common::ManagedPointer(txn), db_);
         NOISEPAGE_ASSERT(dbc != nullptr, "getting accessor should not fail");
     }
 
@@ -182,14 +182,14 @@ BENCHMARK_DEFINE_F(CatalogBenchmark, GetDatabaseCatalog)(benchmark::State &state
 
 // NOLINTNEXTLINE
 BENCHMARK_DEFINE_F(CatalogBenchmark, GetIndex)(benchmark::State &state) {
-    const auto oids UNUSED_ATTRIBUTE = AddUserTableAndIndex();
+    const auto oids [[maybe_unused]] = AddUserTableAndIndex();
 
     auto *txn = txn_manager_->BeginTransaction();
     auto  accessor = catalog_->GetAccessor(common::ManagedPointer(txn), db_, DISABLED);
 
     // NOLINTNEXTLINE
     for (auto _ : state) {
-        const auto test_index UNUSED_ATTRIBUTE = accessor->GetIndex(oids.second);
+        const auto test_index [[maybe_unused]] = accessor->GetIndex(oids.second);
         NOISEPAGE_ASSERT(test_index != nullptr, "getting index should not fail");
     }
 
@@ -200,14 +200,14 @@ BENCHMARK_DEFINE_F(CatalogBenchmark, GetIndex)(benchmark::State &state) {
 
 // NOLINTNEXTLINE
 BENCHMARK_DEFINE_F(CatalogBenchmark, GetIndexOid)(benchmark::State &state) {
-    const auto oids UNUSED_ATTRIBUTE = AddUserTableAndIndex();
+    const auto oids [[maybe_unused]] = AddUserTableAndIndex();
 
     auto *txn = txn_manager_->BeginTransaction();
     auto  accessor = catalog_->GetAccessor(common::ManagedPointer(txn), db_, DISABLED);
 
     // NOLINTNEXTLINE
     for (auto _ : state) {
-        const auto test_index UNUSED_ATTRIBUTE = accessor->GetIndexOid("test_table_idx");
+        const auto test_index [[maybe_unused]] = accessor->GetIndexOid("test_table_idx");
         NOISEPAGE_ASSERT(oids.second == test_index, "getting index oid should not fail");
     }
 
@@ -218,14 +218,14 @@ BENCHMARK_DEFINE_F(CatalogBenchmark, GetIndexOid)(benchmark::State &state) {
 
 // NOLINTNEXTLINE
 BENCHMARK_DEFINE_F(CatalogBenchmark, GetIndexes)(benchmark::State &state) {
-    const auto oids UNUSED_ATTRIBUTE = AddUserTableAndIndex();
+    const auto oids [[maybe_unused]] = AddUserTableAndIndex();
 
     auto *txn = txn_manager_->BeginTransaction();
     auto  accessor = catalog_->GetAccessor(common::ManagedPointer(txn), db_, DISABLED);
 
     // NOLINTNEXTLINE
     for (auto _ : state) {
-        const auto test_indexes UNUSED_ATTRIBUTE = accessor->GetIndexOids(oids.first);
+        const auto test_indexes [[maybe_unused]] = accessor->GetIndexOids(oids.first);
         NOISEPAGE_ASSERT(!test_indexes.empty(), "getting index oids should not fail");
     }
 
@@ -236,14 +236,14 @@ BENCHMARK_DEFINE_F(CatalogBenchmark, GetIndexes)(benchmark::State &state) {
 
 // NOLINTNEXTLINE
 BENCHMARK_DEFINE_F(CatalogBenchmark, GetIndexSchema)(benchmark::State &state) {
-    const auto oids UNUSED_ATTRIBUTE = AddUserTableAndIndex();
+    const auto oids [[maybe_unused]] = AddUserTableAndIndex();
 
     auto *txn = txn_manager_->BeginTransaction();
     auto  accessor = catalog_->GetAccessor(common::ManagedPointer(txn), db_, DISABLED);
 
     // NOLINTNEXTLINE
     for (auto _ : state) {
-        const auto test_idx_schema UNUSED_ATTRIBUTE = accessor->GetIndexSchema(oids.second);
+        const auto test_idx_schema [[maybe_unused]] = accessor->GetIndexSchema(oids.second);
     }
 
     txn_manager_->Commit(txn, transaction::TransactionUtil::EmptyCallback, nullptr);
@@ -253,9 +253,9 @@ BENCHMARK_DEFINE_F(CatalogBenchmark, GetIndexSchema)(benchmark::State &state) {
 
 // NOLINTNEXTLINE
 BENCHMARK_DEFINE_F(CatalogBenchmark, GetNamespaceOid)(benchmark::State &state) {
-    auto              txn = txn_manager_->BeginTransaction();
-    auto              accessor = catalog_->GetAccessor(common::ManagedPointer(txn), db_, DISABLED);
-    const auto ns_oid UNUSED_ATTRIBUTE = accessor->CreateNamespace("test_namespace");
+    auto       txn = txn_manager_->BeginTransaction();
+    auto       accessor = catalog_->GetAccessor(common::ManagedPointer(txn), db_, DISABLED);
+    const auto ns_oid [[maybe_unused]] = accessor->CreateNamespace("test_namespace");
     NOISEPAGE_ASSERT(ns_oid != catalog::INVALID_NAMESPACE_OID, "namespace creation should not fail");
     txn_manager_->Commit(txn, transaction::TransactionUtil::EmptyCallback, nullptr);
 
@@ -264,7 +264,7 @@ BENCHMARK_DEFINE_F(CatalogBenchmark, GetNamespaceOid)(benchmark::State &state) {
 
     // NOLINTNEXTLINE
     for (auto _ : state) {
-        const auto test_ns_oid UNUSED_ATTRIBUTE = accessor->GetNamespaceOid("test_namespace");
+        const auto test_ns_oid [[maybe_unused]] = accessor->GetNamespaceOid("test_namespace");
         NOISEPAGE_ASSERT(test_ns_oid == ns_oid, "namespace lookup should not fail");
     }
 
@@ -275,14 +275,14 @@ BENCHMARK_DEFINE_F(CatalogBenchmark, GetNamespaceOid)(benchmark::State &state) {
 
 // NOLINTNEXTLINE
 BENCHMARK_DEFINE_F(CatalogBenchmark, GetSchema)(benchmark::State &state) {
-    const auto oids UNUSED_ATTRIBUTE = AddUserTableAndIndex();
+    const auto oids [[maybe_unused]] = AddUserTableAndIndex();
 
     auto *txn = txn_manager_->BeginTransaction();
     auto  accessor = catalog_->GetAccessor(common::ManagedPointer(txn), db_, DISABLED);
 
     // NOLINTNEXTLINE
     for (auto _ : state) {
-        const auto test_schema UNUSED_ATTRIBUTE = accessor->GetSchema(oids.first);
+        const auto test_schema [[maybe_unused]] = accessor->GetSchema(oids.first);
     }
 
     txn_manager_->Commit(txn, transaction::TransactionUtil::EmptyCallback, nullptr);
@@ -292,14 +292,14 @@ BENCHMARK_DEFINE_F(CatalogBenchmark, GetSchema)(benchmark::State &state) {
 
 // NOLINTNEXTLINE
 BENCHMARK_DEFINE_F(CatalogBenchmark, GetTable)(benchmark::State &state) {
-    const auto oids UNUSED_ATTRIBUTE = AddUserTableAndIndex();
+    const auto oids [[maybe_unused]] = AddUserTableAndIndex();
 
     auto *txn = txn_manager_->BeginTransaction();
     auto  accessor = catalog_->GetAccessor(common::ManagedPointer(txn), db_, DISABLED);
 
     // NOLINTNEXTLINE
     for (auto _ : state) {
-        const auto test_table UNUSED_ATTRIBUTE = accessor->GetTable(oids.first);
+        const auto test_table [[maybe_unused]] = accessor->GetTable(oids.first);
         NOISEPAGE_ASSERT(test_table != nullptr, "table lookup should not fail");
     }
 
@@ -310,14 +310,14 @@ BENCHMARK_DEFINE_F(CatalogBenchmark, GetTable)(benchmark::State &state) {
 
 // NOLINTNEXTLINE
 BENCHMARK_DEFINE_F(CatalogBenchmark, GetTableOid)(benchmark::State &state) {
-    const auto oids UNUSED_ATTRIBUTE = AddUserTableAndIndex();
+    const auto oids [[maybe_unused]] = AddUserTableAndIndex();
 
     auto *txn = txn_manager_->BeginTransaction();
     auto  accessor = catalog_->GetAccessor(common::ManagedPointer(txn), db_, DISABLED);
 
     // NOLINTNEXTLINE
     for (auto _ : state) {
-        const auto test_table_oid UNUSED_ATTRIBUTE = accessor->GetTableOid("test_table");
+        const auto test_table_oid [[maybe_unused]] = accessor->GetTableOid("test_table");
         NOISEPAGE_ASSERT(test_table_oid == oids.first, "table oid lookup should not fail");
     }
 
@@ -328,15 +328,15 @@ BENCHMARK_DEFINE_F(CatalogBenchmark, GetTableOid)(benchmark::State &state) {
 
 // NOLINTNEXTLINE
 BENCHMARK_DEFINE_F(CatalogBenchmark, GetIndexObjects)(benchmark::State &state) {
-    const auto      num_indexes = 5;
-    const auto oids UNUSED_ATTRIBUTE = AddUserTableAndIndexes(num_indexes);
+    const auto num_indexes = 5;
+    const auto oids [[maybe_unused]] = AddUserTableAndIndexes(num_indexes);
 
     auto *txn = txn_manager_->BeginTransaction();
     auto  accessor = catalog_->GetAccessor(common::ManagedPointer(txn), db_, DISABLED);
 
     // NOLINTNEXTLINE
     for (auto _ : state) {
-        const auto test_indexes UNUSED_ATTRIBUTE = accessor->GetIndexes(oids.first);
+        const auto test_indexes [[maybe_unused]] = accessor->GetIndexes(oids.first);
         NOISEPAGE_ASSERT(!test_indexes.empty(), "getting index objects should not fail");
     }
 

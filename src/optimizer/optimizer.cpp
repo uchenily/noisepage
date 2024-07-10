@@ -40,7 +40,7 @@ auto Optimizer::BuildPlanTree(transaction::TransactionContext                   
 
     // Generate initial operator tree from query tree
     GroupExpression      *gexpr = nullptr;
-    UNUSED_ATTRIBUTE bool insert = context_->RecordOptimizerNodeIntoGroup(common::ManagedPointer(op_tree), &gexpr);
+    [[maybe_unused]] bool insert = context_->RecordOptimizerNodeIntoGroup(common::ManagedPointer(op_tree), &gexpr);
     NOISEPAGE_ASSERT(insert && gexpr, "Logical expression tree should insert");
 
     group_id_t root_id = gexpr->GetGroupID();

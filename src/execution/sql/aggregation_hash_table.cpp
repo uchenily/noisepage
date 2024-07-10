@@ -729,7 +729,7 @@ void AggregationHashTable::ExecuteParallelPartitionedScan(void                  
                                                      return curr + partition_tables_[idx]->GetTupleCount();
                                                  });
 
-    UNUSED_ATTRIBUTE double tps = (tuple_count / timer.GetElapsed()) / 1000.0;
+    [[maybe_unused]] double tps = (tuple_count / timer.GetElapsed()) / 1000.0;
     EXECUTION_LOG_TRACE("Built and scanned {} tables totalling {} tuples in {:.2f} ms ({:.2f} mtps)",
                         nonempty_parts.size(),
                         tuple_count,

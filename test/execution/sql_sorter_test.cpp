@@ -193,7 +193,7 @@ void TestParallelSort(exec::ExecutionContext *exec_ctx, const std::vector<uint32
     const auto init_sorter = [](void *ctx, void *s) {
         new (s) Sorter(reinterpret_cast<exec::ExecutionContext *>(ctx), cmp_fn, sizeof(TestTuple<N>));
     };
-    const auto destroy_sorter = [](UNUSED_ATTRIBUTE void *ctx, void *s) {
+    const auto destroy_sorter = []([[maybe_unused]] void *ctx, void *s) {
         reinterpret_cast<Sorter *>(s)->~Sorter();
     };
 

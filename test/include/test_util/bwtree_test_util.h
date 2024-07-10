@@ -31,7 +31,7 @@ struct BwTreeTestUtil {
             return k1 < k2;
         }
 
-        explicit KeyComparator(int dummy UNUSED_ATTRIBUTE) {}
+        explicit KeyComparator(int dummy [[maybe_unused]]) {}
 
         KeyComparator() = delete;
     };
@@ -50,7 +50,7 @@ struct BwTreeTestUtil {
             return k1 == k2;
         }
 
-        explicit KeyEqualityChecker(int dummy UNUSED_ATTRIBUTE) {}
+        explicit KeyEqualityChecker(int dummy [[maybe_unused]]) {}
 
         KeyEqualityChecker() = delete;
     };

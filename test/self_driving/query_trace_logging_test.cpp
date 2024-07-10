@@ -51,7 +51,7 @@ class QueryTraceLogging : public TerrierTest {
         db_main_->TryLoadStartupDDL();
     }
 
-    static void EmptySetterCallback(common::ManagedPointer<common::ActionContext> action_context UNUSED_ATTRIBUTE) {}
+    static void EmptySetterCallback(common::ManagedPointer<common::ActionContext> action_context [[maybe_unused]]) {}
 
 protected:
     std::unique_ptr<DBMain>                                 db_main_;

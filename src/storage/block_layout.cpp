@@ -15,7 +15,7 @@ BlockLayout::BlockLayout(std::vector<uint16_t> attr_sizes)
     , static_header_size_(ComputeStaticHeaderSize())
     , num_slots_(ComputeNumSlots())
     , header_size_(ComputeHeaderSize()) {
-    for (uint16_t size UNUSED_ATTRIBUTE : attr_sizes_)
+    for (uint16_t size [[maybe_unused]] : attr_sizes_)
         NOISEPAGE_ASSERT(size == VARLEN_COLUMN || (size >= 0 && size <= INT16_MAX), "Invalid size of a column");
     NOISEPAGE_ASSERT(!attr_sizes_.empty() && static_cast<uint16_t>(attr_sizes_.size()) <= common::Constants::MAX_COL,
                      "number of columns must be between 1 and MAX_COL");

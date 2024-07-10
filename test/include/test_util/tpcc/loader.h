@@ -163,7 +163,7 @@ struct Loader {
                                                           item_key_pr_initializer,
                                                           item_key_pr_map,
                                                           db->item_primary_index_schema_);
-                bool UNUSED_ATTRIBUTE index_insert_result
+                [[maybe_unused]] bool index_insert_result
                     = db->item_primary_index_->InsertUnique(common::ManagedPointer(item_txn), *item_key, item_slot);
                 NOISEPAGE_ASSERT(index_insert_result, "Item index insertion failed.");
             }
@@ -196,7 +196,7 @@ struct Loader {
                                                                     warehouse_key_pr_initializer,
                                                                     warehouse_key_pr_map,
                                                                     db->warehouse_primary_index_schema_);
-                bool UNUSED_ATTRIBUTE index_insert_result
+                [[maybe_unused]] bool index_insert_result
                     = db->warehouse_primary_index_->InsertUnique(common::ManagedPointer(txn),
                                                                  *warehouse_key,
                                                                  warehouse_slot);

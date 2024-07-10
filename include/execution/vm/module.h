@@ -198,7 +198,7 @@ namespace detail {
     // These functions value-copy a variable number of pass-by-value arguments into
     // a given buffer. It's assumed the buffer is large enough to hold all arguments
 
-    inline void CopyAll(UNUSED_ATTRIBUTE uint8_t *buffer) {}
+    inline void CopyAll([[maybe_unused]] uint8_t *buffer) {}
 
     template <typename HeadT, typename... RestT>
     inline void CopyAll(uint8_t *buffer, const HeadT &head, const RestT &...rest) {

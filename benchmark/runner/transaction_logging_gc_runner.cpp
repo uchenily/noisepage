@@ -192,7 +192,7 @@ BENCHMARK_DEFINE_F(TransactionLoggingGCRunner, LoggingGCRunner)(benchmark::State
     state.SetItemsProcessed(state.iterations() * num_txns - abort_count);
 }
 
-static void UNUSED_ATTRIBUTE TransactionArguments(benchmark::internal::Benchmark *b) {
+static void [[maybe_unused]] TransactionArguments(benchmark::internal::Benchmark *b) {
     std::vector<uint32_t> txn_lengths = {2};
     // submit interval between two transactions (us)
     std::vector<uint32_t> txn_intervals = {1, 5, 10, 50, 100};
@@ -207,7 +207,7 @@ static void UNUSED_ATTRIBUTE TransactionArguments(benchmark::internal::Benchmark
                     }
 }
 
-static void UNUSED_ATTRIBUTE LoggingGCArguments(benchmark::internal::Benchmark *b) {
+static void [[maybe_unused]] LoggingGCArguments(benchmark::internal::Benchmark *b) {
     std::vector<uint32_t> config_intervals = {10, 100, 1000};
     std::vector<uint32_t> txn_lengths = {1, 5, 10};
     // submit interval between two transactions (us)

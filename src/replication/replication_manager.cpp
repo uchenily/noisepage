@@ -46,7 +46,7 @@ msg_id_t ReplicationManager::GetNextMessageId() {
 
 void ReplicationManager::NodeConnect(const std::string &node_name, const std::string &hostname, uint16_t port) {
     // Note that creating a Replica will result in a network call.
-    UNUSED_ATTRIBUTE auto result = replicas_.try_emplace(node_name, messenger_, node_name, hostname, port);
+    [[maybe_unused]] auto result = replicas_.try_emplace(node_name, messenger_, node_name, hostname, port);
     NOISEPAGE_ASSERT(result.second, "Failed to connect to a replica?");
 }
 
@@ -110,7 +110,7 @@ void ReplicationManager::BuildReplicationNetwork(const std::string &replication_
 }
 
 void ReplicationManager::Send(const std::string              &destination,
-                              UNUSED_ATTRIBUTE const msg_id_t msg_id,
+                              [[maybe_unused]] const msg_id_t msg_id,
                               const std::string              &message,
                               const messenger::CallbackFn    &source_callback,
                               messenger::callback_id_t        destination_callback) {

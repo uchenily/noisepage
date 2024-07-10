@@ -29,7 +29,7 @@ bool Payment::Execute(transaction::TransactionManager *const txn_manager,
     // Select W_NAME, W_STREET_1, W_STREET_2, W_CITY, W_STATE, W_ZIP, W_YTD in table
     auto *const warehouse_select_tuple
         = warehouse_select_pr_initializer_.InitializeRow(worker->warehouse_tuple_buffer_);
-    bool UNUSED_ATTRIBUTE select_result
+    [[maybe_unused]] bool select_result
         = db->warehouse_table_->Select(common::ManagedPointer(txn), index_scan_results[0], warehouse_select_tuple);
     NOISEPAGE_ASSERT(select_result, "Warehouse table doesn't change. All lookups should succeed.");
     const auto w_name = *reinterpret_cast<storage::VarlenEntry *>(
@@ -43,7 +43,7 @@ bool Payment::Execute(transaction::TransactionManager *const txn_manager,
         = txn->StageWrite(db->db_oid_, db->warehouse_table_oid_, warehouse_update_pr_initializer_);
     *reinterpret_cast<double *>(warehouse_update_redo->Delta()->AccessForceNotNull(0)) = w_ytd + args.h_amount_;
     warehouse_update_redo->SetTupleSlot(index_scan_results[0]);
-    bool UNUSED_ATTRIBUTE result = db->warehouse_table_->Update(common::ManagedPointer(txn), warehouse_update_redo);
+    [[maybe_unused]] bool result = db->warehouse_table_->Update(common::ManagedPointer(txn), warehouse_update_redo);
     NOISEPAGE_ASSERT(result,
                      "Warehouse update failed. This assertion assumes 1:1 mapping between warehouse and workers.");
 
@@ -138,7 +138,7 @@ bool Payment::Execute(transaction::TransactionManager *const txn_manager,
     const auto *const c_id_ptr
         = reinterpret_cast<int32_t *>(customer_select_tuple->AccessWithNullCheck(c_id_select_pr_offset_));
     NOISEPAGE_ASSERT(c_id_ptr != nullptr, "This is a non-NULLable field.");
-    const auto UNUSED_ATTRIBUTE c_id = !args.use_c_last_ ? args.c_id_ : *c_id_ptr;
+    [[maybe_unused]] const auto c_id = !args.use_c_last_ ? args.c_id_ : *c_id_ptr;
     NOISEPAGE_ASSERT(c_id >= 1 && c_id <= 3000, "Invalid c_id read from the Customer table.");
 
     const auto c_balance

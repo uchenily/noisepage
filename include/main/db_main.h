@@ -647,7 +647,7 @@ public:
                 }
             }
             {
-                UNUSED_ATTRIBUTE auto &default_txn_policy
+                [[maybe_unused]] auto &default_txn_policy
                     = txn_layer->GetTransactionManager()->GetDefaultTransactionPolicy();
                 STORAGE_LOG_DEBUG(fmt::format("Default transaction policy: DURABILITY {} REPLICATION {}",
                                               transaction::DurabilityPolicyToString(default_txn_policy.durability_),

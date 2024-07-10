@@ -5,7 +5,7 @@
 
 namespace noisepage::execution::sql {
 
-void SystemFunctions::Version(UNUSED_ATTRIBUTE exec::ExecutionContext *ctx, StringVal *result) {
+void SystemFunctions::Version([[maybe_unused]] exec::ExecutionContext *ctx, StringVal *result) {
     const char *version = common::NOISEPAGE_VERSION_STR.data();
     *result = StringVal(version);
 }

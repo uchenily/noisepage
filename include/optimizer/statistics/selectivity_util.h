@@ -151,8 +151,8 @@ public:
      * Peloton: Complete implementation once we support LIKE Operator
      */
     template <typename T>
-    static double Like(UNUSED_ATTRIBUTE common::ManagedPointer<ColumnStats<T>> column_stats,
-                       UNUSED_ATTRIBUTE const ValueCondition                  &condition) {
+    static double Like([[maybe_unused]] common::ManagedPointer<ColumnStats<T>> column_stats,
+                       [[maybe_unused]] const ValueCondition                  &condition) {
         return DEFAULT_SELECTIVITY_VALUE;
     }
 
@@ -174,8 +174,8 @@ public:
      * @returns selectivity
      */
     template <typename T>
-    static double In(UNUSED_ATTRIBUTE common::ManagedPointer<ColumnStats<T>> column_stats,
-                     UNUSED_ATTRIBUTE const ValueCondition                  &condition) {
+    static double In([[maybe_unused]] common::ManagedPointer<ColumnStats<T>> column_stats,
+                     [[maybe_unused]] const ValueCondition                  &condition) {
         return DEFAULT_SELECTIVITY_VALUE;
     }
 
@@ -186,8 +186,8 @@ public:
      * @returns selectivity
      */
     template <typename T>
-    static double DistinctFrom(UNUSED_ATTRIBUTE common::ManagedPointer<ColumnStats<T>> column_stats,
-                               UNUSED_ATTRIBUTE const ValueCondition                  &condition) {
+    static double DistinctFrom([[maybe_unused]] common::ManagedPointer<ColumnStats<T>> column_stats,
+                               [[maybe_unused]] const ValueCondition                  &condition) {
         return DEFAULT_SELECTIVITY_VALUE;
     }
 
@@ -199,7 +199,7 @@ public:
      */
     template <typename T>
     static double IsNull(common::ManagedPointer<ColumnStats<T>> column_stats,
-                         UNUSED_ATTRIBUTE const ValueCondition &condition) {
+                         [[maybe_unused]] const ValueCondition &condition) {
         return column_stats->GetFracNull();
     }
 
@@ -211,7 +211,7 @@ public:
      */
     template <typename T>
     static double IsNotNull(common::ManagedPointer<ColumnStats<T>> column_stats,
-                            UNUSED_ATTRIBUTE const ValueCondition &condition) {
+                            [[maybe_unused]] const ValueCondition &condition) {
         return 1 - column_stats->GetFracNull();
     }
 };

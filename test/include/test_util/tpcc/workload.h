@@ -82,20 +82,20 @@ public:
         for (uint32_t i = 0; i < min_stock_level; i++)
             cards_.emplace_back(tpcc::TransactionType::StockLevel);
 
-        auto UNUSED_ATTRIBUTE c_new_order = std::count_if(cards_.begin(), cards_.end(), [](tpcc::TransactionType txn) {
+        [[maybe_unused]] auto c_new_order = std::count_if(cards_.begin(), cards_.end(), [](tpcc::TransactionType txn) {
             return txn == tpcc::TransactionType::NewOrder;
         });
-        auto UNUSED_ATTRIBUTE c_payment = std::count_if(cards_.begin(), cards_.end(), [](tpcc::TransactionType txn) {
+        [[maybe_unused]] auto c_payment = std::count_if(cards_.begin(), cards_.end(), [](tpcc::TransactionType txn) {
             return txn == tpcc::TransactionType::Payment;
         });
-        auto UNUSED_ATTRIBUTE c_order_status
+        [[maybe_unused]] auto c_order_status
             = std::count_if(cards_.begin(), cards_.end(), [](tpcc::TransactionType txn) {
                   return txn == tpcc::TransactionType::OrderStatus;
               });
-        auto UNUSED_ATTRIBUTE c_delivery = std::count_if(cards_.begin(), cards_.end(), [](tpcc::TransactionType txn) {
+        [[maybe_unused]] auto c_delivery = std::count_if(cards_.begin(), cards_.end(), [](tpcc::TransactionType txn) {
             return txn == tpcc::TransactionType::Delivery;
         });
-        auto UNUSED_ATTRIBUTE c_stock_level
+        [[maybe_unused]] auto c_stock_level
             = std::count_if(cards_.begin(), cards_.end(), [](tpcc::TransactionType txn) {
                   return txn == tpcc::TransactionType::StockLevel;
               });

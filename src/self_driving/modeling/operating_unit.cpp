@@ -33,7 +33,7 @@ void ExecOUFeatureVector::UpdateFeature(execution::pipeline_id_t                
     NOISEPAGE_ASSERT(pipeline_id_ == pipeline_id, "Incorrect pipeline");
     NOISEPAGE_ASSERT(pipeline_features_ != nullptr, "Pipeline Features cannot be null");
 
-    UNUSED_ATTRIBUTE bool did_find = false;
+    [[maybe_unused]] bool did_find = false;
     for (auto &feature : *pipeline_features_) {
         if (feature.GetFeatureId() == feature_id) {
             NOISEPAGE_ASSERT(!did_find, "Duplicate feature found");

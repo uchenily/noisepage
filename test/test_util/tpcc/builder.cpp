@@ -65,8 +65,8 @@ Database *Builder::Build(const storage::index::IndexType index_type) {
 
     // instantiate and set the table pointers in the catalog
 
-    auto result UNUSED_ATTRIBUTE
-        = accessor->SetTablePointer(item_table_oid, new storage::SqlTable(store_, item_schema));
+    auto result [[maybe_unused]]
+    = accessor->SetTablePointer(item_table_oid, new storage::SqlTable(store_, item_schema));
     NOISEPAGE_ASSERT(result, "Failed to set table pointer.");
     result = accessor->SetTablePointer(warehouse_table_oid, new storage::SqlTable(store_, warehouse_schema));
     NOISEPAGE_ASSERT(result, "Failed to set table pointer.");

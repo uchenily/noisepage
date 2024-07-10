@@ -26,7 +26,7 @@ TEST_F(ThreadStateContainerTest, EmptyStateTest) {
     MemoryPool           memory(nullptr);
     ThreadStateContainer container(&memory);
     container.Reset(0, nullptr, nullptr, nullptr);
-    UNUSED_ATTRIBUTE auto *state = container.AccessCurrentThreadState();
+    [[maybe_unused]] auto *state = container.AccessCurrentThreadState();
     container.Clear();
 }
 
@@ -45,7 +45,7 @@ TEST_F(ThreadStateContainerTest, ComplexObjectContainerTest) {
 
     container.Reset(
         sizeof(Object),
-        [](UNUSED_ATTRIBUTE auto *_, auto *s) {
+        []([[maybe_unused]] auto *_, auto *s) {
             // Set some stuff to indicate object is initialized
             auto obj = new (s) Object();
             obj->x_ = 10;
@@ -85,10 +85,10 @@ TEST_F(ThreadStateContainerTest, ContainerResetTest) {
         /* Reset the container, add/sub upon creation/destruction by amount */                                         \
         container.Reset(                                                                                               \
             sizeof(uint32_t),                                                                                          \
-            [](auto *ctx, UNUSED_ATTRIBUTE auto *s) {                                                                  \
+            [](auto *ctx, [[maybe_unused]] auto *s) {                                                                  \
                 (*reinterpret_cast<decltype(count) *>(ctx)) += N;                                                      \
             },                                                                                                         \
-            [](auto *ctx, UNUSED_ATTRIBUTE auto *s) {                                                                  \
+            [](auto *ctx, [[maybe_unused]] auto *s) {                                                                  \
                 (*reinterpret_cast<decltype(count) *>(ctx)) -= N;                                                      \
             },                                                                                                         \
             &count);                                                                                                   \
@@ -117,7 +117,7 @@ TEST_F(ThreadStateContainerTest, SimpleContainerTest) {
     ThreadStateContainer container(&memory);
     container.Reset(
         sizeof(uint32_t),
-        [](UNUSED_ATTRIBUTE auto *ctx, auto *s) {
+        []([[maybe_unused]] auto *ctx, auto *s) {
             *reinterpret_cast<uint32_t *>(s) = 0;
         },
         nullptr,

@@ -104,9 +104,9 @@ private:
      */
     void Now(rusage *const usage) const {
 #if __APPLE__
-        auto ret UNUSED_ATTRIBUTE = getrusage(who_, usage);
+        auto ret [[maybe_unused]] = getrusage(who_, usage);
 #else
-        auto ret UNUSED_ATTRIBUTE = getrusage(who_, usage);
+        auto ret [[maybe_unused]] = getrusage(who_, usage);
 #endif
         NOISEPAGE_ASSERT(ret == 0, "getrusage failed.");
     }

@@ -182,7 +182,7 @@ auto DDLExecutors::CreateIndex(const common::ManagedPointer<catalog::CatalogAcce
     storage::index::IndexBuilder index_builder;
     index_builder.SetKeySchema(schema);
     auto *const index = index_builder.Build();
-    bool result UNUSED_ATTRIBUTE = accessor->SetIndexPointer(index_oid, index);
+    bool        result [[maybe_unused]] = accessor->SetIndexPointer(index_oid, index);
     NOISEPAGE_ASSERT(result, "CreateIndex succeeded, SetIndexPointer must also succeed.");
     return true;
 }

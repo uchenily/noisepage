@@ -352,7 +352,7 @@ TEST_F(StorageInterfaceTest, SimpleIndexedUpdateTest) {
         update_pr->Set<int32_t, false>(1, *val_b, false);
         update_pr->Set<int32_t, false>(2, *val_c, false);
         update_pr->Set<int32_t, false>(3, *val_d, false);
-        auto new_slot UNUSED_ATTRIBUTE = updater.TableInsert();
+        auto new_slot [[maybe_unused]] = updater.TableInsert();
 
         // Delete + Insert in Index
         auto *const index_pr(updater.GetIndexPR(index_oid));
@@ -443,7 +443,7 @@ TEST_F(StorageInterfaceTest, MultiIndexedUpdateTest) {
         update_pr->Set<int32_t, true>(idx_b, 0, false);
         update_pr->Set<int64_t, false>(idx_c, *val_c, false);
         update_pr->Set<int32_t, true>(idx_d, null_d ? 0 : *val_d, null_d);
-        auto new_slot UNUSED_ATTRIBUTE = updater.TableInsert();
+        auto new_slot [[maybe_unused]] = updater.TableInsert();
 
         // Delete + Insert in Indexes
         // First index

@@ -256,7 +256,7 @@ TEST_F(BytecodeTrampolineTest, DISABLED_PerfGenComparisonForSortTest) {
         return timer.GetElapsed();
     };
 
-    UNUSED_ATTRIBUTE auto bench_func = [](auto &vec) {
+    [[maybe_unused]] auto bench_func = [](auto &vec) {
         auto src = "fun compare(a: int32, b: int32) -> int32 { return a - b }";
         auto compiler = ModuleCompiler();
         auto module = compiler.CompileToModule(src);
@@ -275,7 +275,7 @@ TEST_F(BytecodeTrampolineTest, DISABLED_PerfGenComparisonForSortTest) {
         return timer.GetElapsed();
     };
 
-    UNUSED_ATTRIBUTE auto bench_std = [](auto &vec) {
+    [[maybe_unused]] auto bench_std = [](auto &vec) {
         auto                    compiler = ModuleCompiler();
         util::Timer<std::milli> timer;
         timer.Start();
@@ -289,10 +289,10 @@ TEST_F(BytecodeTrampolineTest, DISABLED_PerfGenComparisonForSortTest) {
         return timer.GetElapsed();
     };
 
-    const uint32_t       nelems = 10000000;
-    std::vector<int32_t> numbers(nelems);
-    int32_t              x = 0;
-    UNUSED_ATTRIBUTE std::random_device random;
+    const uint32_t                      nelems = 10000000;
+    std::vector<int32_t>                numbers(nelems);
+    int32_t                             x = 0;
+    [[maybe_unused]] std::random_device random;
     std::generate(numbers.begin(), numbers.end(), [&x]() {
         return x++;
     });
@@ -300,9 +300,9 @@ TEST_F(BytecodeTrampolineTest, DISABLED_PerfGenComparisonForSortTest) {
     auto num2 = numbers;
     auto num3 = numbers;
 
-    UNUSED_ATTRIBUTE auto tramp_ms = bench_trampoline(numbers);
-    UNUSED_ATTRIBUTE auto func_ms = bench_func(num2);
-    UNUSED_ATTRIBUTE auto std_ms = bench_std(num3);
+    [[maybe_unused]] auto tramp_ms = bench_trampoline(numbers);
+    [[maybe_unused]] auto func_ms = bench_func(num2);
+    [[maybe_unused]] auto std_ms = bench_std(num3);
 
     // TODO(Amadou): Move this test to benchmark folder.
     EXECUTION_LOG_TRACE("Trampoline: {} ms", tramp_ms);

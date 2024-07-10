@@ -225,7 +225,7 @@ TEST_F(AggregationHashTableVectorIteratorTest, DISABLED_Perf) {
 
         constexpr int32_t filter_val = 1000;
 
-        UNUSED_ATTRIBUTE auto vaat_ms = Bench(4, [&]() {
+        [[maybe_unused]] auto vaat_ms = Bench(4, [&]() {
             vaat_ret = 0;
             TupleIdList       tids(common::Constants::K_DEFAULT_VECTOR_SIZE);
             AHTVectorIterator iter(agg_ht, OutputSchema(), Transpose);
@@ -242,7 +242,7 @@ TEST_F(AggregationHashTableVectorIteratorTest, DISABLED_Perf) {
             }
         });
 
-        UNUSED_ATTRIBUTE auto taat_ms = Bench(4, [&]() {
+        [[maybe_unused]] auto taat_ms = Bench(4, [&]() {
             taat_ret = 0;
             AHTIterator iter(agg_ht);
             for (; iter.HasNext(); iter.Next()) {

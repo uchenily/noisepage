@@ -172,7 +172,7 @@ void BinderContext::AddCTETableAlias(const std::string &cte_table_name, const st
 
 bool BinderContext::ColumnInSchema(const catalog::Schema &schema, const std::string &col_name) {
     try {
-        const auto &column_object UNUSED_ATTRIBUTE = schema.GetColumn(col_name);
+        const auto &column_object [[maybe_unused]] = schema.GetColumn(col_name);
     } catch (const std::out_of_range &oor) {
         return false;
     }

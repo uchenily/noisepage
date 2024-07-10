@@ -243,8 +243,8 @@ auto Taskflow::ExecuteShowStatement(common::ManagedPointer<network::ConnectionCo
     NOISEPAGE_ASSERT(statement->GetQueryType() == network::QueryType::QUERY_SHOW,
                      "ExecuteSetStatement called with invalid QueryType.");
 
-    const auto &show_stmt UNUSED_ATTRIBUTE
-        = statement->RootStatement().CastManagedPointerTo<parser::VariableShowStatement>();
+    const auto &show_stmt [[maybe_unused]]
+    = statement->RootStatement().CastManagedPointerTo<parser::VariableShowStatement>();
 
     const std::string         &param_name = show_stmt->GetName();
     settings::Param            param = settings_manager_->GetParam(param_name);
@@ -501,13 +501,13 @@ auto Taskflow::CodegenPhysicalPlan(const common::ManagedPointer<network::Connect
     NOISEPAGE_ASSERT(connection_ctx->TransactionState() == network::NetworkTransactionStateType::BLOCK,
                      "Not in a valid txn. This should have been caught before calling this function.");
     // For an EXPLAIN statement, the query type is the type of the wrapped SQL statement.
-    const auto query_type UNUSED_ATTRIBUTE
-        = portal->GetStatement()->GetQueryType() == network::QueryType::QUERY_EXPLAIN
-              ? taskflow::TaskflowUtil::QueryTypeForStatement(portal->GetStatement()
-                                                                  ->RootStatement()
-                                                                  .CastManagedPointerTo<parser::ExplainStatement>()
-                                                                  ->GetSQLStatement())
-              : portal->GetStatement()->GetQueryType();
+    const auto query_type [[maybe_unused]]
+    = portal->GetStatement()->GetQueryType() == network::QueryType::QUERY_EXPLAIN
+          ? taskflow::TaskflowUtil::QueryTypeForStatement(portal->GetStatement()
+                                                              ->RootStatement()
+                                                              .CastManagedPointerTo<parser::ExplainStatement>()
+                                                              ->GetSQLStatement())
+          : portal->GetStatement()->GetQueryType();
     const auto physical_plan = portal->OptimizeResult()->GetPlanNode();
 
     NOISEPAGE_ASSERT(

@@ -48,7 +48,7 @@ public:
      * Visit a SeqScan operator
      * @param op operator
      */
-    void Visit(UNUSED_ATTRIBUTE const SeqScan *op) override {
+    void Visit([[maybe_unused]] const SeqScan *op) override {
         output_cost_ = SCAN_COST;
     }
 
@@ -62,7 +62,7 @@ public:
      * Visit a QueryDerivedScan operator
      * @param op operator
      */
-    void Visit(UNUSED_ATTRIBUTE const QueryDerivedScan *op) override {
+    void Visit([[maybe_unused]] const QueryDerivedScan *op) override {
         output_cost_ = 0.f;
     }
 
@@ -70,7 +70,7 @@ public:
      * Visit a OrderBy operator
      * @param op operator
      */
-    void Visit(UNUSED_ATTRIBUTE const OrderBy *op) override {
+    void Visit([[maybe_unused]] const OrderBy *op) override {
         output_cost_ = 0.f;
     }
 
@@ -78,7 +78,7 @@ public:
      * Visit a Limit operator
      * @param op operator
      */
-    void Visit(UNUSED_ATTRIBUTE const Limit *op) override {
+    void Visit([[maybe_unused]] const Limit *op) override {
         output_cost_ = 0.f;
     }
 
@@ -92,7 +92,7 @@ public:
      * Visit a InnerNLJoin operator
      * @param op operator
      */
-    void Visit(UNUSED_ATTRIBUTE const InnerNLJoin *op) override {
+    void Visit([[maybe_unused]] const InnerNLJoin *op) override {
         output_cost_ = NLJOIN_COST;
     }
 
@@ -100,25 +100,25 @@ public:
      * Visit a LeftNLJoin operator
      * @param op operator
      */
-    void Visit(UNUSED_ATTRIBUTE const LeftNLJoin *op) override {}
+    void Visit([[maybe_unused]] const LeftNLJoin *op) override {}
 
     /**
      * Visit a RightNLJoin operator
      * @param op operator
      */
-    void Visit(UNUSED_ATTRIBUTE const RightNLJoin *op) override {}
+    void Visit([[maybe_unused]] const RightNLJoin *op) override {}
 
     /**
      * Visit a OuterNLJoin operator
      * @param op operator
      */
-    void Visit(UNUSED_ATTRIBUTE const OuterNLJoin *op) override {}
+    void Visit([[maybe_unused]] const OuterNLJoin *op) override {}
 
     /**
      * Visit a InnerHashJoin operator
      * @param op operator
      */
-    void Visit(UNUSED_ATTRIBUTE const InnerHashJoin *op) override {
+    void Visit([[maybe_unused]] const InnerHashJoin *op) override {
         output_cost_ = NLJOIN_COST + 1.0f;
     }
 
@@ -126,25 +126,25 @@ public:
      * Visit a LeftHashJoin operator
      * @param op operator
      */
-    void Visit(UNUSED_ATTRIBUTE const LeftHashJoin *op) override {}
+    void Visit([[maybe_unused]] const LeftHashJoin *op) override {}
 
     /**
      * Visit a RightHashJoin operator
      * @param op operator
      */
-    void Visit(UNUSED_ATTRIBUTE const RightHashJoin *op) override {}
+    void Visit([[maybe_unused]] const RightHashJoin *op) override {}
 
     /**
      * Visit a OuterHashJoin operator
      * @param op operator
      */
-    void Visit(UNUSED_ATTRIBUTE const OuterHashJoin *op) override {}
+    void Visit([[maybe_unused]] const OuterHashJoin *op) override {}
 
     /**
      * Visit a LeftSemiHashJoin operator
      * @param op operator
      */
-    void Visit(UNUSED_ATTRIBUTE const LeftSemiHashJoin *op) override {
+    void Visit([[maybe_unused]] const LeftSemiHashJoin *op) override {
         output_cost_ = 1.f;
     }
 
@@ -152,31 +152,31 @@ public:
      * Visit a Insert operator
      * @param op operator
      */
-    void Visit(UNUSED_ATTRIBUTE const Insert *op) override {}
+    void Visit([[maybe_unused]] const Insert *op) override {}
 
     /**
      * Visit a InsertSelect operator
      * @param op operator
      */
-    void Visit(UNUSED_ATTRIBUTE const InsertSelect *op) override {}
+    void Visit([[maybe_unused]] const InsertSelect *op) override {}
 
     /**
      * Visit a Delete operator
      * @param op operator
      */
-    void Visit(UNUSED_ATTRIBUTE const Delete *op) override {}
+    void Visit([[maybe_unused]] const Delete *op) override {}
 
     /**
      * Visit a Update operator
      * @param op operator
      */
-    void Visit(UNUSED_ATTRIBUTE const Update *op) override {}
+    void Visit([[maybe_unused]] const Update *op) override {}
 
     /**
      * Visit a HashGroupBy operator
      * @param op operator
      */
-    void Visit(UNUSED_ATTRIBUTE const HashGroupBy *op) override {
+    void Visit([[maybe_unused]] const HashGroupBy *op) override {
         output_cost_ = 0.f;
     }
 
@@ -184,7 +184,7 @@ public:
      * Visit a SortGroupBy operator
      * @param op operator
      */
-    void Visit(UNUSED_ATTRIBUTE const SortGroupBy *op) override {
+    void Visit([[maybe_unused]] const SortGroupBy *op) override {
         output_cost_ = 1.f;
     }
 
@@ -192,7 +192,7 @@ public:
      * Visit a Aggregate operator
      * @param op operator
      */
-    void Visit(UNUSED_ATTRIBUTE const Aggregate *op) override {
+    void Visit([[maybe_unused]] const Aggregate *op) override {
         output_cost_ = 0.f;
     }
 

@@ -424,7 +424,7 @@ TEST_F(DataTableTests, SlotIteraterSingleThreadedTest) {
         for (uint64_t i = 0; i < max_tuples_inserted; i++) {
             // check that iterator sees correct number of tuples
             size = 0;
-            for (auto UNUSED_ATTRIBUTE _ : tested.GetTable())
+            for (auto [[maybe_unused]] _ : tested.GetTable())
                 size++;
             EXPECT_EQ(size, i);
 
@@ -437,7 +437,7 @@ TEST_F(DataTableTests, SlotIteraterSingleThreadedTest) {
         }
 
         size = 0;
-        for (auto UNUSED_ATTRIBUTE _ : tested.GetTable())
+        for (auto [[maybe_unused]] _ : tested.GetTable())
             size++;
         EXPECT_EQ(size, max_tuples_inserted);
 

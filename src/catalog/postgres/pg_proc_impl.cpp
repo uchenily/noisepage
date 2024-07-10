@@ -201,7 +201,7 @@ bool PgProcImpl::CreateProcedure(const common::ManagedPointer<transaction::Trans
     {
         auto oid_pr = oid_pri.InitializeRow(buffer);
         oid_pr->Set<proc_oid_t, false>(0, oid, false);
-        bool UNUSED_ATTRIBUTE result = procs_oid_index_->InsertUnique(txn, *oid_pr, tuple_slot);
+        [[maybe_unused]] bool result = procs_oid_index_->InsertUnique(txn, *oid_pr, tuple_slot);
         NOISEPAGE_ASSERT(result, "Oid insertion should be unique");
     }
 
@@ -248,7 +248,7 @@ bool PgProcImpl::DropProcedure(const common::ManagedPointer<transaction::Transac
 
     // Look for the procedure in pg_proc.
     auto                  table_pr = pg_proc_all_cols_pri_.InitializeRow(buffer);
-    bool UNUSED_ATTRIBUTE visible = procs_->Select(txn, to_delete_slot, table_pr);
+    [[maybe_unused]] bool visible = procs_->Select(txn, to_delete_slot, table_pr);
 
     auto &proc_pm = pg_proc_all_cols_prm_;
     auto  name_varlen = *table_pr->Get<storage::VarlenEntry, false>(proc_pm[PgProc::PRONAME.oid_], nullptr);
@@ -327,8 +327,8 @@ PgProcImpl::GetProcCtxPtr(common::ManagedPointer<transaction::TransactionContext
             "reasonable code path for this to be called on an oid that isn't present.");
     }
 
-    auto             *select_pr = pg_proc_ptr_pri_.InitializeRow(buffer);
-    const auto result UNUSED_ATTRIBUTE = procs_->Select(txn, index_results[0], select_pr);
+    auto      *select_pr = pg_proc_ptr_pri_.InitializeRow(buffer);
+    const auto result [[maybe_unused]] = procs_->Select(txn, index_results[0], select_pr);
     NOISEPAGE_ASSERT(result, "Index already verified visibility. This shouldn't fail.");
 
     auto *ptr_ptr = (reinterpret_cast<void **>(select_pr->AccessWithNullCheck(0)));
@@ -373,7 +373,7 @@ proc_oid_t PgProcImpl::GetProcOid(const common::ManagedPointer<transaction::Tran
 
         // Search through the results and check if any match the parsed function by argument types.
         for (const auto &candidate_proc_slot : results) {
-            bool UNUSED_ATTRIBUTE visible = procs_->Select(txn, candidate_proc_slot, table_pr);
+            [[maybe_unused]] bool visible = procs_->Select(txn, candidate_proc_slot, table_pr);
             NOISEPAGE_ASSERT(visible, "Index scan should have already verified visibility.");
 
             // "PROARGTYPES ... represents the call signature of the function". Check only input arguments.
@@ -653,7 +653,7 @@ void PgProcImpl::BootstrapProcContext(const common::ManagedPointer<transaction::
                                                                                std::move(arg_types),
                                                                                builtin,
                                                                                is_exec_ctx_required);
-    const auto retval UNUSED_ATTRIBUTE = dbc->SetFunctionContextPointer(txn, proc_oid, func_context);
+    const auto        retval [[maybe_unused]] = dbc->SetFunctionContextPointer(txn, proc_oid, func_context);
     NOISEPAGE_ASSERT(retval, "Bootstrap operations should not fail");
 }
 

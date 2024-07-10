@@ -63,7 +63,7 @@ private:
         }
     }
 #else
-    void EnsureInFrame(UNUSED_ATTRIBUTE LocalVar var) const {}
+    void EnsureInFrame([[maybe_unused]] LocalVar var) const {}
 #endif
 
 private:

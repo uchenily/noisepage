@@ -344,7 +344,7 @@ TEST_F(RuntimeTypesTest, VarlenComparisons) {
         auto v4 = storage::VarlenEntry::Create("This is so"); // A prefix of the longer strings.
         EXPECT_FALSE(v1.IsInlined());
         EXPECT_FALSE(v2.IsInlined());
-        auto UNUSED_ATTRIBUTE foo = v1 == v2;
+        auto [[maybe_unused]] foo = v1 == v2;
         EXPECT_NE(v1, v2);
         EXPECT_LT(v1, v2);
         EXPECT_GT(v2, v1);

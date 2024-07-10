@@ -50,7 +50,7 @@ bool OrderStatus::Execute(transaction::TransactionManager *const txn_manager,
             for (const auto &tuple_slot : index_scan_results) {
                 auto *const c_first_select_tuple
                     = c_first_pr_initializer_.InitializeRow(worker->customer_tuple_buffer_);
-                bool UNUSED_ATTRIBUTE select_result
+                [[maybe_unused]] bool select_result
                     = db->customer_table_->Select(common::ManagedPointer(txn), tuple_slot, c_first_select_tuple);
                 NOISEPAGE_ASSERT(select_result,
                                  "Customer table doesn't change (no new entries). All lookups should succeed.");
@@ -71,14 +71,14 @@ bool OrderStatus::Execute(transaction::TransactionManager *const txn_manager,
 
     // Select customer in table
     auto *const customer_select_tuple = customer_select_pr_initializer_.InitializeRow(worker->customer_tuple_buffer_);
-    bool UNUSED_ATTRIBUTE select_result
+    [[maybe_unused]] bool select_result
         = db->customer_table_->Select(common::ManagedPointer(txn), customer_slot, customer_select_tuple);
     NOISEPAGE_ASSERT(select_result, "Customer table doesn't change (no new entries). All lookups should succeed.");
 
     const auto *const c_id_ptr
         = reinterpret_cast<int32_t *>(customer_select_tuple->AccessWithNullCheck(c_id_select_pr_offset_));
     NOISEPAGE_ASSERT(c_id_ptr != nullptr, "This is a non-NULLable field.");
-    const auto UNUSED_ATTRIBUTE c_id = !args.use_c_last_ ? args.c_id_ : *c_id_ptr;
+    [[maybe_unused]] const auto c_id = !args.use_c_last_ ? args.c_id_ : *c_id_ptr;
     NOISEPAGE_ASSERT(c_id >= 1 && c_id <= 3000, "Invalid c_id read from the Customer table.");
 
     // look up in secondary Order index

@@ -32,9 +32,9 @@ namespace noisepage::execution::sql {
 
 namespace {
 
-    void CheckGatherAndSelect(const Vector    &input,
-                              const Vector    &pointers,
-                              UNUSED_ATTRIBUTE std::size_t offset,
+    void CheckGatherAndSelect(const Vector                &input,
+                              const Vector                &pointers,
+                              [[maybe_unused]] std::size_t offset,
                               TupleIdList                 *result) {
         if (pointers.GetTypeId() != TypeId::Pointer) {
             throw EXECUTION_EXCEPTION(fmt::format("Pointers vector must be TypeId::Pointer, but is type {}.",

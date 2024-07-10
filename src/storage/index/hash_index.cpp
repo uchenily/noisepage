@@ -65,12 +65,12 @@ uint64_t HashIndex<KeyType>::GetSize() const {
                 }                                                                                                      \
             }                                                                                                          \
             /* ValueMap contains more than 2 elements, erase location from the ValueMap */                             \
-            const auto UNUSED_ATTRIBUTE erase_result = value_map.erase(location);                                      \
+            [[maybe_unused]] const auto erase_result = value_map.erase(location);                                      \
             NOISEPAGE_ASSERT(erase_result == 1, "Erasing from the ValueMap should not fail.");                         \
             NOISEPAGE_ASSERT(value_map.size() > 1, "ValueMap should not have fewer than 2 elements.");                 \
             return false; /* Return false so cuckoohash_map's uprase_fn doesn't erase key/value pair */                \
         };                                                                                                             \
-        const bool UNUSED_ATTRIBUTE uprase_result = hash_map_->uprase_fn(index_key, key_found_fn);                     \
+        [[maybe_unused]] const bool uprase_result = hash_map_->uprase_fn(index_key, key_found_fn);                     \
         NOISEPAGE_ASSERT(!uprase_result, "This operation should NOT insert a new key into the cuckoohash_map.");       \
     }
 
@@ -83,7 +83,7 @@ bool HashIndex<KeyType>::Insert(const common::ManagedPointer<transaction::Transa
     KeyType index_key;
     index_key.SetFromProjectedRow(tuple, metadata_, metadata_.GetSchema().GetColumns().size());
 
-    bool UNUSED_ATTRIBUTE insert_result = false;
+    [[maybe_unused]] bool insert_result = false;
 
     /**
      * See the underlying container's API for more details, but the lambda below is invoked when the key is found.
@@ -112,7 +112,7 @@ bool HashIndex<KeyType>::Insert(const common::ManagedPointer<transaction::Transa
         return false;
     };
 
-    const bool UNUSED_ATTRIBUTE uprase_result = hash_map_->uprase_fn(index_key, key_found_fn, location);
+    [[maybe_unused]] const bool uprase_result = hash_map_->uprase_fn(index_key, key_found_fn, location);
 
     NOISEPAGE_ASSERT(insert_result != uprase_result,
                      "Either a new key was inserted (uprase_result), or the value already existed and a new value was "
@@ -143,7 +143,7 @@ bool HashIndex<KeyType>::InsertUnique(const common::ManagedPointer<transaction::
         return has_conflict || is_visible;
     };
 
-    bool UNUSED_ATTRIBUTE insert_result = false;
+    [[maybe_unused]] bool insert_result = false;
 
     /**
      * See the underlying container's API for more details, but the lambda below is invoked when the key is found.
@@ -187,8 +187,8 @@ bool HashIndex<KeyType>::InsertUnique(const common::ManagedPointer<transaction::
         return false;
     };
 
-    const bool UNUSED_ATTRIBUTE uprase_result = hash_map_->uprase_fn(index_key, key_found_fn, location);
-    const bool UNUSED_ATTRIBUTE overall_result = insert_result || uprase_result;
+    [[maybe_unused]] const bool uprase_result = hash_map_->uprase_fn(index_key, key_found_fn, location);
+    [[maybe_unused]] const bool overall_result = insert_result || uprase_result;
 
     NOISEPAGE_ASSERT(predicate_satisfied != overall_result,
                      "Cant have satisfied the predicate and also succeeded to insert.");
@@ -263,7 +263,7 @@ void HashIndex<KeyType>::ScanKey(const transaction::TransactionContext &txn,
         }
     };
 
-    const bool UNUSED_ATTRIBUTE find_result = hash_map_->find_fn(index_key, key_found_fn);
+    [[maybe_unused]] const bool find_result = hash_map_->find_fn(index_key, key_found_fn);
 
     NOISEPAGE_ASSERT(!(metadata_.GetSchema().Unique()) || (metadata_.GetSchema().Unique() && value_list->size() <= 1),
                      "Invalid number of results for unique index.");

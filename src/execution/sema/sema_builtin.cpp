@@ -193,7 +193,7 @@ void Sema::CheckSqlConversionCall(ast::CallExpr *call, ast::Builtin builtin) {
     }
 }
 
-void Sema::CheckNullValueCall(ast::CallExpr *call, UNUSED_ATTRIBUTE ast::Builtin builtin) {
+void Sema::CheckNullValueCall(ast::CallExpr *call, [[maybe_unused]] ast::Builtin builtin) {
     if (!CheckArgCount(call, 1)) {
         return;
     }
@@ -1619,7 +1619,7 @@ void Sema::CheckBuiltinVPICall(ast::CallExpr *call, ast::Builtin builtin) {
     }
 }
 
-void Sema::CheckBuiltinHashCall(ast::CallExpr *call, UNUSED_ATTRIBUTE ast::Builtin builtin) {
+void Sema::CheckBuiltinHashCall(ast::CallExpr *call, [[maybe_unused]] ast::Builtin builtin) {
     if (!CheckArgCountAtLeast(call, 1)) {
         return;
     }

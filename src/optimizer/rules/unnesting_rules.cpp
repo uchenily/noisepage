@@ -41,16 +41,16 @@ bool UnnestMarkJoinToInnerJoin::Check(common::ManagedPointer<AbstractOptimizerNo
     (void) context;
     (void) plan;
 
-    UNUSED_ATTRIBUTE auto children = plan->GetChildren();
+    [[maybe_unused]] auto children = plan->GetChildren();
     NOISEPAGE_ASSERT(children.size() == 2, "LogicalMarkJoin should have 2 children");
     return true;
 }
 
 void UnnestMarkJoinToInnerJoin::Transform(common::ManagedPointer<AbstractOptimizerNode>        input,
                                           std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-                                          UNUSED_ATTRIBUTE OptimizationContext                *context) const {
+                                          [[maybe_unused]] OptimizationContext                *context) const {
     OPTIMIZER_LOG_TRACE("UnnestMarkJoinToInnerJoin::Transform");
-    UNUSED_ATTRIBUTE auto mark_join = input->Contents()->GetContentsAs<LogicalMarkJoin>();
+    [[maybe_unused]] auto mark_join = input->Contents()->GetContentsAs<LogicalMarkJoin>();
     NOISEPAGE_ASSERT(mark_join->GetJoinPredicates().empty(), "MarkJoin should have 0 predicates");
 
     auto                                                join_children = input->GetChildren();
@@ -86,16 +86,16 @@ bool UnnestSingleJoinToInnerJoin::Check(common::ManagedPointer<AbstractOptimizer
     (void) context;
     (void) plan;
 
-    UNUSED_ATTRIBUTE auto children = plan->GetChildren();
+    [[maybe_unused]] auto children = plan->GetChildren();
     NOISEPAGE_ASSERT(children.size() == 2, "SingleJoin should have 2 children");
     return true;
 }
 
 void UnnestSingleJoinToInnerJoin::Transform(common::ManagedPointer<AbstractOptimizerNode>        input,
                                             std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-                                            UNUSED_ATTRIBUTE OptimizationContext                *context) const {
+                                            [[maybe_unused]] OptimizationContext                *context) const {
     OPTIMIZER_LOG_TRACE("UnnestSingleJoinToInnerJoin::Transform");
-    UNUSED_ATTRIBUTE auto single_join = input->Contents()->GetContentsAs<LogicalSingleJoin>();
+    [[maybe_unused]] auto single_join = input->Contents()->GetContentsAs<LogicalSingleJoin>();
     NOISEPAGE_ASSERT(single_join->GetJoinPredicates().empty(), "SingleJoin should have no predicates");
 
     auto                                                join_children = input->GetChildren();
@@ -133,15 +133,15 @@ bool DependentSingleJoinToInnerJoin::Check(common::ManagedPointer<AbstractOptimi
     (void) context;
     (void) plan;
 
-    UNUSED_ATTRIBUTE auto children = plan->GetChildren();
+    [[maybe_unused]] auto children = plan->GetChildren();
     NOISEPAGE_ASSERT(children.size() == 2, "SingleJoin should have 2 children");
     return true;
 }
 
 void DependentSingleJoinToInnerJoin::Transform(common::ManagedPointer<AbstractOptimizerNode>        input,
                                                std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-                                               UNUSED_ATTRIBUTE OptimizationContext                *context) const {
-    UNUSED_ATTRIBUTE auto single_join = input->Contents()->GetContentsAs<LogicalSingleJoin>();
+                                               [[maybe_unused]] OptimizationContext                *context) const {
+    [[maybe_unused]] auto single_join = input->Contents()->GetContentsAs<LogicalSingleJoin>();
     NOISEPAGE_ASSERT(single_join->GetJoinPredicates().empty(), "SingleJoin should have no predicates");
     // From LOGICALSINGLEJOIN -> LOGICALFILTER -> LOGICALAGGREGATEANDGROUPBY
     //  to LOGICALFILTER -> LOGICALINNERJOIN -> LOGICALFILTER -> LOGICALAGGREGATEANDGROUPBY

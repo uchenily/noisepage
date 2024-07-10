@@ -44,8 +44,8 @@ bool Delivery::Execute(transaction::TransactionManager *const txn_manager,
         // Otherwise, the lowest NO_O_ID is selected
         auto *const new_order_select_tuple = new_order_pr_initializer_.InitializeRow(worker->new_order_tuple_buffer_);
         const auto  new_order_slot = index_scan_results[0];
-        bool select_result UNUSED_ATTRIBUTE
-            = db->new_order_table_->Select(common::ManagedPointer(txn), new_order_slot, new_order_select_tuple);
+        bool        select_result [[maybe_unused]]
+        = db->new_order_table_->Select(common::ManagedPointer(txn), new_order_slot, new_order_select_tuple);
         NOISEPAGE_ASSERT(
             select_result,
             "New Order select failed. This assertion assumes 1:1 mapping between warehouse and workers and "
@@ -54,7 +54,7 @@ bool Delivery::Execute(transaction::TransactionManager *const txn_manager,
 
         // Delete the corresponding New Order table row
         txn->StageDelete(db->db_oid_, db->new_order_table_oid_, new_order_slot);
-        bool delete_result UNUSED_ATTRIBUTE = db->new_order_table_->Delete(common::ManagedPointer(txn), new_order_slot);
+        bool delete_result [[maybe_unused]] = db->new_order_table_->Delete(common::ManagedPointer(txn), new_order_slot);
         NOISEPAGE_ASSERT(delete_result,
                          "New Order delete failed. This assertion assumes 1:1 mapping between warehouse and workers.");
 
@@ -93,7 +93,7 @@ bool Delivery::Execute(transaction::TransactionManager *const txn_manager,
             = txn->StageWrite(db->db_oid_, db->order_table_oid_, order_update_pr_initializer_);
         *reinterpret_cast<int8_t *>(order_update_redo->Delta()->AccessForceNotNull(0)) = args.o_carrier_id_;
         order_update_redo->SetTupleSlot(order_slot);
-        bool update_result UNUSED_ATTRIBUTE = db->order_table_->Update(common::ManagedPointer(txn), order_update_redo);
+        bool update_result [[maybe_unused]] = db->order_table_->Update(common::ManagedPointer(txn), order_update_redo);
         NOISEPAGE_ASSERT(select_result,
                          "Order update failed. This assertion assumes 1:1 mapping between warehouse and workers.");
 

@@ -53,8 +53,8 @@ private:
 
     // Consume one token. In debug mode, throw an error if the next token isn't
     // what was expected. In release mode, just consume the token without checking
-    void Consume(UNUSED_ATTRIBUTE Token::Type expected) {
-        UNUSED_ATTRIBUTE Token::Type next = Next();
+    void Consume([[maybe_unused]] Token::Type expected) {
+        [[maybe_unused]] Token::Type next = Next();
 #ifndef NDEBUG
         if (next != expected) {
             error_reporter_->Report(scanner_->CurrentPosition(), sema::ErrorMessages::kUnexpectedToken, next, expected);

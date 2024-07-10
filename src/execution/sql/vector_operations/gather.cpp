@@ -7,7 +7,7 @@ namespace noisepage::execution::sql {
 
 namespace {
 
-    void CheckGatherArguments(const Vector &pointers, UNUSED_ATTRIBUTE Vector *result) {
+    void CheckGatherArguments(const Vector &pointers, [[maybe_unused]] Vector *result) {
         if (pointers.GetTypeId() != TypeId::Pointer) {
             throw EXECUTION_EXCEPTION(fmt::format("Gather only works on pointer inputs, input type {}.",
                                                   TypeIdToString(pointers.GetTypeId())),

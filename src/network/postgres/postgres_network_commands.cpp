@@ -27,8 +27,8 @@ void WriteShowRowDescription(const common::ManagedPointer<PostgresPacketWriter> 
                              const common::ManagedPointer<network::Statement>   statement) {
     // TODO(WAN): This code exists because the SHOW statement does not go through the optimizer and therefore does not
     //  have a corresponding OutputSchema to go through the usual (SELECT) code path in DescribeCommand.
-    const auto &show_stmt UNUSED_ATTRIBUTE
-        = statement->RootStatement().CastManagedPointerTo<parser::VariableShowStatement>();
+    const auto &show_stmt [[maybe_unused]]
+    = statement->RootStatement().CastManagedPointerTo<parser::VariableShowStatement>();
 
     const std::string &param_name = show_stmt->GetName();
     auto               expr = std::make_unique<parser::ConstantValueExpression>(execution::sql::SqlTypeId::Varchar);
@@ -584,8 +584,8 @@ auto ExecuteCommand::Exec(const common::ManagedPointer<ProtocolInterpreter>  int
                      "We shouldn't be trying to execute commands while waiting for Sync message. This should have been "
                      "caught at the protocol interpreter Process() level.");
 
-    const auto          portal_name = reader_.ReadString();
-    const auto max_rows UNUSED_ATTRIBUTE = reader_.ReadValue<int32_t>();
+    const auto portal_name = reader_.ReadString();
+    const auto max_rows [[maybe_unused]] = reader_.ReadValue<int32_t>();
     // TODO(Matt): here's where you would reason about PortalSuspend with max_rows. Maybe just the OutputWriter would
     // buffer the results, since I'm not sure if we can actually pause execution engine
 

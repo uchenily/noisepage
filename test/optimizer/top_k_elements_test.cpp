@@ -128,7 +128,7 @@ TEST_F(TopKElementsTests, SortedKeyTest) {
     auto sorted_keys = top_k.GetSortedTopKeys();
     EXPECT_EQ(sorted_keys.size(), k);
     int i = 0;
-    for (UNUSED_ATTRIBUTE const auto &key : sorted_keys) {
+    for ([[maybe_unused]] const auto &key : sorted_keys) {
         // Pop off the keys from our expected stack each time.
         // It should match the current key in our sorted key list
         auto expected_key = expected_keys.top();
@@ -265,7 +265,7 @@ TEST_F(TopKElementsTests, NegativeCountTest) {
 // NOLINTNEXTLINE
 TEST_F(TopKElementsTests, IncrementOnlyTest) {
     const int                  k = 20;
-    UNUSED_ATTRIBUTE const int num0 = 10;
+    [[maybe_unused]] const int num0 = 10;
     TopKElements<int>          top_k(k, 1000);
 
     top_k.Increment(10, 10);

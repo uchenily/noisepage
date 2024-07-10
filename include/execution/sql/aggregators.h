@@ -72,7 +72,7 @@ public:
     /**
      * Advance the aggregate by one.
      */
-    void Advance(UNUSED_ATTRIBUTE const Val &val) {
+    void Advance([[maybe_unused]] const Val &val) {
         count_++;
     }
 

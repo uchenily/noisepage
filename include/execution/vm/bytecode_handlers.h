@@ -266,7 +266,7 @@ VM_OP_HOT bool OpJumpIfFalse(bool cond) {
     return !cond;
 }
 
-VM_OP_HOT void OpCall(UNUSED_ATTRIBUTE uint16_t func_id, UNUSED_ATTRIBUTE uint16_t num_args) {}
+VM_OP_HOT void OpCall([[maybe_unused]] uint16_t func_id, [[maybe_unused]] uint16_t num_args) {}
 
 VM_OP_HOT void OpReturn() {}
 
@@ -906,35 +906,35 @@ VM_OP_WARM void OpAbsReal(noisepage::execution::sql::Real *const       result,
 VM_OP_HOT void OpAddInteger(noisepage::execution::sql::Integer *const       result,
                             const noisepage::execution::sql::Integer *const left,
                             const noisepage::execution::sql::Integer *const right) {
-    UNUSED_ATTRIBUTE bool overflow;
+    [[maybe_unused]] bool overflow;
     noisepage::execution::sql::ArithmeticFunctions::Add(result, *left, *right, &overflow);
 }
 
 VM_OP_HOT void OpSubInteger(noisepage::execution::sql::Integer *const       result,
                             const noisepage::execution::sql::Integer *const left,
                             const noisepage::execution::sql::Integer *const right) {
-    UNUSED_ATTRIBUTE bool overflow;
+    [[maybe_unused]] bool overflow;
     noisepage::execution::sql::ArithmeticFunctions::Sub(result, *left, *right, &overflow);
 }
 
 VM_OP_HOT void OpMulInteger(noisepage::execution::sql::Integer *const       result,
                             const noisepage::execution::sql::Integer *const left,
                             const noisepage::execution::sql::Integer *const right) {
-    UNUSED_ATTRIBUTE bool overflow;
+    [[maybe_unused]] bool overflow;
     noisepage::execution::sql::ArithmeticFunctions::Mul(result, *left, *right, &overflow);
 }
 
 VM_OP_HOT void OpDivInteger(noisepage::execution::sql::Integer *const       result,
                             const noisepage::execution::sql::Integer *const left,
                             const noisepage::execution::sql::Integer *const right) {
-    UNUSED_ATTRIBUTE bool div_by_zero = false;
+    [[maybe_unused]] bool div_by_zero = false;
     noisepage::execution::sql::ArithmeticFunctions::IntDiv(result, *left, *right, &div_by_zero);
 }
 
 VM_OP_HOT void OpModInteger(noisepage::execution::sql::Integer *const       result,
                             const noisepage::execution::sql::Integer *const left,
                             const noisepage::execution::sql::Integer *const right) {
-    UNUSED_ATTRIBUTE bool div_by_zero = false;
+    [[maybe_unused]] bool div_by_zero = false;
     noisepage::execution::sql::ArithmeticFunctions::IntMod(result, *left, *right, &div_by_zero);
 }
 
@@ -959,14 +959,14 @@ VM_OP_HOT void OpMulReal(noisepage::execution::sql::Real *const       result,
 VM_OP_HOT void OpDivReal(noisepage::execution::sql::Real *const       result,
                          const noisepage::execution::sql::Real *const left,
                          const noisepage::execution::sql::Real *const right) {
-    UNUSED_ATTRIBUTE bool div_by_zero = false;
+    [[maybe_unused]] bool div_by_zero = false;
     noisepage::execution::sql::ArithmeticFunctions::Div(result, *left, *right, &div_by_zero);
 }
 
 VM_OP_HOT void OpModReal(noisepage::execution::sql::Real *const       result,
                          const noisepage::execution::sql::Real *const left,
                          const noisepage::execution::sql::Real *const right) {
-    UNUSED_ATTRIBUTE bool div_by_zero = false;
+    [[maybe_unused]] bool div_by_zero = false;
     noisepage::execution::sql::ArithmeticFunctions::Mod(result, *left, *right, &div_by_zero);
 }
 
@@ -1937,9 +1937,9 @@ VM_OP_WARM void OpNpRunnersEmitReal(noisepage::execution::exec::ExecutionContext
                                                                 *num_real_cols);
 }
 
-VM_OP_WARM void OpNpRunnersDummyInt(UNUSED_ATTRIBUTE noisepage::execution::exec::ExecutionContext *ctx) {}
+VM_OP_WARM void OpNpRunnersDummyInt([[maybe_unused]] noisepage::execution::exec::ExecutionContext *ctx) {}
 
-VM_OP_WARM void OpNpRunnersDummyReal(UNUSED_ATTRIBUTE noisepage::execution::exec::ExecutionContext *ctx) {}
+VM_OP_WARM void OpNpRunnersDummyReal([[maybe_unused]] noisepage::execution::exec::ExecutionContext *ctx) {}
 
 // ---------------------------------------------------------
 // String functions

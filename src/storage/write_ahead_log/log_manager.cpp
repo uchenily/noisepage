@@ -59,8 +59,8 @@ void LogManager::PersistAndStop() {
     // Signal all tasks to stop. The shutdown of the tasks will trigger any remaining logs to be serialized, writen to
     // the log file, and persisted. The order in which we shut down the tasks is important, we must first serialize,
     // then shutdown the disk consumer task (reverse order of Start())
-    auto result UNUSED_ATTRIBUTE
-        = thread_registry_->StopTask(this, log_serializer_task_.CastManagedPointerTo<common::DedicatedThreadTask>());
+    auto result [[maybe_unused]]
+    = thread_registry_->StopTask(this, log_serializer_task_.CastManagedPointerTo<common::DedicatedThreadTask>());
     NOISEPAGE_ASSERT(result, "LogSerializerTask should have been stopped");
 
     result

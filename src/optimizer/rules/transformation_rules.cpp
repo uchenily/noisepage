@@ -43,7 +43,7 @@ bool LogicalInnerJoinCommutativity::Check(common::ManagedPointer<AbstractOptimiz
 
 void LogicalInnerJoinCommutativity::Transform(common::ManagedPointer<AbstractOptimizerNode>        input,
                                               std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-                                              UNUSED_ATTRIBUTE OptimizationContext                *context) const {
+                                              [[maybe_unused]] OptimizationContext                *context) const {
     auto join_op = input->Contents()->GetContentsAs<LogicalInnerJoin>();
     auto join_predicates = std::vector<AnnotatedExpression>(join_op->GetJoinPredicates());
 

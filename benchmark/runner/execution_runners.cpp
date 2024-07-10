@@ -303,7 +303,7 @@ public:
     const uint64_t                      optimizer_timeout_ = 1000000;
 
     static std::unique_ptr<planner::AbstractPlanNode>
-    PassthroughPlanChecker(UNUSED_ATTRIBUTE common::ManagedPointer<transaction::TransactionContext> txn,
+    PassthroughPlanChecker([[maybe_unused]] common::ManagedPointer<transaction::TransactionContext> txn,
                            std::unique_ptr<planner::AbstractPlanNode>                               plan) {
         return plan;
     }
@@ -778,7 +778,7 @@ BENCHMARK_DEFINE_F(ExecutionRunners, SEQ0_ArithmeticRunners)(benchmark::State &s
 template <settings::Param param, typename T>
 void DbMainSetParam(T value) {
     const common::action_id_t action_id(1);
-    auto                      callback = [](common::ManagedPointer<common::ActionContext> action UNUSED_ATTRIBUTE) {};
+    auto                      callback = [](common::ManagedPointer<common::ActionContext> action [[maybe_unused]]) {};
     settings::setter_callback_fn setter_callback = callback;
     auto                         db_settings = db_main->GetSettingsManager();
 

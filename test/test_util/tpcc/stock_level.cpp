@@ -28,8 +28,8 @@ bool StockLevel::Execute(transaction::TransactionManager *const txn_manager,
     NOISEPAGE_ASSERT(index_scan_results.size() == 1, "District index lookup failed.");
 
     auto *district_select_tuple = district_select_pr_initializer_.InitializeRow(worker->district_tuple_buffer_);
-    bool select_result UNUSED_ATTRIBUTE
-        = db->district_table_->Select(common::ManagedPointer(txn), index_scan_results[0], district_select_tuple);
+    bool  select_result [[maybe_unused]]
+    = db->district_table_->Select(common::ManagedPointer(txn), index_scan_results[0], district_select_tuple);
     NOISEPAGE_ASSERT(select_result, "District should be present.");
 
     const auto d_next_o_id = *reinterpret_cast<int32_t *>(district_select_tuple->AccessWithNullCheck(0));

@@ -44,7 +44,7 @@ SequenceTuning::SequenceTuning(common::ManagedPointer<PlanningContext>          
                                   structure_map_.at(action)->GetSQLCommand());
         }
 
-    for (const auto &it UNUSED_ATTRIBUTE : structure_map_) {
+    for (const auto &it [[maybe_unused]] : structure_map_) {
         SELFDRIVING_LOG_DEBUG("Generated action: ID {} Command {}", it.first, it.second->GetSQLCommand());
     }
 
@@ -74,7 +74,7 @@ void SequenceTuning::BestAction(
         std::vector<std::set<std::set<action_id_t>>> singleton_action_repeated(end_segment_index_ + 1,
                                                                                singleton_action);
 
-        double best_path_cost UNUSED_ATTRIBUTE = GraphSolver(planning_context_.Get(),
+        double best_path_cost [[maybe_unused]] = GraphSolver(planning_context_.Get(),
                                                              forecast_,
                                                              end_segment_index_,
                                                              structure_map_,
@@ -159,7 +159,7 @@ void SequenceTuning::GreedySeq(const std::map<action_id_t, PathSolution> &best_p
                                                                                  candidate_structures);
 
     // find best solution in the final graph
-    double final_soln_cost UNUSED_ATTRIBUTE = GraphSolver(planning_context_.Get(),
+    double final_soln_cost [[maybe_unused]] = GraphSolver(planning_context_.Get(),
                                                           forecast_,
                                                           end_segment_index_,
                                                           structure_map_,

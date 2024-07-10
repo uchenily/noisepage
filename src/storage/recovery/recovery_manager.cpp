@@ -269,7 +269,7 @@ void RecoveryManager::ReplayRedoRecord(transaction::TransactionContext *txn, Log
         auto staged_record = txn->StageRecoveryWrite(record);
         NOISEPAGE_ASSERT(staged_record->GetTupleSlot() == new_tuple_slot,
                          "Staged record must have the mapped tuple slot");
-        bool result UNUSED_ATTRIBUTE = sql_table_ptr->Update(common::ManagedPointer(txn), staged_record);
+        bool result [[maybe_unused]] = sql_table_ptr->Update(common::ManagedPointer(txn), staged_record);
         NOISEPAGE_ASSERT(result, "Buffered changes should always succeed during commit");
     }
 }
@@ -296,7 +296,7 @@ void RecoveryManager::ReplayDeleteRecord(transaction::TransactionContext *txn, L
     sql_table_ptr->Select(common::ManagedPointer(txn), new_tuple_slot, pr);
 
     // Delete from the table
-    bool result UNUSED_ATTRIBUTE = sql_table_ptr->Delete(common::ManagedPointer(txn), new_tuple_slot);
+    bool result [[maybe_unused]] = sql_table_ptr->Delete(common::ManagedPointer(txn), new_tuple_slot);
     NOISEPAGE_ASSERT(result, "Buffered changes should always succeed during commit");
 
     // Delete from the indexes
@@ -463,7 +463,7 @@ void RecoveryManager::UpdateIndexesOnTable(transaction::TransactionContext      
         }
 
         if (insert) {
-            bool result UNUSED_ATTRIBUTE = (index->metadata_.GetSchema().Unique())
+            bool result [[maybe_unused]] = (index->metadata_.GetSchema().Unique())
                                                ? index->InsertUnique(common::ManagedPointer(txn), *index_pr, tuple_slot)
                                                : index->Insert(common::ManagedPointer(txn), *index_pr, tuple_slot);
             NOISEPAGE_ASSERT(result, "Insert into index should always succeed for a committed transaction");
@@ -558,8 +558,8 @@ uint32_t RecoveryManager::ProcessSpecialCasePGDatabaseRecord(
         std::string       name_string(name_varlen.StringView());
 
         // Step 2: Recreate the database
-        auto result UNUSED_ATTRIBUTE
-            = catalog_->CreateDatabase(common::ManagedPointer(txn), name_string, false, db_oid);
+        auto result [[maybe_unused]]
+        = catalog_->CreateDatabase(common::ManagedPointer(txn), name_string, false, db_oid);
         NOISEPAGE_ASSERT(result, "Database recreation should succeed");
         catalog_->UpdateNextOid(db_oid);
         // Manually bootstrap the PRIs
@@ -627,8 +627,8 @@ uint32_t RecoveryManager::ProcessSpecialCasePGDatabaseRecord(
                     std::string name_string(name_varlen.StringView());
 
                     // Step 5: Rename the database
-                    auto result UNUSED_ATTRIBUTE
-                        = catalog_->RenameDatabase(common::ManagedPointer(txn), next_db_oid, name_string);
+                    auto result [[maybe_unused]]
+                    = catalog_->RenameDatabase(common::ManagedPointer(txn), next_db_oid, name_string);
                     NOISEPAGE_ASSERT(result, "Renaming of database should always succeed during replaying");
 
                     // Step 6: Update metadata and clean up additional record processed. We need to use the indexes on
@@ -654,7 +654,7 @@ uint32_t RecoveryManager::ProcessSpecialCasePGDatabaseRecord(
     }
 
     // Step 3: If it wasn't a renaming, we simply need to drop the database
-    auto result UNUSED_ATTRIBUTE = catalog_->DeleteDatabase(common::ManagedPointer(txn), db_oid);
+    auto result [[maybe_unused]] = catalog_->DeleteDatabase(common::ManagedPointer(txn), db_oid);
     NOISEPAGE_ASSERT(result, "Database deletion should succeed");
 
     // Step 4: Clean up any metadata
@@ -725,11 +725,11 @@ uint32_t RecoveryManager::ProcessSpecialCasePGClassRecord(
                         catalog::table_oid_t(class_oid));
 
                 // Step 3: Create and set schema in catalog
-                auto       *schema = new catalog::Schema(std::move(schema_cols));
-                bool result UNUSED_ATTRIBUTE
-                    = db_catalog->SetTableSchemaPointer<RecoveryManager>(common::ManagedPointer(txn),
-                                                                         catalog::table_oid_t(class_oid),
-                                                                         schema);
+                auto *schema = new catalog::Schema(std::move(schema_cols));
+                bool  result [[maybe_unused]]
+                = db_catalog->SetTableSchemaPointer<RecoveryManager>(common::ManagedPointer(txn),
+                                                                     catalog::table_oid_t(class_oid),
+                                                                     schema);
                 NOISEPAGE_ASSERT(result,
                                  "Setting table schema pointer should succeed, entry should be in pg_class already");
 
@@ -790,8 +790,8 @@ uint32_t RecoveryManager::ProcessSpecialCasePGClassRecord(
                 delete[] buffer; // Delete old buffer, it won't be large enough for this PR
                 buffer = common::AllocationUtil::AllocateAligned(pg_index_pr_init.ProjectedRowSize());
                 pr = pg_index_pr_init.InitializeRow(buffer);
-                bool result UNUSED_ATTRIBUTE
-                    = db_catalog->pg_core_.indexes_->Select(common::ManagedPointer(txn), tuple_slot_result[0], pr);
+                bool result [[maybe_unused]]
+                = db_catalog->pg_core_.indexes_->Select(common::ManagedPointer(txn), tuple_slot_result[0], pr);
                 NOISEPAGE_ASSERT(result, "Select into pg_index should succeed during recovery");
                 bool                      is_unique = *(reinterpret_cast<bool *>(
                     pr->AccessWithNullCheck(pg_index_pr_map[catalog::postgres::PgIndex::INDISUNIQUE.oid_])));
@@ -892,9 +892,9 @@ uint32_t RecoveryManager::ProcessSpecialCasePGClassRecord(
                                  "PR Map must contain class name");
                 NOISEPAGE_ASSERT(pr_map.find(catalog::postgres::PgClass::RELKIND.oid_) != pr_map.end(),
                                  "PR Map must contain class kind");
-                auto                 next_class_oid = *(reinterpret_cast<uint32_t *>(
+                auto next_class_oid = *(reinterpret_cast<uint32_t *>(
                     next_redo_record->Delta()->AccessWithNullCheck(pr_map[catalog::postgres::PgClass::RELOID.oid_])));
-                auto next_class_kind UNUSED_ATTRIBUTE = *(reinterpret_cast<catalog::postgres::PgClass::RelKind *>(
+                auto next_class_kind [[maybe_unused]] = *(reinterpret_cast<catalog::postgres::PgClass::RelKind *>(
                     next_redo_record->Delta()->AccessWithNullCheck(pr_map[catalog::postgres::PgClass::RELKIND.oid_])));
 
                 if (class_oid
@@ -909,10 +909,9 @@ uint32_t RecoveryManager::ProcessSpecialCasePGClassRecord(
                     std::string name_string(name_varlen.StringView());
 
                     // Step 5: Rename the table
-                    auto result UNUSED_ATTRIBUTE = GetDatabaseCatalog(txn, next_redo_record->GetDatabaseOid())
-                                                       ->RenameTable(common::ManagedPointer(txn),
-                                                                     catalog::table_oid_t(next_class_oid),
-                                                                     name_string);
+                    auto result [[maybe_unused]]
+                    = GetDatabaseCatalog(txn, next_redo_record->GetDatabaseOid())
+                          ->RenameTable(common::ManagedPointer(txn), catalog::table_oid_t(next_class_oid), name_string);
                     NOISEPAGE_ASSERT(result, "Renaming should always succeed during replaying");
 
                     // Step 6: Update metadata and clean up additional record processed. We need to use the indexes on
@@ -939,7 +938,7 @@ uint32_t RecoveryManager::ProcessSpecialCasePGClassRecord(
     }
 
     // Step 3: If it was not a renaming, we call to the catalog to delete the class object
-    bool result UNUSED_ATTRIBUTE;
+    bool result [[maybe_unused]];
     switch (class_kind) {
     case (catalog::postgres::PgClass::RelKind::REGULAR_TABLE): {
         result = db_catalog_ptr->DeleteTable(common::ManagedPointer(txn), catalog::table_oid_t(class_oid));
@@ -1159,9 +1158,9 @@ uint32_t RecoveryManager::ProcessSpecialCasePGProcRecord(
         catalog::proc_oid_t proc_oid(*(reinterpret_cast<uint32_t *>(
             redo_record->Delta()->AccessWithNullCheck(pr_map[catalog::postgres::PgProc::PROOID.oid_]))));
 
-        auto result UNUSED_ATTRIBUTE
-            = catalog_->GetDatabaseCatalog(common::ManagedPointer(txn), redo_record->GetDatabaseOid())
-                  ->SetFunctionContextPointer(common::ManagedPointer(txn), proc_oid, nullptr);
+        auto result [[maybe_unused]]
+        = catalog_->GetDatabaseCatalog(common::ManagedPointer(txn), redo_record->GetDatabaseOid())
+              ->SetFunctionContextPointer(common::ManagedPointer(txn), proc_oid, nullptr);
         NOISEPAGE_ASSERT(result, "Setting to null did not work");
         return 0; // No additional records processed
     }

@@ -92,7 +92,7 @@ void PgTypeImpl::InsertType(const common::ManagedPointer<transaction::Transactio
         auto oid_index_delta = types_oid_index_->GetProjectedRowInitializer().InitializeRow(buffer);
         auto typoid_offset = types_oid_index_->GetKeyOidToOffsetMap().at(catalog::indexkeycol_oid_t(1));
         oid_index_delta->Set<type_oid_t, false>(typoid_offset, type_oid, false);
-        auto UNUSED_ATTRIBUTE result = types_oid_index_->InsertUnique(txn, *oid_index_delta, tuple_slot);
+        [[maybe_unused]] auto result = types_oid_index_->InsertUnique(txn, *oid_index_delta, tuple_slot);
         NOISEPAGE_ASSERT(result, "Insert into pg_type_oid_index should always succeed");
     }
 
@@ -103,7 +103,7 @@ void PgTypeImpl::InsertType(const common::ManagedPointer<transaction::Transactio
         auto typname_offset = types_name_index_->GetKeyOidToOffsetMap().at(catalog::indexkeycol_oid_t(2));
         name_index_delta->Set<namespace_oid_t, false>(typnamespace_offset, namespace_oid, false);
         name_index_delta->Set<storage::VarlenEntry, false>(typname_offset, name_varlen, false);
-        auto UNUSED_ATTRIBUTE result = types_name_index_->InsertUnique(txn, *name_index_delta, tuple_slot);
+        [[maybe_unused]] auto result = types_name_index_->InsertUnique(txn, *name_index_delta, tuple_slot);
         NOISEPAGE_ASSERT(result, "Insert into pg_type_name_index should always succeed");
     }
 
@@ -112,7 +112,7 @@ void PgTypeImpl::InsertType(const common::ManagedPointer<transaction::Transactio
         auto namespace_index_delta = types_namespace_index_->GetProjectedRowInitializer().InitializeRow(buffer);
         auto typnamespace_offset = types_namespace_index_->GetKeyOidToOffsetMap().at(catalog::indexkeycol_oid_t(1));
         namespace_index_delta->Set<namespace_oid_t, false>(typnamespace_offset, namespace_oid, false);
-        auto UNUSED_ATTRIBUTE result = types_namespace_index_->Insert(txn, *namespace_index_delta, tuple_slot);
+        [[maybe_unused]] auto result = types_namespace_index_->Insert(txn, *namespace_index_delta, tuple_slot);
         NOISEPAGE_ASSERT(result, "Insert into pg_type_namespace_index should always succeed");
     }
 

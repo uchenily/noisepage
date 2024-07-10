@@ -642,7 +642,7 @@ void PilotUtil::ComputeTableSizeRatios(const PlanningContext  &planning_context,
         if (!future_result.has_value()) {
             throw PILOT_EXCEPTION("Future timed out.", common::ErrorCode::ERRCODE_IO_ERROR);
         }
-        UNUSED_ATTRIBUTE bool success = future_result->second;
+        [[maybe_unused]] bool success = future_result->second;
         NOISEPAGE_ASSERT(success, "Failed reading from pg_statistic");
     }
 

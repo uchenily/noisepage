@@ -55,7 +55,7 @@ public:
      * @param decl The declaration node.
      * @return No-arg constructed return.
      */
-    RetType VisitDecl(UNUSED_ATTRIBUTE Decl *decl) {
+    RetType VisitDecl([[maybe_unused]] Decl *decl) {
         return RetType();
     }
 
@@ -64,7 +64,7 @@ public:
      * @param stmt The statement node.
      * @return No-arg constructed return.
      */
-    RetType VisitStmt(UNUSED_ATTRIBUTE Stmt *stmt) {
+    RetType VisitStmt([[maybe_unused]] Stmt *stmt) {
         return RetType();
     }
 
@@ -73,7 +73,7 @@ public:
      * @param expr The expression node.
      * @return No-arg constructed return.
      */
-    RetType VisitExpr(UNUSED_ATTRIBUTE Expr *expr) {
+    RetType VisitExpr([[maybe_unused]] Expr *expr) {
         return RetType();
     }
 

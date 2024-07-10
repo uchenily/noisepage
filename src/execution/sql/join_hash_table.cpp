@@ -531,7 +531,7 @@ void JoinHashTable::Build() {
     }
 
     timer.Stop();
-    UNUSED_ATTRIBUTE double tps = (GetTupleCount() / timer.GetElapsed()) / 1000.0;
+    [[maybe_unused]] double tps = (GetTupleCount() / timer.GetElapsed()) / 1000.0;
     EXECUTION_LOG_DEBUG("JHT: built {} tuples in {} ms ({:.2f} tps)", GetTupleCount(), timer.GetElapsed(), tps);
 
     built_ = true;
@@ -647,7 +647,7 @@ void JoinHashTable::MergeParallel(ThreadStateContainer *thread_state_container, 
 
     timer.Stop();
 
-    UNUSED_ATTRIBUTE const double tps = (chaining_hash_table_.GetElementCount() / timer.GetElapsed()) / 1000.0;
+    [[maybe_unused]] const double tps = (chaining_hash_table_.GetElementCount() / timer.GetElapsed()) / 1000.0;
     EXECUTION_LOG_TRACE("JHT: {} merged {} JHTs. Estimated {}, actual {}. Time: {:.2f} ms ({:.2f} mtps)",
                         use_serial_build ? "Serial" : "Parallel",
                         tl_join_tables.size(),

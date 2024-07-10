@@ -469,7 +469,7 @@ void QueryToOperatorTransformer::Visit(common::ManagedPointer<parser::GroupByDes
 void QueryToOperatorTransformer::Visit(common::ManagedPointer<parser::OrderByDescription> /*node*/) {
     OPTIMIZER_LOG_DEBUG("Transforming OrderByDescription to operators ...");
 }
-void QueryToOperatorTransformer::Visit(UNUSED_ATTRIBUTE common::ManagedPointer<parser::LimitDescription> node) {
+void QueryToOperatorTransformer::Visit([[maybe_unused]] common::ManagedPointer<parser::LimitDescription> node) {
     OPTIMIZER_LOG_DEBUG("Transforming LimitDescription to operators ...");
 }
 void QueryToOperatorTransformer::Visit(common::ManagedPointer<parser::CreateFunctionStatement> op) {
@@ -744,16 +744,16 @@ void QueryToOperatorTransformer::Visit(common::ManagedPointer<parser::DropStatem
 
     output_expr_ = std::move(drop_expr);
 }
-void QueryToOperatorTransformer::Visit(UNUSED_ATTRIBUTE common::ManagedPointer<parser::PrepareStatement> op) {
+void QueryToOperatorTransformer::Visit([[maybe_unused]] common::ManagedPointer<parser::PrepareStatement> op) {
     OPTIMIZER_LOG_DEBUG("Transforming PrepareStatement to operators ...");
 }
-void QueryToOperatorTransformer::Visit(UNUSED_ATTRIBUTE common::ManagedPointer<parser::ExecuteStatement> op) {
+void QueryToOperatorTransformer::Visit([[maybe_unused]] common::ManagedPointer<parser::ExecuteStatement> op) {
     OPTIMIZER_LOG_DEBUG("Transforming ExecuteStatement to operators ...");
 }
-void QueryToOperatorTransformer::Visit(UNUSED_ATTRIBUTE common::ManagedPointer<parser::ExplainStatement> op) {
+void QueryToOperatorTransformer::Visit([[maybe_unused]] common::ManagedPointer<parser::ExplainStatement> op) {
     OPTIMIZER_LOG_DEBUG("Transforming ExplainStatement to operators ...");
 }
-void QueryToOperatorTransformer::Visit(UNUSED_ATTRIBUTE common::ManagedPointer<parser::TransactionStatement> op) {
+void QueryToOperatorTransformer::Visit([[maybe_unused]] common::ManagedPointer<parser::TransactionStatement> op) {
     OPTIMIZER_LOG_DEBUG("Transforming Transaction to operators ...");
 }
 

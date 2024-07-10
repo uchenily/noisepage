@@ -37,9 +37,9 @@ bool LogicalGetToPhysicalTableFreeScan::Check(common::ManagedPointer<AbstractOpt
     return get->GetTableOid() == catalog::INVALID_TABLE_OID;
 }
 
-void LogicalGetToPhysicalTableFreeScan::Transform(UNUSED_ATTRIBUTE common::ManagedPointer<AbstractOptimizerNode> input,
+void LogicalGetToPhysicalTableFreeScan::Transform([[maybe_unused]] common::ManagedPointer<AbstractOptimizerNode> input,
                                                   std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-                                                  UNUSED_ATTRIBUTE OptimizationContext                *context) const {
+                                                  [[maybe_unused]] OptimizationContext                *context) const {
     std::vector<std::unique_ptr<AbstractOptimizerNode>> c;
     auto                                                result_plan = std::make_unique<OperatorNode>(
         TableFreeScan::Make().RegisterWithTxnContext(context->GetOptimizerContext()->GetTxn()),
@@ -65,7 +65,7 @@ bool LogicalGetToPhysicalSeqScan::Check(common::ManagedPointer<AbstractOptimizer
 
 void LogicalGetToPhysicalSeqScan::Transform(common::ManagedPointer<AbstractOptimizerNode>        input,
                                             std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-                                            UNUSED_ATTRIBUTE OptimizationContext                *context) const {
+                                            [[maybe_unused]] OptimizationContext                *context) const {
     NOISEPAGE_ASSERT(input->GetChildren().empty(), "Get should have no children");
     const auto get = input->Contents()->GetContentsAs<LogicalGet>();
 
@@ -112,7 +112,7 @@ bool LogicalGetToPhysicalIndexScan::Check(common::ManagedPointer<AbstractOptimiz
 
 void LogicalGetToPhysicalIndexScan::Transform(common::ManagedPointer<AbstractOptimizerNode>        input,
                                               std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-                                              UNUSED_ATTRIBUTE OptimizationContext                *context) const {
+                                              [[maybe_unused]] OptimizationContext                *context) const {
     const auto get = input->Contents()->GetContentsAs<LogicalGet>();
     NOISEPAGE_ASSERT(input->GetChildren().empty(), "Get should have no children");
 
@@ -214,7 +214,7 @@ bool LogicalQueryDerivedGetToPhysicalQueryDerivedScan::Check(common::ManagedPoin
 void LogicalQueryDerivedGetToPhysicalQueryDerivedScan::Transform(
     common::ManagedPointer<AbstractOptimizerNode>        input,
     std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-    UNUSED_ATTRIBUTE OptimizationContext                *context) const {
+    [[maybe_unused]] OptimizationContext                *context) const {
     const auto get = input->Contents()->GetContentsAs<LogicalQueryDerivedGet>();
 
     auto tbl_alias = get->GetTableAlias();
@@ -250,7 +250,7 @@ bool LogicalExternalFileGetToPhysicalExternalFileGet::Check(common::ManagedPoint
 void LogicalExternalFileGetToPhysicalExternalFileGet::Transform(
     common::ManagedPointer<AbstractOptimizerNode>        input,
     std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-    UNUSED_ATTRIBUTE OptimizationContext                *context) const {
+    [[maybe_unused]] OptimizationContext                *context) const {
     const auto get = input->Contents()->GetContentsAs<LogicalExternalFileGet>();
     NOISEPAGE_ASSERT(input->GetChildren().empty(), "ExternalFileScan should have no children");
 
@@ -287,7 +287,7 @@ bool LogicalDeleteToPhysicalDelete::Check(common::ManagedPointer<AbstractOptimiz
 
 void LogicalDeleteToPhysicalDelete::Transform(common::ManagedPointer<AbstractOptimizerNode>        input,
                                               std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-                                              UNUSED_ATTRIBUTE OptimizationContext                *context) const {
+                                              [[maybe_unused]] OptimizationContext                *context) const {
     const auto del = input->Contents()->GetContentsAs<LogicalDelete>();
     NOISEPAGE_ASSERT(input->GetChildren().size() == 1, "LogicalDelete should have 1 child");
 
@@ -322,7 +322,7 @@ bool LogicalUpdateToPhysicalUpdate::Check(common::ManagedPointer<AbstractOptimiz
 
 void LogicalUpdateToPhysicalUpdate::Transform(common::ManagedPointer<AbstractOptimizerNode>        input,
                                               std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-                                              UNUSED_ATTRIBUTE OptimizationContext                *context) const {
+                                              [[maybe_unused]] OptimizationContext                *context) const {
     const auto update_op = input->Contents()->GetContentsAs<LogicalUpdate>();
     NOISEPAGE_ASSERT(input->GetChildren().size() == 1, "LogicalUpdate should have 1 child");
     std::vector<std::unique_ptr<AbstractOptimizerNode>> c;
@@ -355,7 +355,7 @@ bool LogicalInsertToPhysicalInsert::Check(common::ManagedPointer<AbstractOptimiz
 
 void LogicalInsertToPhysicalInsert::Transform(common::ManagedPointer<AbstractOptimizerNode>        input,
                                               std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-                                              UNUSED_ATTRIBUTE OptimizationContext                *context) const {
+                                              [[maybe_unused]] OptimizationContext                *context) const {
     const auto insert_op = input->Contents()->GetContentsAs<LogicalInsert>();
     NOISEPAGE_ASSERT(input->GetChildren().empty(), "LogicalInsert should have 0 children");
 
@@ -391,7 +391,7 @@ bool LogicalInsertSelectToPhysicalInsertSelect::Check(common::ManagedPointer<Abs
 void LogicalInsertSelectToPhysicalInsertSelect::Transform(
     common::ManagedPointer<AbstractOptimizerNode>        input,
     std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-    UNUSED_ATTRIBUTE OptimizationContext                *context) const {
+    [[maybe_unused]] OptimizationContext                *context) const {
     const auto insert_op = input->Contents()->GetContentsAs<LogicalInsertSelect>();
     NOISEPAGE_ASSERT(input->GetChildren().size() == 1, "LogicalInsertSelect should have 1 child");
 
@@ -427,7 +427,7 @@ bool LogicalGroupByToPhysicalHashGroupBy::Check(common::ManagedPointer<AbstractO
 
 void LogicalGroupByToPhysicalHashGroupBy::Transform(common::ManagedPointer<AbstractOptimizerNode>        input,
                                                     std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-                                                    UNUSED_ATTRIBUTE OptimizationContext *context) const {
+                                                    [[maybe_unused]] OptimizationContext *context) const {
     const auto agg_op = input->Contents()->GetContentsAs<LogicalAggregateAndGroupBy>();
     NOISEPAGE_ASSERT(input->GetChildren().size() == 1, "LogicalAggregateAndGroupBy should have 1 child");
 
@@ -465,7 +465,7 @@ bool LogicalAggregateToPhysicalAggregate::Check(common::ManagedPointer<AbstractO
 
 void LogicalAggregateToPhysicalAggregate::Transform(common::ManagedPointer<AbstractOptimizerNode>        input,
                                                     std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-                                                    UNUSED_ATTRIBUTE OptimizationContext *context) const {
+                                                    [[maybe_unused]] OptimizationContext *context) const {
     NOISEPAGE_ASSERT(input->GetChildren().size() == 1, "LogicalAggregateAndGroupBy should have 1 child");
 
     std::vector<std::unique_ptr<AbstractOptimizerNode>> c;
@@ -500,13 +500,13 @@ bool LogicalInnerJoinToPhysicalInnerIndexJoin::Check(common::ManagedPointer<Abst
                                                      OptimizationContext                          *context) const {
     (void) context;
     (void) plan;
-    UNUSED_ATTRIBUTE const auto join = plan->Contents()->GetContentsAs<LogicalInnerJoin>();
+    [[maybe_unused]] const auto join = plan->Contents()->GetContentsAs<LogicalInnerJoin>();
     NOISEPAGE_ASSERT(join != nullptr, "Plan should be a Inner Join");
     NOISEPAGE_ASSERT(plan->GetChildren().size() == 2, "Inner Join should have two children");
 
     // Get the "right" inner child
     auto                  rchild = plan->GetChildren()[1];
-    UNUSED_ATTRIBUTE auto get = rchild->Contents()->GetContentsAs<LogicalGet>();
+    [[maybe_unused]] auto get = rchild->Contents()->GetContentsAs<LogicalGet>();
     NOISEPAGE_ASSERT(get != nullptr, "Right child should be a GET");
 
     // Check whether the right child can be done as an index scan
@@ -517,7 +517,7 @@ bool LogicalInnerJoinToPhysicalInnerIndexJoin::Check(common::ManagedPointer<Abst
 void LogicalInnerJoinToPhysicalInnerIndexJoin::Transform(
     common::ManagedPointer<AbstractOptimizerNode>        input,
     std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-    UNUSED_ATTRIBUTE OptimizationContext                *context) const {
+    [[maybe_unused]] OptimizationContext                *context) const {
     // first build an expression representing hash join
     const auto  inner_join = input->Contents()->GetContentsAs<LogicalInnerJoin>();
     const auto &children = input->GetChildren();
@@ -595,7 +595,7 @@ bool LogicalInnerJoinToPhysicalInnerNLJoin::Check(common::ManagedPointer<Abstrac
 
 void LogicalInnerJoinToPhysicalInnerNLJoin::Transform(common::ManagedPointer<AbstractOptimizerNode>        input,
                                                       std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-                                                      UNUSED_ATTRIBUTE OptimizationContext *context) const {
+                                                      [[maybe_unused]] OptimizationContext *context) const {
     // first build an expression representing hash join
     const auto inner_join = input->Contents()->GetContentsAs<LogicalInnerJoin>();
 
@@ -641,7 +641,7 @@ bool LogicalInnerJoinToPhysicalInnerHashJoin::Check(common::ManagedPointer<Abstr
 void LogicalInnerJoinToPhysicalInnerHashJoin::Transform(
     common::ManagedPointer<AbstractOptimizerNode>        input,
     std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-    UNUSED_ATTRIBUTE OptimizationContext                *context) const {
+    [[maybe_unused]] OptimizationContext                *context) const {
     // first build an expression representing hash join
     const auto inner_join = input->Contents()->GetContentsAs<LogicalInnerJoin>();
 
@@ -698,7 +698,7 @@ bool LogicalSemiJoinToPhysicalSemiLeftHashJoin::Check(common::ManagedPointer<Abs
 void LogicalSemiJoinToPhysicalSemiLeftHashJoin::Transform(
     common::ManagedPointer<AbstractOptimizerNode>        input,
     std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-    UNUSED_ATTRIBUTE OptimizationContext                *context) const {
+    [[maybe_unused]] OptimizationContext                *context) const {
     // first build an expression representing hash join
     const auto semi_join = input->Contents()->GetContentsAs<LogicalSemiJoin>();
 
@@ -756,7 +756,7 @@ bool LogicalLeftJoinToPhysicalLeftHashJoin::Check(common::ManagedPointer<Abstrac
 
 void LogicalLeftJoinToPhysicalLeftHashJoin::Transform(common::ManagedPointer<AbstractOptimizerNode>        input,
                                                       std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-                                                      UNUSED_ATTRIBUTE OptimizationContext *context) const {
+                                                      [[maybe_unused]] OptimizationContext *context) const {
     // first build an expression representing hash join
     const auto left_join = input->Contents()->GetContentsAs<LogicalLeftJoin>();
 
@@ -842,7 +842,7 @@ bool LogicalExportToPhysicalExport::Check(common::ManagedPointer<AbstractOptimiz
 
 void LogicalExportToPhysicalExport::Transform(common::ManagedPointer<AbstractOptimizerNode>        input,
                                               std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-                                              UNUSED_ATTRIBUTE OptimizationContext                *context) const {
+                                              [[maybe_unused]] OptimizationContext                *context) const {
     const auto export_op = input->Contents()->GetContentsAs<LogicalExportExternalFile>();
     NOISEPAGE_ASSERT(input->GetChildren().size() == 1, "LogicalExport should have 1 child");
 
@@ -879,7 +879,7 @@ bool LogicalCreateDatabaseToPhysicalCreateDatabase::Check(common::ManagedPointer
 void LogicalCreateDatabaseToPhysicalCreateDatabase::Transform(
     common::ManagedPointer<AbstractOptimizerNode>        input,
     std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-    UNUSED_ATTRIBUTE OptimizationContext                *context) const {
+    [[maybe_unused]] OptimizationContext                *context) const {
     const auto cdb_op = input->Contents()->GetContentsAs<LogicalCreateDatabase>();
     NOISEPAGE_ASSERT(input->GetChildren().empty(), "LogicalCreateDatabase should have 0 children");
 
@@ -903,7 +903,7 @@ bool LogicalCreateFunctionToPhysicalCreateFunction::Check(common::ManagedPointer
 void LogicalCreateFunctionToPhysicalCreateFunction::Transform(
     common::ManagedPointer<AbstractOptimizerNode>        input,
     std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-    UNUSED_ATTRIBUTE OptimizationContext                *context) const {
+    [[maybe_unused]] OptimizationContext                *context) const {
     const auto cf_op = input->Contents()->GetContentsAs<LogicalCreateFunction>();
     NOISEPAGE_ASSERT(input->GetChildren().empty(), "LogicalCreateFunction should have 0 children");
 
@@ -936,7 +936,7 @@ bool LogicalCreateIndexToPhysicalCreateIndex::Check(common::ManagedPointer<Abstr
 void LogicalCreateIndexToPhysicalCreateIndex::Transform(
     common::ManagedPointer<AbstractOptimizerNode>        input,
     std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-    UNUSED_ATTRIBUTE OptimizationContext                *context) const {
+    [[maybe_unused]] OptimizationContext                *context) const {
     auto ci_op = input->Contents()->GetContentsAs<LogicalCreateIndex>();
     NOISEPAGE_ASSERT(input->GetChildren().empty(), "LogicalCreateIndex should have 0 children");
 
@@ -1018,7 +1018,7 @@ bool LogicalCreateTableToPhysicalCreateTable::Check(common::ManagedPointer<Abstr
 void LogicalCreateTableToPhysicalCreateTable::Transform(
     common::ManagedPointer<AbstractOptimizerNode>        input,
     std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-    UNUSED_ATTRIBUTE OptimizationContext                *context) const {
+    [[maybe_unused]] OptimizationContext                *context) const {
     auto ct_op = input->Contents()->GetContentsAs<LogicalCreateTable>();
     NOISEPAGE_ASSERT(input->GetChildren().empty(), "LogicalCreateTable should have 0 children");
 
@@ -1052,7 +1052,7 @@ bool LogicalCreateNamespaceToPhysicalCreateNamespace::Check(common::ManagedPoint
 void LogicalCreateNamespaceToPhysicalCreateNamespace::Transform(
     common::ManagedPointer<AbstractOptimizerNode>        input,
     std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-    UNUSED_ATTRIBUTE OptimizationContext                *context) const {
+    [[maybe_unused]] OptimizationContext                *context) const {
     auto cn_op = input->Contents()->GetContentsAs<LogicalCreateNamespace>();
     NOISEPAGE_ASSERT(input->GetChildren().empty(), "LogicalCreateNamespace should have 0 children");
 
@@ -1077,7 +1077,7 @@ bool LogicalCreateTriggerToPhysicalCreateTrigger::Check(common::ManagedPointer<A
 void LogicalCreateTriggerToPhysicalCreateTrigger::Transform(
     common::ManagedPointer<AbstractOptimizerNode>        input,
     std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-    UNUSED_ATTRIBUTE OptimizationContext                *context) const {
+    [[maybe_unused]] OptimizationContext                *context) const {
     auto ct_op = input->Contents()->GetContentsAs<LogicalCreateTrigger>();
     NOISEPAGE_ASSERT(input->GetChildren().empty(), "LogicalCreateTrigger should have 0 children");
 
@@ -1109,7 +1109,7 @@ bool LogicalCreateViewToPhysicalCreateView::Check(common::ManagedPointer<Abstrac
 
 void LogicalCreateViewToPhysicalCreateView::Transform(common::ManagedPointer<AbstractOptimizerNode>        input,
                                                       std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-                                                      UNUSED_ATTRIBUTE OptimizationContext *context) const {
+                                                      [[maybe_unused]] OptimizationContext *context) const {
     auto cv_op = input->Contents()->GetContentsAs<LogicalCreateView>();
     NOISEPAGE_ASSERT(input->GetChildren().empty(), "LogicalCreateView should have 0 children");
 
@@ -1135,7 +1135,7 @@ bool LogicalDropDatabaseToPhysicalDropDatabase::Check(common::ManagedPointer<Abs
 void LogicalDropDatabaseToPhysicalDropDatabase::Transform(
     common::ManagedPointer<AbstractOptimizerNode>        input,
     std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-    UNUSED_ATTRIBUTE OptimizationContext                *context) const {
+    [[maybe_unused]] OptimizationContext                *context) const {
     auto dd_op = input->Contents()->GetContentsAs<LogicalDropDatabase>();
     NOISEPAGE_ASSERT(input->GetChildren().empty(), "LogicalDropDatabase should have 0 children");
 
@@ -1158,7 +1158,7 @@ bool LogicalDropTableToPhysicalDropTable::Check(common::ManagedPointer<AbstractO
 
 void LogicalDropTableToPhysicalDropTable::Transform(common::ManagedPointer<AbstractOptimizerNode>        input,
                                                     std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-                                                    UNUSED_ATTRIBUTE OptimizationContext *context) const {
+                                                    [[maybe_unused]] OptimizationContext *context) const {
     auto dt_op = input->Contents()->GetContentsAs<LogicalDropTable>();
     NOISEPAGE_ASSERT(input->GetChildren().empty(), "LogicalDropTable should have 0 children");
 
@@ -1181,7 +1181,7 @@ bool LogicalDropIndexToPhysicalDropIndex::Check(common::ManagedPointer<AbstractO
 
 void LogicalDropIndexToPhysicalDropIndex::Transform(common::ManagedPointer<AbstractOptimizerNode>        input,
                                                     std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-                                                    UNUSED_ATTRIBUTE OptimizationContext *context) const {
+                                                    [[maybe_unused]] OptimizationContext *context) const {
     auto di_op = input->Contents()->GetContentsAs<LogicalDropIndex>();
     NOISEPAGE_ASSERT(input->GetChildren().empty(), "LogicalDropIndex should have 0 children");
 
@@ -1205,7 +1205,7 @@ bool LogicalDropTriggerToPhysicalDropTrigger::Check(common::ManagedPointer<Abstr
 void LogicalDropTriggerToPhysicalDropTrigger::Transform(
     common::ManagedPointer<AbstractOptimizerNode>        input,
     std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-    UNUSED_ATTRIBUTE OptimizationContext                *context) const {
+    [[maybe_unused]] OptimizationContext                *context) const {
     auto dt_op = input->Contents()->GetContentsAs<LogicalDropTrigger>();
     NOISEPAGE_ASSERT(input->GetChildren().empty(), "LogicalDropTrigger should have 0 children");
 
@@ -1230,7 +1230,7 @@ bool LogicalDropNamespaceToPhysicalDropNamespace::Check(common::ManagedPointer<A
 void LogicalDropNamespaceToPhysicalDropNamespace::Transform(
     common::ManagedPointer<AbstractOptimizerNode>        input,
     std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-    UNUSED_ATTRIBUTE OptimizationContext                *context) const {
+    [[maybe_unused]] OptimizationContext                *context) const {
     auto dn_op = input->Contents()->GetContentsAs<LogicalDropNamespace>();
     NOISEPAGE_ASSERT(input->GetChildren().empty(), "LogicalDropNamespace should have 0 children");
 
@@ -1253,7 +1253,7 @@ bool LogicalDropViewToPhysicalDropView::Check(common::ManagedPointer<AbstractOpt
 
 void LogicalDropViewToPhysicalDropView::Transform(common::ManagedPointer<AbstractOptimizerNode>        input,
                                                   std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-                                                  UNUSED_ATTRIBUTE OptimizationContext                *context) const {
+                                                  [[maybe_unused]] OptimizationContext                *context) const {
     auto dv_op = input->Contents()->GetContentsAs<LogicalDropView>();
     NOISEPAGE_ASSERT(input->GetChildren().empty(), "LogicalDropView should have 0 children");
 
@@ -1278,7 +1278,7 @@ bool LogicalAnalyzeToPhysicalAnalyze::Check(common::ManagedPointer<AbstractOptim
 
 void LogicalAnalyzeToPhysicalAnalyze::Transform(common::ManagedPointer<AbstractOptimizerNode>        input,
                                                 std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-                                                UNUSED_ATTRIBUTE OptimizationContext                *context) const {
+                                                [[maybe_unused]] OptimizationContext                *context) const {
     auto logical_op = input->Contents()->GetContentsAs<LogicalAnalyze>();
     NOISEPAGE_ASSERT(input->GetChildren().size() == 1, "LogicalAnalyze should have 1 child");
 

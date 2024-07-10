@@ -81,7 +81,7 @@ private:
             // read-only spin-latch and move the allocation out of a critical section.
             start_time = time_++;
 
-            const auto ret UNUSED_ATTRIBUTE = curr_running_txns_.emplace(start_time);
+            const auto ret [[maybe_unused]] = curr_running_txns_.emplace(start_time);
             NOISEPAGE_ASSERT(ret.second, "commit start time should be globally unique");
         } // Release latch on current running transactions
         return start_time;

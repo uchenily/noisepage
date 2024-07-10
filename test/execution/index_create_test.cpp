@@ -78,16 +78,16 @@ protected:
                 // Get directly from iterator
                 auto *const table_pr(index_iter.TablePR());
                 for (uint32_t i = 0; i < result_num; ++i) {
-                    auto table_val   UNUSED_ATTRIBUTE = vpi->GetValue<int32_t, false>(i, nullptr);
-                    auto indexed_val UNUSED_ATTRIBUTE = table_pr->Get<int32_t, false>(i, nullptr);
+                    auto table_val [[maybe_unused]] = vpi->GetValue<int32_t, false>(i, nullptr);
+                    auto indexed_val [[maybe_unused]] = table_pr->Get<int32_t, false>(i, nullptr);
                     ASSERT_EQ(*table_val, *indexed_val);
                 }
                 // Get indirectly from tuple slot
                 storage::TupleSlot slot(index_iter.CurrentSlot());
                 ASSERT_TRUE(sql_table->Select(exec_ctx_->GetTxn(), slot, index_iter.TablePR()));
                 for (uint32_t i = 0; i < result_num; ++i) {
-                    auto table_val UNUSED_ATTRIBUTE = vpi->GetValue<int32_t, false>(i, nullptr);
-                    auto tuple_val UNUSED_ATTRIBUTE = table_pr->Get<int32_t, false>(i, nullptr);
+                    auto table_val [[maybe_unused]] = vpi->GetValue<int32_t, false>(i, nullptr);
+                    auto tuple_val [[maybe_unused]] = table_pr->Get<int32_t, false>(i, nullptr);
                     ASSERT_EQ(*table_val, *tuple_val);
                 }
 

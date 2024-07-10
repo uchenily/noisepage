@@ -43,7 +43,7 @@ auto Sorter::AllocInputTuple() -> byte * {
     return ret;
 }
 
-auto Sorter::AllocInputTupleTopK(UNUSED_ATTRIBUTE uint64_t top_k) -> byte * {
+auto Sorter::AllocInputTupleTopK([[maybe_unused]] uint64_t top_k) -> byte * {
     return AllocInputTuple();
 }
 
@@ -135,7 +135,7 @@ void Sorter::Sort() {
 
     timer.Stop();
 
-    UNUSED_ATTRIBUTE double tps = (tuples_.size() / timer.GetElapsed()) / 1000.0;
+    [[maybe_unused]] double tps = (tuples_.size() / timer.GetElapsed()) / 1000.0;
     EXECUTION_LOG_DEBUG("Sorted {} tuples in {} ms ({:.2f} mtps)", tuples_.size(), timer.GetElapsed(), tps);
 
     // Mark complete
@@ -436,9 +436,9 @@ void Sorter::SortParallel(ThreadStateContainer *thread_state_container, std::siz
 
     sorted_ = true;
 
-    UNUSED_ATTRIBUTE double tps = (tuples_.size() / timer.GetTotalElapsedTime()) / 1000.0;
+    [[maybe_unused]] double tps = (tuples_.size() / timer.GetTotalElapsedTime()) / 1000.0;
     EXECUTION_LOG_DEBUG("Sort Stats: {} tuples ({:.2f} mtps)", GetTupleCount(), tps);
-    for (UNUSED_ATTRIBUTE const auto &stage : timer.GetStages()) {
+    for ([[maybe_unused]] const auto &stage : timer.GetStages()) {
         EXECUTION_LOG_DEBUG("  {}: {.2f} ms", stage.Name(), stage.Time());
     }
 }

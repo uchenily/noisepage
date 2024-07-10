@@ -40,17 +40,17 @@ InputColumnDeriver::DeriveInputColumns(GroupExpression                          
     return std::move(output_input_cols_);
 }
 
-void InputColumnDeriver::Visit(UNUSED_ATTRIBUTE const TableFreeScan *op) {}
+void InputColumnDeriver::Visit([[maybe_unused]] const TableFreeScan *op) {}
 
-void InputColumnDeriver::Visit(UNUSED_ATTRIBUTE const SeqScan *) {
+void InputColumnDeriver::Visit([[maybe_unused]] const SeqScan *) {
     ScanHelper();
 }
 
-void InputColumnDeriver::Visit(UNUSED_ATTRIBUTE const IndexScan *) {
+void InputColumnDeriver::Visit([[maybe_unused]] const IndexScan *) {
     ScanHelper();
 }
 
-void InputColumnDeriver::Visit(UNUSED_ATTRIBUTE const ExternalFileScan *) {
+void InputColumnDeriver::Visit([[maybe_unused]] const ExternalFileScan *) {
     ScanHelper();
 }
 
@@ -169,7 +169,7 @@ void InputColumnDeriver::Visit(const LogicalUnion *op) {
     output_input_cols_ = std::make_pair(std::move(cols), std::move(child_cols));
 }
 
-void InputColumnDeriver::Visit(UNUSED_ATTRIBUTE const OrderBy *op) {
+void InputColumnDeriver::Visit([[maybe_unused]] const OrderBy *op) {
     // we need to pass down both required columns and sort columns
     auto prop = properties_->GetPropertyOfType(PropertyType::SORT);
     NOISEPAGE_ASSERT(prop != nullptr, "property should exist");
@@ -283,15 +283,15 @@ void InputColumnDeriver::Visit(const InnerNLJoin *op) {
     JoinHelper(op);
 }
 
-void InputColumnDeriver::Visit(UNUSED_ATTRIBUTE const LeftNLJoin *op) {
+void InputColumnDeriver::Visit([[maybe_unused]] const LeftNLJoin *op) {
     NOISEPAGE_ASSERT(0, "LeftNLJoin not supported");
 }
 
-void InputColumnDeriver::Visit(UNUSED_ATTRIBUTE const RightNLJoin *op) {
+void InputColumnDeriver::Visit([[maybe_unused]] const RightNLJoin *op) {
     NOISEPAGE_ASSERT(0, "RightNLJoin not supported");
 }
 
-void InputColumnDeriver::Visit(UNUSED_ATTRIBUTE const OuterNLJoin *op) {
+void InputColumnDeriver::Visit([[maybe_unused]] const OuterNLJoin *op) {
     NOISEPAGE_ASSERT(0, "OuterNLJoin not supported");
 }
 
@@ -307,20 +307,20 @@ void InputColumnDeriver::Visit(const LeftHashJoin *op) {
     JoinHelper(op);
 }
 
-void InputColumnDeriver::Visit(UNUSED_ATTRIBUTE const RightHashJoin *op) {
+void InputColumnDeriver::Visit([[maybe_unused]] const RightHashJoin *op) {
     NOISEPAGE_ASSERT(0, "RightHashJoin not supported");
 }
 
-void InputColumnDeriver::Visit(UNUSED_ATTRIBUTE const OuterHashJoin *op) {
+void InputColumnDeriver::Visit([[maybe_unused]] const OuterHashJoin *op) {
     NOISEPAGE_ASSERT(0, "OuterHashJoin not supported");
 }
 
-void InputColumnDeriver::Visit(UNUSED_ATTRIBUTE const Insert *op) {
+void InputColumnDeriver::Visit([[maybe_unused]] const Insert *op) {
     auto input = std::vector<std::vector<common::ManagedPointer<parser::AbstractExpression>>>{};
     output_input_cols_ = std::make_pair(std::move(required_cols_), std::move(input));
 }
 
-void InputColumnDeriver::Visit(UNUSED_ATTRIBUTE const InsertSelect *op) {
+void InputColumnDeriver::Visit([[maybe_unused]] const InsertSelect *op) {
     // Push the output to the child select, the insert has no output
     PT1  output;
     auto input = PT2{required_cols_};
@@ -347,21 +347,21 @@ void InputColumnDeriver::InputBaseTableColumns(const parser::AliasType &alias,
     output_input_cols_ = std::make_pair(std::move(required_cols_), std::move(input));
 }
 
-void InputColumnDeriver::Visit(UNUSED_ATTRIBUTE const Delete *op) {
+void InputColumnDeriver::Visit([[maybe_unused]] const Delete *op) {
     const auto &alias = op->GetTableAlias();
     auto        db_id = op->GetDatabaseOid();
     auto        tbl_id = op->GetTableOid();
     InputBaseTableColumns(parser::AliasType(alias), db_id, tbl_id);
 }
 
-void InputColumnDeriver::Visit(UNUSED_ATTRIBUTE const Update *op) {
+void InputColumnDeriver::Visit([[maybe_unused]] const Update *op) {
     const auto &alias = op->GetTableAlias();
     auto        db_id = op->GetDatabaseOid();
     auto        tbl_id = op->GetTableOid();
     InputBaseTableColumns(parser::AliasType(alias), db_id, tbl_id);
 }
 
-void InputColumnDeriver::Visit(UNUSED_ATTRIBUTE const ExportExternalFile *op) {
+void InputColumnDeriver::Visit([[maybe_unused]] const ExportExternalFile *op) {
     Passdown();
 }
 
@@ -505,7 +505,7 @@ void InputColumnDeriver::JoinHelper(const BaseOperatorNodeContents *op) {
     ExprSet                build_table_cols_set;
     ExprSet                probe_table_cols_set;
     auto                  &build_table_aliases = memo_->GetGroupByID(gexpr_->GetChildGroupId(0))->GetTableAliases();
-    UNUSED_ATTRIBUTE auto &probe_table_aliases = memo_->GetGroupByID(gexpr_->GetChildGroupId(1))->GetTableAliases();
+    [[maybe_unused]] auto &probe_table_aliases = memo_->GetGroupByID(gexpr_->GetChildGroupId(1))->GetTableAliases();
     for (auto &col : input_cols_set) {
         common::ManagedPointer<parser::ColumnValueExpression> tv_expr;
         if (col->GetExpressionType() == parser::ExpressionType::COLUMN_VALUE) {

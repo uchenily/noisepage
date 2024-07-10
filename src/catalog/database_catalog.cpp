@@ -73,7 +73,7 @@ void DatabaseCatalog::BootstrapPRIs() {
 void DatabaseCatalog::Bootstrap(const common::ManagedPointer<transaction::TransactionContext> txn) {
     BootstrapPRIs();
 
-    bool UNUSED_ATTRIBUTE retval = false;
+    [[maybe_unused]] bool retval = false;
     retval = TryLock(txn);
     NOISEPAGE_ASSERT(retval,
                      "Bootstrap operations should not fail to get write-lock: another thread grabbed it early? "
@@ -361,7 +361,7 @@ void DatabaseCatalog::BootstrapTable(const common::ManagedPointer<transaction::T
                                      const std::string                                            &name,
                                      const Schema                                                 &schema,
                                      const common::ManagedPointer<storage::SqlTable>               table_ptr) {
-    bool UNUSED_ATTRIBUTE retval = false;
+    [[maybe_unused]] bool retval = false;
     retval = CreateTableEntry(txn, table_oid, ns_oid, name, schema);
     NOISEPAGE_ASSERT(retval, "Bootstrap of table should not fail (creating table entry).");
     retval = SetTablePointer(txn, table_oid, table_ptr.Get());
@@ -375,7 +375,7 @@ void DatabaseCatalog::BootstrapIndex(const common::ManagedPointer<transaction::T
                                      const std::string                                            &name,
                                      const IndexSchema                                            &schema,
                                      const common::ManagedPointer<storage::index::Index>           index_ptr) {
-    bool UNUSED_ATTRIBUTE retval = false;
+    [[maybe_unused]] bool retval = false;
     retval = CreateIndexEntry(txn, ns_oid, table_oid, index_oid, name, schema);
     NOISEPAGE_ASSERT(retval, "Bootstrap of index should not fail (creating index entry).");
     retval = SetIndexPointer(txn, index_oid, index_ptr.Get());

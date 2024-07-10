@@ -206,7 +206,7 @@ public:
             = storage::ProjectedRowInitializer::Create(layout, StorageTestUtil::ProjectionListAllColumns(layout));
         for (uint32_t i = 0; i < layout.NumSlots(); i++) {
             storage::TupleSlot slot;
-            bool ret           UNUSED_ATTRIBUTE = accessor.Allocate(block, &slot);
+            bool               ret [[maybe_unused]] = accessor.Allocate(block, &slot);
             NOISEPAGE_ASSERT(ret && slot == storage::TupleSlot(block, i),
                              "slot allocation should happen sequentially and succeed");
             if (coin(*generator)) {
@@ -249,7 +249,7 @@ public:
         storage::ProjectedRow *redo = initializer.InitializeRow(redo_buffer);
         for (uint32_t i = 0; i < layout.NumSlots(); i++) {
             storage::TupleSlot slot;
-            bool ret           UNUSED_ATTRIBUTE = accessor.Allocate(block, &slot);
+            bool               ret [[maybe_unused]] = accessor.Allocate(block, &slot);
             NOISEPAGE_ASSERT(ret && slot == storage::TupleSlot(block, i),
                              "slot allocation should happen sequentially and succeed");
             if (coin(*generator)) {

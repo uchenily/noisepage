@@ -192,7 +192,7 @@ private:
                         void                                         *new_value,
                         common::ManagedPointer<common::ActionContext> action_context) -> common::ActionState;
 
-    static void EmptySetterCallback(common::ManagedPointer<common::ActionContext> action_context UNUSED_ATTRIBUTE) {}
+    static void EmptySetterCallback(common::ManagedPointer<common::ActionContext> action_context [[maybe_unused]]) {}
 
     friend class Callbacks;
 };

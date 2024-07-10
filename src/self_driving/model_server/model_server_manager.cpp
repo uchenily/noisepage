@@ -59,9 +59,9 @@ ModelServerManager::ModelServerManager(const std::string                        
     })) {
     // Model Initialization handling logic
     auto msm_handler = [&](common::ManagedPointer<messenger::Messenger> messenger, const messenger::ZmqMessage &msg) {
-        messenger::callback_id_t sender_id  UNUSED_ATTRIBUTE = msg.GetSourceCallbackId();
-        messenger::callback_id_t recv_cb_id UNUSED_ATTRIBUTE = msg.GetDestinationCallbackId();
-        std::string_view                    message = msg.GetMessage();
+        messenger::callback_id_t sender_id [[maybe_unused]] = msg.GetSourceCallbackId();
+        messenger::callback_id_t recv_cb_id [[maybe_unused]] = msg.GetDestinationCallbackId();
+        std::string_view         message = msg.GetMessage();
 
         // ModelServer connected
         MODEL_SERVER_LOG_TRACE("[PID={},SENDER_ID={}] Messenger RECV: {}, {}",

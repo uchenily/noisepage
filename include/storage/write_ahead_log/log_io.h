@@ -227,8 +227,8 @@ public:
      */
     template <class T>
     T ReadValue() {
-        T        result;
-        bool ret UNUSED_ATTRIBUTE = Read(&result, sizeof(T));
+        T    result;
+        bool ret [[maybe_unused]] = Read(&result, sizeof(T));
         NOISEPAGE_ASSERT(ret, "Reading of value failed");
         return result;
     }

@@ -35,7 +35,7 @@ public:
         // I have enough to do as it is. The basic tests are working.
         // Just deal with this. I'll see you in hell.
         // ------------------------------------------
-        // UNUSED_ATTRIBUTE double true_error =
+        // [[maybe_unused]] double true_error =
         //    (static_cast<double>(count) * 1.0 - static_cast<int>(estimate)) / static_cast<double>(estimate);
         // OPTIMIZER_LOG_TRACE("Estimated cardinality is [{0}] times of real value", true_error);
         // ------------------------------------------

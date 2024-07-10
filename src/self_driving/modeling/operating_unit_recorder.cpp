@@ -357,7 +357,7 @@ void OperatingUnitRecorder::AggregateFeatures(selfdriving::ExecutionOperatingUni
             std::vector<catalog::col_oid_t>                                    mapped_cols;
             std::unordered_map<catalog::col_oid_t, catalog::indexkeycol_oid_t> lookup;
 
-            UNUSED_ATTRIBUTE bool status = optimizer::IndexUtil::ConvertIndexKeyOidToColOid(accessor_.Get(),
+            [[maybe_unused]] bool status = optimizer::IndexUtil::ConvertIndexKeyOidToColOid(accessor_.Get(),
                                                                                             table_oid,
                                                                                             idx_schema,
                                                                                             &lookup,
@@ -669,7 +669,7 @@ void OperatingUnitRecorder::Visit(const planner::HashJoinPlanNode *plan) {
 
 void OperatingUnitRecorder::Visit(const planner::NestedLoopJoinPlanNode *plan) {
     // TODO((wz2): Need an outer loop est number rows/invocation times
-    UNUSED_ATTRIBUTE auto *c_plan = plan->GetChild(1);
+    [[maybe_unused]] auto *c_plan = plan->GetChild(1);
     size_t                 outer_num = 1;
     VisitAbstractJoinPlanNode(plan);
     if (plan->GetJoinPredicate() != nullptr) {
@@ -683,7 +683,7 @@ void OperatingUnitRecorder::Visit(const planner::NestedLoopJoinPlanNode *plan) {
 
 void OperatingUnitRecorder::Visit(const planner::IndexJoinPlanNode *plan) {
     // Scale by num_rows - 1 of the child
-    UNUSED_ATTRIBUTE auto *c_plan = plan->GetChild(0);
+    [[maybe_unused]] auto *c_plan = plan->GetChild(0);
 
     // Get features
     std::unordered_set<catalog::indexkeycol_oid_t> cols;

@@ -156,7 +156,7 @@ private:
     /**
      * Empty Setter Callback for setting bool value for flags
      */
-    static void EmptySetterCallback(common::ManagedPointer<common::ActionContext> action_context UNUSED_ATTRIBUTE) {}
+    static void EmptySetterCallback(common::ManagedPointer<common::ActionContext> action_context [[maybe_unused]]) {}
 
     PlanningContext planning_context_;
 

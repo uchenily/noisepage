@@ -46,7 +46,7 @@ public:
      */
     void SetFromProjectedRow(const storage::ProjectedRow &from,
                              const IndexMetadata         &metadata,
-                             UNUSED_ATTRIBUTE size_t      num_attrs) {
+                             [[maybe_unused]] size_t      num_attrs) {
         // we hash and compare KeySize bytes in all of our operations. Since there might be over-provisioned bytes, we
         // want to make sure the entire key is memset to 0
         std::memset(key_data_, 0, KeySize);

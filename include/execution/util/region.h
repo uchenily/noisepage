@@ -222,7 +222,7 @@ public:
     /**
      * Should not be called.
      */
-    void operator delete(UNUSED_ATTRIBUTE void *ptr, UNUSED_ATTRIBUTE Region *region) {
+    void operator delete([[maybe_unused]] void *ptr, [[maybe_unused]] Region *region) {
         UNREACHABLE("Calling \"delete\" on region object is forbidden!");
     }
 };

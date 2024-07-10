@@ -191,7 +191,7 @@ public:
     static const ExecutionOperatingUnitFeature &GetFeature(execution::translator_id_t translator_id,
                                                            const std::vector<ExecutionOperatingUnitFeature> &features,
                                                            ExecutionOperatingUnitType                        type) {
-        UNUSED_ATTRIBUTE bool found = false;
+        [[maybe_unused]] bool found = false;
         size_t                idx = 0;
         for (size_t i = 0; i < features.size(); ++i) {
             bool same_translator = translator_id == features[i].GetTranslatorId();

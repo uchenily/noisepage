@@ -34,7 +34,7 @@ MonteCarloTreeSearch::MonteCarloTreeSearch(common::ManagedPointer<PlanningContex
                                                 &action_map_,
                                                 &candidate_actions_);
 
-    for (const auto &it UNUSED_ATTRIBUTE : action_map_) {
+    for (const auto &it [[maybe_unused]] : action_map_) {
         SELFDRIVING_LOG_INFO("Generated action: ID {} Command {}", it.first, it.second->GetSQLCommand());
     }
 

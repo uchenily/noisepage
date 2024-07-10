@@ -260,7 +260,7 @@ namespace optimizer {
          */
         void ReplaceRewriteExpression(common::ManagedPointer<AbstractOptimizerNode> node, group_id_t target_group) {
             memo_.EraseExpression(target_group);
-            UNUSED_ATTRIBUTE auto ret = memo_.InsertExpression(MakeGroupExpression(node), target_group, false);
+            [[maybe_unused]] auto ret = memo_.InsertExpression(MakeGroupExpression(node), target_group, false);
             NOISEPAGE_ASSERT(ret, "Root expr should always be inserted");
         }
 

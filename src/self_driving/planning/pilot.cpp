@@ -166,7 +166,7 @@ void Pilot::ActionSearchBaseline(
 
     for (uint64_t action_set_idx = 0; action_set_idx < best_action_set_seq.size(); action_set_idx++) {
         auto action_set = best_action_set_seq.at(action_set_idx);
-        for (auto const &action UNUSED_ATTRIBUTE : action_set) {
+        for (auto const &action [[maybe_unused]] : action_set) {
             SELFDRIVING_LOG_INFO(
                 fmt::format("Action Selected: Time Interval: {}; Action Command: {} Applied to Database {}",
                             action_set_idx,

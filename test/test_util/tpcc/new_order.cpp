@@ -6,13 +6,13 @@
 namespace noisepage::tpcc {
 
 // 2.4.2
-bool NewOrder::Execute(transaction::TransactionManager *const txn_manager,
+auto NewOrder::Execute(transaction::TransactionManager *const txn_manager,
                        Database *const                        db,
                        Worker *const                          worker,
-                       const TransactionArgs                 &args) const {
+                       const TransactionArgs                 &args) const -> bool {
     NOISEPAGE_ASSERT(args.type_ == TransactionType::NewOrder, "Wrong transaction type.");
 
-    double UNUSED_ATTRIBUTE total_amount = 0;
+    [[maybe_unused]] double total_amount = 0;
 
     auto *const txn = txn_manager->BeginTransaction();
 
@@ -29,7 +29,7 @@ bool NewOrder::Execute(transaction::TransactionManager *const txn_manager,
     // Select W_TAX in table
     auto *const warehouse_select_tuple
         = warehouse_select_pr_initializer_.InitializeRow(worker->warehouse_tuple_buffer_);
-    bool UNUSED_ATTRIBUTE select_result
+    [[maybe_unused]] bool select_result
         = db->warehouse_table_->Select(common::ManagedPointer(txn), index_scan_results[0], warehouse_select_tuple);
     NOISEPAGE_ASSERT(select_result, "Warehouse table doesn't change. All lookups should succeed.");
     const auto w_tax = *reinterpret_cast<double *>(warehouse_select_tuple->AccessWithNullCheck(0));
@@ -63,7 +63,7 @@ bool NewOrder::Execute(transaction::TransactionManager *const txn_manager,
         = txn->StageWrite(db->db_oid_, db->district_table_oid_, district_update_pr_initializer_);
     *reinterpret_cast<int32_t *>(district_update_redo->Delta()->AccessForceNotNull(0)) = d_next_o_id + 1;
     district_update_redo->SetTupleSlot(index_scan_results[0]);
-    bool UNUSED_ATTRIBUTE result = db->district_table_->Update(common::ManagedPointer(txn), district_update_redo);
+    [[maybe_unused]] bool result = db->district_table_->Update(common::ManagedPointer(txn), district_update_redo);
     NOISEPAGE_ASSERT(result,
                      "District update failed. This assertion assumes 1:1 mapping between warehouse and workers.");
 
@@ -107,7 +107,7 @@ bool NewOrder::Execute(transaction::TransactionManager *const txn_manager,
     *reinterpret_cast<int8_t *>(new_order_key->AccessForceNotNull(no_d_id_key_pr_offset_)) = args.d_id_;
     *reinterpret_cast<int8_t *>(new_order_key->AccessForceNotNull(no_w_id_key_pr_offset_)) = args.w_id_;
 
-    bool UNUSED_ATTRIBUTE index_insert_result
+    [[maybe_unused]] bool index_insert_result
         = db->new_order_primary_index_->InsertUnique(common::ManagedPointer(txn), *new_order_key, new_order_slot);
     NOISEPAGE_ASSERT(index_insert_result, "New Order index insertion failed.");
 
@@ -238,7 +238,7 @@ bool NewOrder::Execute(transaction::TransactionManager *const txn_manager,
         const auto i_data_str = i_data.StringView();
         const auto s_data_str = s_data.StringView();
 
-        const std::string UNUSED_ATTRIBUTE brand_generic = (i_data_str.find("ORIGINAL", 0) != std::string::npos
+        [[maybe_unused]] const std::string brand_generic = (i_data_str.find("ORIGINAL", 0) != std::string::npos
                                                             && s_data_str.find("ORIGINAL", 0) != std::string::npos)
                                                                ? "B"
                                                                : "G";

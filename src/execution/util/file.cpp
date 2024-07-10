@@ -295,7 +295,7 @@ int64_t File::Length() {
 
 void File::Close() {
     if (IsOpen()) {
-        UNUSED_ATTRIBUTE auto ret = IGNORE_EINTR(close(fd_));
+        [[maybe_unused]] auto ret = IGNORE_EINTR(close(fd_));
         NOISEPAGE_ASSERT(ret == 0, "Invalid return code from close()");
         fd_ = INVALID_DESCRIPTOR;
     }

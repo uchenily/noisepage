@@ -164,7 +164,7 @@ TupleSlot DataTable::Insert(const common::ManagedPointer<transaction::Transactio
             if (current_insert_idx == insert_index_.load()) {
                 // if we fail, that's ok because that means that someone else incremented insert_index_
                 // so we retry on the next index
-                bool UNUSED_ATTRIBUTE result
+                [[maybe_unused]] bool result
                     = insert_index_.compare_exchange_strong(current_insert_idx, current_insert_idx + 1);
                 NOISEPAGE_ASSERT(result,
                                  "only one thread should be able to try (and fail) to insert into a block at a time");

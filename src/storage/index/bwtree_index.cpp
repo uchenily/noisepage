@@ -65,7 +65,7 @@ bool BwTreeIndex<KeyType>::Insert(const common::ManagedPointer<transaction::Tran
     common::SpinLatch::ScopedSpinLatch guard(&transaction_context_latch_);
     // Register an abort action with the txn context in case of rollback
     txn->RegisterAbortAction([=]() {
-        const bool UNUSED_ATTRIBUTE result = bwtree_->Delete(index_key, location);
+        [[maybe_unused]] const bool result = bwtree_->Delete(index_key, location);
         NOISEPAGE_ASSERT(result, "Delete on the index failed.");
     });
     return result;
@@ -99,7 +99,7 @@ bool BwTreeIndex<KeyType>::InsertUnique(const common::ManagedPointer<transaction
         common::SpinLatch::ScopedSpinLatch guard(&transaction_context_latch_);
         // Register an abort action with the txn context in case of rollback
         txn->RegisterAbortAction([=]() {
-            const bool UNUSED_ATTRIBUTE result = bwtree_->Delete(index_key, location);
+            [[maybe_unused]] const bool result = bwtree_->Delete(index_key, location);
             NOISEPAGE_ASSERT(result, "Delete on the index failed.");
         });
     } else {
@@ -127,7 +127,7 @@ void BwTreeIndex<KeyType>::Delete(const common::ManagedPointer<transaction::Tran
     // Register a deferred action for the GC with txn manager. See base function comment.
     txn->RegisterCommitAction([=](transaction::DeferredActionManager *deferred_action_manager) {
         deferred_action_manager->RegisterDeferredAction([=]() {
-            const bool UNUSED_ATTRIBUTE result = bwtree_->Delete(index_key, location);
+            [[maybe_unused]] const bool result = bwtree_->Delete(index_key, location);
             NOISEPAGE_ASSERT(result, "Deferred delete on the index failed.");
         });
     });

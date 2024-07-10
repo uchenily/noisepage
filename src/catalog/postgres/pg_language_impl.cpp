@@ -171,7 +171,7 @@ bool PgLanguageImpl::DropLanguage(const common::ManagedPointer<transaction::Tran
     // Delete from pg_languages_name_index by obtaining the name from pg_language.
     {
         auto                  table_pr = common::ManagedPointer(pg_language_all_cols_pri_.InitializeRow(buffer));
-        bool UNUSED_ATTRIBUTE visible = languages_->Select(txn, to_delete_slot, table_pr.Get());
+        [[maybe_unused]] bool visible = languages_->Select(txn, to_delete_slot, table_pr.Get());
         auto                  name_varlen = *PgLanguage::LANNAME.Get(table_pr, pg_language_all_cols_prm_);
 
         index_pr = name_pri.InitializeRow(buffer);

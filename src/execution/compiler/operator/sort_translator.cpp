@@ -504,7 +504,7 @@ void SortTranslator::FinishPipelineWork(const Pipeline &pipeline, FunctionBuilde
 }
 
 ast::Expr *
-SortTranslator::GetChildOutput(WorkContext *context, UNUSED_ATTRIBUTE uint32_t child_idx, uint32_t attr_idx) const {
+SortTranslator::GetChildOutput(WorkContext *context, [[maybe_unused]] uint32_t child_idx, uint32_t attr_idx) const {
     if (IsScanPipeline(context->GetPipeline())) {
         return GetSortRowAttribute(sort_row_var_, attr_idx);
     }

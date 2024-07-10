@@ -453,7 +453,7 @@ public:
      * @param features Vector of ExecutionOperatingUnitFeature describing pipeline contents
      */
     void RecordOperatingUnit(execution::pipeline_id_t pipeline, ExecutionOperatingUnitFeatureVector &&features) {
-        UNUSED_ATTRIBUTE auto res = units_.insert(std::make_pair(pipeline, std::move(features)));
+        [[maybe_unused]] auto res = units_.insert(std::make_pair(pipeline, std::move(features)));
         NOISEPAGE_ASSERT(res.second, "Recording duplicate pipeline entry into PipelineOperatingUnits");
     }
 
@@ -463,7 +463,7 @@ public:
      * @param pipeline pipeline identifier
      */
     const ExecutionOperatingUnitFeatureVector &GetPipelineFeatures(execution::pipeline_id_t pipeline) const {
-        UNUSED_ATTRIBUTE auto itr = units_.find(pipeline);
+        [[maybe_unused]] auto itr = units_.find(pipeline);
         NOISEPAGE_ASSERT(itr != units_.end(), "Requested pipeline could not be found in PipelineOperatingUnits");
         return itr->second;
     }

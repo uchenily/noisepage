@@ -51,13 +51,13 @@ void StatsCalculator::Visit(const LogicalGet *op) {
     }
 }
 
-void StatsCalculator::Visit(UNUSED_ATTRIBUTE const LogicalQueryDerivedGet *op) {
+void StatsCalculator::Visit([[maybe_unused]] const LogicalQueryDerivedGet *op) {
     // TODO(boweic): Implement stats calculation for logical query derive get
     auto *root_group = context_->GetMemo().GetGroupByID(gexpr_->GetGroupID());
     root_group->SetNumRows(0);
 }
 
-void StatsCalculator::Visit(UNUSED_ATTRIBUTE const LogicalCteScan *op) {
+void StatsCalculator::Visit([[maybe_unused]] const LogicalCteScan *op) {
     // TODO(preetang): Implement stats calculation for logical cte scan
     auto root_group = context_->GetMemo().GetGroupByID(gexpr_->GetGroupID());
 
@@ -75,7 +75,7 @@ void StatsCalculator::Visit(UNUSED_ATTRIBUTE const LogicalCteScan *op) {
     root_group->SetNumRows(num_rows);
 }
 
-void StatsCalculator::Visit(UNUSED_ATTRIBUTE const LogicalUnion *op) {
+void StatsCalculator::Visit([[maybe_unused]] const LogicalUnion *op) {
     // TODO(tanujnay112): Implement stats calculation for logical union
     auto root_group = context_->GetMemo().GetGroupByID(gexpr_->GetGroupID());
     auto left_group = context_->GetMemo().GetGroupByID(gexpr_->GetChildGroupId(0));
@@ -147,7 +147,7 @@ void StatsCalculator::Visit(const LogicalSemiJoin *op) {
     }
 }
 
-void StatsCalculator::Visit(UNUSED_ATTRIBUTE const LogicalAggregateAndGroupBy *op) {
+void StatsCalculator::Visit([[maybe_unused]] const LogicalAggregateAndGroupBy *op) {
     // TODO(boweic): For now we just pass the stats needed without any computation, need implement aggregate stats
     NOISEPAGE_ASSERT(gexpr_->GetChildrenGroupsSize() == 1, "Aggregate must have 1 child");
 

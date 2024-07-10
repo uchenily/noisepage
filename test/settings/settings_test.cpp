@@ -38,7 +38,7 @@ protected:
         buffer_segment_pool_ = db_main_->GetBufferSegmentPool();
     }
 
-    static void EmptySetterCallback(common::ManagedPointer<common::ActionContext> action_context UNUSED_ATTRIBUTE) {}
+    static void EmptySetterCallback(common::ManagedPointer<common::ActionContext> action_context [[maybe_unused]]) {}
 
     /**
      * This is a hacky placeholder variable that we can use in lambda callbacks

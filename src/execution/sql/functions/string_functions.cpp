@@ -33,8 +33,8 @@ void StringFunctions::Concat(StringVal              *result,
     *result = StringVal(ptr, length);
 }
 
-void StringFunctions::Substring(StringVal       *result,
-                                UNUSED_ATTRIBUTE exec::ExecutionContext *ctx,
+void StringFunctions::Substring(StringVal                               *result,
+                                [[maybe_unused]] exec::ExecutionContext *ctx,
                                 const StringVal                         &str,
                                 const Integer                           &pos,
                                 const Integer                           &len) {
@@ -79,8 +79,8 @@ namespace {
 
 } // namespace
 
-void StringFunctions::SplitPart(StringVal       *result,
-                                UNUSED_ATTRIBUTE exec::ExecutionContext *ctx,
+void StringFunctions::SplitPart(StringVal                               *result,
+                                [[maybe_unused]] exec::ExecutionContext *ctx,
                                 const StringVal                         &str,
                                 const StringVal                         &delim,
                                 const Integer                           &field) {
@@ -256,7 +256,7 @@ void StringFunctions::Rpad(StringVal *result, exec::ExecutionContext *ctx, const
     return Rpad(result, ctx, str, len, StringVal(" "));
 }
 
-void StringFunctions::Length(Integer *result, UNUSED_ATTRIBUTE exec::ExecutionContext *ctx, const StringVal &str) {
+void StringFunctions::Length(Integer *result, [[maybe_unused]] exec::ExecutionContext *ctx, const StringVal &str) {
     result->is_null_ = str.is_null_;
     result->val_ = str.GetLength();
 }
@@ -344,41 +344,41 @@ namespace {
 
 } // namespace
 
-void StringFunctions::Trim(StringVal *result, UNUSED_ATTRIBUTE exec::ExecutionContext *ctx, const StringVal &str) {
+void StringFunctions::Trim(StringVal *result, [[maybe_unused]] exec::ExecutionContext *ctx, const StringVal &str) {
     DoTrim<true, true>(result, str, StringVal(" "));
 }
 
-void StringFunctions::Trim(StringVal       *result,
-                           UNUSED_ATTRIBUTE exec::ExecutionContext *ctx,
+void StringFunctions::Trim(StringVal                               *result,
+                           [[maybe_unused]] exec::ExecutionContext *ctx,
                            const StringVal                         &str,
                            const StringVal                         &chars) {
     DoTrim<true, true>(result, str, chars);
 }
 
-void StringFunctions::Ltrim(StringVal *result, UNUSED_ATTRIBUTE exec::ExecutionContext *ctx, const StringVal &str) {
+void StringFunctions::Ltrim(StringVal *result, [[maybe_unused]] exec::ExecutionContext *ctx, const StringVal &str) {
     DoTrim<true, false>(result, str, StringVal(" "));
 }
 
-void StringFunctions::Ltrim(StringVal       *result,
-                            UNUSED_ATTRIBUTE exec::ExecutionContext *ctx,
+void StringFunctions::Ltrim(StringVal                               *result,
+                            [[maybe_unused]] exec::ExecutionContext *ctx,
                             const StringVal                         &str,
                             const StringVal                         &chars) {
     DoTrim<true, false>(result, str, chars);
 }
 
-void StringFunctions::Rtrim(StringVal *result, UNUSED_ATTRIBUTE exec::ExecutionContext *ctx, const StringVal &str) {
+void StringFunctions::Rtrim(StringVal *result, [[maybe_unused]] exec::ExecutionContext *ctx, const StringVal &str) {
     DoTrim<false, true>(result, str, StringVal(" "));
 }
 
-void StringFunctions::Rtrim(StringVal       *result,
-                            UNUSED_ATTRIBUTE exec::ExecutionContext *ctx,
+void StringFunctions::Rtrim(StringVal                               *result,
+                            [[maybe_unused]] exec::ExecutionContext *ctx,
                             const StringVal                         &str,
                             const StringVal                         &chars) {
     DoTrim<false, true>(result, str, chars);
 }
 
-void StringFunctions::Left(StringVal       *result,
-                           UNUSED_ATTRIBUTE exec::ExecutionContext *ctx,
+void StringFunctions::Left(StringVal                               *result,
+                           [[maybe_unused]] exec::ExecutionContext *ctx,
                            const StringVal                         &str,
                            const Integer                           &n) {
     if (str.is_null_ || n.is_null_) {
@@ -391,8 +391,8 @@ void StringFunctions::Left(StringVal       *result,
     *result = StringVal(str.GetContent(), len);
 }
 
-void StringFunctions::Right(StringVal       *result,
-                            UNUSED_ATTRIBUTE exec::ExecutionContext *ctx,
+void StringFunctions::Right(StringVal                               *result,
+                            [[maybe_unused]] exec::ExecutionContext *ctx,
                             const StringVal                         &str,
                             const Integer                           &n) {
     if (str.is_null_ || n.is_null_) {
@@ -408,8 +408,8 @@ void StringFunctions::Right(StringVal       *result,
     }
 }
 
-void StringFunctions::Like(BoolVal         *result,
-                           UNUSED_ATTRIBUTE exec::ExecutionContext *ctx,
+void StringFunctions::Like(BoolVal                                 *result,
+                           [[maybe_unused]] exec::ExecutionContext *ctx,
                            const StringVal                         &string,
                            const StringVal                         &pattern) {
     if (string.is_null_ || pattern.is_null_) {

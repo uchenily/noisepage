@@ -134,7 +134,7 @@ void PlanGenerator::CorrectOutputPlanWithProjection() {
 // TableFreeScan
 ///////////////////////////////////////////////////////////////////////////////
 
-void PlanGenerator::Visit(UNUSED_ATTRIBUTE const TableFreeScan *op) {
+void PlanGenerator::Visit([[maybe_unused]] const TableFreeScan *op) {
     // TableFreeScan is used in case of SELECT without FROM so that enforcer
     // can enforce a PhysicalProjection on top of TableFreeScan to generate correct
     // result. But here, no need to translate TableFreeScan to any physical plan.
@@ -413,7 +413,7 @@ void PlanGenerator::Visit(const Limit *op) {
                        .Build();
 }
 
-void PlanGenerator::Visit(UNUSED_ATTRIBUTE const OrderBy *op) {
+void PlanGenerator::Visit([[maybe_unused]] const OrderBy *op) {
     // OrderBy reorders tuples - should keep the same output schema as the original child plan
     NOISEPAGE_ASSERT(children_plans_.size() == 1, "OrderBy needs 1 child plan");
     NOISEPAGE_ASSERT(children_expr_map_.size() == 1, "OrderBy needs 1 child expr map");
@@ -600,15 +600,15 @@ void PlanGenerator::Visit(const InnerNLJoin *op) {
                        .Build();
 }
 
-void PlanGenerator::Visit(UNUSED_ATTRIBUTE const LeftNLJoin *op) {
+void PlanGenerator::Visit([[maybe_unused]] const LeftNLJoin *op) {
     NOISEPAGE_ASSERT(0, "LeftNLJoin not implemented");
 }
 
-void PlanGenerator::Visit(UNUSED_ATTRIBUTE const RightNLJoin *op) {
+void PlanGenerator::Visit([[maybe_unused]] const RightNLJoin *op) {
     NOISEPAGE_ASSERT(0, "RightNLJoin not implemented");
 }
 
-void PlanGenerator::Visit(UNUSED_ATTRIBUTE const OuterNLJoin *op) {
+void PlanGenerator::Visit([[maybe_unused]] const OuterNLJoin *op) {
     NOISEPAGE_ASSERT(0, "OuterNLJoin not implemented");
 }
 
@@ -684,11 +684,11 @@ void PlanGenerator::Visit(const LeftHashJoin *op) {
     output_plan_ = builder.Build();
 }
 
-void PlanGenerator::Visit(UNUSED_ATTRIBUTE const RightHashJoin *op) {
+void PlanGenerator::Visit([[maybe_unused]] const RightHashJoin *op) {
     NOISEPAGE_ASSERT(0, "RightHashJoin not implemented");
 }
 
-void PlanGenerator::Visit(UNUSED_ATTRIBUTE const OuterHashJoin *op) {
+void PlanGenerator::Visit([[maybe_unused]] const OuterHashJoin *op) {
     NOISEPAGE_ASSERT(0, "OuterHashJoin not implemented");
 }
 
@@ -825,7 +825,7 @@ void PlanGenerator::Visit(const SortGroupBy *op) {
                        common::ManagedPointer(having_predicates.get()));
 }
 
-void PlanGenerator::Visit(UNUSED_ATTRIBUTE const Aggregate *op) {
+void PlanGenerator::Visit([[maybe_unused]] const Aggregate *op) {
     BuildAggregatePlan(planner::AggregateStrategyType::PLAIN, nullptr, nullptr);
 }
 

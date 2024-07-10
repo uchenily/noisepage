@@ -69,7 +69,7 @@ void PgStatisticImpl::CreateColumnStatistic(const common::ManagedPointer<transac
         pr->Set<table_oid_t, false>(oid_prm.at(indexkeycol_oid_t(1)), table_oid, false);
         pr->Set<col_oid_t, false>(oid_prm.at(indexkeycol_oid_t(2)), col_oid, false);
 
-        bool UNUSED_ATTRIBUTE result = statistic_oid_index_->InsertUnique(txn, *pr, tuple_slot);
+        [[maybe_unused]] bool result = statistic_oid_index_->InsertUnique(txn, *pr, tuple_slot);
         NOISEPAGE_ASSERT(result, "Assigned pg_statistic OIDs failed to be unique.");
     }
 
@@ -110,7 +110,7 @@ bool PgStatisticImpl::DeleteColumnStatistics(const common::ManagedPointer<transa
     if (!index_results.empty()) {
         auto pr = common::ManagedPointer(statistic_oid_index_pri_.InitializeRow(key_buffer));
         for (const auto &slot : index_results) {
-            auto UNUSED_ATTRIBUTE result = statistics_->Select(txn, slot, pr.Get());
+            [[maybe_unused]] auto result = statistics_->Select(txn, slot, pr.Get());
             NOISEPAGE_ASSERT(result, "Index scan did a visibility check, so Select shouldn't fail at this point.");
 
             auto &pm = statistic_oid_index_prm_;

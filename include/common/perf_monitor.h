@@ -145,7 +145,7 @@ public:
         if (valid_) {
             // Iterate through all of the events' file descriptors and close them
             for (const auto i : event_files_) {
-                const auto result UNUSED_ATTRIBUTE = close(i);
+                const auto result [[maybe_unused]] = close(i);
                 NOISEPAGE_ASSERT(result == 0, "Failed to close perf_event.");
             }
         }
@@ -164,14 +164,14 @@ public:
             if constexpr (inherit) { // NOLINT
                 // Iterate through all of the events' file descriptors resetting and starting them
                 for (const auto i : event_files_) {
-                    auto result UNUSED_ATTRIBUTE = ioctl(i, PERF_EVENT_IOC_RESET);
+                    auto result [[maybe_unused]] = ioctl(i, PERF_EVENT_IOC_RESET);
                     NOISEPAGE_ASSERT(result >= 0, "Failed to reset events.");
                     result = ioctl(i, PERF_EVENT_IOC_ENABLE);
                     NOISEPAGE_ASSERT(result >= 0, "Failed to enable events.");
                 }
             } else { // NOLINT
                 // Reset all of the counters out with a single syscall.
-                auto result UNUSED_ATTRIBUTE = ioctl(event_files_[0], PERF_EVENT_IOC_RESET, PERF_IOC_FLAG_GROUP);
+                auto result [[maybe_unused]] = ioctl(event_files_[0], PERF_EVENT_IOC_RESET, PERF_IOC_FLAG_GROUP);
                 NOISEPAGE_ASSERT(result >= 0, "Failed to reset events.");
                 // Start all of the counters out with a single syscall.
                 result = ioctl(event_files_[0], PERF_EVENT_IOC_ENABLE, PERF_IOC_FLAG_GROUP);
@@ -194,12 +194,12 @@ public:
             if constexpr (inherit) { // NOLINT
                 // Iterate through all of the events' file descriptors stopping them
                 for (const auto i : event_files_) {
-                    auto result UNUSED_ATTRIBUTE = ioctl(i, PERF_EVENT_IOC_DISABLE);
+                    auto result [[maybe_unused]] = ioctl(i, PERF_EVENT_IOC_DISABLE);
                     NOISEPAGE_ASSERT(result >= 0, "Failed to disable events.");
                 }
             } else { // NOLINT
                 // Stop all of the counters out with a single syscall.
-                auto result UNUSED_ATTRIBUTE = ioctl(event_files_[0], PERF_EVENT_IOC_DISABLE, PERF_IOC_FLAG_GROUP);
+                auto result [[maybe_unused]] = ioctl(event_files_[0], PERF_EVENT_IOC_DISABLE, PERF_IOC_FLAG_GROUP);
                 NOISEPAGE_ASSERT(result >= 0, "Failed to disable events.");
             }
             running_ = false;
@@ -217,7 +217,7 @@ public:
             if constexpr (inherit) { // NOLINT
                 // Iterate through all of the events' file descriptors reading them
 
-                auto bytes_read UNUSED_ATTRIBUTE = read(event_files_[0], &counters.cpu_cycles_, sizeof(uint64_t));
+                auto bytes_read [[maybe_unused]] = read(event_files_[0], &counters.cpu_cycles_, sizeof(uint64_t));
                 NOISEPAGE_ASSERT(bytes_read == sizeof(uint64_t), "Failed to read the counter.");
 
                 bytes_read = read(event_files_[1], &counters.instructions_, sizeof(uint64_t));
@@ -233,7 +233,7 @@ public:
                 NOISEPAGE_ASSERT(bytes_read == sizeof(uint64_t), "Failed to read the counter.");
             } else { // NOLINT
                 // Read all of the counters out with a single syscall.
-                auto bytes_read UNUSED_ATTRIBUTE = read(event_files_[0], &counters, sizeof(PerfCounters));
+                auto bytes_read [[maybe_unused]] = read(event_files_[0], &counters, sizeof(PerfCounters));
                 NOISEPAGE_ASSERT(bytes_read == sizeof(PerfCounters), "Failed to read the counters.");
                 NOISEPAGE_ASSERT(counters.num_counters_ == NUM_HW_EVENTS, "Failed to read the counters.");
             }

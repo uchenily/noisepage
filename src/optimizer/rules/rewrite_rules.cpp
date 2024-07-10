@@ -43,7 +43,7 @@ bool RewritePushImplicitFilterThroughJoin::Check(common::ManagedPointer<Abstract
 
 void RewritePushImplicitFilterThroughJoin::Transform(common::ManagedPointer<AbstractOptimizerNode>        input,
                                                      std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-                                                     UNUSED_ATTRIBUTE OptimizationContext *context) const {
+                                                     [[maybe_unused]] OptimizationContext *context) const {
     OPTIMIZER_LOG_TRACE("RewritePushImplicitFilterThroughJoin::Transform");
 
     auto &memo = context->GetOptimizerContext()->GetMemo();
@@ -289,7 +289,7 @@ bool RewritePushFilterThroughAggregation::Check(common::ManagedPointer<AbstractO
 
 void RewritePushFilterThroughAggregation::Transform(common::ManagedPointer<AbstractOptimizerNode>        input,
                                                     std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-                                                    UNUSED_ATTRIBUTE OptimizationContext *context) const {
+                                                    [[maybe_unused]] OptimizationContext *context) const {
     OPTIMIZER_LOG_TRACE("RewritePushFilterThroughAggregation::Transform");
     auto aggregation_op = input->GetChildren()[0]->Contents()->GetContentsAs<LogicalAggregateAndGroupBy>();
 
@@ -366,7 +366,7 @@ bool RewriteCombineConsecutiveFilter::Check(common::ManagedPointer<AbstractOptim
 
 void RewriteCombineConsecutiveFilter::Transform(common::ManagedPointer<AbstractOptimizerNode>        input,
                                                 std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-                                                UNUSED_ATTRIBUTE OptimizationContext                *context) const {
+                                                [[maybe_unused]] OptimizationContext                *context) const {
     auto                             child_filter = input->GetChildren()[0];
     std::vector<AnnotatedExpression> root_predicates
         = input->Contents()->GetContentsAs<LogicalFilter>()->GetPredicates();
@@ -405,7 +405,7 @@ bool RewriteEmbedFilterIntoGet::Check(common::ManagedPointer<AbstractOptimizerNo
 
 void RewriteEmbedFilterIntoGet::Transform(common::ManagedPointer<AbstractOptimizerNode>        input,
                                           std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-                                          UNUSED_ATTRIBUTE OptimizationContext                *context) const {
+                                          [[maybe_unused]] OptimizationContext                *context) const {
     auto                             get = input->GetChildren()[0]->Contents()->GetContentsAs<LogicalGet>();
     auto                             tbl_alias = get->GetTableAlias();
     std::vector<AnnotatedExpression> predicates = input->Contents()->GetContentsAs<LogicalFilter>()->GetPredicates();
@@ -439,7 +439,7 @@ bool RewriteEmbedFilterIntoChildlessCteScan::Check(common::ManagedPointer<Abstra
 
 void RewriteEmbedFilterIntoChildlessCteScan::Transform(common::ManagedPointer<AbstractOptimizerNode>        input,
                                                        std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-                                                       UNUSED_ATTRIBUTE OptimizationContext *context) const {
+                                                       [[maybe_unused]] OptimizationContext *context) const {
     auto                             get = input->GetChildren()[0]->Contents()->GetContentsAs<LogicalCteScan>();
     auto                             tbl_alias = get->GetTableAlias();
     std::vector<AnnotatedExpression> predicates = input->Contents()->GetContentsAs<LogicalFilter>()->GetPredicates();
@@ -479,7 +479,7 @@ bool RewriteEmbedFilterIntoCteScan::Check(common::ManagedPointer<AbstractOptimiz
 
 void RewriteEmbedFilterIntoCteScan::Transform(common::ManagedPointer<AbstractOptimizerNode>        input,
                                               std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-                                              UNUSED_ATTRIBUTE OptimizationContext                *context) const {
+                                              [[maybe_unused]] OptimizationContext                *context) const {
     auto                             get = input->GetChildren()[0]->Contents()->GetContentsAs<LogicalCteScan>();
     auto                             tbl_alias = get->GetTableAlias();
     std::vector<AnnotatedExpression> predicates = input->Contents()->GetContentsAs<LogicalFilter>()->GetPredicates();
@@ -525,16 +525,16 @@ bool RewritePullFilterThroughMarkJoin::Check(common::ManagedPointer<AbstractOpti
     auto children = plan->GetChildren();
     NOISEPAGE_ASSERT(children.size() == 2, "MarkJoin should have two children");
 
-    UNUSED_ATTRIBUTE auto r_grandchildren = children[0]->GetChildren();
+    [[maybe_unused]] auto r_grandchildren = children[0]->GetChildren();
     NOISEPAGE_ASSERT(r_grandchildren.size() == 1, "Filter should have only 1 child");
     return true;
 }
 
 void RewritePullFilterThroughMarkJoin::Transform(common::ManagedPointer<AbstractOptimizerNode>        input,
                                                  std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-                                                 UNUSED_ATTRIBUTE OptimizationContext                *context) const {
+                                                 [[maybe_unused]] OptimizationContext                *context) const {
     OPTIMIZER_LOG_TRACE("RewritePullFilterThroughMarkJoin::Transform");
-    UNUSED_ATTRIBUTE auto mark_join = input->Contents()->GetContentsAs<LogicalMarkJoin>();
+    [[maybe_unused]] auto mark_join = input->Contents()->GetContentsAs<LogicalMarkJoin>();
     NOISEPAGE_ASSERT(mark_join->GetJoinPredicates().empty(), "MarkJoin should have zero children");
 
     auto join_children = input->GetChildren();
@@ -639,14 +639,14 @@ bool RewritePullFilterThroughAggregation::Check(common::ManagedPointer<AbstractO
     auto children = plan->GetChildren();
     NOISEPAGE_ASSERT(children.size() == 1, "AggregateAndGroupBy should have 1 child");
 
-    UNUSED_ATTRIBUTE auto r_grandchildren = children[1]->GetChildren();
+    [[maybe_unused]] auto r_grandchildren = children[1]->GetChildren();
     NOISEPAGE_ASSERT(r_grandchildren.size() == 1, "Filter should have 1 child");
     return true;
 }
 
 void RewritePullFilterThroughAggregation::Transform(common::ManagedPointer<AbstractOptimizerNode>        input,
                                                     std::vector<std::unique_ptr<AbstractOptimizerNode>> *transformed,
-                                                    UNUSED_ATTRIBUTE OptimizationContext *context) const {
+                                                    [[maybe_unused]] OptimizationContext *context) const {
     OPTIMIZER_LOG_TRACE("RewritePullFilterThroughAggregation::Transform");
     auto &memo = context->GetOptimizerContext()->GetMemo();
     auto  filter_expr = input->GetChildren()[0];

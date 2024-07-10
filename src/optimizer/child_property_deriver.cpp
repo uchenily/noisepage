@@ -30,7 +30,7 @@ ChildPropertyDeriver::GetProperties(catalog::CatalogAccessor *accessor,
     return move(output_);
 }
 
-void ChildPropertyDeriver::Visit(UNUSED_ATTRIBUTE const SeqScan *op) {
+void ChildPropertyDeriver::Visit([[maybe_unused]] const SeqScan *op) {
     // Seq Scan does not provide any property
     output_.emplace_back(new PropertySet(), std::vector<PropertySet *>{});
 }
@@ -58,7 +58,7 @@ void ChildPropertyDeriver::Visit(const IndexScan *op) {
     output_.emplace_back(property_set, std::vector<PropertySet *>{});
 }
 
-void ChildPropertyDeriver::Visit(UNUSED_ATTRIBUTE const ExternalFileScan *op) {
+void ChildPropertyDeriver::Visit([[maybe_unused]] const ExternalFileScan *op) {
     // External file scans (like sequential scans) do not provide properties
     output_.emplace_back(new PropertySet(), std::vector<PropertySet *>{});
 }
@@ -75,11 +75,11 @@ void ChildPropertyDeriver::Visit(const QueryDerivedScan *op) {
  * enumerate different combination of the aggregation functions and other
  * projection.
  */
-void ChildPropertyDeriver::Visit(UNUSED_ATTRIBUTE const HashGroupBy *op) {
+void ChildPropertyDeriver::Visit([[maybe_unused]] const HashGroupBy *op) {
     output_.emplace_back(new PropertySet(), std::vector<PropertySet *>{new PropertySet()});
 }
 
-void ChildPropertyDeriver::Visit(UNUSED_ATTRIBUTE const SortGroupBy *op) {
+void ChildPropertyDeriver::Visit([[maybe_unused]] const SortGroupBy *op) {
     // Child must provide sort for Groupby columns
     std::vector<OrderByOrderingType> sort_ascending(op->GetColumns().size(), OrderByOrderingType::ASC);
 
@@ -88,7 +88,7 @@ void ChildPropertyDeriver::Visit(UNUSED_ATTRIBUTE const SortGroupBy *op) {
     output_.emplace_back(prop_set, std::vector<PropertySet *>{prop_set->Copy()});
 }
 
-void ChildPropertyDeriver::Visit(UNUSED_ATTRIBUTE const Aggregate *op) {
+void ChildPropertyDeriver::Visit([[maybe_unused]] const Aggregate *op) {
     output_.emplace_back(new PropertySet(), std::vector<PropertySet *>{new PropertySet()});
 }
 
@@ -116,60 +116,60 @@ void ChildPropertyDeriver::Visit(const CteScan *op) {
     output_.emplace_back(provided_prop, std::move(child_input_properties));
 }
 
-void ChildPropertyDeriver::Visit(UNUSED_ATTRIBUTE const OrderBy *op) {}
+void ChildPropertyDeriver::Visit([[maybe_unused]] const OrderBy *op) {}
 
-void ChildPropertyDeriver::Visit(UNUSED_ATTRIBUTE const InnerIndexJoin *op) {
+void ChildPropertyDeriver::Visit([[maybe_unused]] const InnerIndexJoin *op) {
     output_.emplace_back(new PropertySet(), std::vector<PropertySet *>{new PropertySet()});
 }
 
-void ChildPropertyDeriver::Visit(UNUSED_ATTRIBUTE const InnerNLJoin *op) {
+void ChildPropertyDeriver::Visit([[maybe_unused]] const InnerNLJoin *op) {
     DeriveForJoin();
 }
-void ChildPropertyDeriver::Visit(UNUSED_ATTRIBUTE const LeftNLJoin *op) {}
-void ChildPropertyDeriver::Visit(UNUSED_ATTRIBUTE const RightNLJoin *op) {}
-void ChildPropertyDeriver::Visit(UNUSED_ATTRIBUTE const OuterNLJoin *op) {}
-void ChildPropertyDeriver::Visit(UNUSED_ATTRIBUTE const InnerHashJoin *op) {
-    DeriveForJoin();
-}
-
-void ChildPropertyDeriver::Visit(UNUSED_ATTRIBUTE const LeftHashJoin *op) {
-    DeriveForJoin();
-}
-void ChildPropertyDeriver::Visit(UNUSED_ATTRIBUTE const RightHashJoin *op) {}
-void ChildPropertyDeriver::Visit(UNUSED_ATTRIBUTE const OuterHashJoin *op) {}
-void ChildPropertyDeriver::Visit(UNUSED_ATTRIBUTE const LeftSemiHashJoin *op) {
+void ChildPropertyDeriver::Visit([[maybe_unused]] const LeftNLJoin *op) {}
+void ChildPropertyDeriver::Visit([[maybe_unused]] const RightNLJoin *op) {}
+void ChildPropertyDeriver::Visit([[maybe_unused]] const OuterNLJoin *op) {}
+void ChildPropertyDeriver::Visit([[maybe_unused]] const InnerHashJoin *op) {
     DeriveForJoin();
 }
 
-void ChildPropertyDeriver::Visit(UNUSED_ATTRIBUTE const Insert *op) {
+void ChildPropertyDeriver::Visit([[maybe_unused]] const LeftHashJoin *op) {
+    DeriveForJoin();
+}
+void ChildPropertyDeriver::Visit([[maybe_unused]] const RightHashJoin *op) {}
+void ChildPropertyDeriver::Visit([[maybe_unused]] const OuterHashJoin *op) {}
+void ChildPropertyDeriver::Visit([[maybe_unused]] const LeftSemiHashJoin *op) {
+    DeriveForJoin();
+}
+
+void ChildPropertyDeriver::Visit([[maybe_unused]] const Insert *op) {
     std::vector<PropertySet *> child_input_properties;
     output_.emplace_back(requirements_->Copy(), std::move(child_input_properties));
 }
 
-void ChildPropertyDeriver::Visit(UNUSED_ATTRIBUTE const InsertSelect *op) {
+void ChildPropertyDeriver::Visit([[maybe_unused]] const InsertSelect *op) {
     // Let child fulfil all the required properties
     std::vector<PropertySet *> child_input_properties{requirements_->Copy()};
     output_.emplace_back(requirements_->Copy(), std::move(child_input_properties));
 }
 
-void ChildPropertyDeriver::Visit(UNUSED_ATTRIBUTE const Update *op) {
+void ChildPropertyDeriver::Visit([[maybe_unused]] const Update *op) {
     // Let child fulfil all the required properties
     std::vector<PropertySet *> child_input_properties{requirements_->Copy()};
     output_.emplace_back(requirements_->Copy(), std::move(child_input_properties));
 }
 
-void ChildPropertyDeriver::Visit(UNUSED_ATTRIBUTE const Delete *op) {
+void ChildPropertyDeriver::Visit([[maybe_unused]] const Delete *op) {
     // Let child fulfil all the required properties
     std::vector<PropertySet *> child_input_properties{requirements_->Copy()};
     output_.emplace_back(requirements_->Copy(), std::move(child_input_properties));
 }
 
-void ChildPropertyDeriver::Visit(UNUSED_ATTRIBUTE const TableFreeScan *op) {
+void ChildPropertyDeriver::Visit([[maybe_unused]] const TableFreeScan *op) {
     // Provide nothing
     output_.emplace_back(new PropertySet(), std::vector<PropertySet *>{});
 }
 
-void ChildPropertyDeriver::Visit(UNUSED_ATTRIBUTE const ExportExternalFile *op) {
+void ChildPropertyDeriver::Visit([[maybe_unused]] const ExportExternalFile *op) {
     // Let child fulfil all the required properties
     std::vector<PropertySet *> child_input_properties{requirements_->Copy()};
     output_.emplace_back(requirements_->Copy(), std::move(child_input_properties));
@@ -214,72 +214,72 @@ void ChildPropertyDeriver::DeriveForJoin() {
     }
 }
 
-void ChildPropertyDeriver::Visit(UNUSED_ATTRIBUTE const CreateDatabase *create_database) {
+void ChildPropertyDeriver::Visit([[maybe_unused]] const CreateDatabase *create_database) {
     // Operator does not provide any properties
     output_.emplace_back(new PropertySet(), std::vector<PropertySet *>{});
 }
 
-void ChildPropertyDeriver::Visit(UNUSED_ATTRIBUTE const CreateFunction *create_function) {
+void ChildPropertyDeriver::Visit([[maybe_unused]] const CreateFunction *create_function) {
     // Operator does not provide any properties
     output_.emplace_back(new PropertySet(), std::vector<PropertySet *>{});
 }
 
-void ChildPropertyDeriver::Visit(UNUSED_ATTRIBUTE const CreateIndex *create_index) {
+void ChildPropertyDeriver::Visit([[maybe_unused]] const CreateIndex *create_index) {
     // Operator does not provide any properties
     output_.emplace_back(new PropertySet(), std::vector<PropertySet *>{});
 }
 
-void ChildPropertyDeriver::Visit(UNUSED_ATTRIBUTE const CreateTable *create_table) {
+void ChildPropertyDeriver::Visit([[maybe_unused]] const CreateTable *create_table) {
     // Operator does not provide any properties
     output_.emplace_back(new PropertySet(), std::vector<PropertySet *>{});
 }
 
-void ChildPropertyDeriver::Visit(UNUSED_ATTRIBUTE const CreateNamespace *create_namespace) {
+void ChildPropertyDeriver::Visit([[maybe_unused]] const CreateNamespace *create_namespace) {
     // Operator does not provide any properties
     output_.emplace_back(new PropertySet(), std::vector<PropertySet *>{});
 }
 
-void ChildPropertyDeriver::Visit(UNUSED_ATTRIBUTE const CreateTrigger *create_trigger) {
+void ChildPropertyDeriver::Visit([[maybe_unused]] const CreateTrigger *create_trigger) {
     // Operator does not provide any properties
     output_.emplace_back(new PropertySet(), std::vector<PropertySet *>{});
 }
 
-void ChildPropertyDeriver::Visit(UNUSED_ATTRIBUTE const CreateView *create_view) {
+void ChildPropertyDeriver::Visit([[maybe_unused]] const CreateView *create_view) {
     // Operator does not provide any properties
     output_.emplace_back(new PropertySet(), std::vector<PropertySet *>{});
 }
 
-void ChildPropertyDeriver::Visit(UNUSED_ATTRIBUTE const DropDatabase *drop_database) {
+void ChildPropertyDeriver::Visit([[maybe_unused]] const DropDatabase *drop_database) {
     // Operator does not provide any properties
     output_.emplace_back(new PropertySet(), std::vector<PropertySet *>{});
 }
 
-void ChildPropertyDeriver::Visit(UNUSED_ATTRIBUTE const DropTable *drop_table) {
+void ChildPropertyDeriver::Visit([[maybe_unused]] const DropTable *drop_table) {
     // Operator does not provide any properties
     output_.emplace_back(new PropertySet(), std::vector<PropertySet *>{});
 }
 
-void ChildPropertyDeriver::Visit(UNUSED_ATTRIBUTE const DropIndex *drop_index) {
+void ChildPropertyDeriver::Visit([[maybe_unused]] const DropIndex *drop_index) {
     // Operator does not provide any properties
     output_.emplace_back(new PropertySet(), std::vector<PropertySet *>{});
 }
 
-void ChildPropertyDeriver::Visit(UNUSED_ATTRIBUTE const DropNamespace *drop_namespace) {
+void ChildPropertyDeriver::Visit([[maybe_unused]] const DropNamespace *drop_namespace) {
     // Operator does not provide any properties
     output_.emplace_back(new PropertySet(), std::vector<PropertySet *>{});
 }
 
-void ChildPropertyDeriver::Visit(UNUSED_ATTRIBUTE const DropTrigger *drop_trigger) {
+void ChildPropertyDeriver::Visit([[maybe_unused]] const DropTrigger *drop_trigger) {
     // Operator does not provide any properties
     output_.emplace_back(new PropertySet(), std::vector<PropertySet *>{});
 }
 
-void ChildPropertyDeriver::Visit(UNUSED_ATTRIBUTE const DropView *drop_view) {
+void ChildPropertyDeriver::Visit([[maybe_unused]] const DropView *drop_view) {
     // Operator does not provide any properties
     output_.emplace_back(new PropertySet(), std::vector<PropertySet *>{});
 }
 
-void ChildPropertyDeriver::Visit(UNUSED_ATTRIBUTE const Analyze *analyze) {
+void ChildPropertyDeriver::Visit([[maybe_unused]] const Analyze *analyze) {
     // Analyze does not provide any properties
     output_.emplace_back(new PropertySet(), std::vector<PropertySet *>{new PropertySet()});
 }

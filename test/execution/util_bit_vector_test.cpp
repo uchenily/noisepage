@@ -558,7 +558,7 @@ TEST(BitVectorTest, Iterate) {
     // Simple
     {
         BitVector<> bv(100);
-        bv.IterateSetBits([](UNUSED_ATTRIBUTE auto idx) {
+        bv.IterateSetBits([]([[maybe_unused]] auto idx) {
             FAIL() << "Empty bit vectors shouldn't have any set bits";
         });
 

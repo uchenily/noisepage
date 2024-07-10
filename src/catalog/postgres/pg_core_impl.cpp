@@ -217,7 +217,7 @@ void PgCoreImpl::BootstrapPgAttribute(common::ManagedPointer<transaction::Transa
 
 void PgCoreImpl::Bootstrap(const common::ManagedPointer<transaction::TransactionContext> txn,
                            common::ManagedPointer<DatabaseCatalog>                       dbc) {
-    UNUSED_ATTRIBUTE bool retval;
+    [[maybe_unused]] bool retval;
 
     retval = CreateNamespace(txn, "pg_catalog", PgNamespace::NAMESPACE_CATALOG_NAMESPACE_OID);
     NOISEPAGE_ASSERT(retval, "Bootstrap operations should not fail");
@@ -339,7 +339,7 @@ bool PgCoreImpl::CreateNamespace(const common::ManagedPointer<transaction::Trans
     {
         auto *index_pr = oid_pri.InitializeRow(buffer);
         index_pr->Set<namespace_oid_t, false>(0, ns_oid, false);
-        const bool UNUSED_ATTRIBUTE result = namespaces_oid_index_->InsertUnique(txn, *index_pr, tuple_slot);
+        [[maybe_unused]] const bool result = namespaces_oid_index_->InsertUnique(txn, *index_pr, tuple_slot);
         NOISEPAGE_ASSERT(result, "Assigned namespace OID failed to be unique.");
     }
 
@@ -374,7 +374,7 @@ bool PgCoreImpl::DeleteNamespace(const common::ManagedPointer<transaction::Trans
     storage::VarlenEntry name_varlen;
     {
         auto                 *pr = delete_namespace_pri_.InitializeRow(buffer);
-        auto UNUSED_ATTRIBUTE result = namespaces_->Select(txn, tuple_slot, pr);
+        [[maybe_unused]] auto result = namespaces_->Select(txn, tuple_slot, pr);
         NOISEPAGE_ASSERT(result, "Index scan did a visibility check, so Select shouldn't fail at this point.");
         name_varlen = *pr->Get<storage::VarlenEntry, false>(0, nullptr);
     }
@@ -473,7 +473,7 @@ namespace_oid_t PgCoreImpl::GetNamespaceOid(const common::ManagedPointer<transac
     {
         auto                       *pr = get_namespace_pri_.InitializeRow(buffer);
         const auto                  tuple_slot = index_results[0];
-        const auto UNUSED_ATTRIBUTE result = namespaces_->Select(txn, tuple_slot, pr);
+        [[maybe_unused]] const auto result = namespaces_->Select(txn, tuple_slot, pr);
         NOISEPAGE_ASSERT(result, "Index scan did a visibility check, so Select shouldn't fail at this point.");
         ns_oid = *reinterpret_cast<namespace_oid_t *>(pr->AccessForceNotNull(0));
     }
@@ -588,7 +588,7 @@ bool PgCoreImpl::CreateTableEntry(const common::ManagedPointer<transaction::Tran
         {
             auto *index_pr = ns_index_init.InitializeRow(index_buffer);
             index_pr->Set<namespace_oid_t, false>(0, ns_oid, false);
-            const auto result UNUSED_ATTRIBUTE = classes_namespace_index_->Insert(txn, *index_pr, tuple_slot);
+            const auto result [[maybe_unused]] = classes_namespace_index_->Insert(txn, *index_pr, tuple_slot);
             NOISEPAGE_ASSERT(result, "Insertion into non-unique namespace index failed.");
         }
 
@@ -618,7 +618,7 @@ bool PgCoreImpl::CreateTableEntry(const common::ManagedPointer<transaction::Tran
 
         update_redo->SetTupleSlot(tuple_slot);
         update_pr->Set<Schema *, false>(0, new_schema, false);
-        auto UNUSED_ATTRIBUTE res = classes_->Update(txn, update_redo);
+        [[maybe_unused]] auto res = classes_->Update(txn, update_redo);
         NOISEPAGE_ASSERT(res, "Updating an uncommitted insert should not fail");
     }
 
@@ -657,7 +657,7 @@ bool PgCoreImpl::DeleteTable(const common::ManagedPointer<transaction::Transacti
     // Select the tuple out of pg_class before deletion. We need the attributes to do index deletions later.
     auto *const table_pr = pg_class_all_cols_pri_.InitializeRow(buffer);
     {
-        bool UNUSED_ATTRIBUTE result = classes_->Select(txn, index_results[0], table_pr);
+        [[maybe_unused]] bool result = classes_->Select(txn, index_results[0], table_pr);
         NOISEPAGE_ASSERT(result, "Select must succeed if the index scan gave a visible result.");
     }
 
@@ -673,7 +673,7 @@ bool PgCoreImpl::DeleteTable(const common::ManagedPointer<transaction::Transacti
 
     // Delete all the relevant pg_index entries.
     {
-        bool UNUSED_ATTRIBUTE result = dbc->DeleteIndexes(txn, table);
+        [[maybe_unused]] bool result = dbc->DeleteIndexes(txn, table);
         NOISEPAGE_ASSERT(result, "We should have the DDL lock.");
     }
 
@@ -813,7 +813,7 @@ bool PgCoreImpl::CreateIndexEntry(const common::ManagedPointer<transaction::Tran
         {
             auto *index_pr = class_ns_index_init.InitializeRow(index_buffer);
             index_pr->Set<namespace_oid_t, false>(0, ns_oid, false);
-            const auto result UNUSED_ATTRIBUTE = classes_namespace_index_->Insert(txn, *index_pr, class_tuple_slot);
+            const auto result [[maybe_unused]] = classes_namespace_index_->Insert(txn, *index_pr, class_tuple_slot);
             NOISEPAGE_ASSERT(result, "Insertion into non-unique namespace index failed.");
         }
 
@@ -910,7 +910,7 @@ bool PgCoreImpl::CreateIndexEntry(const common::ManagedPointer<transaction::Tran
 
         update_redo->SetTupleSlot(class_tuple_slot);
         update_pr->Set<IndexSchema *, false>(0, new_schema, false);
-        auto UNUSED_ATTRIBUTE res = classes_->Update(txn, update_redo);
+        [[maybe_unused]] auto res = classes_->Update(txn, update_redo);
         NOISEPAGE_ASSERT(res, "Updating an uncommitted insert should not fail.");
     }
 
@@ -955,14 +955,14 @@ bool PgCoreImpl::DeleteIndex(const common::ManagedPointer<transaction::Transacti
         // Select the tuple out of the table before deletion. We need the attributes to do index deletions later.
         auto *table_pr = pg_class_all_cols_pri_.InitializeRow(buffer);
         {
-            bool UNUSED_ATTRIBUTE result = classes_->Select(txn, index_results[0], table_pr);
+            [[maybe_unused]] bool result = classes_->Select(txn, index_results[0], table_pr);
             NOISEPAGE_ASSERT(result, "Select must succeed if the index scan gave a visible result.");
         }
 
         // Delete from pg_class.
         {
             txn->StageDelete(db_oid_, PgClass::CLASS_TABLE_OID, index_results[0]);
-            bool UNUSED_ATTRIBUTE result = classes_->Delete(txn, index_results[0]);
+            [[maybe_unused]] bool result = classes_->Delete(txn, index_results[0]);
             if (!result) { // Write-write conflict. Ask to abort.
                 delete[] buffer;
                 return false;
@@ -1036,7 +1036,7 @@ bool PgCoreImpl::DeleteIndex(const common::ManagedPointer<transaction::Transacti
         // Select the tuple out of pg_index before deletion. We need the attributes to do index deletions later.
         auto table_pr = common::ManagedPointer(delete_index_pri_.InitializeRow(buffer));
         {
-            bool UNUSED_ATTRIBUTE result = indexes_->Select(txn, index_results[0], table_pr.Get());
+            [[maybe_unused]] bool result = indexes_->Select(txn, index_results[0], table_pr.Get());
             NOISEPAGE_ASSERT(result, "Select must succeed if the index scan gave a visible result.");
             NOISEPAGE_ASSERT(
                 index
@@ -1048,7 +1048,7 @@ bool PgCoreImpl::DeleteIndex(const common::ManagedPointer<transaction::Transacti
         // Delete from pg_index.
         {
             txn->StageDelete(db_oid_, PgIndex::INDEX_TABLE_OID, index_results[0]);
-            bool UNUSED_ATTRIBUTE result = indexes_->Delete(txn, index_results[0]);
+            [[maybe_unused]] bool result = indexes_->Delete(txn, index_results[0]);
             NOISEPAGE_ASSERT(
                 result,
                 "Delete from pg_index should always succeed as write-write conflicts are detected during delete "
@@ -1126,7 +1126,7 @@ PgCoreImpl::GetIndexes(const common::ManagedPointer<transaction::TransactionCont
             index_oids.reserve(index_scan_results.size());
             auto *index_select_pr = get_indexes_pri_.InitializeRow(buffer);
             for (auto &slot : index_scan_results) {
-                const auto result UNUSED_ATTRIBUTE = indexes_->Select(txn, slot, index_select_pr);
+                const auto result [[maybe_unused]] = indexes_->Select(txn, slot, index_select_pr);
                 NOISEPAGE_ASSERT(result, "Index already verified visibility. This shouldn't fail.");
                 index_oids.emplace_back(*index_select_pr->Get<index_oid_t, false>(0, nullptr));
             }
@@ -1162,7 +1162,7 @@ PgCoreImpl::GetIndexes(const common::ManagedPointer<transaction::TransactionCont
         index_objects.reserve(class_tuple_slots.size());
         auto class_select_pr = common::ManagedPointer(get_class_object_and_schema_pri_.InitializeRow(buffer));
         for (const auto &slot : class_tuple_slots) {
-            bool result UNUSED_ATTRIBUTE = classes_->Select(txn, slot, class_select_pr.Get());
+            bool result [[maybe_unused]] = classes_->Select(txn, slot, class_select_pr.Get());
             NOISEPAGE_ASSERT(result, "Index already verified visibility. This shouldn't fail.");
 
             auto *index = reinterpret_cast<storage::index::Index *>(
@@ -1214,7 +1214,7 @@ std::vector<index_oid_t> PgCoreImpl::GetIndexOids(const common::ManagedPointer<t
         index_oids.reserve(index_scan_results.size());
         auto *select_pr = get_indexes_pri_.InitializeRow(buffer);
         for (auto &slot : index_scan_results) {
-            const auto result UNUSED_ATTRIBUTE = indexes_->Select(txn, slot, select_pr);
+            const auto result [[maybe_unused]] = indexes_->Select(txn, slot, select_pr);
             NOISEPAGE_ASSERT(result, "Index already verified visibility. This shouldn't fail.");
             index_oids.emplace_back(*select_pr->Get<index_oid_t, false>(0, nullptr));
         }
@@ -1253,7 +1253,7 @@ PgCoreImpl::GetNamespaceClassOids(const common::ManagedPointer<transaction::Tran
         auto *select_pr = get_class_oid_kind_pri_.InitializeRow(buffer);
         ns_objects.reserve(index_scan_results.size());
         for (const auto scan_result : index_scan_results) {
-            const auto result UNUSED_ATTRIBUTE = classes_->Select(txn, scan_result, select_pr);
+            const auto result [[maybe_unused]] = classes_->Select(txn, scan_result, select_pr);
             NOISEPAGE_ASSERT(result, "Index already verified visibility. This shouldn't fail.");
             // oid_t is guaranteed to be larger in size than ClassKind, so we know the column offsets without the PR
             // map.
@@ -1292,7 +1292,7 @@ PgCoreImpl::GetClassPtrKind(const common::ManagedPointer<transaction::Transactio
     // Select the tuple out.
     auto *select_pr = get_class_pointer_kind_pri_.InitializeRow(buffer);
     {
-        const auto result UNUSED_ATTRIBUTE = classes_->Select(txn, index_results[0], select_pr);
+        const auto result [[maybe_unused]] = classes_->Select(txn, index_results[0], select_pr);
         NOISEPAGE_ASSERT(result, "Index already verified visibility. This shouldn't fail.");
     }
 
@@ -1336,7 +1336,7 @@ PgCoreImpl::GetClassSchemaPtrKind(const common::ManagedPointer<transaction::Tran
     // Select the tuple out.
     auto *select_pr = get_class_schema_pointer_kind_pri_.InitializeRow(buffer);
     {
-        const auto result UNUSED_ATTRIBUTE = classes_->Select(txn, index_results[0], select_pr);
+        const auto result [[maybe_unused]] = classes_->Select(txn, index_results[0], select_pr);
         NOISEPAGE_ASSERT(result, "Index already verified visibility. This shouldn't fail.");
     }
 
@@ -1390,7 +1390,7 @@ PgCoreImpl::GetClassOidKind(const common::ManagedPointer<transaction::Transactio
     // Select out the tuple from pg_class.
     auto *pr = get_class_oid_kind_pri_.InitializeRow(buffer);
     {
-        const auto result UNUSED_ATTRIBUTE = classes_->Select(txn, index_results[0], pr);
+        const auto result [[maybe_unused]] = classes_->Select(txn, index_results[0], pr);
         NOISEPAGE_ASSERT(result, "Index already verified visibility. This shouldn't fail.");
     }
 
@@ -1428,7 +1428,7 @@ PgCoreImpl::GetClassNameKind(common::ManagedPointer<transaction::TransactionCont
     // Select out the tuple from pg_class.
     auto *pr = get_class_name_kind_pri_.InitializeRow(buffer);
     {
-        const auto result UNUSED_ATTRIBUTE = classes_->Select(txn, index_results[0], pr);
+        const auto result [[maybe_unused]] = classes_->Select(txn, index_results[0], pr);
         NOISEPAGE_ASSERT(result, "Index already verified visibility. This shouldn't fail.");
     }
 
@@ -1502,7 +1502,7 @@ bool PgCoreImpl::CreateColumn(const common::ManagedPointer<transaction::Transact
         auto       *pr = oid_pri.InitializeRow(buffer);
         pr->Set<ClassOid, false>(oid_prm.at(indexkeycol_oid_t(1)), class_oid, false);
         pr->Set<ColOid, false>(oid_prm.at(indexkeycol_oid_t(2)), col_oid, false);
-        bool UNUSED_ATTRIBUTE result = columns_oid_index_->InsertUnique(txn, *pr, tupleslot);
+        [[maybe_unused]] bool result = columns_oid_index_->InsertUnique(txn, *pr, tupleslot);
         NOISEPAGE_ASSERT(result, "Assigned OIDs failed to be unique.");
     }
 
@@ -1548,7 +1548,7 @@ std::vector<Column> PgCoreImpl::GetColumns(const common::ManagedPointer<transact
     {
         auto *pr = get_columns_pri_.InitializeRow(buffer);
         for (const auto &slot : index_results) {
-            const auto UNUSED_ATTRIBUTE result = columns_->Select(txn, slot, pr);
+            [[maybe_unused]] const auto result = columns_->Select(txn, slot, pr);
             NOISEPAGE_ASSERT(result, "Index scan did a visibility check, so Select shouldn't fail at this point.");
             cols.emplace_back(MakeColumn<Column, ColOid>(pr, get_columns_prm_));
         }
@@ -1606,7 +1606,7 @@ bool PgCoreImpl::DeleteColumns(const common::ManagedPointer<transaction::Transac
     {
         auto pr = common::ManagedPointer(delete_columns_pri_.InitializeRow(buffer));
         for (const auto &slot : index_results) {
-            auto UNUSED_ATTRIBUTE result = columns_->Select(txn, slot, pr.Get());
+            [[maybe_unused]] auto result = columns_->Select(txn, slot, pr.Get());
             NOISEPAGE_ASSERT(result, "Index scan did a visibility check, so Select shouldn't fail at this point.");
 
             auto &pm = delete_columns_prm_;
