@@ -31,8 +31,9 @@ common::hash_t LeafOperator::Hash() const {
 }
 
 bool LeafOperator::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::LEAF)
+    if (r.GetOpType() != OpType::LEAF) {
         return false;
+    }
     const LeafOperator &node = *dynamic_cast<const LeafOperator *>(&r);
     return origin_group_ == node.origin_group_;
 }
@@ -77,21 +78,27 @@ common::hash_t LogicalGet::Hash() const {
 }
 
 bool LogicalGet::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::LOGICALGET)
+    if (r.GetOpType() != OpType::LOGICALGET) {
         return false;
-    const LogicalGet &node = *dynamic_cast<const LogicalGet *>(&r);
-    if (database_oid_ != node.database_oid_)
-        return false;
-    if (table_oid_ != node.table_oid_)
-        return false;
-    if (predicates_.size() != node.predicates_.size())
-        return false;
-    for (size_t i = 0; i < predicates_.size(); i++) {
-        if (predicates_[i].GetExpr() != node.predicates_[i].GetExpr())
-            return false;
     }
-    if (table_alias_ != node.table_alias_)
+    const LogicalGet &node = *dynamic_cast<const LogicalGet *>(&r);
+    if (database_oid_ != node.database_oid_) {
         return false;
+    }
+    if (table_oid_ != node.table_oid_) {
+        return false;
+    }
+    if (predicates_.size() != node.predicates_.size()) {
+        return false;
+    }
+    for (size_t i = 0; i < predicates_.size(); i++) {
+        if (predicates_[i].GetExpr() != node.predicates_[i].GetExpr()) {
+            return false;
+        }
+    }
+    if (table_alias_ != node.table_alias_) {
+        return false;
+    }
     return is_for_update_ == node.is_for_update_;
 }
 
@@ -117,8 +124,9 @@ Operator LogicalExternalFileGet::Make(parser::ExternalFileFormat format,
 }
 
 bool LogicalExternalFileGet::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::LOGICALEXTERNALFILEGET)
+    if (r.GetOpType() != OpType::LOGICALEXTERNALFILEGET) {
         return false;
+    }
     const auto &get = *static_cast<const LogicalExternalFileGet *>(&r);
     return (format_ == get.format_ && file_name_ == get.file_name_ && delimiter_ == get.delimiter_
             && quote_ == get.quote_ && escape_ == get.escape_);
@@ -151,11 +159,13 @@ Operator LogicalQueryDerivedGet::Make(
 }
 
 bool LogicalQueryDerivedGet::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::LOGICALQUERYDERIVEDGET)
+    if (r.GetOpType() != OpType::LOGICALQUERYDERIVEDGET) {
         return false;
+    }
     const LogicalQueryDerivedGet &node = *static_cast<const LogicalQueryDerivedGet *>(&r);
-    if (table_alias_ != node.table_alias_)
+    if (table_alias_ != node.table_alias_) {
         return false;
+    }
     return alias_to_expr_map_ == node.alias_to_expr_map_;
 }
 
@@ -183,8 +193,9 @@ Operator LogicalFilter::Make(std::vector<AnnotatedExpression> &&predicates) {
 }
 
 bool LogicalFilter::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::LOGICALFILTER)
+    if (r.GetOpType() != OpType::LOGICALFILTER) {
         return false;
+    }
     const LogicalFilter &node = *static_cast<const LogicalFilter *>(&r);
 
     // This is technically incorrect because the predicates
@@ -199,10 +210,11 @@ common::hash_t LogicalFilter::Hash() const {
     // on the location order of the expressions.
     for (auto &pred : predicates_) {
         auto expr = pred.GetExpr();
-        if (expr)
+        if (expr) {
             hash = common::HashUtil::SumHashes(hash, expr->Hash());
-        else
+        } else {
             hash = common::HashUtil::SumHashes(hash, BaseOperatorNodeContents::Hash());
+        }
     }
     return hash;
 }
@@ -221,20 +233,23 @@ Operator LogicalProjection::Make(std::vector<common::ManagedPointer<parser::Abst
 }
 
 bool LogicalProjection::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::LOGICALPROJECTION)
+    if (r.GetOpType() != OpType::LOGICALPROJECTION) {
         return false;
+    }
     const LogicalProjection &node = *static_cast<const LogicalProjection *>(&r);
     for (size_t i = 0; i < expressions_.size(); i++) {
-        if (*(expressions_[i]) != *(node.expressions_[i]))
+        if (*(expressions_[i]) != *(node.expressions_[i])) {
             return false;
+        }
     }
     return true;
 }
 
 common::hash_t LogicalProjection::Hash() const {
     common::hash_t hash = BaseOperatorNodeContents::Hash();
-    for (auto &expr : expressions_)
+    for (auto &expr : expressions_) {
         hash = common::HashUtil::SumHashes(hash, expr->Hash());
+    }
     return hash;
 }
 
@@ -281,17 +296,22 @@ common::hash_t LogicalInsert::Hash() const {
 }
 
 bool LogicalInsert::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::LOGICALINSERT)
+    if (r.GetOpType() != OpType::LOGICALINSERT) {
         return false;
+    }
     const LogicalInsert &node = *dynamic_cast<const LogicalInsert *>(&r);
-    if (database_oid_ != node.database_oid_)
+    if (database_oid_ != node.database_oid_) {
         return false;
-    if (table_oid_ != node.table_oid_)
+    }
+    if (table_oid_ != node.table_oid_) {
         return false;
-    if (columns_ != node.columns_)
+    }
+    if (columns_ != node.columns_) {
         return false;
-    if (values_ != node.values_)
+    }
+    if (values_ != node.values_) {
         return false;
+    }
     return (true);
 }
 
@@ -320,13 +340,16 @@ common::hash_t LogicalInsertSelect::Hash() const {
 }
 
 bool LogicalInsertSelect::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::LOGICALINSERTSELECT)
+    if (r.GetOpType() != OpType::LOGICALINSERTSELECT) {
         return false;
+    }
     const LogicalInsertSelect &node = *dynamic_cast<const LogicalInsertSelect *>(&r);
-    if (database_oid_ != node.database_oid_)
+    if (database_oid_ != node.database_oid_) {
         return false;
-    if (table_oid_ != node.table_oid_)
+    }
+    if (table_oid_ != node.table_oid_) {
         return false;
+    }
     return (true);
 }
 
@@ -351,17 +374,22 @@ Operator LogicalLimit::Make(size_t                                              
 }
 
 bool LogicalLimit::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::LOGICALLIMIT)
+    if (r.GetOpType() != OpType::LOGICALLIMIT) {
         return false;
+    }
     const LogicalLimit &node = *static_cast<const LogicalLimit *>(&r);
-    if (offset_ != node.offset_)
+    if (offset_ != node.offset_) {
         return false;
-    if (limit_ != node.limit_)
+    }
+    if (limit_ != node.limit_) {
         return false;
-    if (sort_exprs_ != node.sort_exprs_)
+    }
+    if (sort_exprs_ != node.sort_exprs_) {
         return false;
-    if (sort_directions_ != node.sort_directions_)
+    }
+    if (sort_directions_ != node.sort_directions_) {
         return false;
+    }
     return (true);
 }
 
@@ -398,13 +426,16 @@ common::hash_t LogicalDelete::Hash() const {
 }
 
 bool LogicalDelete::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::LOGICALDELETE)
+    if (r.GetOpType() != OpType::LOGICALDELETE) {
         return false;
+    }
     const LogicalDelete &node = *dynamic_cast<const LogicalDelete *>(&r);
-    if (database_oid_ != node.database_oid_)
+    if (database_oid_ != node.database_oid_) {
         return false;
-    if (table_oid_ != node.table_oid_)
+    }
+    if (table_oid_ != node.table_oid_) {
         return false;
+    }
     return (true);
 }
 
@@ -440,18 +471,23 @@ common::hash_t LogicalUpdate::Hash() const {
 }
 
 bool LogicalUpdate::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::LOGICALUPDATE)
+    if (r.GetOpType() != OpType::LOGICALUPDATE) {
         return false;
+    }
     const LogicalUpdate &node = *dynamic_cast<const LogicalUpdate *>(&r);
-    if (database_oid_ != node.database_oid_)
+    if (database_oid_ != node.database_oid_) {
         return false;
-    if (table_oid_ != node.table_oid_)
+    }
+    if (table_oid_ != node.table_oid_) {
         return false;
-    if (updates_.size() != node.updates_.size())
+    }
+    if (updates_.size() != node.updates_.size()) {
         return false;
+    }
     for (size_t i = 0; i < updates_.size(); i++) {
-        if (*(updates_[i]) != *(node.updates_[i]))
+        if (*(updates_[i]) != *(node.updates_[i])) {
             return false;
+        }
     }
     return table_alias_ == node.table_alias_;
 }
@@ -488,19 +524,25 @@ common::hash_t LogicalExportExternalFile::Hash() const {
 }
 
 bool LogicalExportExternalFile::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::LOGICALEXPORTEXTERNALFILE)
+    if (r.GetOpType() != OpType::LOGICALEXPORTEXTERNALFILE) {
         return false;
+    }
     const LogicalExportExternalFile &node = *dynamic_cast<const LogicalExportExternalFile *>(&r);
-    if (format_ != node.format_)
+    if (format_ != node.format_) {
         return false;
-    if (file_name_ != node.file_name_)
+    }
+    if (file_name_ != node.file_name_) {
         return false;
-    if (delimiter_ != node.delimiter_)
+    }
+    if (delimiter_ != node.delimiter_) {
         return false;
-    if (quote_ != node.quote_)
+    }
+    if (quote_ != node.quote_) {
         return false;
-    if (escape_ != node.escape_)
+    }
+    if (escape_ != node.escape_) {
         return false;
+    }
     return (true);
 }
 
@@ -536,8 +578,9 @@ common::hash_t LogicalDependentJoin::Hash() const {
 }
 
 bool LogicalDependentJoin::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::LOGICALDEPENDENTJOIN)
+    if (r.GetOpType() != OpType::LOGICALDEPENDENTJOIN) {
         return false;
+    }
     const LogicalDependentJoin &node = *static_cast<const LogicalDependentJoin *>(&r);
     return (join_predicates_ == node.join_predicates_);
 }
@@ -574,8 +617,9 @@ common::hash_t LogicalMarkJoin::Hash() const {
 }
 
 bool LogicalMarkJoin::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::LOGICALMARKJOIN)
+    if (r.GetOpType() != OpType::LOGICALMARKJOIN) {
         return false;
+    }
     const LogicalMarkJoin &node = *static_cast<const LogicalMarkJoin *>(&r);
     return (join_predicates_ == node.join_predicates_);
 }
@@ -612,8 +656,9 @@ common::hash_t LogicalSingleJoin::Hash() const {
 }
 
 bool LogicalSingleJoin::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::LOGICALSINGLEJOIN)
+    if (r.GetOpType() != OpType::LOGICALSINGLEJOIN) {
         return false;
+    }
     const LogicalSingleJoin &node = *static_cast<const LogicalSingleJoin *>(&r);
     return (join_predicates_ == node.join_predicates_);
 }
@@ -650,8 +695,9 @@ common::hash_t LogicalInnerJoin::Hash() const {
 }
 
 bool LogicalInnerJoin::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::LOGICALINNERJOIN)
+    if (r.GetOpType() != OpType::LOGICALINNERJOIN) {
         return false;
+    }
     const LogicalInnerJoin &node = *static_cast<const LogicalInnerJoin *>(&r);
     return (join_predicates_ == node.join_predicates_);
 }
@@ -688,8 +734,9 @@ common::hash_t LogicalLeftJoin::Hash() const {
 }
 
 bool LogicalLeftJoin::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::LOGICALLEFTJOIN)
+    if (r.GetOpType() != OpType::LOGICALLEFTJOIN) {
         return false;
+    }
     const LogicalLeftJoin &node = *static_cast<const LogicalLeftJoin *>(&r);
     return (join_predicates_ == node.join_predicates_);
 }
@@ -726,8 +773,9 @@ common::hash_t LogicalRightJoin::Hash() const {
 }
 
 bool LogicalRightJoin::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::LOGICALRIGHTJOIN)
+    if (r.GetOpType() != OpType::LOGICALRIGHTJOIN) {
         return false;
+    }
     const LogicalRightJoin &node = *static_cast<const LogicalRightJoin *>(&r);
     return (join_predicates_ == node.join_predicates_);
 }
@@ -764,8 +812,9 @@ common::hash_t LogicalOuterJoin::Hash() const {
 }
 
 bool LogicalOuterJoin::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::LOGICALOUTERJOIN)
+    if (r.GetOpType() != OpType::LOGICALOUTERJOIN) {
         return false;
+    }
     const LogicalOuterJoin &node = *static_cast<const LogicalOuterJoin *>(&r);
     return (join_predicates_ == node.join_predicates_);
 }
@@ -802,8 +851,9 @@ common::hash_t LogicalSemiJoin::Hash() const {
 }
 
 bool LogicalSemiJoin::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::LOGICALSEMIJOIN)
+    if (r.GetOpType() != OpType::LOGICALSEMIJOIN) {
         return false;
+    }
     const LogicalSemiJoin &node = *static_cast<const LogicalSemiJoin *>(&r);
     return (join_predicates_ == node.join_predicates_);
 }
@@ -834,14 +884,17 @@ Operator LogicalAggregateAndGroupBy::Make(std::vector<common::ManagedPointer<par
     return Operator(common::ManagedPointer<BaseOperatorNodeContents>(group_by));
 }
 bool LogicalAggregateAndGroupBy::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::LOGICALAGGREGATEANDGROUPBY)
+    if (r.GetOpType() != OpType::LOGICALAGGREGATEANDGROUPBY) {
         return false;
+    }
     const LogicalAggregateAndGroupBy &node = *static_cast<const LogicalAggregateAndGroupBy *>(&r);
-    if (having_.size() != node.having_.size() || columns_.size() != node.columns_.size())
+    if (having_.size() != node.having_.size() || columns_.size() != node.columns_.size()) {
         return false;
+    }
     for (size_t i = 0; i < having_.size(); i++) {
-        if (having_[i] != node.having_[i])
+        if (having_[i] != node.having_[i]) {
             return false;
+        }
     }
     // originally throw all entries from each vector to one set,
     // and compare if the 2 sets are equal
@@ -854,8 +907,9 @@ bool LogicalAggregateAndGroupBy::operator==(const BaseOperatorNodeContents &r) {
     //  for (auto &expr : node.columns_) r_set.emplace(expr);
     //  return l_set == r_set;
     for (size_t i = 0; i < columns_.size(); i++) {
-        if (*(columns_[i]) != *(node.columns_[i]))
+        if (*(columns_[i]) != *(node.columns_[i])) {
             return false;
+        }
     }
     return true;
 }
@@ -864,13 +918,15 @@ common::hash_t LogicalAggregateAndGroupBy::Hash() const {
     common::hash_t hash = BaseOperatorNodeContents::Hash();
     for (auto &pred : having_) {
         auto expr = pred.GetExpr();
-        if (expr)
+        if (expr) {
             hash = common::HashUtil::SumHashes(hash, expr->Hash());
-        else
+        } else {
             hash = common::HashUtil::SumHashes(hash, BaseOperatorNodeContents::Hash());
+        }
     }
-    for (auto &expr : columns_)
+    for (auto &expr : columns_) {
         hash = common::HashUtil::SumHashes(hash, expr->Hash());
+    }
     return hash;
 }
 
@@ -894,8 +950,9 @@ common::hash_t LogicalCreateDatabase::Hash() const {
 }
 
 bool LogicalCreateDatabase::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::LOGICALCREATEDATABASE)
+    if (r.GetOpType() != OpType::LOGICALCREATEDATABASE) {
         return false;
+    }
     const LogicalCreateDatabase &node = *dynamic_cast<const LogicalCreateDatabase *>(&r);
     return node.database_name_ == database_name_;
 }
@@ -949,27 +1006,37 @@ common::hash_t LogicalCreateFunction::Hash() const {
 }
 
 bool LogicalCreateFunction::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::LOGICALCREATEFUNCTION)
+    if (r.GetOpType() != OpType::LOGICALCREATEFUNCTION) {
         return false;
+    }
     const LogicalCreateFunction &node = *dynamic_cast<const LogicalCreateFunction *>(&r);
-    if (database_oid_ != node.database_oid_)
+    if (database_oid_ != node.database_oid_) {
         return false;
-    if (namespace_oid_ != node.namespace_oid_)
+    }
+    if (namespace_oid_ != node.namespace_oid_) {
         return false;
-    if (function_name_ != node.function_name_)
+    }
+    if (function_name_ != node.function_name_) {
         return false;
-    if (function_body_ != node.function_body_)
+    }
+    if (function_body_ != node.function_body_) {
         return false;
-    if (param_count_ != node.param_count_)
+    }
+    if (param_count_ != node.param_count_) {
         return false;
-    if (return_type_ != node.return_type_)
+    }
+    if (return_type_ != node.return_type_) {
         return false;
-    if (function_param_types_ != node.function_param_types_)
+    }
+    if (function_param_types_ != node.function_param_types_) {
         return false;
-    if (function_param_names_ != node.function_param_names_)
+    }
+    if (function_param_names_ != node.function_param_names_) {
         return false;
-    if (is_replace_ != node.is_replace_)
+    }
+    if (is_replace_ != node.is_replace_) {
         return false;
+    }
     return language_ == node.language_;
 }
 
@@ -1025,26 +1092,35 @@ common::hash_t LogicalCreateIndex::Hash() const {
 }
 
 bool LogicalCreateIndex::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::LOGICALCREATEINDEX)
+    if (r.GetOpType() != OpType::LOGICALCREATEINDEX) {
         return false;
+    }
     const LogicalCreateIndex &node = *dynamic_cast<const LogicalCreateIndex *>(&r);
-    if (namespace_oid_ != node.namespace_oid_)
+    if (namespace_oid_ != node.namespace_oid_) {
         return false;
-    if (database_oid_ != node.database_oid_)
+    }
+    if (database_oid_ != node.database_oid_) {
         return false;
-    if (table_oid_ != node.table_oid_)
+    }
+    if (table_oid_ != node.table_oid_) {
         return false;
-    if (index_type_ != node.index_type_)
+    }
+    if (index_type_ != node.index_type_) {
         return false;
-    if (index_name_ != node.index_name_)
+    }
+    if (index_name_ != node.index_name_) {
         return false;
-    if (unique_index_ != node.unique_index_)
+    }
+    if (unique_index_ != node.unique_index_) {
         return false;
-    if (index_attrs_.size() != node.index_attrs_.size())
+    }
+    if (index_attrs_.size() != node.index_attrs_.size()) {
         return false;
+    }
     for (size_t i = 0; i < index_attrs_.size(); i++) {
-        if (*(index_attrs_[i]) != *(node.index_attrs_[i]))
+        if (*(index_attrs_[i]) != *(node.index_attrs_[i])) {
             return false;
+        }
     }
     return index_options_ == node.index_options_;
 }
@@ -1073,32 +1149,41 @@ common::hash_t LogicalCreateTable::Hash() const {
     hash = common::HashUtil::CombineHashes(hash, common::HashUtil::Hash(namespace_oid_));
     hash = common::HashUtil::CombineHashes(hash, common::HashUtil::Hash(table_name_));
     hash = common::HashUtil::CombineHashInRange(hash, columns_.begin(), columns_.end());
-    for (const auto &col : columns_)
+    for (const auto &col : columns_) {
         hash = common::HashUtil::CombineHashes(hash, col->Hash());
-    for (const auto &fk : foreign_keys_)
+    }
+    for (const auto &fk : foreign_keys_) {
         hash = common::HashUtil::CombineHashes(hash, fk->Hash());
+    }
     return hash;
 }
 
 bool LogicalCreateTable::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::LOGICALCREATETABLE)
+    if (r.GetOpType() != OpType::LOGICALCREATETABLE) {
         return false;
-    const LogicalCreateTable &node = *dynamic_cast<const LogicalCreateTable *>(&r);
-    if (namespace_oid_ != node.namespace_oid_)
-        return false;
-    if (table_name_ != node.table_name_)
-        return false;
-    if (columns_.size() != node.columns_.size())
-        return false;
-    for (size_t i = 0; i < columns_.size(); i++) {
-        if (*(columns_[i]) != *(node.columns_[i]))
-            return false;
     }
-    if (foreign_keys_.size() != node.foreign_keys_.size())
+    const LogicalCreateTable &node = *dynamic_cast<const LogicalCreateTable *>(&r);
+    if (namespace_oid_ != node.namespace_oid_) {
         return false;
-    for (size_t i = 0; i < foreign_keys_.size(); i++) {
-        if (*(foreign_keys_[i]) != *(node.foreign_keys_[i]))
+    }
+    if (table_name_ != node.table_name_) {
+        return false;
+    }
+    if (columns_.size() != node.columns_.size()) {
+        return false;
+    }
+    for (size_t i = 0; i < columns_.size(); i++) {
+        if (*(columns_[i]) != *(node.columns_[i])) {
             return false;
+        }
+    }
+    if (foreign_keys_.size() != node.foreign_keys_.size()) {
+        return false;
+    }
+    for (size_t i = 0; i < foreign_keys_.size(); i++) {
+        if (*(foreign_keys_[i]) != *(node.foreign_keys_[i])) {
+            return false;
+        }
     }
     return true;
 }
@@ -1123,8 +1208,9 @@ common::hash_t LogicalCreateNamespace::Hash() const {
 }
 
 bool LogicalCreateNamespace::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::LOGICALCREATENAMESPACE)
+    if (r.GetOpType() != OpType::LOGICALCREATENAMESPACE) {
         return false;
+    }
     const LogicalCreateNamespace &node = *dynamic_cast<const LogicalCreateNamespace *>(&r);
     return node.namespace_name_ == namespace_name_;
 }
@@ -1173,27 +1259,37 @@ common::hash_t LogicalCreateTrigger::Hash() const {
 }
 
 bool LogicalCreateTrigger::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::LOGICALCREATETRIGGER)
+    if (r.GetOpType() != OpType::LOGICALCREATETRIGGER) {
         return false;
+    }
     const LogicalCreateTrigger &node = *dynamic_cast<const LogicalCreateTrigger *>(&r);
-    if (database_oid_ != node.database_oid_)
+    if (database_oid_ != node.database_oid_) {
         return false;
-    if (namespace_oid_ != node.namespace_oid_)
+    }
+    if (namespace_oid_ != node.namespace_oid_) {
         return false;
-    if (table_oid_ != node.table_oid_)
+    }
+    if (table_oid_ != node.table_oid_) {
         return false;
-    if (trigger_name_ != node.trigger_name_)
+    }
+    if (trigger_name_ != node.trigger_name_) {
         return false;
-    if (trigger_funcnames_ != node.trigger_funcnames_)
+    }
+    if (trigger_funcnames_ != node.trigger_funcnames_) {
         return false;
-    if (trigger_args_ != node.trigger_args_)
+    }
+    if (trigger_args_ != node.trigger_args_) {
         return false;
-    if (trigger_columns_ != node.trigger_columns_)
+    }
+    if (trigger_columns_ != node.trigger_columns_) {
         return false;
-    if (trigger_type_ != node.trigger_type_)
+    }
+    if (trigger_type_ != node.trigger_type_) {
         return false;
-    if (trigger_when_ == nullptr)
+    }
+    if (trigger_when_ == nullptr) {
         return node.trigger_when_ == nullptr;
+    }
     return node.trigger_when_ != nullptr && *trigger_when_ == *node.trigger_when_;
 }
 
@@ -1221,23 +1317,29 @@ common::hash_t LogicalCreateView::Hash() const {
     hash = common::HashUtil::CombineHashes(hash, common::HashUtil::Hash(database_oid_));
     hash = common::HashUtil::CombineHashes(hash, common::HashUtil::Hash(namespace_oid_));
     hash = common::HashUtil::CombineHashes(hash, common::HashUtil::Hash(view_name_));
-    if (view_query_ != nullptr)
+    if (view_query_ != nullptr) {
         hash = common::HashUtil::CombineHashes(hash, view_query_->Hash());
+    }
     return hash;
 }
 
 bool LogicalCreateView::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::LOGICALCREATEVIEW)
+    if (r.GetOpType() != OpType::LOGICALCREATEVIEW) {
         return false;
+    }
     const LogicalCreateView &node = *dynamic_cast<const LogicalCreateView *>(&r);
-    if (database_oid_ != node.database_oid_)
+    if (database_oid_ != node.database_oid_) {
         return false;
-    if (namespace_oid_ != node.namespace_oid_)
+    }
+    if (namespace_oid_ != node.namespace_oid_) {
         return false;
-    if (view_name_ != node.view_name_)
+    }
+    if (view_name_ != node.view_name_) {
         return false;
-    if (view_query_ == nullptr)
+    }
+    if (view_query_ == nullptr) {
         return node.view_query_ == nullptr;
+    }
     return node.view_query_ != nullptr && *view_query_ == *node.view_query_;
 }
 
@@ -1261,8 +1363,9 @@ common::hash_t LogicalDropDatabase::Hash() const {
 }
 
 bool LogicalDropDatabase::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::LOGICALDROPDATABASE)
+    if (r.GetOpType() != OpType::LOGICALDROPDATABASE) {
         return false;
+    }
     const LogicalDropDatabase &node = *dynamic_cast<const LogicalDropDatabase *>(&r);
     return node.db_oid_ == db_oid_;
 }
@@ -1287,8 +1390,9 @@ common::hash_t LogicalDropTable::Hash() const {
 }
 
 bool LogicalDropTable::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::LOGICALDROPTABLE)
+    if (r.GetOpType() != OpType::LOGICALDROPTABLE) {
         return false;
+    }
     const LogicalDropTable &node = *dynamic_cast<const LogicalDropTable *>(&r);
     return node.table_oid_ == table_oid_;
 }
@@ -1313,8 +1417,9 @@ common::hash_t LogicalDropIndex::Hash() const {
 }
 
 bool LogicalDropIndex::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::LOGICALDROPINDEX)
+    if (r.GetOpType() != OpType::LOGICALDROPINDEX) {
         return false;
+    }
     const LogicalDropIndex &node = *dynamic_cast<const LogicalDropIndex *>(&r);
     return node.index_oid_ == index_oid_;
 }
@@ -1339,8 +1444,9 @@ common::hash_t LogicalDropNamespace::Hash() const {
 }
 
 bool LogicalDropNamespace::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::LOGICALDROPNAMESPACE)
+    if (r.GetOpType() != OpType::LOGICALDROPNAMESPACE) {
         return false;
+    }
     const LogicalDropNamespace &node = *dynamic_cast<const LogicalDropNamespace *>(&r);
     return node.namespace_oid_ == namespace_oid_;
 }
@@ -1369,13 +1475,16 @@ common::hash_t LogicalDropTrigger::Hash() const {
 }
 
 bool LogicalDropTrigger::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::LOGICALDROPTRIGGER)
+    if (r.GetOpType() != OpType::LOGICALDROPTRIGGER) {
         return false;
+    }
     const LogicalDropTrigger &node = *dynamic_cast<const LogicalDropTrigger *>(&r);
-    if (database_oid_ != node.database_oid_)
+    if (database_oid_ != node.database_oid_) {
         return false;
-    if (trigger_oid_ != node.trigger_oid_)
+    }
+    if (trigger_oid_ != node.trigger_oid_) {
         return false;
+    }
     return if_exists_ == node.if_exists_;
 }
 
@@ -1403,13 +1512,16 @@ common::hash_t LogicalDropView::Hash() const {
 }
 
 bool LogicalDropView::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::LOGICALDROPVIEW)
+    if (r.GetOpType() != OpType::LOGICALDROPVIEW) {
         return false;
+    }
     const LogicalDropView &node = *dynamic_cast<const LogicalDropView *>(&r);
-    if (database_oid_ != node.database_oid_)
+    if (database_oid_ != node.database_oid_) {
         return false;
-    if (view_oid_ != node.view_oid_)
+    }
+    if (view_oid_ != node.view_oid_) {
         return false;
+    }
     return if_exists_ == node.if_exists_;
 }
 
@@ -1439,15 +1551,19 @@ common::hash_t LogicalAnalyze::Hash() const {
 }
 
 bool LogicalAnalyze::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::LOGICALANALYZE)
+    if (r.GetOpType() != OpType::LOGICALANALYZE) {
         return false;
+    }
     const LogicalAnalyze &node = *dynamic_cast<const LogicalAnalyze *>(&r);
-    if (database_oid_ != node.database_oid_)
+    if (database_oid_ != node.database_oid_) {
         return false;
-    if (table_oid_ != node.table_oid_)
+    }
+    if (table_oid_ != node.table_oid_) {
         return false;
-    if (columns_ != node.columns_)
+    }
+    if (columns_ != node.columns_) {
         return false;
+    }
     return true;
 }
 
@@ -1469,8 +1585,9 @@ Operator LogicalUnion::Make(bool                                            is_a
 }
 
 bool LogicalUnion::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::LOGICALUNION)
+    if (r.GetOpType() != OpType::LOGICALUNION) {
         return false;
+    }
     const LogicalUnion &node = *dynamic_cast<const LogicalUnion *>(&r);
     return node.right_expr_ == right_expr_ && node.left_expr_ == left_expr_ && node.is_all_ == is_all_;
 }
@@ -1515,15 +1632,18 @@ LogicalCteScan::Make(std::string                                                
 }
 
 bool LogicalCteScan::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::LOGICALCTESCAN)
+    if (r.GetOpType() != OpType::LOGICALCTESCAN) {
         return false;
+    }
     const LogicalCteScan &node = *dynamic_cast<const LogicalCteScan *>(&r);
     bool                  ret = (table_alias_ == node.table_alias_ && cte_type_ == node.cte_type_);
-    if (scan_predicate_.size() != node.scan_predicate_.size())
+    if (scan_predicate_.size() != node.scan_predicate_.size()) {
         return false;
+    }
     for (size_t i = 0; i < scan_predicate_.size(); i++) {
-        if (scan_predicate_[i].GetExpr() != node.scan_predicate_[i].GetExpr())
+        if (scan_predicate_[i].GetExpr() != node.scan_predicate_[i].GetExpr()) {
             return false;
+        }
     }
     return ret;
 }

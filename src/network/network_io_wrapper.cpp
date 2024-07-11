@@ -22,8 +22,9 @@ NetworkIoWrapper::NetworkIoWrapper(const int sock_fd)
 Transition NetworkIoWrapper::FlushAllWrites() {
     for (auto flush_head = out_->FlushHead(); flush_head != nullptr; out_->MarkHeadFlushed()) {
         const auto result = FlushWriteBuffer(flush_head);
-        if (result != Transition::PROCEED)
+        if (result != Transition::PROCEED) {
             return result;
+        }
         flush_head = out_->FlushHead();
     }
     out_->Reset();
@@ -40,12 +41,14 @@ void NetworkIoWrapper::Restart() {
 }
 
 Transition NetworkIoWrapper::FillReadBuffer() {
-    if (!in_->HasMore())
+    if (!in_->HasMore()) {
         in_->Reset();
+    }
     // If the read buffer still has content and the read buffer is full,
     // then the read buffer's contents is moved to the head.
-    if (in_->HasMore() && in_->Full())
+    if (in_->HasMore() && in_->Full()) {
         in_->MoveContentToHead();
+    }
 
     // By default, the next action to take is to continue to read.
     Transition result = Transition::NEED_READ;
@@ -58,8 +61,9 @@ Transition NetworkIoWrapper::FillReadBuffer() {
             result = Transition::PROCEED;
         } else {
             if (bytes_read == 0) {
-                if (result == Transition::PROCEED)
+                if (result == Transition::PROCEED) {
                     return result;
+                }
                 return Transition::TERMINATE;
             }
             switch (errno) {

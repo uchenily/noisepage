@@ -31,8 +31,9 @@ DataTable::~DataTable() {
     common::SharedLatch::ScopedExclusiveLatch latch(&blocks_latch_);
     for (auto block : blocks_) {
         StorageUtil::DeallocateVarlens(block, accessor_);
-        for (col_id_t i : accessor_.GetBlockLayout().Varlens())
+        for (col_id_t i : accessor_.GetBlockLayout().Varlens()) {
             accessor_.GetArrowBlockMetadata(block).GetColumnInfo(accessor_.GetBlockLayout(), i).Deallocate();
+        }
         block_store_.operator->()->Release(block);
     }
 }
@@ -103,8 +104,9 @@ bool DataTable::Update(const common::ManagedPointer<transaction::TransactionCont
         }
 
         // Store before-image before making any changes or grabbing lock
-        for (uint16_t i = 0; i < undo->Delta()->NumColumns(); i++)
+        for (uint16_t i = 0; i < undo->Delta()->NumColumns(); i++) {
             StorageUtil::CopyAttrIntoProjection(accessor_, slot, undo->Delta(), i);
+        }
 
         // Update the next pointer of the new head of the version chain
         undo->Next() = version_ptr;
@@ -253,8 +255,9 @@ bool DataTable::SelectIntoBuffer(const common::ManagedPointer<transaction::Trans
                      "fewer attributes.");
     NOISEPAGE_ASSERT(out_buffer->NumColumns() > 0, "The output buffer should return at least one attribute.");
     // This cannot be visible if it's already deallocated.
-    if (!accessor_.Allocated(slot))
+    if (!accessor_.Allocated(slot)) {
         return false;
+    }
 
     // Copy the current (most recent) tuple into the output buffer. These operations don't need to be atomic,
     // because so long as we set the version ptr before updating in place, the reader will chase the version chain
@@ -330,8 +333,9 @@ bool DataTable::Visible(const TupleSlot slot, const TupleAccessStrategy &accesso
 }
 
 bool DataTable::HasConflict(const transaction::TransactionContext &txn, UndoRecord *const version_ptr) const {
-    if (version_ptr == nullptr)
+    if (version_ptr == nullptr) {
         return false; // Nobody owns this tuple's write lock, no older version visible
+    }
     const transaction::timestamp_t version_timestamp = version_ptr->Timestamp().load();
     const transaction::timestamp_t txn_id = txn.FinishTime();
     const transaction::timestamp_t start_time = txn.StartTime();

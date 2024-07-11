@@ -47,8 +47,9 @@ common::hash_t IndexJoinPlanNode::Hash() const {
 }
 
 bool IndexJoinPlanNode::operator==(const AbstractPlanNode &rhs) const {
-    if (!AbstractJoinPlanNode::operator==(rhs))
+    if (!AbstractJoinPlanNode::operator==(rhs)) {
         return false;
+    }
 
     const auto &other = static_cast<const IndexJoinPlanNode &>(rhs);
     return other.table_oid_ == table_oid_ && other.index_oid_ == index_oid_;
@@ -76,8 +77,9 @@ std::vector<std::unique_ptr<parser::AbstractExpression>> IndexJoinPlanNode::From
 std::vector<catalog::col_oid_t> IndexJoinPlanNode::CollectInputOids() const {
     std::vector<catalog::col_oid_t> result;
     // Scan predicate
-    if (GetJoinPredicate() != nullptr)
+    if (GetJoinPredicate() != nullptr) {
         CollectOids(&result, GetJoinPredicate().Get());
+    }
     // Output expressions
     for (const auto &col : GetOutputSchema()->GetColumns()) {
         CollectOids(&result, col.GetExpr().Get());

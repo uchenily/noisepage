@@ -153,8 +153,9 @@ void BwTreeIndex<KeyType>::ScanKey(const transaction::TransactionContext &txn,
 
     // Perform visibility check on result
     for (const auto &result : results) {
-        if (IsVisible(txn, result))
+        if (IsVisible(txn, result)) {
             value_list->emplace_back(result);
+        }
     }
 
     NOISEPAGE_ASSERT(!(metadata_.GetSchema().Unique()) || (metadata_.GetSchema().Unique() && value_list->size() <= 1),
@@ -179,10 +180,12 @@ void BwTreeIndex<KeyType>::ScanAscending(const transaction::TransactionContext &
 
     // Build search keys
     KeyType index_low_key, index_high_key;
-    if (low_key_exists)
+    if (low_key_exists) {
         index_low_key.SetFromProjectedRow(*low_key, metadata_, num_attrs);
-    if (high_key_exists)
+    }
+    if (high_key_exists) {
         index_high_key.SetFromProjectedRow(*high_key, metadata_, num_attrs);
+    }
 
     // Perform lookup in BwTree
     auto scan_itr = low_key_exists ? bwtree_->Begin(index_low_key) : bwtree_->Begin();
@@ -191,8 +194,9 @@ void BwTreeIndex<KeyType>::ScanAscending(const transaction::TransactionContext &
     while ((limit == 0 || value_list->size() < limit) && !scan_itr.IsEnd()
            && (!high_key_exists || scan_itr->first.PartialLessThan(index_high_key, &metadata_, num_attrs))) {
         // Perform visibility check on result
-        if (IsVisible(txn, scan_itr->second))
+        if (IsVisible(txn, scan_itr->second)) {
             value_list->emplace_back(scan_itr->second);
+        }
         scan_itr++;
     }
 }
@@ -216,13 +220,15 @@ void BwTreeIndex<KeyType>::BwTreeIndex::ScanDescending(const transaction::Transa
     // constant time. In some cases it may be faster to do an ascending scan and then reverse the result vector. It
     // depends on the visibility selectivity and final result set size. We can change the implementation in the future
     // if it proves to be a problem.
-    if (scan_itr.IsEnd() || bwtree_->KeyCmpGreater(scan_itr->first, index_high_key))
+    if (scan_itr.IsEnd() || bwtree_->KeyCmpGreater(scan_itr->first, index_high_key)) {
         scan_itr--;
+    }
 
     while (!scan_itr.IsREnd() && (bwtree_->KeyCmpGreaterEqual(scan_itr->first, index_low_key))) {
         // Perform visibility check on result
-        if (IsVisible(txn, scan_itr->second))
+        if (IsVisible(txn, scan_itr->second)) {
             value_list->emplace_back(scan_itr->second);
+        }
         scan_itr--;
     }
 }
@@ -244,14 +250,16 @@ void BwTreeIndex<KeyType>::ScanLimitDescending(const transaction::TransactionCon
     // Perform lookup in BwTree
     auto scan_itr = bwtree_->Begin(index_high_key);
     // Back up one element if we didn't match the high key, see comment on line 152.
-    if (scan_itr.IsEnd() || bwtree_->KeyCmpGreater(scan_itr->first, index_high_key))
+    if (scan_itr.IsEnd() || bwtree_->KeyCmpGreater(scan_itr->first, index_high_key)) {
         scan_itr--;
+    }
 
     while (value_list->size() < limit && !scan_itr.IsREnd()
            && (bwtree_->KeyCmpGreaterEqual(scan_itr->first, index_low_key))) {
         // Perform visibility check on result
-        if (IsVisible(txn, scan_itr->second))
+        if (IsVisible(txn, scan_itr->second)) {
             value_list->emplace_back(scan_itr->second);
+        }
         scan_itr--;
     }
 }

@@ -47,22 +47,26 @@ common::hash_t AnalyzePlanNode::Hash() const {
 }
 
 bool AnalyzePlanNode::operator==(const AbstractPlanNode &rhs) const {
-    if (!AbstractPlanNode::operator==(rhs))
+    if (!AbstractPlanNode::operator==(rhs)) {
         return false;
+    }
 
     auto &other = dynamic_cast<const AnalyzePlanNode &>(rhs);
 
     // Database OID
-    if (database_oid_ != other.database_oid_)
+    if (database_oid_ != other.database_oid_) {
         return false;
+    }
 
     // Target table OID
-    if (table_oid_ != other.table_oid_)
+    if (table_oid_ != other.table_oid_) {
         return false;
+    }
 
     // Column Oids
-    if (column_oids_ != other.column_oids_)
+    if (column_oids_ != other.column_oids_) {
         return false;
+    }
 
     return true;
 }

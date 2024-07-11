@@ -59,10 +59,12 @@ ProjectedRow *ProjectedRowInitializer::InitializeRow(void *const head) const {
     auto *result = reinterpret_cast<ProjectedRow *>(head);
     result->size_ = size_;
     result->num_cols_ = static_cast<uint16_t>(col_ids_.size());
-    for (uint32_t i = 0; i < col_ids_.size(); i++)
+    for (uint32_t i = 0; i < col_ids_.size(); i++) {
         result->ColumnIds()[i] = col_ids_[i];
-    for (uint32_t i = 0; i < col_ids_.size(); i++)
+    }
+    for (uint32_t i = 0; i < col_ids_.size(); i++) {
         result->AttrValueOffsets()[i] = offsets_[i];
+    }
     result->Bitmap().Clear(result->num_cols_);
     return result;
 }

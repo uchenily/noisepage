@@ -74,8 +74,9 @@ void JoinHashTableVectorProbe::CheckKeyEquality(VectorProjection *input) {
     for (const auto key_index : join_key_indexes_) {
         const Vector *key_vector = input->GetColumn(key_index);
         VectorOps::GatherAndSelectEqual(*key_vector, curr_matches_, key_offset, &key_matches_);
-        if (key_matches_.IsEmpty())
+        if (key_matches_.IsEmpty()) {
             break;
+        }
         key_offset += GetTypeIdSize(key_vector->GetTypeId());
     }
 }

@@ -35,10 +35,11 @@ void BlockCompactor::ProcessCompactionQueue(transaction::DeferredActionManager *
                 // are alive at the same time as us flipping the block status flag to cooling. However, we must manually
                 // ask the GC to enqueue this block, because no access will be observed from the empty compaction
                 // transaction.
-                if (cg.txn_->IsReadOnly())
+                if (cg.txn_->IsReadOnly()) {
                     deferred_action_manager->RegisterDeferredAction([this, block]() {
                         PutInQueue(block);
                     });
+                }
                 txn_manager->Commit(cg.txn_, transaction::TransactionUtil::EmptyCallback, nullptr);
             } else {
                 txn_manager->Abort(cg.txn_);
@@ -46,8 +47,9 @@ void BlockCompactor::ProcessCompactionQueue(transaction::DeferredActionManager *
             break;
         }
         case BlockState::COOLING: {
-            if (!CheckForVersionsAndGaps(block->data_table_->accessor_, block))
+            if (!CheckForVersionsAndGaps(block->data_table_->accessor_, block)) {
                 continue;
+            }
             // This is used to clean up any dangling pointers using a deferred action in GC.
             // We need this piece of memory to live on the heap, so its life time extends to
             // beyond this function call.
@@ -56,8 +58,9 @@ void BlockCompactor::ProcessCompactionQueue(transaction::DeferredActionManager *
             controller.GetBlockState()->store(BlockState::FROZEN);
             // When the old variable length values are no longer visible by running transactions, delete them.
             deferred_action_manager->RegisterDeferredAction([=]() {
-                for (auto *loose_ptr : *loose_ptrs)
+                for (auto *loose_ptr : *loose_ptrs) {
                     delete[] loose_ptr;
+                }
                 delete loose_ptrs;
             });
             break;
@@ -88,9 +91,11 @@ bool BlockCompactor::EliminateGaps(CompactionGroup *cg) {
         // We will loop through each block and figure out if we are safe to proceed with compaction and identify
         // any gaps
         auto *bitmap = accessor.AllocationBitmap(block);
-        for (uint32_t offset = 0; offset < layout.NumSlots(); offset++)
-            if (!bitmap->Test(offset))
+        for (uint32_t offset = 0; offset < layout.NumSlots(); offset++) {
+            if (!bitmap->Test(offset)) {
                 empty_slots.push_back(offset);
+            }
+        }
     }
 
     // Within a group, we can calculate the number of blocks exactly we need to store all the filled tuples (we may
@@ -99,8 +104,9 @@ bool BlockCompactor::EliminateGaps(CompactionGroup *cg) {
     // from". These are not two disjoint sets as we will probably need to shuffle tuples within one block (but only one
     // block within a group needs this)
     std::vector<RawBlock *> all_blocks;
-    for (auto &entry : cg->blocks_to_compact_)
+    for (auto &entry : cg->blocks_to_compact_) {
         all_blocks.push_back(entry.first);
+    }
 
     // Sort all the blocks within a group based on the number of filled slots, in descending order.
     std::sort(all_blocks.begin(), all_blocks.end(), [&](RawBlock *a, RawBlock *b) {
@@ -134,11 +140,13 @@ bool BlockCompactor::EliminateGaps(CompactionGroup *cg) {
             filled.pop_back();
             // when the next empty slot is logically after the next filled slot (which implies we are processing
             // an empty slot that would be empty in a compact block)
-            if (taker == giver && filled_slot.GetOffset() < empty_slot.GetOffset())
+            if (taker == giver && filled_slot.GetOffset() < empty_slot.GetOffset()) {
                 break;
+            }
             // A failed move implies conflict
-            if (!MoveTuple(cg, filled_slot, empty_slot))
+            if (!MoveTuple(cg, filled_slot, empty_slot)) {
                 return false;
+            }
         }
     }
 
@@ -158,8 +166,9 @@ bool BlockCompactor::MoveTuple(CompactionGroup *cg, TupleSlot from, TupleSlot to
 
     // Read out the tuple to copy
 
-    if (!cg->table_->Select(common::ManagedPointer(cg->txn_), from, cg->read_buffer_))
+    if (!cg->table_->Select(common::ManagedPointer(cg->txn_), from, cg->read_buffer_)) {
         return false;
+    }
     // TODO(Tianyu): FIXME
     // This is a relic from the days when the logs interacted directly with the DataTable. Since we changed the log
     // records to only have oids, the Compactor no longer has the relevant information to directly construct
@@ -180,8 +189,9 @@ bool BlockCompactor::MoveTuple(CompactionGroup *cg, TupleSlot from, TupleSlot to
         // We know this to be true because the projection list has all columns
         auto  offset = static_cast<uint16_t>(varlen_col_id.UnderlyingValue() - NUM_RESERVED_COLUMNS);
         auto *entry = reinterpret_cast<VarlenEntry *>(record->Delta()->AccessWithNullCheck(offset));
-        if (entry == nullptr)
+        if (entry == nullptr) {
             continue;
+        }
         if (entry->Size() <= VarlenEntry::InlineThreshold()) {
             *entry = VarlenEntry::CreateInline(entry->Content(), entry->Size());
         } else {
@@ -244,8 +254,9 @@ bool BlockCompactor::CheckForVersionsAndGaps(const TupleAccessStrategy &accessor
     bool ret = block->controller_.GetBlockState()->compare_exchange_strong(state, BlockState::FREEZING);
     // At this point we are guaranteed to complete the transformation process. We can start modifying block
     // header in place.
-    if (ret)
+    if (ret) {
         accessor.GetArrowBlockMetadata(block).NumRecords() = num_records;
+    }
     return ret;
 }
 
@@ -259,9 +270,11 @@ void BlockCompactor::GatherVarlens(std::vector<const byte *> *loose_ptrs, RawBlo
         if (!layout.IsVarlen(col_id)) {
             metadata.NullCount(col_id) = 0;
             // Only need to count null for non-varlens
-            for (uint32_t i = 0; i < metadata.NumRecords(); i++)
-                if (!column_bitmap->Test(i))
+            for (uint32_t i = 0; i < metadata.NumRecords(); i++) {
+                if (!column_bitmap->Test(i)) {
                     metadata.NullCount(col_id)++;
+                }
+            }
             continue;
         }
 
@@ -291,12 +304,13 @@ void BlockCompactor::CopyToArrowVarlen(std::vector<const byte *>   *loose_ptrs,
     // Read through every tuple and update null count and total varlen size
     metadata->NullCount(col_id) = 0;
     for (uint32_t i = 0; i < metadata->NumRecords(); i++) {
-        if (!column_bitmap->Test(i))
+        if (!column_bitmap->Test(i)) {
             // Update null count
             metadata->NullCount(col_id)++;
-        else
+        } else {
             // count the total size of varlens
             varlen_size += values[i].Size();
+        }
     }
 
     // We cannot deallocate the old information yet, because entries in the table may point to values within
@@ -304,23 +318,26 @@ void BlockCompactor::CopyToArrowVarlen(std::vector<const byte *>   *loose_ptrs,
     ArrowVarlenColumn new_col(varlen_size, metadata->NumRecords() + 1);
     for (uint32_t i = 0, acc = 0; i < metadata->NumRecords(); i++) {
         new_col.Offsets()[i] = acc;
-        if (!column_bitmap->Test(i))
+        if (!column_bitmap->Test(i)) {
             continue;
+        }
 
         // Only do a gather operation if the column is varlen
         VarlenEntry &entry = values[i];
         std::memcpy(new_col.Values() + acc, entry.Content(), entry.Size());
 
         // Need to GC
-        if (entry.NeedReclaim())
+        if (entry.NeedReclaim()) {
             loose_ptrs->push_back(entry.Content());
+        }
 
         // Because this change does not change the logical content of the database, and reads of aligned qwords on
         // modern architectures are atomic anyways, this is still safe for possible concurrent readers. The deferred
         // event framework guarantees that readers will not read garbage.
         // TODO(Tianyu): This guarantee is only true when we fix https://github.com/cmu-db/noisepage/issues/402
-        if (entry.Size() > VarlenEntry::InlineThreshold())
+        if (entry.Size() > VarlenEntry::InlineThreshold()) {
             entry = VarlenEntry::Create(new_col.Values() + acc, entry.Size(), false);
+        }
         acc += entry.Size();
     }
     new_col.Offsets()[metadata->NumRecords()] = new_col.ValuesLength();
@@ -345,8 +362,9 @@ void BlockCompactor::BuildDictionary(std::vector<const byte *>   *loose_ptrs,
         }
         auto ret = dictionary.emplace(values[i], 0);
         // If the string has not been seen before, should add it to dictionary when counting total length.
-        if (ret.second)
+        if (ret.second) {
             varlen_size += values[i].Size();
+        }
     }
     ArrowColumnInfo new_col_info;
     new_col_info.Type() = col->Type();
@@ -357,8 +375,9 @@ void BlockCompactor::BuildDictionary(std::vector<const byte *>   *loose_ptrs,
     // c++ map in constant time. Thus we are resorting to primitive means to implement dictionary compression.
     // If anybody feels like it, we can hand-code our dictionary compression entirely or link in somebody's library
     std::vector<VarlenEntry> corpus;
-    for (auto &entry : dictionary)
+    for (auto &entry : dictionary) {
         corpus.push_back(entry.first);
+    }
     std::sort(corpus.begin(), corpus.end(), VarlenContentCompare());
     // Write the dictionary content to Arrow
     for (uint32_t i = 0, acc = 0; i < corpus.size(); i++) {
@@ -373,21 +392,24 @@ void BlockCompactor::BuildDictionary(std::vector<const byte *>   *loose_ptrs,
 
     // Swing all references in the table to point there, and build the encoded column
     for (uint32_t i = 0; i < metadata->NumRecords(); i++) {
-        if (!column_bitmap->Test(i))
+        if (!column_bitmap->Test(i)) {
             continue;
+        }
         // Only do a gather operation if the column is varlen
         VarlenEntry &entry = values[i];
         // Need to GC
-        if (entry.NeedReclaim())
+        if (entry.NeedReclaim()) {
             loose_ptrs->push_back(entry.Content());
+        }
         uint64_t dictionary_code = new_col_info.Indices()[i] = dictionary[entry];
 
         byte *dictionary_word = new_col.Values() + new_col.Offsets()[dictionary_code];
         NOISEPAGE_ASSERT(memcmp(dictionary_word, entry.Content(), entry.Size()) == 0,
                          "varlen entry should be equal to the dictionary word it is encoded as ");
         // Similar to in CopyToArrowVarlen this is safe even when there are concurrent readers
-        if (entry.Size() > VarlenEntry::InlineThreshold())
+        if (entry.Size() > VarlenEntry::InlineThreshold()) {
             entry = VarlenEntry::Create(dictionary_word, entry.Size(), false);
+        }
     }
     *col = std::move(new_col_info);
 }

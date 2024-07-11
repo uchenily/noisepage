@@ -1890,8 +1890,9 @@ void Sema::CheckAtomicCall(ast::CallExpr *call, ast::Builtin builtin) {
     const auto &call_args = call->Arguments();
 
     // Permissive arg check to protect the following argument dereference
-    if (!CheckArgCountAtLeast(call, 1))
+    if (!CheckArgCountAtLeast(call, 1)) {
         return;
+    }
 
     auto operand_type = call_args[0]->GetType()->GetPointeeType();
     if (operand_type == nullptr) {
@@ -1913,8 +1914,9 @@ void Sema::CheckAtomicCall(ast::CallExpr *call, ast::Builtin builtin) {
     switch (builtin) {
     case ast::Builtin::AtomicAnd:
     case ast::Builtin::AtomicOr: {
-        if (!CheckArgCount(call, 2))
+        if (!CheckArgCount(call, 2)) {
             return;
+        }
 
         if (call_args[1]->GetType() != builtin_type) {
             ReportIncorrectCallArg(call, 1, builtin_type);
@@ -1925,8 +1927,9 @@ void Sema::CheckAtomicCall(ast::CallExpr *call, ast::Builtin builtin) {
         break;
     }
     case ast::Builtin::AtomicCompareExchange: {
-        if (!CheckArgCount(call, 3))
+        if (!CheckArgCount(call, 3)) {
             return;
+        }
 
         if (call_args[1]->GetType()->GetPointeeType() != builtin_type) {
             ReportIncorrectCallArg(call, 1, builtin_type->PointerTo());
@@ -2448,18 +2451,21 @@ void Sema::CheckBuiltinIndexIteratorScan(execution::ast::CallExpr *call, ast::Bu
     switch (builtin) {
     case ast::Builtin::IndexIteratorScanKey:
     case ast::Builtin::IndexIteratorScanDescending: {
-        if (!CheckArgCount(call, 1))
+        if (!CheckArgCount(call, 1)) {
             return;
+        }
         break;
     }
     case ast::Builtin::IndexIteratorScanAscending: {
-        if (!CheckArgCount(call, 3))
+        if (!CheckArgCount(call, 3)) {
             return;
+        }
         break;
     }
     case ast::Builtin::IndexIteratorScanLimitDescending: {
-        if (!CheckArgCount(call, 2))
+        if (!CheckArgCount(call, 2)) {
             return;
+        }
         auto uint32_kind = ast::BuiltinType::Uint32;
         // Second argument is an integer
         if (!call->Arguments()[1]->GetType()->IsIntegerType()) {
@@ -4075,8 +4081,9 @@ void Sema::CheckBuiltinCall(ast::CallExpr *call) {
         }
 
         auto builtin_type = GetBuiltinType(ast::BuiltinType::Integer);
-        if (builtin == ast::Builtin::NpRunnersEmitReal)
+        if (builtin == ast::Builtin::NpRunnersEmitReal) {
             builtin_type = GetBuiltinType(ast::BuiltinType::Real);
+        }
         call->SetType(builtin_type);
         break;
     }
@@ -4094,8 +4101,9 @@ void Sema::CheckBuiltinCall(ast::CallExpr *call) {
         }
 
         auto builtin_type = GetBuiltinType(ast::BuiltinType::Integer);
-        if (builtin == ast::Builtin::NpRunnersDummyReal)
+        if (builtin == ast::Builtin::NpRunnersDummyReal) {
             builtin_type = GetBuiltinType(ast::BuiltinType::Real);
+        }
         call->SetType(builtin_type);
         break;
     }

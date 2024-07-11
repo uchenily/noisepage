@@ -20,11 +20,13 @@ common::hash_t DerivedValueExpression::Hash() const {
 }
 
 bool DerivedValueExpression::operator==(const AbstractExpression &rhs) const {
-    if (!AbstractExpression::operator==(rhs))
+    if (!AbstractExpression::operator==(rhs)) {
         return false;
+    }
     auto const &other = dynamic_cast<const DerivedValueExpression &>(rhs);
-    if (GetTupleIdx() != other.GetTupleIdx())
+    if (GetTupleIdx() != other.GetTupleIdx()) {
         return false;
+    }
     return GetValueIdx() == other.GetValueIdx();
 }
 

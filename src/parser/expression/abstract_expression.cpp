@@ -65,23 +65,31 @@ common::hash_t AbstractExpression::Hash() const {
 }
 
 bool AbstractExpression::operator==(const AbstractExpression &rhs) const {
-    if (expression_type_ != rhs.expression_type_)
+    if (expression_type_ != rhs.expression_type_) {
         return false;
+    }
     // Since AliasType has an == function but not a != function, we need to
     // negate the output of the == comparison
-    if (!(alias_ == rhs.alias_))
+    if (!(alias_ == rhs.alias_)) {
         return false;
-    if (expression_name_ != rhs.expression_name_)
+    }
+    if (expression_name_ != rhs.expression_name_) {
         return false;
-    if (depth_ != rhs.depth_)
+    }
+    if (depth_ != rhs.depth_) {
         return false;
-    if (has_subquery_ != rhs.has_subquery_)
+    }
+    if (has_subquery_ != rhs.has_subquery_) {
         return false;
-    if (children_.size() != rhs.children_.size())
+    }
+    if (children_.size() != rhs.children_.size()) {
         return false;
-    for (size_t i = 0; i < children_.size(); i++)
-        if (*(children_[i]) != *(rhs.children_[i]))
+    }
+    for (size_t i = 0; i < children_.size(); i++) {
+        if (*(children_[i]) != *(rhs.children_[i])) {
             return false;
+        }
+    }
     return return_value_type_ == rhs.return_value_type_;
 }
 
@@ -276,8 +284,9 @@ int AbstractExpression::DeriveDepth() {
     if (depth_ < 0) {
         for (auto &child : children_) {
             auto child_depth = child->DeriveDepth();
-            if (child_depth >= 0 && (depth_ == -1 || child_depth < depth_))
+            if (child_depth >= 0 && (depth_ == -1 || child_depth < depth_)) {
                 depth_ = child_depth;
+            }
         }
     }
     return depth_;

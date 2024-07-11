@@ -106,8 +106,9 @@ namespace {
             };
 
             for (uint32_t i = 0; i < Bytecodes::NumOperands(bytecode); i++) {
-                if (i != 0)
+                if (i != 0) {
                     os << "  ";
+                }
                 switch (Bytecodes::GetNthOperandType(bytecode, i)) {
                 case OperandType::None: {
                     break;

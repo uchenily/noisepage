@@ -41,8 +41,9 @@ bool PropertySet::HasProperty(const Property &r_property) const {
 
 bool PropertySet::operator>=(const PropertySet &r) const {
     for (auto r_property : r.properties_) {
-        if (!HasProperty(*r_property))
+        if (!HasProperty(*r_property)) {
             return false;
+        }
     }
     return true;
 }

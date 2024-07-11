@@ -38,41 +38,51 @@ common::hash_t UpdatePlanNode::Hash() const {
 }
 
 bool UpdatePlanNode::operator==(const AbstractPlanNode &rhs) const {
-    if (!AbstractPlanNode::operator==(rhs))
+    if (!AbstractPlanNode::operator==(rhs)) {
         return false;
+    }
 
     auto &other = static_cast<const UpdatePlanNode &>(rhs);
 
     // Database OID
-    if (database_oid_ != other.database_oid_)
+    if (database_oid_ != other.database_oid_) {
         return false;
-
-    // Table OID
-    if (table_oid_ != other.table_oid_)
-        return false;
-
-    // Update primary key
-    if (update_primary_key_ != other.update_primary_key_)
-        return false;
-
-    if (sets_.size() != other.sets_.size())
-        return false;
-    for (size_t idx = 0; idx < sets_.size(); idx++) {
-        if (sets_[idx].first != other.sets_[idx].first)
-            return false;
-
-        if ((sets_[idx].second == nullptr && other.sets_[idx].second != nullptr)
-            || (sets_[idx].second != nullptr && other.sets_[idx].second == nullptr))
-            return false;
-        if (sets_[idx].second != nullptr && *sets_[idx].second != *other.sets_[idx].second)
-            return false;
     }
 
-    if (index_oids_.size() != other.index_oids_.size())
+    // Table OID
+    if (table_oid_ != other.table_oid_) {
         return false;
-    for (int i = 0; i < static_cast<int>(index_oids_.size()); i++) {
-        if (index_oids_[i] != other.index_oids_[i])
+    }
+
+    // Update primary key
+    if (update_primary_key_ != other.update_primary_key_) {
+        return false;
+    }
+
+    if (sets_.size() != other.sets_.size()) {
+        return false;
+    }
+    for (size_t idx = 0; idx < sets_.size(); idx++) {
+        if (sets_[idx].first != other.sets_[idx].first) {
             return false;
+        }
+
+        if ((sets_[idx].second == nullptr && other.sets_[idx].second != nullptr)
+            || (sets_[idx].second != nullptr && other.sets_[idx].second == nullptr)) {
+            return false;
+        }
+        if (sets_[idx].second != nullptr && *sets_[idx].second != *other.sets_[idx].second) {
+            return false;
+        }
+    }
+
+    if (index_oids_.size() != other.index_oids_.size()) {
+        return false;
+    }
+    for (int i = 0; i < static_cast<int>(index_oids_.size()); i++) {
+        if (index_oids_[i] != other.index_oids_[i]) {
+            return false;
+        }
     }
     return true;
 }

@@ -43,8 +43,9 @@ common::hash_t CreateIndexPlanNode::Hash() const {
     hash = common::HashUtil::CombineHashes(hash, common::HashUtil::Hash(table_oid_));
 
     // Hash index schema
-    if (schema_ != nullptr)
+    if (schema_ != nullptr) {
         hash = common::HashUtil::CombineHashes(hash, schema_->Hash());
+    }
 
     // Hash index_name
     hash = common::HashUtil::CombineHashes(hash, common::HashUtil::Hash(index_name_));
@@ -53,32 +54,39 @@ common::hash_t CreateIndexPlanNode::Hash() const {
 }
 
 bool CreateIndexPlanNode::operator==(const AbstractPlanNode &rhs) const {
-    if (!AbstractPlanNode::operator==(rhs))
+    if (!AbstractPlanNode::operator==(rhs)) {
         return false;
+    }
 
     auto &other = dynamic_cast<const CreateIndexPlanNode &>(rhs);
 
     // Namespace OID
-    if (namespace_oid_ != other.namespace_oid_)
+    if (namespace_oid_ != other.namespace_oid_) {
         return false;
+    }
 
     // Table OID
-    if (table_oid_ != other.table_oid_)
+    if (table_oid_ != other.table_oid_) {
         return false;
+    }
 
     // Index schema
     if (schema_ != nullptr) {
-        if (other.schema_ == nullptr)
+        if (other.schema_ == nullptr) {
             return false;
-        if (*schema_ != *other.schema_)
+        }
+        if (*schema_ != *other.schema_) {
             return false;
+        }
     }
-    if (schema_ == nullptr && other.schema_ != nullptr)
+    if (schema_ == nullptr && other.schema_ != nullptr) {
         return false;
+    }
 
     // Index name
-    if (index_name_ != other.index_name_)
+    if (index_name_ != other.index_name_) {
         return false;
+    }
 
     return true;
 }

@@ -15,11 +15,12 @@ void PostgresPacketWriter::WriteReadyForQuery(NetworkTransactionStateType txn_st
 void PostgresPacketWriter::WriteStartupResponse() {
     BeginPacket(NetworkMessageType::PG_AUTHENTICATION_REQUEST).AppendValue<int32_t>(0).EndPacket();
 
-    for (auto &entry : PG_PARAMETER_STATUS_MAP)
+    for (auto &entry : PG_PARAMETER_STATUS_MAP) {
         BeginPacket(NetworkMessageType::PG_PARAMETER_STATUS)
             .AppendString(entry.first, true)
             .AppendString(entry.second, true)
             .EndPacket();
+    }
     WriteReadyForQuery(NetworkTransactionStateType::IDLE);
 }
 
@@ -28,10 +29,11 @@ void PostgresPacketWriter::WriteSimpleQuery(const std::string &query) {
 }
 
 void PostgresPacketWriter::WriteError(const common::ErrorData &error) {
-    if (error.GetSeverity() <= common::ErrorSeverity::PANIC)
+    if (error.GetSeverity() <= common::ErrorSeverity::PANIC) {
         BeginPacket(NetworkMessageType::PG_ERROR_RESPONSE);
-    else
+    } else {
         BeginPacket(NetworkMessageType::PG_NOTICE_RESPONSE);
+    }
 
     AppendRawValue(common::ErrorField::HUMAN_READABLE_ERROR).AppendString(error.GetMessage(), true);
     AppendRawValue(common::ErrorField::CODE).AppendStringView(common::ErrorCodeToString(error.GetCode()), true);
@@ -55,8 +57,9 @@ void PostgresPacketWriter::WriteParameterDescription(const std::vector<execution
     BeginPacket(NetworkMessageType::PG_PARAMETER_DESCRIPTION);
     AppendValue<int16_t>(static_cast<int16_t>(param_types.size()));
 
-    for (auto &type : param_types)
+    for (auto &type : param_types) {
         AppendValue<int32_t>(static_cast<int32_t>(PostgresProtocolUtil::InternalValueTypeToPostgresValueType(type)));
+    }
 
     EndPacket();
 }
@@ -95,10 +98,11 @@ void PostgresPacketWriter::WriteRowDescription(const std::vector<planner::Output
                                : columns[i].GetExpr()->GetAlias().GetName();
         // If a column has no name, then Postgres will return "?column?" as a column name.
 
-        if (name.empty())
+        if (name.empty()) {
             AppendStringView("?column?", true);
-        else
+        } else {
             AppendString(name, true);
+        }
         AppendValue<int32_t>(
             0) // FIXME(Matt): We need this info in OutputSchema. Should be table oid (if it's a column from a table), 0
                // otherwise.

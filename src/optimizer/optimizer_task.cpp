@@ -36,8 +36,9 @@ void OptimizerTask::ConstructValidRules(GroupExpression              *group_expr
         }
 
         auto promise = rule->Promise(group_expr);
-        if (promise != RulePromise::NO_PROMISE)
+        if (promise != RulePromise::NO_PROMISE) {
             valid_rules->emplace_back(rule, promise);
+        }
     }
 }
 
@@ -58,9 +59,10 @@ RuleSet &OptimizerTask::GetRuleSet() const {
 //===--------------------------------------------------------------------===//
 void OptimizeGroup::Execute() {
     OPTIMIZER_LOG_TRACE("OptimizeGroup::Execute() group " + std::to_string(group_->GetID().UnderlyingValue()));
-    if (group_->GetCostLB() > context_->GetCostUpperBound() ||                   // Cost LB > Cost UB
-        group_->GetBestExpression(context_->GetRequiredProperties()) != nullptr) // Has optimized given the context
+    if (group_->GetCostLB() > context_->GetCostUpperBound() ||                     // Cost LB > Cost UB
+        group_->GetBestExpression(context_->GetRequiredProperties()) != nullptr) { // Has optimized given the context
         return;
+    }
 
     // Push explore task first for logical expressions if the group has not been explored
     if (!group_->HasExplored()) {
@@ -116,8 +118,9 @@ void OptimizeExpression::Execute() {
 // ExploreGroup
 //===--------------------------------------------------------------------===//
 void ExploreGroup::Execute() {
-    if (group_->HasExplored())
+    if (group_->HasExplored()) {
         return;
+    }
     OPTIMIZER_LOG_TRACE("ExploreGroup::Execute() ");
 
     for (auto &logical_expr : group_->GetLogicalExpressions()) {
@@ -163,8 +166,9 @@ void ExploreExpression::Execute() {
 //===--------------------------------------------------------------------===//
 void ApplyRule::Execute() {
     OPTIMIZER_LOG_TRACE("ApplyRule::Execute() for rule: {0}", rule_->GetRuleIdx());
-    if (group_expr_->HasRuleExplored(rule_))
+    if (group_expr_->HasRuleExplored(rule_)) {
         return;
+    }
 
     GroupExprBindingIterator iterator(GetMemo(),
                                       group_expr_,
@@ -246,8 +250,9 @@ void OptimizeExpressionCostWithEnforcedProperty::Execute() {
         cur_total_cost_ = 0;
 
         // Pruning
-        if (cur_total_cost_ > context_->GetCostUpperBound())
+        if (cur_total_cost_ > context_->GetCostUpperBound()) {
             return;
+        }
 
         // Derive output and input properties
         ChildPropertyDeriver prop_deriver;
@@ -290,8 +295,9 @@ void OptimizeExpressionCostWithEnforcedProperty::Execute() {
             auto child_best_expr = child_group->GetBestExpression(i_prop);
             if (child_best_expr != nullptr) { // Directly get back the best expr if the child group is optimized
                 cur_total_cost_ += child_best_expr->GetCost(i_prop);
-                if (cur_total_cost_ > context_->GetCostUpperBound())
+                if (cur_total_cost_ > context_->GetCostUpperBound()) {
                     break;
+                }
             } else if (prev_child_idx_ != cur_child_idx_) { // We haven't optimized child group
                 prev_child_idx_ = cur_child_idx_;
                 PushTask(new OptimizeExpressionCostWithEnforcedProperty(this));

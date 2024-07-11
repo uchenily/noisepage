@@ -38,8 +38,9 @@ TreeNode::TreeNode(common::ManagedPointer<TreeNode> parent,
     , number_of_visits_{1}
     , memory_(memory)
     , action_state_(std::move(action_state)) {
-    if (parent != nullptr)
+    if (parent != nullptr) {
         parent->is_leaf_ = false;
+    }
     cost_ = ancestor_cost_ + later_segments_cost;
     SELFDRIVING_LOG_INFO(
         "Creating Tree Node: Depth {} Action Start Segment Index {} Action {} Cost {} Current_Segment_Cost {} "
@@ -62,8 +63,9 @@ common::ManagedPointer<TreeNode> TreeNode::BestSubtree() {
     NOISEPAGE_ASSERT(!children_.empty(), "Trying to return best action for unexpanded nodes");
     auto best_child = common::ManagedPointer(children_[0]);
     for (auto &child : children_) {
-        if (child->cost_ < best_child->cost_)
+        if (child->cost_ < best_child->cost_) {
             best_child = common::ManagedPointer(child);
+        }
         SELFDRIVING_LOG_INFO("Finding best action: Depth {} Action {} Child {} Cost {}",
                              depth_,
                              current_action_,
@@ -115,8 +117,9 @@ void TreeNode::UpdateCostAndVisits(uint64_t num_expansion, double leaf_cost, dou
 common::ManagedPointer<TreeNode> TreeNode::SampleChild() {
     // compute max of children's cost
     double highest = 0;
-    for (auto &child : children_)
+    for (auto &child : children_) {
         highest = std::max(child->cost_, highest);
+    }
 
     // sample based on cost and num of visits of children
     std::vector<double> children_weights;
@@ -191,8 +194,9 @@ void TreeNode::ChildrenRollout(
     for (const auto &action_id : candidate_actions) {
         // expand each action not yet applied
         auto const &action_ptr = action_map.at(action_id);
-        if (!action_ptr->IsValid() || action_ptr->GetSQLCommand() == "set compiled_query_execution = 'true';")
+        if (!action_ptr->IsValid() || action_ptr->GetSQLCommand() == "set compiled_query_execution = 'true';") {
             continue;
+        }
 
         // Update the action state assuming this action is applied
         action_ptr->ModifyActionState(&new_action_state);
@@ -207,8 +211,9 @@ void TreeNode::ChildrenRollout(
                                                                   new_action_state,
                                                                   segment_index,
                                                                   action_map);
-            if (memory > memory_constraint)
+            if (memory > memory_constraint) {
                 satisfy_memory_constraint = false;
+            }
         }
         // For bookkeeping purpose
         size_t action_plan_end_memory_consumption
@@ -286,10 +291,11 @@ void TreeNode::ChildrenRollout(
                                                                 new_action_state,
                                                                 action_plan_end_index_,
                                                                 action_map);
-                    if (action_plan_end_memory_consumption > memory_constraint)
+                    if (action_plan_end_memory_consumption > memory_constraint) {
                         satisfy_memory_constraint = false;
-                    else
+                    } else {
                         child_segment_cost = computed_cost;
+                    }
                     action_apply_cost_map->emplace(
                         std::make_pair(key_pair, std::make_pair(child_segment_cost, action_plan_end_index_)));
                 }
@@ -307,15 +313,16 @@ void TreeNode::ChildrenRollout(
                         later_segments_cost);
                 } else {
                     // Compute cost and add to the cache
-                    if (action_plan_end_index_ == tree_end_segment_index)
+                    if (action_plan_end_index_ == tree_end_segment_index) {
                         later_segments_cost = 0;
-                    else
+                    } else {
                         later_segments_cost = PilotUtil::ComputeCost(planning_context,
                                                                      forecast,
                                                                      action_plan_end_index_ + 1,
                                                                      tree_end_segment_index,
                                                                      std::nullopt,
                                                                      std::nullopt);
+                    }
                     action_state_cost_map->emplace(std::make_pair(new_action_state, later_segments_cost));
                 }
             }
@@ -352,13 +359,15 @@ double TreeNode::ComputeCostWithAction(PlanningContext                         *
     // How many segments does it take for this action to finish
     uint64_t action_segments = 0;
     double   estimated_elapsed = action->GetEstimatedElapsedUs();
-    if (estimated_elapsed > 1e-6)
+    if (estimated_elapsed > 1e-6) {
         action_segments = static_cast<uint64_t>(estimated_elapsed) / forecast->GetForecastInterval() + 1;
+    }
     // Cannot exceed tree_end_segment_index
     action_segments = std::min(action_segments, tree_end_segment_index - action_start_segment_index_ + 1);
     uint64_t action_end_segment = action_start_segment_index_ + action_segments - 1;
-    if (action_end_segment > action_plan_end_index_)
+    if (action_end_segment > action_plan_end_index_) {
         action_plan_end_index_ = action_end_segment;
+    }
     // Save the initial value
     uint64_t initial_action_segments = action_segments;
     double   cost = PilotUtil::ComputeCost(planning_context,
@@ -372,8 +381,9 @@ double TreeNode::ComputeCostWithAction(PlanningContext                         *
     if (action_segments > initial_action_segments) {
         // Update the action_plan_end_index_ again
         action_end_segment = action_start_segment_index_ + action_segments - 1;
-        if (action_end_segment > action_plan_end_index_)
+        if (action_end_segment > action_plan_end_index_) {
             action_plan_end_index_ = action_end_segment;
+        }
         cost = PilotUtil::ComputeCost(planning_context,
                                       forecast,
                                       action_start_segment_index_,

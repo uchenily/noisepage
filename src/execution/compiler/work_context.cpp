@@ -24,8 +24,9 @@ ast::Expr *WorkContext::DeriveValue(const parser::AbstractExpression &expr, cons
         return nullptr;
     }
     auto result = translator->DeriveValue(this, provider);
-    if (cache_enabled_)
+    if (cache_enabled_) {
         cache_[CacheKey_t{&expr, provider}] = result;
+    }
     return result;
 }
 

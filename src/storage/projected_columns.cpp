@@ -13,8 +13,9 @@ uint32_t ProjectedColumns::AttrSizeForColumn(const uint16_t projection_col_index
     NOISEPAGE_ASSERT(projection_col_index < num_cols_, "Cannot get size for out-of-bounds column");
     uint8_t shift;
     for (shift = 0; shift < NUM_ATTR_BOUNDARIES; shift++) {
-        if (projection_col_index < attr_ends_[shift])
+        if (projection_col_index < attr_ends_[shift]) {
             break;
+        }
     }
     NOISEPAGE_ASSERT(shift <= NUM_ATTR_BOUNDARIES, "Out-of-bounds attribute size");
     NOISEPAGE_ASSERT(shift >= 0, "Out-of-bounds attribute size");
@@ -49,8 +50,9 @@ ProjectedColumnsInitializer::ProjectedColumnsInitializer(const BlockLayout    &l
     size_ += static_cast<uint32_t>(sizeof(TupleSlot) * max_tuples_);
 
     int attr_size_index = 0;
-    for (auto &attr_end : attr_ends_)
+    for (auto &attr_end : attr_ends_) {
         attr_end = 0;
+    }
 
     for (uint32_t i = 0; i < col_ids_.size(); i++) {
         NOISEPAGE_ASSERT(i < (1 << 15), "Out-of-bounds index");
@@ -61,13 +63,15 @@ ProjectedColumnsInitializer::ProjectedColumnsInitializer(const BlockLayout    &l
         NOISEPAGE_ASSERT(attr_size <= (16 >> attr_size_index), "Out-of-order columns");
         NOISEPAGE_ASSERT(attr_size <= 16 && attr_size > 0, "Unexpected attribute size");
         while (attr_size < (16 >> attr_size_index)) {
-            if (attr_size_index < (NUM_ATTR_BOUNDARIES - 1))
+            if (attr_size_index < (NUM_ATTR_BOUNDARIES - 1)) {
                 attr_ends_[attr_size_index + 1] = attr_ends_[attr_size_index];
+            }
             attr_size_index++;
         }
         NOISEPAGE_ASSERT(attr_size == (16 >> attr_size_index), "Non-power of two attribute size");
-        if (attr_size_index < NUM_ATTR_BOUNDARIES)
+        if (attr_size_index < NUM_ATTR_BOUNDARIES) {
             attr_ends_[attr_size_index]++;
+        }
         NOISEPAGE_ASSERT(attr_size_index == NUM_ATTR_BOUNDARIES || attr_ends_[attr_size_index] == i + 1,
                          "Inconsistent state on attribute bounds");
 
@@ -87,13 +91,16 @@ ProjectedColumns *ProjectedColumnsInitializer::Initialize(void *const head) cons
     result->size_ = size_;
     result->max_tuples_ = max_tuples_;
     result->num_tuples_ = 0;
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < 4; i++) {
         result->attr_ends_[i] = attr_ends_[i];
+    }
     result->num_cols_ = static_cast<uint16_t>(col_ids_.size());
-    for (uint32_t i = 0; i < col_ids_.size(); i++)
+    for (uint32_t i = 0; i < col_ids_.size(); i++) {
         result->ColumnIds()[i] = col_ids_[i];
-    for (uint32_t i = 0; i < col_ids_.size(); i++)
+    }
+    for (uint32_t i = 0; i < col_ids_.size(); i++) {
         result->AttrValueOffsets()[i] = offsets_[i];
+    }
     // No need to initialize the rest since we made it clear 0 tuples currently are in the buffer
     return result;
 }

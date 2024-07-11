@@ -169,8 +169,9 @@ std::vector<catalog::col_oid_t> PlanGenerator::GenerateColumnsForScan(const pars
 
 void PlanGenerator::GenerateColumnsFromExpression(std::unordered_set<catalog::col_oid_t> *oids,
                                                   const parser::AbstractExpression       *expr) {
-    if (expr == nullptr)
+    if (expr == nullptr) {
         return;
+    }
     if (expr->GetExpressionType() == parser::ExpressionType::COLUMN_VALUE) {
         auto cve = static_cast<const parser::ColumnValueExpression *>(expr);
         oids->emplace(cve->GetColumnOid());
@@ -928,8 +929,9 @@ void PlanGenerator::Visit(const Update *op) {
     for (auto &update : updates) {
         auto col = tbl_schema.GetColumn(update->GetColumnName());
         auto col_id = col.Oid();
-        if (update_col_offsets.find(col_id) != update_col_offsets.end())
+        if (update_col_offsets.find(col_id) != update_col_offsets.end()) {
             throw SYNTAX_EXCEPTION("Multiple assignments to same column");
+        }
 
         // We need to EvaluateExpression since column value expressions in the update
         // clause should refer to column values coming from the child.

@@ -87,8 +87,9 @@ struct StructTypeKeyInfo {
 
     // NOLINTNEXTLINE (LLVM DenseMap expects these names)
     static bool isEqual(const KeyTy &lhs, const StructType *rhs) {
-        if (rhs == getEmptyKey() || rhs == getTombstoneKey())
+        if (rhs == getEmptyKey() || rhs == getTombstoneKey()) {
             return false;
+        }
         return lhs == KeyTy(rhs);
     }
 
@@ -149,8 +150,9 @@ struct FunctionTypeKeyInfo {
 
     // NOLINTNEXTLINE
     static bool isEqual(const KeyTy &lhs, const FunctionType *rhs) {
-        if (rhs == getEmptyKey() || rhs == getTombstoneKey())
+        if (rhs == getEmptyKey() || rhs == getTombstoneKey()) {
             return false;
+        }
         return lhs == KeyTy(rhs);
     }
 

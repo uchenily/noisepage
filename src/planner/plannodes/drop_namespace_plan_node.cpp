@@ -31,8 +31,9 @@ common::hash_t DropNamespacePlanNode::Hash() const {
 }
 
 bool DropNamespacePlanNode::operator==(const AbstractPlanNode &rhs) const {
-    if (!AbstractPlanNode::operator==(rhs))
+    if (!AbstractPlanNode::operator==(rhs)) {
         return false;
+    }
 
     auto &other = dynamic_cast<const DropNamespacePlanNode &>(rhs);
 

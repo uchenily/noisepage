@@ -331,10 +331,11 @@ void RewritePushFilterThroughAggregation::Transform(common::ManagedPointer<Abstr
     std::vector<common::ManagedPointer<parser::AbstractExpression>> cols = aggregation_op->GetColumns();
 
     std::vector<std::unique_ptr<AbstractOptimizerNode>> c;
-    if (pushdown != nullptr)
+    if (pushdown != nullptr) {
         c.emplace_back(std::move(pushdown));
-    else
+    } else {
         c.emplace_back(std::move(leaf));
+    }
 
     auto output = std::make_unique<OperatorNode>(
         LogicalAggregateAndGroupBy::Make(std::move(cols), std::move(embedded_predicates))

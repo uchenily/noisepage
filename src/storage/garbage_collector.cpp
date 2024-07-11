@@ -37,8 +37,9 @@ std::pair<uint32_t, uint32_t> GarbageCollector::PerformGarbageCollection() {
         = common::thread_context.metrics_store_ != nullptr
           && common::thread_context.metrics_store_->ComponentToRecord(metrics::MetricsComponent::GARBAGECOLLECTION);
 
-    if (observer_ != nullptr)
+    if (observer_ != nullptr) {
         observer_->ObserveGCInvocation();
+    }
     timestamp_manager_->CheckOutTimestamp();
     const transaction::timestamp_t oldest_txn = timestamp_manager_->OldestTransactionStartTime();
     uint32_t                       txns_deallocated = ProcessDeallocateQueue(oldest_txn);
@@ -126,16 +127,18 @@ std::tuple<uint32_t, uint32_t, uint32_t> GarbageCollector::ProcessUnlinkQueue(tr
                 DataTable *&table = undo_record.Table();
                 // Each version chain needs to be traversed and truncated at most once every GC period. Check
                 // if we have already visited this tuple slot; if not, proceed to prune the version chain.
-                if (table != nullptr && visited_slots.insert(undo_record.Slot()).second)
+                if (table != nullptr && visited_slots.insert(undo_record.Slot()).second) {
                     TruncateVersionChain(table, undo_record.Slot(), oldest_txn);
+                }
                 // Regardless of the version chain we will need to reclaim deleted slots and any dangling pointers to
                 // varlens, unless the transaction is aborted, and the record holds a version that is still visible.
                 if (!txn->Aborted()) {
                     ReclaimBufferIfVarlen(txn, &undo_record);
                     ReclaimSlotIfDeleted(&undo_record);
                 }
-                if (observer_ != nullptr)
+                if (observer_ != nullptr) {
                     observer_->ObserveWrite(undo_record.Slot().GetBlock());
+                }
                 buffer_processed++;
             }
             txns_to_deallocate_.push_front(txn);
@@ -166,17 +169,19 @@ void GarbageCollector::TruncateVersionChain(DataTable *const               table
     UndoRecord *const          version_ptr = table->AtomicallyReadVersionPtr(slot, accessor);
     // This is a legitimate case where we truncated the version chain but had to restart because the previous head
     // was aborted.
-    if (version_ptr == nullptr)
+    if (version_ptr == nullptr) {
         return;
+    }
 
     // We need to special case the head of the version chain because contention with running transactions can happen
     // here. Instead of a blind update we will need to CAS and prune the entire version chain if the head of the version
     // chain can be GCed.
     if (transaction::TransactionUtil::NewerThan(oldest, version_ptr->Timestamp().load())) {
-        if (!table->CompareAndSwapVersionPtr(slot, accessor, version_ptr, nullptr))
+        if (!table->CompareAndSwapVersionPtr(slot, accessor, version_ptr, nullptr)) {
             // Keep retrying while there are conflicts, since we only invoke truncate once per GC period for every
             // version chain.
             TruncateVersionChain(table, slot, oldest);
+        }
         return;
     }
 
@@ -189,10 +194,12 @@ void GarbageCollector::TruncateVersionChain(DataTable *const               table
         next = curr->Next();
         // This is a legitimate case where we truncated the version chain but had to restart because the previous head
         // was aborted.
-        if (next == nullptr)
+        if (next == nullptr) {
             return;
-        if (transaction::TransactionUtil::NewerThan(oldest, next->Timestamp().load()))
+        }
+        if (transaction::TransactionUtil::NewerThan(oldest, next->Timestamp().load())) {
             break;
+        }
         curr = next;
     }
     // The rest of the version chain must also be invisible to any running transactions since our version
@@ -201,13 +208,15 @@ void GarbageCollector::TruncateVersionChain(DataTable *const               table
 
     // If the head of the version chain was not committed, it could have been aborted and requires a retry.
     if (curr == version_ptr && !transaction::TransactionUtil::Committed(version_ptr->Timestamp().load())
-        && table->AtomicallyReadVersionPtr(slot, accessor) != version_ptr)
+        && table->AtomicallyReadVersionPtr(slot, accessor) != version_ptr) {
         TruncateVersionChain(table, slot, oldest);
+    }
 }
 
 void GarbageCollector::ReclaimSlotIfDeleted(UndoRecord *const undo_record) const {
-    if (undo_record->Type() == DeltaRecordType::DELETE)
+    if (undo_record->Type() == DeltaRecordType::DELETE) {
         undo_record->Table()->accessor_.Deallocate(undo_record->Slot());
+    }
 }
 
 void GarbageCollector::ReclaimBufferIfVarlen(transaction::TransactionContext *const txn,
@@ -225,8 +234,9 @@ void GarbageCollector::ReclaimBufferIfVarlen(transaction::TransactionContext *co
             if (layout.IsVarlen(col_id)) {
                 auto *varlen
                     = reinterpret_cast<VarlenEntry *>(accessor.AccessWithNullCheck(undo_record->Slot(), col_id));
-                if (varlen != nullptr && varlen->NeedReclaim())
+                if (varlen != nullptr && varlen->NeedReclaim()) {
                     txn->loose_ptrs_.push_back(varlen->Content());
+                }
             }
         }
         break;
@@ -236,8 +246,9 @@ void GarbageCollector::ReclaimBufferIfVarlen(transaction::TransactionContext *co
             col_id_t col_id = undo_record->Delta()->ColumnIds()[i];
             if (layout.IsVarlen(col_id)) {
                 auto *varlen = reinterpret_cast<VarlenEntry *>(undo_record->Delta()->AccessWithNullCheck(i));
-                if (varlen != nullptr && varlen->NeedReclaim())
+                if (varlen != nullptr && varlen->NeedReclaim()) {
                     txn->loose_ptrs_.push_back(varlen->Content());
+                }
             }
         }
         break;
@@ -262,8 +273,9 @@ void GarbageCollector::UnregisterIndexForGC(const common::ManagedPointer<index::
 
 void GarbageCollector::ProcessIndexes() {
     common::SharedLatch::ScopedSharedLatch guard(&indexes_latch_);
-    for (const auto &index : indexes_)
+    for (const auto &index : indexes_) {
         index->PerformGarbageCollection();
+    }
 }
 
 } // namespace noisepage::storage

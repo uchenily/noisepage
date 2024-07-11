@@ -54,26 +54,31 @@ common::hash_t DropTriggerPlanNode::Hash() const {
 }
 
 bool DropTriggerPlanNode::operator==(const AbstractPlanNode &rhs) const {
-    if (!AbstractPlanNode::operator==(rhs))
+    if (!AbstractPlanNode::operator==(rhs)) {
         return false;
+    }
 
     auto &other = dynamic_cast<const DropTriggerPlanNode &>(rhs);
 
     // Database OID
-    if (database_oid_ != other.database_oid_)
+    if (database_oid_ != other.database_oid_) {
         return false;
+    }
 
     // Namespace OID
-    if (namespace_oid_ != other.namespace_oid_)
+    if (namespace_oid_ != other.namespace_oid_) {
         return false;
+    }
 
     // Trigger OID
-    if (GetTriggerOid() != other.GetTriggerOid())
+    if (GetTriggerOid() != other.GetTriggerOid()) {
         return false;
+    }
 
     // If exists
-    if (IsIfExists() != other.IsIfExists())
+    if (IsIfExists() != other.IsIfExists()) {
         return false;
+    }
 
     return true;
 }

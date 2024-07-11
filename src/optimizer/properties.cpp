@@ -16,8 +16,9 @@ namespace noisepage::optimizer {
  */
 bool PropertySort::operator>=(const Property &r) const {
     // check the type
-    if (r.Type() != PropertyType::SORT)
+    if (r.Type() != PropertyType::SORT) {
         return false;
+    }
     const PropertySort &r_sort = *reinterpret_cast<const PropertySort *>(&r);
 
     // All the sorting orders in r must be satisfied

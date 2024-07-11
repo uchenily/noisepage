@@ -174,8 +174,9 @@ ConstantValueExpression::ConstantValueExpression(ConstantValueExpression &&other
 
 common::hash_t ConstantValueExpression::Hash() const {
     const auto hash = common::HashUtil::CombineHashes(AbstractExpression::Hash(), common::HashUtil::Hash(IsNull()));
-    if (IsNull())
+    if (IsNull()) {
         return hash;
+    }
 
     switch (GetReturnValueType()) {
     case execution::sql::SqlTypeId::Boolean: {
@@ -207,14 +208,17 @@ common::hash_t ConstantValueExpression::Hash() const {
 }
 
 bool ConstantValueExpression::operator==(const AbstractExpression &other) const {
-    if (!AbstractExpression::operator==(other))
+    if (!AbstractExpression::operator==(other)) {
         return false;
+    }
     const auto &other_cve = dynamic_cast<const ConstantValueExpression &>(other);
 
-    if (IsNull() != other_cve.IsNull())
+    if (IsNull() != other_cve.IsNull()) {
         return false;
-    if (IsNull() && other_cve.IsNull())
+    }
+    if (IsNull() && other_cve.IsNull()) {
         return true;
+    }
 
     switch (other.GetReturnValueType()) {
     case execution::sql::SqlTypeId::Boolean: {
@@ -274,8 +278,9 @@ std::string ConstantValueExpression::ToString() const {
 }
 
 ConstantValueExpression ConstantValueExpression::FromString(const std::string &val, execution::sql::SqlTypeId type_id) {
-    if (val.empty())
+    if (val.empty()) {
         return ConstantValueExpression(type_id);
+    }
     switch (type_id) {
     case execution::sql::SqlTypeId::Boolean: {
         return ConstantValueExpression(type_id, execution::sql::BoolVal(std::stoi(val) != 0));

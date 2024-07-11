@@ -48,24 +48,29 @@ common::hash_t DeletePlanNode::Hash() const {
 }
 
 bool DeletePlanNode::operator==(const AbstractPlanNode &rhs) const {
-    if (!AbstractPlanNode::operator==(rhs))
+    if (!AbstractPlanNode::operator==(rhs)) {
         return false;
+    }
 
     auto &other = dynamic_cast<const DeletePlanNode &>(rhs);
 
     // Database OID
-    if (database_oid_ != other.database_oid_)
+    if (database_oid_ != other.database_oid_) {
         return false;
+    }
 
     // Table OID
-    if (table_oid_ != other.table_oid_)
+    if (table_oid_ != other.table_oid_) {
         return false;
+    }
 
-    if (index_oids_.size() != other.index_oids_.size())
+    if (index_oids_.size() != other.index_oids_.size()) {
         return false;
+    }
     for (int i = 0; i < static_cast<int>(index_oids_.size()); i++) {
-        if (index_oids_[i] != other.index_oids_[i])
+        if (index_oids_[i] != other.index_oids_[i]) {
             return false;
+        }
     }
 
     return true;

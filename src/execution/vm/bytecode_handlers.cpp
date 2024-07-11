@@ -457,10 +457,11 @@ void OpExecOUFeatureVectorInitialize(noisepage::execution::exec::ExecutionContex
                                      noisepage::selfdriving::ExecOUFeatureVector *const  ouvec,
                                      noisepage::execution::pipeline_id_t                 pipeline_id,
                                      bool                                                is_parallel) {
-    if (is_parallel)
+    if (is_parallel) {
         exec_ctx->InitializeParallelOUFeatureVector(ouvec, pipeline_id);
-    else
+    } else {
         exec_ctx->InitializeOUFeatureVector(ouvec, pipeline_id);
+    }
 }
 
 void OpExecOUFeatureVectorReset(noisepage::selfdriving::ExecOUFeatureVector *const ouvec) {

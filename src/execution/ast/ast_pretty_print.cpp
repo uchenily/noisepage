@@ -77,8 +77,9 @@ namespace {
 
         bool first = true;
         for (auto *stmt : node->Statements()) {
-            if (!first)
+            if (!first) {
                 NewLine();
+            }
             first = false;
             Visit(stmt);
         }
@@ -89,14 +90,16 @@ namespace {
     }
 
     void AstPrettyPrintImpl::VisitCallExpr(CallExpr *node) {
-        if (node->IsBuiltinCall())
+        if (node->IsBuiltinCall()) {
             os_ << "@";
+        }
         Visit(node->Function());
         os_ << "(";
         bool first = true;
         for (auto *arg : node->Arguments()) {
-            if (!first)
+            if (!first) {
                 os_ << ", ";
+            }
             first = false;
             Visit(arg);
         }
@@ -183,13 +186,15 @@ namespace {
         os_ << "for (";
         if (node->Init() != nullptr || node->Next() != nullptr) {
             // Standard
-            if (node->Init() != nullptr)
+            if (node->Init() != nullptr) {
                 Visit(node->Init());
+            }
             os_ << "; ";
             Visit(node->Condition());
             os_ << "; ";
-            if (node->Next() != nullptr)
+            if (node->Next() != nullptr) {
                 Visit(node->Next());
+            }
         } else if (node->Condition() != nullptr) {
             // While
             Visit(node->Condition());
@@ -253,8 +258,9 @@ namespace {
 
         bool first = true;
         for (const auto *field : node->Fields()) {
-            if (!first)
+            if (!first) {
                 NewLine();
+            }
             first = false;
             os_ << field->Name().GetView();
             const std::size_t padding = longest_field_len - field->Name().GetLength();
@@ -310,8 +316,9 @@ namespace {
         os_ << "(";
         bool first = true;
         for (const auto &param : node->Parameters()) {
-            if (!first)
+            if (!first) {
                 os_ << ", ";
+            }
             first = false;
             os_ << param->Name().GetView() << ": ";
             Visit(param->TypeRepr());

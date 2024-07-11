@@ -57,40 +57,49 @@ common::hash_t AggregatePlanNode::Hash() const {
 }
 
 bool AggregatePlanNode::operator==(const AbstractPlanNode &rhs) const {
-    if (!AbstractPlanNode::operator==(rhs))
+    if (!AbstractPlanNode::operator==(rhs)) {
         return false;
+    }
 
     auto &other = static_cast<const AggregatePlanNode &>(rhs);
 
     // Group By Terms
-    if (groupby_terms_.size() != other.GetGroupByTerms().size())
+    if (groupby_terms_.size() != other.GetGroupByTerms().size()) {
         return false;
+    }
     for (size_t i = 0; i < groupby_terms_.size(); i++) {
         auto &left_term = groupby_terms_[i];
         auto &right_term = other.groupby_terms_[i];
-        if ((left_term == nullptr && right_term != nullptr) || (left_term != nullptr && right_term == nullptr))
+        if ((left_term == nullptr && right_term != nullptr) || (left_term != nullptr && right_term == nullptr)) {
             return false;
-        if (left_term != nullptr && *left_term != *right_term)
+        }
+        if (left_term != nullptr && *left_term != *right_term) {
             return false;
+        }
     }
 
     // Having Clause Predicate
     if ((having_clause_predicate_ == nullptr && other.having_clause_predicate_ != nullptr)
-        || (having_clause_predicate_ != nullptr && other.having_clause_predicate_ == nullptr))
+        || (having_clause_predicate_ != nullptr && other.having_clause_predicate_ == nullptr)) {
         return false;
-    if (having_clause_predicate_ != nullptr && *having_clause_predicate_ != *other.having_clause_predicate_)
+    }
+    if (having_clause_predicate_ != nullptr && *having_clause_predicate_ != *other.having_clause_predicate_) {
         return false;
+    }
 
     // Aggregation Terms
-    if (aggregate_terms_.size() != other.GetAggregateTerms().size())
+    if (aggregate_terms_.size() != other.GetAggregateTerms().size()) {
         return false;
+    }
     for (size_t i = 0; i < aggregate_terms_.size(); i++) {
         auto &left_term = aggregate_terms_[i];
         auto &right_term = other.aggregate_terms_[i];
-        if ((left_term == nullptr && right_term != nullptr) || (left_term != nullptr && right_term == nullptr))
+        if ((left_term == nullptr && right_term != nullptr) || (left_term != nullptr && right_term == nullptr)) {
             return false;
-        if (left_term != nullptr && *left_term != *right_term)
+        }
+        if (left_term != nullptr && *left_term != *right_term) {
             return false;
+        }
     }
 
     // Aggregate Strategy

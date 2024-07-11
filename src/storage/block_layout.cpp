@@ -15,24 +15,28 @@ BlockLayout::BlockLayout(std::vector<uint16_t> attr_sizes)
     , static_header_size_(ComputeStaticHeaderSize())
     , num_slots_(ComputeNumSlots())
     , header_size_(ComputeHeaderSize()) {
-    for (uint16_t size [[maybe_unused]] : attr_sizes_)
+    for (uint16_t size [[maybe_unused]] : attr_sizes_) {
         NOISEPAGE_ASSERT(size == VARLEN_COLUMN || (size >= 0 && size <= INT16_MAX), "Invalid size of a column");
+    }
     NOISEPAGE_ASSERT(!attr_sizes_.empty() && static_cast<uint16_t>(attr_sizes_.size()) <= common::Constants::MAX_COL,
                      "number of columns must be between 1 and MAX_COL");
     NOISEPAGE_ASSERT(num_slots_ != 0, "number of slots cannot be 0!");
     // sort the attributes when laying out memory to minimize impact of padding
     // skip the reserved columns because we still want those first and shouldn't mess up 8-byte alignment
     std::sort(attr_sizes_.begin() + NUM_RESERVED_COLUMNS, attr_sizes_.end(), std::greater<>());
-    for (uint32_t i = 0; i < attr_sizes_.size(); i++)
-        if (attr_sizes_[i] == VARLEN_COLUMN)
+    for (uint32_t i = 0; i < attr_sizes_.size(); i++) {
+        if (attr_sizes_[i] == VARLEN_COLUMN) {
             varlens_.emplace_back(i);
+        }
+    }
 }
 
 uint32_t BlockLayout::ComputeTupleSize() const {
     uint32_t result = 0;
     // size in attr_sizes_ can be negative to denote varlens.
-    for (auto size : attr_sizes_)
+    for (auto size : attr_sizes_) {
         result += AttrSizeBytes(size);
+    }
     return result;
 }
 

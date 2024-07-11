@@ -37,8 +37,9 @@ StorageInterface::StorageInterface(exec::ExecutionContext *exec_ctx,
 }
 
 StorageInterface::~StorageInterface() {
-    if (need_indexes_)
+    if (need_indexes_) {
         exec_ctx_->GetMemoryPool()->Deallocate(index_pr_buffer_, max_pr_size_);
+    }
 }
 
 storage::ProjectedRow *StorageInterface::GetTablePR() {

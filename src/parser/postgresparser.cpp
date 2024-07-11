@@ -585,9 +585,9 @@ PostgresParser::ColumnRefTransform(ParseResult *parse_result, ColumnRef *root, c
             table_name = reinterpret_cast<value *>(node)->val_.str_;
         }
 
-        if (all_columns)
+        if (all_columns) {
             result = std::make_unique<TableStarExpression>(table_name);
-        else if (alias != nullptr)
+        } else if (alias != nullptr) {
             /*
              * We create a table alias using the table name. For SELECT queries, the binder will assign the
              * corresponding TableRef a unique serial number. After that, in the binder, we'll have to update this
@@ -597,13 +597,14 @@ PostgresParser::ColumnRefTransform(ParseResult *parse_result, ColumnRef *root, c
                 AliasType(table_name),
                 col_name,
                 parser::AliasType(alias, alias_oid_t(reinterpret_cast<size_t>(reinterpret_cast<void *>(alias)))));
-        else
+        } else {
             /*
              * We create a table alias using the table name. For SELECT queries, the binder will assign the
              * corresponding TableRef a unique serial number. After that, in the binder, we'll have to update this
              * AliasType to have a matching serial number
              */
             result = std::make_unique<ColumnValueExpression>(AliasType(table_name), col_name);
+        }
         break;
     }
     case T_A_Star: {

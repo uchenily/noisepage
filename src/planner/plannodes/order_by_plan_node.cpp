@@ -55,37 +55,45 @@ common::hash_t OrderByPlanNode::Hash() const {
 }
 
 bool OrderByPlanNode::operator==(const AbstractPlanNode &rhs) const {
-    if (!AbstractPlanNode::operator==(rhs))
+    if (!AbstractPlanNode::operator==(rhs)) {
         return false;
+    }
 
     auto &other = static_cast<const OrderByPlanNode &>(rhs);
 
     // Sort Keys
-    if (sort_keys_.size() != other.sort_keys_.size())
+    if (sort_keys_.size() != other.sort_keys_.size()) {
         return false;
+    }
     for (auto i = 0U; i < sort_keys_.size(); i++) {
         auto &sort_key = sort_keys_[i];
         auto &other_sort_key = other.sort_keys_[i];
-        if (sort_key.second != other_sort_key.second)
+        if (sort_key.second != other_sort_key.second) {
             return false;
+        }
         if ((sort_key.first == nullptr && other_sort_key.first != nullptr)
-            || (sort_key.first != nullptr && other_sort_key.first == nullptr))
+            || (sort_key.first != nullptr && other_sort_key.first == nullptr)) {
             return false;
-        if (sort_key.first != nullptr && *sort_key.first != *other_sort_key.first)
+        }
+        if (sort_key.first != nullptr && *sort_key.first != *other_sort_key.first) {
             return false;
+        }
     }
 
     //  Inlined Limit Stuff
-    if (has_limit_ != other.has_limit_)
+    if (has_limit_ != other.has_limit_) {
         return false;
+    }
     if (has_limit_) {
         // Limit
-        if (limit_ != other.limit_)
+        if (limit_ != other.limit_) {
             return false;
+        }
 
         // Offset
-        if (offset_ != other.offset_)
+        if (offset_ != other.offset_) {
             return false;
+        }
     }
 
     return true;

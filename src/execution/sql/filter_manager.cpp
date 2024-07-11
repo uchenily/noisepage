@@ -62,8 +62,9 @@ void FilterManager::Clause::RunFilter(exec::ExecutionContext *exec_ctx,
     if (!ShouldReRank()) {
         for (const auto &term : terms_) {
             term->fn_(exec_ctx, input_batch, tid_list, opaque_context_);
-            if (tid_list->IsEmpty())
+            if (tid_list->IsEmpty()) {
                 break;
+            }
         }
         return;
     }
@@ -142,8 +143,9 @@ FilterManager::FilterManager(const exec::ExecutionSettings &exec_settings, bool 
 
 void FilterManager::StartNewClause() {
     double sample_freq = exec_settings_.GetAdaptivePredicateOrderSamplingFrequency();
-    if (!IsAdaptive())
+    if (!IsAdaptive()) {
         sample_freq = 0.0;
+    }
     clauses_.emplace_back(std::make_unique<Clause>(opaque_context_, sample_freq));
 }
 
@@ -153,13 +155,15 @@ void FilterManager::InsertClauseTerm(const FilterManager::MatchFn term) {
 }
 
 void FilterManager::InsertClauseTerms(std::initializer_list<MatchFn> terms) {
-    for (auto term : terms)
+    for (auto term : terms) {
         InsertClauseTerm(term);
+    }
 }
 
 void FilterManager::InsertClauseTerms(const std::vector<MatchFn> &terms) {
-    for (auto term : terms)
+    for (auto term : terms) {
         InsertClauseTerm(term);
+    }
 }
 
 void FilterManager::RunFilters(exec::ExecutionContext *exec_ctx, VectorProjection *input_batch) {

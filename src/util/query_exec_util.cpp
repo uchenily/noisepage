@@ -92,10 +92,11 @@ void QueryExecUtil::BeginTransaction(catalog::db_oid_t db_oid) {
 void QueryExecUtil::EndTransaction(bool commit) {
     NOISEPAGE_ASSERT(txn_ != nullptr, "Transaction has not started");
     NOISEPAGE_ASSERT(own_txn_, "EndTransaction can only be called on an owned transaction");
-    if (commit)
+    if (commit) {
         txn_manager_->Commit(txn_, transaction::TransactionUtil::EmptyCallback, nullptr);
-    else
+    } else {
         txn_manager_->Abort(txn_);
+    }
     txn_ = nullptr;
     own_txn_ = false;
 }
@@ -214,8 +215,9 @@ bool QueryExecUtil::ExecuteDDL(const std::string &query, bool what_if) {
                 schemas_[query] = schema->Copy();
                 exec_queries_[query] = std::move(exec_query);
 
-                if (!what_if)
+                if (!what_if) {
                     ExecuteQuery(query, nullptr, nullptr, nullptr, settings);
+                }
             }
             break;
         default:

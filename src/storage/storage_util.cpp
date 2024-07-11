@@ -17,10 +17,11 @@ void StorageUtil::CopyWithNullCheck(const byte *const from,
                                     RowType *const    to,
                                     const uint16_t    size,
                                     const uint16_t    projection_list_index) {
-    if (from == nullptr)
+    if (from == nullptr) {
         to->SetNull(projection_list_index);
-    else
+    } else {
         std::memcpy(to->AccessForceNotNull(projection_list_index), from, size);
+    }
 }
 
 template void StorageUtil::CopyWithNullCheck<ProjectedRow>(const byte *, ProjectedRow *, uint16_t, uint16_t);
@@ -38,10 +39,11 @@ void StorageUtil::CopyWithNullCheck(const byte *const          from,
                                     const TupleAccessStrategy &accessor,
                                     const TupleSlot            to,
                                     const col_id_t             col_id) {
-    if (from == nullptr)
+    if (from == nullptr) {
         accessor.SetNull(to, col_id);
-    else
+    } else {
         std::memcpy(accessor.AccessForceNotNull(to, col_id), from, accessor.GetBlockLayout().AttrSize(col_id));
+    }
 }
 
 template <class RowType>
@@ -186,8 +188,9 @@ uint8_t StorageUtil::AttrSizeFromBoundaries(const std::vector<uint16_t> &boundar
     // 16|8|4|2|1. Iterate through boundaries until we find a boundary greater than the index.
     uint8_t shift;
     for (shift = 0; shift < NUM_ATTR_BOUNDARIES; shift++) {
-        if (col_idx < boundaries[shift])
+        if (col_idx < boundaries[shift]) {
             break;
+        }
     }
     NOISEPAGE_ASSERT(shift <= NUM_ATTR_BOUNDARIES, "Out-of-bounds attribute size");
     NOISEPAGE_ASSERT(shift >= 0, "Out-of-bounds attribute size");
@@ -210,15 +213,17 @@ void StorageUtil::ComputeAttributeSizeBoundaries(const noisepage::storage::Block
         NOISEPAGE_ASSERT(attr_size <= 16 && attr_size > 0, "Unexpected attribute size");
         // When we see a size that is less than our current boundary size, denote the end of the boundary
         while (attr_size < (16 >> attr_size_index)) {
-            if (attr_size_index < (NUM_ATTR_BOUNDARIES - 1))
+            if (attr_size_index < (NUM_ATTR_BOUNDARIES - 1)) {
                 attr_boundaries[attr_size_index + 1] = attr_boundaries[attr_size_index];
+            }
             attr_size_index++;
         }
         NOISEPAGE_ASSERT(attr_size == (16 >> attr_size_index), "Non-power of two attribute size");
         // At this point, this column's size is the same as the current boundary size, so we increment the number of
         // cols for this boundary
-        if (attr_size_index < NUM_ATTR_BOUNDARIES)
+        if (attr_size_index < NUM_ATTR_BOUNDARIES) {
             attr_boundaries[attr_size_index]++;
+        }
         NOISEPAGE_ASSERT(attr_size_index == NUM_ATTR_BOUNDARIES || attr_boundaries[attr_size_index] == i + 1,
                          "Inconsistent state on attribute bounds");
     }
@@ -239,12 +244,14 @@ void StorageUtil::DeallocateVarlens(RawBlock *block, const TupleAccessStrategy &
     for (col_id_t col : layout.Varlens()) {
         for (uint32_t offset = 0; offset < layout.NumSlots(); offset++) {
             TupleSlot slot(block, offset);
-            if (!accessor.Allocated(slot))
+            if (!accessor.Allocated(slot)) {
                 continue;
+            }
             auto *entry = reinterpret_cast<VarlenEntry *>(accessor.AccessWithNullCheck(slot, col));
             // If entry is null here, the varlen entry is a null SQL value.
-            if (entry != nullptr && entry->NeedReclaim())
+            if (entry != nullptr && entry->NeedReclaim()) {
                 delete[] entry->Content();
+            }
         }
     }
 }

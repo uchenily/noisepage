@@ -18,16 +18,19 @@ common::hash_t ResultPlanNode::Hash() const {
 }
 
 bool ResultPlanNode::operator==(const AbstractPlanNode &rhs) const {
-    if (!AbstractPlanNode::operator==(rhs))
+    if (!AbstractPlanNode::operator==(rhs)) {
         return false;
+    }
 
     auto &other = dynamic_cast<const ResultPlanNode &>(rhs);
 
     // Expression
-    if ((expr_ != nullptr && other.expr_ == nullptr) || (expr_ == nullptr && other.expr_ != nullptr))
+    if ((expr_ != nullptr && other.expr_ == nullptr) || (expr_ == nullptr && other.expr_ != nullptr)) {
         return false;
-    if (expr_ != nullptr && *expr_ != *other.expr_)
+    }
+    if (expr_ != nullptr && *expr_ != *other.expr_) {
         return false;
+    }
 
     return true;
 }

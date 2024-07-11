@@ -18,8 +18,9 @@ common::hash_t SetOpPlanNode::Hash() const {
 }
 
 bool SetOpPlanNode::operator==(const AbstractPlanNode &rhs) const {
-    if (!AbstractPlanNode::operator==(rhs))
+    if (!AbstractPlanNode::operator==(rhs)) {
         return false;
+    }
 
     auto &other = dynamic_cast<const SetOpPlanNode &>(rhs);
 

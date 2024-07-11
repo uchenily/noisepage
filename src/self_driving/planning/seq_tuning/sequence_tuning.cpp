@@ -30,7 +30,7 @@ SequenceTuning::SequenceTuning(common::ManagedPointer<PlanningContext>          
                                            &structure_map_,
                                            &candidate_actions);
 
-    for (auto &action : candidate_actions)
+    for (auto &action : candidate_actions) {
         if (structure_map_.at(action)->GetActionType() == ActionType::CREATE_INDEX) {
             candidate_structures_.emplace_back(action);
 
@@ -43,6 +43,7 @@ SequenceTuning::SequenceTuning(common::ManagedPointer<PlanningContext>          
                                   action,
                                   structure_map_.at(action)->GetSQLCommand());
         }
+    }
 
     for (const auto &it [[maybe_unused]] : structure_map_) {
         SELFDRIVING_LOG_DEBUG("Generated action: ID {} Command {}", it.first, it.second->GetSQLCommand());
@@ -176,16 +177,19 @@ std::set<action_id_t> SequenceTuning::ExtractActionsFromConfigTransition(
     const std::set<action_id_t>                                                &end_config) {
     std::set<action_id_t> actions;
     // include actions that added structures
-    for (auto structure_id : end_config)
-        if (start_config.find(structure_id) == start_config.end())
+    for (auto structure_id : end_config) {
+        if (start_config.find(structure_id) == start_config.end()) {
             actions.emplace(structure_id);
+        }
+    }
 
     // include reverse actions for dropped structures
-    for (auto structure_id : start_config)
+    for (auto structure_id : start_config) {
         if (end_config.find(structure_id) == end_config.end()) {
             auto drop_action = structure_map.at(structure_id)->GetReverseActions().at(0);
             actions.emplace(drop_action);
         }
+    }
 
     return actions;
 }
@@ -199,9 +203,10 @@ void SequenceTuning::ExtractActionsFromConfigPath(
                                                                 best_final_config_path.at(config_idx - 1),
                                                                 best_final_config_path.at(config_idx));
 
-        for (auto action_id : action_id_set)
+        for (auto action_id : action_id_set) {
             action_set.emplace(structure_map_.at(action_id)->GetSQLCommand(),
                                structure_map_.at(action_id)->GetDatabaseOid());
+        }
 
         best_actions_seq->push_back(std::move(action_set));
     }
@@ -213,8 +218,9 @@ double SequenceTuning::ConfigTransitionCost(
     const std::set<pilot::action_id_t>                                         &end_config) {
     auto   action_id_set = ExtractActionsFromConfigTransition(structure_map, start_config, end_config);
     double total_cost = 0.0;
-    for (auto action_id : action_id_set)
+    for (auto action_id : action_id_set) {
         total_cost += structure_map.at(action_id)->GetEstimatedElapsedUs();
+    }
     return total_cost;
 }
 

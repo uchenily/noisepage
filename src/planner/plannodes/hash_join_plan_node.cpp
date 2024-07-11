@@ -47,25 +47,30 @@ common::hash_t HashJoinPlanNode::Hash() const {
 }
 
 bool HashJoinPlanNode::operator==(const AbstractPlanNode &rhs) const {
-    if (!AbstractJoinPlanNode::operator==(rhs))
+    if (!AbstractJoinPlanNode::operator==(rhs)) {
         return false;
+    }
 
     const auto &other = static_cast<const HashJoinPlanNode &>(rhs);
 
     // Left hash keys
-    if (left_hash_keys_.size() != other.left_hash_keys_.size())
+    if (left_hash_keys_.size() != other.left_hash_keys_.size()) {
         return false;
+    }
     for (size_t i = 0; i < left_hash_keys_.size(); i++) {
-        if (*left_hash_keys_[i] != *other.left_hash_keys_[i])
+        if (*left_hash_keys_[i] != *other.left_hash_keys_[i]) {
             return false;
+        }
     }
 
     // Right hash keys
-    if (right_hash_keys_.size() != other.right_hash_keys_.size())
+    if (right_hash_keys_.size() != other.right_hash_keys_.size()) {
         return false;
+    }
     for (size_t i = 0; i < right_hash_keys_.size(); i++) {
-        if (*right_hash_keys_[i] != *other.right_hash_keys_[i])
+        if (*right_hash_keys_[i] != *other.right_hash_keys_[i]) {
             return false;
+        }
     }
 
     return true;

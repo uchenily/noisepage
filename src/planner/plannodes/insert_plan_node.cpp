@@ -74,48 +74,58 @@ common::hash_t InsertPlanNode::Hash() const {
 }
 
 bool InsertPlanNode::operator==(const AbstractPlanNode &rhs) const {
-    if (!AbstractPlanNode::operator==(rhs))
+    if (!AbstractPlanNode::operator==(rhs)) {
         return false;
+    }
 
     auto &other = dynamic_cast<const InsertPlanNode &>(rhs);
 
     // Database OID
-    if (database_oid_ != other.database_oid_)
+    if (database_oid_ != other.database_oid_) {
         return false;
+    }
 
     // Target table OID
-    if (table_oid_ != other.table_oid_)
+    if (table_oid_ != other.table_oid_) {
         return false;
+    }
 
     // Values
-    if (values_.size() != other.values_.size())
+    if (values_.size() != other.values_.size()) {
         return false;
+    }
     for (size_t i = 0; i < values_.size(); i++) {
-        if (values_[i].size() != other.values_[i].size())
+        if (values_[i].size() != other.values_[i].size()) {
             return false;
+        }
 
         auto &tuple = values_[i];
         auto &other_tuple = other.values_[i];
         for (size_t j = 0; j < tuple.size(); j++) {
-            if (*tuple[j] != *other_tuple[j])
+            if (*tuple[j] != *other_tuple[j]) {
                 return false;
+            }
         }
     }
 
     // Parameter info
-    if (parameter_info_.size() != other.parameter_info_.size())
+    if (parameter_info_.size() != other.parameter_info_.size()) {
         return false;
-
-    for (int i = 0; i < static_cast<int>(parameter_info_.size()); i++) {
-        if (parameter_info_[i] != other.parameter_info_[i])
-            return false;
     }
 
-    if (index_oids_.size() != other.index_oids_.size())
-        return false;
-    for (int i = 0; i < static_cast<int>(index_oids_.size()); i++) {
-        if (index_oids_[i] != other.index_oids_[i])
+    for (int i = 0; i < static_cast<int>(parameter_info_.size()); i++) {
+        if (parameter_info_[i] != other.parameter_info_[i]) {
             return false;
+        }
+    }
+
+    if (index_oids_.size() != other.index_oids_.size()) {
+        return false;
+    }
+    for (int i = 0; i < static_cast<int>(index_oids_.size()); i++) {
+        if (index_oids_[i] != other.index_oids_[i]) {
+            return false;
+        }
     }
     return true;
 }

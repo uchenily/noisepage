@@ -35,10 +35,11 @@ void OutputPrinter::operator()(byte *tuples, uint32_t num_tuples, uint32_t tuple
             case execution::sql::SqlTypeId::BigInt:
             case execution::sql::SqlTypeId::Integer: {
                 auto *val = reinterpret_cast<sql::Integer *>(tuples + row * tuple_size + curr_offset);
-                if (val->is_null_)
+                if (val->is_null_) {
                     ss << "NULL";
-                else
+                } else {
                     ss << val->val_;
+                }
                 break;
             }
             case execution::sql::SqlTypeId::Boolean: {
@@ -56,10 +57,11 @@ void OutputPrinter::operator()(byte *tuples, uint32_t num_tuples, uint32_t tuple
             }
             case execution::sql::SqlTypeId::Double: {
                 auto *val = reinterpret_cast<sql::Real *>(tuples + row * tuple_size + curr_offset);
-                if (val->is_null_)
+                if (val->is_null_) {
                     ss << "NULL";
-                else
+                } else {
                     ss << val->val_;
+                }
                 break;
             }
             case execution::sql::SqlTypeId::Date: {
@@ -86,8 +88,9 @@ void OutputPrinter::operator()(byte *tuples, uint32_t num_tuples, uint32_t tuple
                 UNREACHABLE("Cannot output unsupported type!!!");
             }
             curr_offset += sql::ValUtil::GetSqlSize(schema_->GetColumns()[col].GetType());
-            if (col != schema_->GetColumns().size() - 1)
+            if (col != schema_->GetColumns().size() - 1) {
                 ss << ", ";
+            }
         }
         ss << std::endl;
     }

@@ -21,8 +21,9 @@ std::string TupleIdList::ToString() const {
     std::string result = "TIDs(" + std::to_string(GetTupleCount()) + "/" + std::to_string(GetCapacity()) + ")=[";
     bool        first = true;
     ForEach([&](const uint64_t i) {
-        if (!first)
+        if (!first) {
             result += ",";
+        }
         first = false;
         result += std::to_string(i);
     });

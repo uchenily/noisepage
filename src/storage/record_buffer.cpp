@@ -36,8 +36,9 @@ byte *RedoBuffer::NewEntry(const uint32_t size, const transaction::TransactionPo
 }
 
 void RedoBuffer::Finalize(bool flush_buffer, const transaction::TransactionPolicy &policy) {
-    if (buffer_seg_ == nullptr)
+    if (buffer_seg_ == nullptr) {
         return; // If we never initialized a buffer (logging was disabled), we don't do anything
+    }
     if (log_manager_ != DISABLED && flush_buffer && policy.durability_ != transaction::DurabilityPolicy::DISABLE) {
         log_manager_->AddBufferToFlushQueue(buffer_seg_, policy);
         has_flushed_ = true;

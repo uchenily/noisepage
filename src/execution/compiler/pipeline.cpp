@@ -240,8 +240,9 @@ void Pipeline::Prepare(const exec::ExecutionSettings &exec_settings) {
         std::string result;
         bool        first = true;
         for (auto iter = Begin(), end = End(); iter != end; ++iter) {
-            if (!first)
+            if (!first) {
                 result += " --> ";
+            }
             first = false;
             std::string plan_type = planner::PlanNodeTypeToString((*iter)->GetPlan().GetPlanNodeType());
             std::transform(plan_type.begin(), plan_type.end(), plan_type.begin(), ::tolower);

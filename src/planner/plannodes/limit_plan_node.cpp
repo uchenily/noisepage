@@ -36,18 +36,21 @@ common::hash_t LimitPlanNode::Hash() const {
 }
 
 bool LimitPlanNode::operator==(const AbstractPlanNode &rhs) const {
-    if (!AbstractPlanNode::operator==(rhs))
+    if (!AbstractPlanNode::operator==(rhs)) {
         return false;
+    }
 
     auto &other = static_cast<const LimitPlanNode &>(rhs);
 
     // Limit
-    if (limit_ != other.limit_)
+    if (limit_ != other.limit_) {
         return false;
+    }
 
     // Offset
-    if (offset_ != other.offset_)
+    if (offset_ != other.offset_) {
         return false;
+    }
 
     return true;
 }

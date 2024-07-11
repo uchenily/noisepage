@@ -47,14 +47,16 @@ void PilotUtil::ApplyAction(const pilot::PlanningContext &planning_context,
 
     // Certain actions (currently ChangeKnobAction) is not associated with a particular database. For those actions we
     // just pick a random database in PlanningContext
-    if (db_oid == catalog::INVALID_DATABASE_OID)
+    if (db_oid == catalog::INVALID_DATABASE_OID) {
         db_oid = *planning_context.GetDBOids().begin();
+    }
 
     auto &query_exec_util = planning_context.GetQueryExecUtil();
-    if (what_if)
+    if (what_if) {
         query_exec_util->UseTransaction(db_oid, planning_context.GetTxnContext(db_oid));
-    else
+    } else {
         query_exec_util->BeginTransaction(db_oid);
+    }
 
     bool is_query_ddl;
     {
@@ -81,10 +83,11 @@ void PilotUtil::ApplyAction(const pilot::PlanningContext &planning_context,
     }
 
     query_exec_util->ClearPlan(sql_query);
-    if (what_if)
+    if (what_if) {
         query_exec_util->UseTransaction(db_oid, nullptr);
-    else
+    } else {
         query_exec_util->EndTransaction(true);
+    }
 }
 
 void PilotUtil::GetQueryPlans(const PlanningContext                                   &planning_context,
@@ -214,8 +217,9 @@ PilotUtil::CollectPipelineFeatures(const PlanningContext                        
         auto settings_manager = planning_context.GetSettingsManager();
         old_metrics_enable = settings_manager->GetBool(settings::Param::pipeline_metrics_enable);
         old_sample_rate = settings_manager->GetInt64(settings::Param::pipeline_metrics_sample_rate);
-        if (!old_metrics_enable)
+        if (!old_metrics_enable) {
             metrics_manager->EnableMetric(metrics::MetricsComponent::EXECUTION_PIPELINE);
+        }
         metrics_manager->SetMetricSampleRate(metrics::MetricsComponent::EXECUTION_PIPELINE, 100);
     }
 
@@ -303,8 +307,9 @@ PilotUtil::CollectPipelineFeatures(const PlanningContext                        
 
         // restore the old parameters
         metrics_manager->SetMetricSampleRate(metrics::MetricsComponent::EXECUTION_PIPELINE, old_sample_rate);
-        if (!old_metrics_enable)
+        if (!old_metrics_enable) {
             metrics_manager->DisableMetric(metrics::MetricsComponent::EXECUTION_PIPELINE);
+        }
     }
     SELFDRIVING_LOG_DEBUG("Printing qid and pipeline id to sanity check pipeline metrics recorded");
     for (auto it = aggregated_data->pipeline_data_.begin(); it != aggregated_data->pipeline_data_.end(); it++) {
@@ -348,8 +353,9 @@ void PilotUtil::OUModelInference(pilot::PlanningContext                         
             // Convert features to int with two-digit precision used for cache
             std::vector<int> int_feature;
             int_feature.resize(feature.size());
-            for (uint64_t i = 0; i < feature.size(); ++i)
+            for (uint64_t i = 0; i < feature.size(); ++i) {
                 int_feature[i] = feature[i] * 100;
+            }
             if (!planning_context->HasOUInference(ou_type, int_feature)) {
                 inference_features.emplace_back(feature);
                 infer_index.emplace_back(idx);
@@ -370,13 +376,15 @@ void PilotUtil::OUModelInference(pilot::PlanningContext                         
 
             // Put the new inference results into cache
             idx = 0;
-            for (auto &result : res.first)
+            for (auto &result : res.first) {
                 planning_context->AddOUInference(ou_type, int_features[infer_index[idx++]], result);
+            }
         }
 
         inference_result[ou_type] = std::vector<std::vector<double>>();
-        for (auto &feature : int_features)
+        for (auto &feature : int_features) {
             inference_result[ou_type].emplace_back(*planning_context->GetOUInference(ou_type, feature));
+        }
     }
 
     // populate pipeline_to_prediction using pipeline_to_ou_position and inference_result
@@ -509,8 +517,9 @@ void PilotUtil::InterferenceModelInference(PlanningContext                      
         // Convert features to int with two-digit precision used for cache
         std::vector<int> int_feature;
         int_feature.resize(feature.size());
-        for (uint64_t i = 0; i < feature.size(); ++i)
+        for (uint64_t i = 0; i < feature.size(); ++i) {
             int_feature[i] = feature[i] * 100;
+        }
         if (!planning_context->HasInterferenceInference(int_feature)) {
             inference_features.emplace_back(feature);
             infer_index.emplace_back(idx);
@@ -527,8 +536,9 @@ void PilotUtil::InterferenceModelInference(PlanningContext                      
 
         // Put the new inference results into cache
         idx = 0;
-        for (auto &result : inference_result.first)
+        for (auto &result : inference_result.first) {
             planning_context->AddInterferenceInference(int_features[infer_index[idx++]], result);
+        }
     }
 
     // Store the action result
@@ -542,8 +552,9 @@ void PilotUtil::InterferenceModelInference(PlanningContext                      
     }
 
     // Populate all query results
-    for (auto &feature : int_features)
+    for (auto &feature : int_features) {
         inference_results->query_inference_results_.emplace_back(*planning_context->GetInterferenceInference(feature));
+    }
 }
 
 void PilotUtil::GroupFeaturesByOU(
@@ -554,8 +565,9 @@ void PilotUtil::GroupFeaturesByOU(
     const std::list<metrics::PipelineMetricRawData::PipelineData>                       &pipeline_data,
     std::unordered_map<ExecutionOperatingUnitType, std::vector<std::vector<double>>>    *ou_to_features) {
     // if no pipeline data is recorded, there's no work to be done
-    if (pipeline_data.empty())
+    if (pipeline_data.empty()) {
         return;
+    }
 
     // Otherwise, we look over all entries in pipeline_data
     // prev_qid and pipeline_idx is to keep mapping the current qid to the qid at pipeline_idx in pipeline_qids to
@@ -653,8 +665,9 @@ void PilotUtil::ComputeTableSizeRatios(const PlanningContext  &planning_context,
     for (const auto &[query_id, query_text] : metadata.query_id_to_text_) {
         // Parse the query
         auto parse_result = parser::PostgresParser::BuildParseTree(query_text);
-        if (parse_result->NumStatements() == 0)
+        if (parse_result->NumStatements() == 0) {
             continue;
+        }
         auto statement = parse_result->GetStatement(0);
 
         // Identify the table and the number of inserts/deletes
@@ -679,14 +692,16 @@ void PilotUtil::ComputeTableSizeRatios(const PlanningContext  &planning_context,
                 num_row_delta = -1;
             } else {
                 auto oid_pair = std::make_pair(db_oid, table_oid);
-                if (table_sizes.find(oid_pair) != table_sizes.end())
+                if (table_sizes.find(oid_pair) != table_sizes.end()) {
                     // Delete all the tuples when without condition
                     num_row_delta = -table_sizes[oid_pair];
+                }
             }
         }
         auto oid_pair = std::make_pair(db_oid, table_oid);
-        if (num_row_delta != 0 && table_sizes.find(oid_pair) != table_sizes.end())
+        if (num_row_delta != 0 && table_sizes.find(oid_pair) != table_sizes.end()) {
             query_row_changes[query_id] = std::make_pair(oid_pair, num_row_delta);
+        }
     }
 
     // Compute table size ratios given the workload forecast
@@ -697,8 +712,9 @@ void PilotUtil::ComputeTableSizeRatios(const PlanningContext  &planning_context,
         for (const auto &[query_id, table_id_to_delta] : query_row_changes) {
             if (id_to_num_exec.find(query_id) != id_to_num_exec.end()) {
                 auto table_id = table_id_to_delta.first;
-                if (table_size_deltas.find(table_id) == table_size_deltas.end())
+                if (table_size_deltas.find(table_id) == table_size_deltas.end()) {
                     table_size_deltas[table_id] = 0;
+                }
                 table_size_deltas[table_id] += table_id_to_delta.second * id_to_num_exec.at(query_id);
             }
         }
@@ -706,10 +722,11 @@ void PilotUtil::ComputeTableSizeRatios(const PlanningContext  &planning_context,
         // Calculate the table size change ratio for this segment
         for (const auto &[table_id, size_delta] : table_size_deltas) {
             double new_table_size = size_delta + static_cast<int64_t>(table_sizes[table_id]);
-            if (new_table_size < 0)
+            if (new_table_size < 0) {
                 memory_info->segment_table_size_ratios_[idx][table_id] = 0;
-            else
+            } else {
                 memory_info->segment_table_size_ratios_[idx][table_id] = new_table_size / table_sizes[table_id];
+            }
         }
     }
 }
@@ -718,13 +735,15 @@ void PilotUtil::ComputeTableIndexSizes(const PlanningContext &planning_context, 
     // Traverse all databases to find the info (since we don't know which table belongs to which database)
     for (auto db_oid : planning_context.GetDBOids()) {
         auto accessor = planning_context.GetCatalogAccessor(db_oid);
-        if (accessor == nullptr)
+        if (accessor == nullptr) {
             continue;
+        }
         for (auto table_oid : memory_info->table_oids_) {
             // Get table memory size
             auto sql_table = accessor->GetTable(table_oid.second);
-            if (sql_table == nullptr)
+            if (sql_table == nullptr) {
                 continue;
+            }
             size_t table_memory = sql_table->EstimateHeapUsage();
             memory_info->table_memory_bytes_[table_oid] = table_memory;
             memory_info->initial_memory_bytes_ += table_memory;
@@ -823,14 +842,16 @@ size_t PilotUtil::CalculateMemoryConsumption(const MemoryInfo  &memory_info,
 
     // First count the table sizes
     std::unordered_map<db_table_oid_pair, double, DBTableOidPairHasher> table_memory_sizes;
-    for (auto &[table_id, size] : memory_info.table_memory_bytes_)
+    for (auto &[table_id, size] : memory_info.table_memory_bytes_) {
         table_memory_sizes[table_id] = size;
+    }
 
     // Then count the index sizes for each table, if they're not dropped
     for (auto &[table_id, index_sizes] : memory_info.table_index_memory_bytes_) {
         for (auto &[index_name, size] : index_sizes) {
-            if (dropped_indexes.find(index_name) != dropped_indexes.end())
+            if (dropped_indexes.find(index_name) != dropped_indexes.end()) {
                 table_memory_sizes[table_id] += size;
+            }
         }
     }
 
@@ -849,10 +870,11 @@ size_t PilotUtil::CalculateMemoryConsumption(const MemoryInfo  &memory_info,
     // Adjust the sizes based on the forecasted table size ratio and calculate the sum
     for (auto [table_id, size] : table_memory_sizes) {
         // We won't store the size ratio if the table size doesn't change
-        if (table_size_ratios.find(table_id) == table_size_ratios.end())
+        if (table_size_ratios.find(table_id) == table_size_ratios.end()) {
             total_memory += size;
-        else
+        } else {
             total_memory += size * table_size_ratios.at(table_id);
+        }
     }
 
     return total_memory;

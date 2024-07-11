@@ -61,21 +61,27 @@ Operator SeqScan::Make(catalog::db_oid_t                  database_oid,
 }
 
 bool SeqScan::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::SEQSCAN)
+    if (r.GetOpType() != OpType::SEQSCAN) {
         return false;
-    const SeqScan &node = *dynamic_cast<const SeqScan *>(&r);
-    if (database_oid_ != node.database_oid_)
-        return false;
-    if (table_oid_ != node.table_oid_)
-        return false;
-    if (predicates_.size() != node.predicates_.size())
-        return false;
-    for (size_t i = 0; i < predicates_.size(); i++) {
-        if (predicates_[i].GetExpr() != node.predicates_[i].GetExpr())
-            return false;
     }
-    if (table_alias_ != node.table_alias_)
+    const SeqScan &node = *dynamic_cast<const SeqScan *>(&r);
+    if (database_oid_ != node.database_oid_) {
         return false;
+    }
+    if (table_oid_ != node.table_oid_) {
+        return false;
+    }
+    if (predicates_.size() != node.predicates_.size()) {
+        return false;
+    }
+    for (size_t i = 0; i < predicates_.size(); i++) {
+        if (predicates_[i].GetExpr() != node.predicates_[i].GetExpr()) {
+            return false;
+        }
+    }
+    if (table_alias_ != node.table_alias_) {
+        return false;
+    }
     return is_for_update_ == node.is_for_update_;
 }
 
@@ -117,38 +123,48 @@ Operator IndexScan::Make(catalog::db_oid_t                  database_oid,
 }
 
 bool IndexScan::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::INDEXSCAN)
+    if (r.GetOpType() != OpType::INDEXSCAN) {
         return false;
+    }
     const IndexScan &node = *dynamic_cast<const IndexScan *>(&r);
     if (database_oid_ != node.database_oid_ || index_oid_ != node.index_oid_ || tbl_oid_ != node.tbl_oid_
         || predicates_.size() != node.predicates_.size() || is_for_update_ != node.is_for_update_
-        || scan_type_ != node.scan_type_)
+        || scan_type_ != node.scan_type_) {
         return false;
-
-    for (size_t i = 0; i < predicates_.size(); i++) {
-        if (predicates_[i].GetExpr() != node.predicates_[i].GetExpr())
-            return false;
     }
 
-    if (bounds_.size() != node.bounds_.size())
-        return false;
-    for (const auto &bound : bounds_) {
-        if (node.bounds_.find(bound.first) == node.bounds_.end())
+    for (size_t i = 0; i < predicates_.size(); i++) {
+        if (predicates_[i].GetExpr() != node.predicates_[i].GetExpr()) {
             return false;
+        }
+    }
+
+    if (bounds_.size() != node.bounds_.size()) {
+        return false;
+    }
+    for (const auto &bound : bounds_) {
+        if (node.bounds_.find(bound.first) == node.bounds_.end()) {
+            return false;
+        }
 
         std::vector<planner::IndexExpression> exprs = bound.second;
         std::vector<planner::IndexExpression> o_exprs = node.bounds_.find(bound.first)->second;
-        if (exprs.size() != o_exprs.size())
+        if (exprs.size() != o_exprs.size()) {
             return false;
+        }
         for (size_t idx = 0; idx < exprs.size(); idx++) {
-            if (exprs[idx] == nullptr && o_exprs[idx] == nullptr)
+            if (exprs[idx] == nullptr && o_exprs[idx] == nullptr) {
                 continue;
-            if (exprs[idx] == nullptr && o_exprs[idx] != nullptr)
+            }
+            if (exprs[idx] == nullptr && o_exprs[idx] != nullptr) {
                 return false;
-            if (exprs[idx] != nullptr && o_exprs[idx] == nullptr)
+            }
+            if (exprs[idx] != nullptr && o_exprs[idx] == nullptr) {
                 return false;
-            if (*exprs[idx] != *o_exprs[idx])
+            }
+            if (*exprs[idx] != *o_exprs[idx]) {
                 return false;
+            }
         }
     }
     return true;
@@ -163,10 +179,11 @@ common::hash_t IndexScan::Hash() const {
     hash = common::HashUtil::CombineHashes(hash, common::HashUtil::Hash(scan_type_));
     for (auto &pred : predicates_) {
         auto expr = pred.GetExpr();
-        if (expr)
+        if (expr) {
             hash = common::HashUtil::SumHashes(hash, expr->Hash());
-        else
+        } else {
             hash = common::HashUtil::SumHashes(hash, BaseOperatorNodeContents::Hash());
+        }
     }
 
     for (const auto &bound : bounds_) {
@@ -202,8 +219,9 @@ Operator ExternalFileScan::Make(parser::ExternalFileFormat format,
 }
 
 bool ExternalFileScan::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::EXTERNALFILESCAN)
+    if (r.GetOpType() != OpType::EXTERNALFILESCAN) {
         return false;
+    }
     const auto &get = *dynamic_cast<const ExternalFileScan *>(&r);
     return (format_ == get.format_ && file_name_ == get.file_name_ && delimiter_ == get.delimiter_
             && quote_ == get.quote_ && escape_ == get.escape_);
@@ -236,11 +254,13 @@ Operator QueryDerivedScan::Make(
 }
 
 bool QueryDerivedScan::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::QUERYDERIVEDSCAN)
+    if (r.GetOpType() != OpType::QUERYDERIVEDSCAN) {
         return false;
+    }
     const QueryDerivedScan &node = *static_cast<const QueryDerivedScan *>(&r);
-    if (table_alias_ != node.table_alias_)
+    if (table_alias_ != node.table_alias_) {
         return false;
+    }
     return alias_to_expr_map_ == node.alias_to_expr_map_;
 }
 
@@ -297,17 +317,22 @@ Operator Limit::Make(size_t                                                     
 }
 
 bool Limit::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::LIMIT)
+    if (r.GetOpType() != OpType::LIMIT) {
         return false;
+    }
     const Limit &node = *static_cast<const Limit *>(&r);
-    if (offset_ != node.offset_)
+    if (offset_ != node.offset_) {
         return false;
-    if (limit_ != node.limit_)
+    }
+    if (limit_ != node.limit_) {
         return false;
-    if (sort_exprs_ != node.sort_exprs_)
+    }
+    if (sort_exprs_ != node.sort_exprs_) {
         return false;
-    if (sort_directions_ != node.sort_directions_)
+    }
+    if (sort_directions_ != node.sort_directions_) {
         return false;
+    }
     return (true);
 }
 
@@ -357,56 +382,70 @@ common::hash_t InnerIndexJoin::Hash() const {
     for (auto &col : cols) {
         hash = common::HashUtil::SumHashes(hash, common::HashUtil::Hash(col));
         for (auto &expr : join_keys_.find(col)->second) {
-            if (expr == nullptr)
+            if (expr == nullptr) {
                 hash = common::HashUtil::SumHashes(hash, 0);
-            else
+            } else {
                 hash = common::HashUtil::SumHashes(hash, expr->Hash());
+            }
         }
     }
 
     for (auto &pred : join_predicates_) {
         auto expr = pred.GetExpr();
-        if (expr)
+        if (expr) {
             hash = common::HashUtil::SumHashes(hash, expr->Hash());
-        else
+        } else {
             hash = common::HashUtil::SumHashes(hash, BaseOperatorNodeContents::Hash());
+        }
     }
     return hash;
 }
 
 bool InnerIndexJoin::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::INNERINDEXJOIN)
+    if (r.GetOpType() != OpType::INNERINDEXJOIN) {
         return false;
+    }
     const InnerIndexJoin &node = *dynamic_cast<const InnerIndexJoin *>(&r);
-    if (tbl_oid_ != node.tbl_oid_)
+    if (tbl_oid_ != node.tbl_oid_) {
         return false;
-    if (idx_oid_ != node.idx_oid_)
+    }
+    if (idx_oid_ != node.idx_oid_) {
         return false;
-    if (scan_type_ != node.scan_type_)
+    }
+    if (scan_type_ != node.scan_type_) {
         return false;
+    }
 
-    if (join_predicates_.size() != node.join_predicates_.size())
+    if (join_predicates_.size() != node.join_predicates_.size()) {
         return false;
-    if (join_predicates_ != node.join_predicates_)
+    }
+    if (join_predicates_ != node.join_predicates_) {
         return false;
+    }
 
-    if (join_keys_.size() != node.join_keys_.size())
+    if (join_keys_.size() != node.join_keys_.size()) {
         return false;
+    }
     for (auto &join_key : join_keys_) {
-        if (node.join_keys_.find(join_key.first) == node.join_keys_.end())
+        if (node.join_keys_.find(join_key.first) == node.join_keys_.end()) {
             return false;
+        }
 
         auto &expr = join_key.second;
         auto &other = node.join_keys_.find(join_key.first)->second;
-        if (expr.size() != other.size())
+        if (expr.size() != other.size()) {
             return false;
+        }
         for (size_t i = 0; i < expr.size(); i++) {
-            if (expr[i] == nullptr && other[i] == nullptr)
+            if (expr[i] == nullptr && other[i] == nullptr) {
                 continue;
-            if ((expr[i] != nullptr && other[i] == nullptr) || (expr[i] == nullptr && other[i] != nullptr))
+            }
+            if ((expr[i] != nullptr && other[i] == nullptr) || (expr[i] == nullptr && other[i] != nullptr)) {
                 return false;
-            if (*(expr[i]) != *(other[i]))
+            }
+            if (*(expr[i]) != *(other[i])) {
                 return false;
+            }
         }
     }
 
@@ -430,22 +469,26 @@ common::hash_t InnerNLJoin::Hash() const {
     common::hash_t hash = BaseOperatorNodeContents::Hash();
     for (auto &pred : join_predicates_) {
         auto expr = pred.GetExpr();
-        if (expr)
+        if (expr) {
             hash = common::HashUtil::SumHashes(hash, expr->Hash());
-        else
+        } else {
             hash = common::HashUtil::SumHashes(hash, BaseOperatorNodeContents::Hash());
+        }
     }
     return hash;
 }
 
 bool InnerNLJoin::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::INNERNLJOIN)
+    if (r.GetOpType() != OpType::INNERNLJOIN) {
         return false;
+    }
     const InnerNLJoin &node = *dynamic_cast<const InnerNLJoin *>(&r);
-    if (join_predicates_.size() != node.join_predicates_.size())
+    if (join_predicates_.size() != node.join_predicates_.size()) {
         return false;
-    if (join_predicates_ != node.join_predicates_)
+    }
+    if (join_predicates_ != node.join_predicates_) {
         return false;
+    }
     return true;
 }
 
@@ -469,8 +512,9 @@ common::hash_t LeftNLJoin::Hash() const {
 }
 
 bool LeftNLJoin::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::LEFTNLJOIN)
+    if (r.GetOpType() != OpType::LEFTNLJOIN) {
         return false;
+    }
     const LeftNLJoin &node = *static_cast<const LeftNLJoin *>(&r);
     return (*join_predicate_ == *(node.join_predicate_));
 }
@@ -494,8 +538,9 @@ common::hash_t RightNLJoin::Hash() const {
 }
 
 bool RightNLJoin::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::RIGHTNLJOIN)
+    if (r.GetOpType() != OpType::RIGHTNLJOIN) {
         return false;
+    }
     const RightNLJoin &node = *static_cast<const RightNLJoin *>(&r);
     return (*join_predicate_ == *(node.join_predicate_));
 }
@@ -520,8 +565,9 @@ common::hash_t OuterNLJoin::Hash() const {
 }
 
 bool OuterNLJoin::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::OUTERNLJOIN)
+    if (r.GetOpType() != OpType::OUTERNLJOIN) {
         return false;
+    }
     const OuterNLJoin &node = *static_cast<const OuterNLJoin *>(&r);
     return (*join_predicate_ == *(node.join_predicate_));
 }
@@ -545,36 +591,44 @@ Operator InnerHashJoin::Make(std::vector<AnnotatedExpression>                   
 
 common::hash_t InnerHashJoin::Hash() const {
     common::hash_t hash = BaseOperatorNodeContents::Hash();
-    for (auto &expr : left_keys_)
+    for (auto &expr : left_keys_) {
         hash = common::HashUtil::CombineHashes(hash, expr->Hash());
-    for (auto &expr : right_keys_)
+    }
+    for (auto &expr : right_keys_) {
         hash = common::HashUtil::CombineHashes(hash, expr->Hash());
+    }
     for (auto &pred : join_predicates_) {
         auto expr = pred.GetExpr();
-        if (expr)
+        if (expr) {
             hash = common::HashUtil::SumHashes(hash, expr->Hash());
-        else
+        } else {
             hash = common::HashUtil::SumHashes(hash, BaseOperatorNodeContents::Hash());
+        }
     }
     return hash;
 }
 
 bool InnerHashJoin::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::INNERHASHJOIN)
+    if (r.GetOpType() != OpType::INNERHASHJOIN) {
         return false;
+    }
     const InnerHashJoin &node = *dynamic_cast<const InnerHashJoin *>(&r);
     if (left_keys_.size() != node.left_keys_.size() || right_keys_.size() != node.right_keys_.size()
-        || join_predicates_.size() != node.join_predicates_.size())
+        || join_predicates_.size() != node.join_predicates_.size()) {
         return false;
-    if (join_predicates_ != node.join_predicates_)
+    }
+    if (join_predicates_ != node.join_predicates_) {
         return false;
+    }
     for (size_t i = 0; i < left_keys_.size(); i++) {
-        if (*(left_keys_[i]) != *(node.left_keys_[i]))
+        if (*(left_keys_[i]) != *(node.left_keys_[i])) {
             return false;
+        }
     }
     for (size_t i = 0; i < right_keys_.size(); i++) {
-        if (*(right_keys_[i]) != *(node.right_keys_[i]))
+        if (*(right_keys_[i]) != *(node.right_keys_[i])) {
             return false;
+        }
     }
     return true;
 }
@@ -598,36 +652,44 @@ Operator LeftSemiHashJoin::Make(std::vector<AnnotatedExpression>                
 
 common::hash_t LeftSemiHashJoin::Hash() const {
     common::hash_t hash = BaseOperatorNodeContents::Hash();
-    for (auto &expr : left_keys_)
+    for (auto &expr : left_keys_) {
         hash = common::HashUtil::CombineHashes(hash, expr->Hash());
-    for (auto &expr : right_keys_)
+    }
+    for (auto &expr : right_keys_) {
         hash = common::HashUtil::CombineHashes(hash, expr->Hash());
+    }
     for (auto &pred : join_predicates_) {
         auto expr = pred.GetExpr();
-        if (expr)
+        if (expr) {
             hash = common::HashUtil::SumHashes(hash, expr->Hash());
-        else
+        } else {
             hash = common::HashUtil::SumHashes(hash, BaseOperatorNodeContents::Hash());
+        }
     }
     return hash;
 }
 
 bool LeftSemiHashJoin::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::LEFTSEMIHASHJOIN)
+    if (r.GetOpType() != OpType::LEFTSEMIHASHJOIN) {
         return false;
+    }
     const LeftSemiHashJoin &node = *dynamic_cast<const LeftSemiHashJoin *>(&r);
     if (left_keys_.size() != node.left_keys_.size() || right_keys_.size() != node.right_keys_.size()
-        || join_predicates_.size() != node.join_predicates_.size())
+        || join_predicates_.size() != node.join_predicates_.size()) {
         return false;
-    if (join_predicates_ != node.join_predicates_)
+    }
+    if (join_predicates_ != node.join_predicates_) {
         return false;
+    }
     for (size_t i = 0; i < left_keys_.size(); i++) {
-        if (*(left_keys_[i]) != *(node.left_keys_[i]))
+        if (*(left_keys_[i]) != *(node.left_keys_[i])) {
             return false;
+        }
     }
     for (size_t i = 0; i < right_keys_.size(); i++) {
-        if (*(right_keys_[i]) != *(node.right_keys_[i]))
+        if (*(right_keys_[i]) != *(node.right_keys_[i])) {
             return false;
+        }
     }
     return true;
 }
@@ -651,36 +713,44 @@ Operator LeftHashJoin::Make(std::vector<AnnotatedExpression>                    
 
 common::hash_t LeftHashJoin::Hash() const {
     common::hash_t hash = BaseOperatorNodeContents::Hash();
-    for (auto &expr : left_keys_)
+    for (auto &expr : left_keys_) {
         hash = common::HashUtil::CombineHashes(hash, expr->Hash());
-    for (auto &expr : right_keys_)
+    }
+    for (auto &expr : right_keys_) {
         hash = common::HashUtil::CombineHashes(hash, expr->Hash());
+    }
     for (auto &pred : join_predicates_) {
         auto expr = pred.GetExpr();
-        if (expr)
+        if (expr) {
             hash = common::HashUtil::SumHashes(hash, expr->Hash());
-        else
+        } else {
             hash = common::HashUtil::SumHashes(hash, BaseOperatorNodeContents::Hash());
+        }
     }
     return hash;
 }
 
 bool LeftHashJoin::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::LEFTHASHJOIN)
+    if (r.GetOpType() != OpType::LEFTHASHJOIN) {
         return false;
+    }
     const LeftHashJoin &node = *dynamic_cast<const LeftHashJoin *>(&r);
     if (left_keys_.size() != node.left_keys_.size() || right_keys_.size() != node.right_keys_.size()
-        || join_predicates_.size() != node.join_predicates_.size())
+        || join_predicates_.size() != node.join_predicates_.size()) {
         return false;
-    if (join_predicates_ != node.join_predicates_)
+    }
+    if (join_predicates_ != node.join_predicates_) {
         return false;
+    }
     for (size_t i = 0; i < left_keys_.size(); i++) {
-        if (*(left_keys_[i]) != *(node.left_keys_[i]))
+        if (*(left_keys_[i]) != *(node.left_keys_[i])) {
             return false;
+        }
     }
     for (size_t i = 0; i < right_keys_.size(); i++) {
-        if (*(right_keys_[i]) != *(node.right_keys_[i]))
+        if (*(right_keys_[i]) != *(node.right_keys_[i])) {
             return false;
+        }
     }
     return true;
 }
@@ -705,8 +775,9 @@ common::hash_t RightHashJoin::Hash() const {
 }
 
 bool RightHashJoin::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::RIGHTHASHJOIN)
+    if (r.GetOpType() != OpType::RIGHTHASHJOIN) {
         return false;
+    }
     const RightHashJoin &node = *static_cast<const RightHashJoin *>(&r);
     return (*join_predicate_ == *(node.join_predicate_));
 }
@@ -731,8 +802,9 @@ common::hash_t OuterHashJoin::Hash() const {
 }
 
 bool OuterHashJoin::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::OUTERHASHJOIN)
+    if (r.GetOpType() != OpType::OUTERHASHJOIN) {
         return false;
+    }
     const OuterHashJoin &node = *static_cast<const OuterHashJoin *>(&r);
     return (*join_predicate_ == *(node.join_predicate_));
 }
@@ -779,17 +851,22 @@ common::hash_t Insert::Hash() const {
 }
 
 bool Insert::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::INSERT)
+    if (r.GetOpType() != OpType::INSERT) {
         return false;
+    }
     const Insert &node = *dynamic_cast<const Insert *>(&r);
-    if (database_oid_ != node.database_oid_)
+    if (database_oid_ != node.database_oid_) {
         return false;
-    if (table_oid_ != node.table_oid_)
+    }
+    if (table_oid_ != node.table_oid_) {
         return false;
-    if (columns_ != node.columns_)
+    }
+    if (columns_ != node.columns_) {
         return false;
-    if (values_ != node.values_)
+    }
+    if (values_ != node.values_) {
         return false;
+    }
     return (true);
 }
 
@@ -818,13 +895,16 @@ common::hash_t InsertSelect::Hash() const {
 }
 
 bool InsertSelect::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::INSERTSELECT)
+    if (r.GetOpType() != OpType::INSERTSELECT) {
         return false;
+    }
     const InsertSelect &node = *dynamic_cast<const InsertSelect *>(&r);
-    if (database_oid_ != node.database_oid_)
+    if (database_oid_ != node.database_oid_) {
         return false;
-    if (table_oid_ != node.table_oid_)
+    }
+    if (table_oid_ != node.table_oid_) {
         return false;
+    }
     return (true);
 }
 
@@ -852,11 +932,13 @@ common::hash_t Delete::Hash() const {
 }
 
 bool Delete::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::DELETE)
+    if (r.GetOpType() != OpType::DELETE) {
         return false;
+    }
     const Delete &node = *dynamic_cast<const Delete *>(&r);
-    if (database_oid_ != node.database_oid_)
+    if (database_oid_ != node.database_oid_) {
         return false;
+    }
     return table_oid_ == node.table_oid_;
 }
 
@@ -889,15 +971,19 @@ common::hash_t Update::Hash() const {
 }
 
 bool Update::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::UPDATE)
+    if (r.GetOpType() != OpType::UPDATE) {
         return false;
+    }
     const Update &node = *dynamic_cast<const Update *>(&r);
-    if (database_oid_ != node.database_oid_)
+    if (database_oid_ != node.database_oid_) {
         return false;
-    if (table_oid_ != node.table_oid_)
+    }
+    if (table_oid_ != node.table_oid_) {
         return false;
-    if (updates_ != node.updates_)
+    }
+    if (updates_ != node.updates_) {
         return false;
+    }
     return table_alias_ == node.table_alias_;
 }
 
@@ -923,8 +1009,9 @@ Operator ExportExternalFile::Make(parser::ExternalFileFormat format,
 }
 
 bool ExportExternalFile::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::EXPORTEXTERNALFILE)
+    if (r.GetOpType() != OpType::EXPORTEXTERNALFILE) {
         return false;
+    }
     const auto &export_op = *dynamic_cast<const ExportExternalFile *>(&r);
     return (format_ == export_op.format_ && file_name_ == export_op.file_name_ && delimiter_ == export_op.delimiter_
             && quote_ == export_op.quote_ && escape_ == export_op.escape_);
@@ -956,18 +1043,22 @@ Operator HashGroupBy::Make(std::vector<common::ManagedPointer<parser::AbstractEx
 }
 
 bool HashGroupBy::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::HASHGROUPBY)
+    if (r.GetOpType() != OpType::HASHGROUPBY) {
         return false;
+    }
     const HashGroupBy &node = *static_cast<const HashGroupBy *>(&r);
-    if (having_.size() != node.having_.size() || columns_.size() != node.columns_.size())
+    if (having_.size() != node.having_.size() || columns_.size() != node.columns_.size()) {
         return false;
+    }
     for (size_t i = 0; i < having_.size(); i++) {
-        if (having_[i] != node.having_[i])
+        if (having_[i] != node.having_[i]) {
             return false;
+        }
     }
     for (size_t i = 0; i < columns_.size(); i++) {
-        if (*(columns_[i]) != *(node.columns_[i]))
+        if (*(columns_[i]) != *(node.columns_[i])) {
             return false;
+        }
     }
     return true;
 }
@@ -976,13 +1067,15 @@ common::hash_t HashGroupBy::Hash() const {
     common::hash_t hash = BaseOperatorNodeContents::Hash();
     for (auto &pred : having_) {
         auto expr = pred.GetExpr();
-        if (expr)
+        if (expr) {
             hash = common::HashUtil::SumHashes(hash, expr->Hash());
-        else
+        } else {
             hash = common::HashUtil::SumHashes(hash, BaseOperatorNodeContents::Hash());
+        }
     }
-    for (auto &expr : columns_)
+    for (auto &expr : columns_) {
         hash = common::HashUtil::SumHashes(hash, expr->Hash());
+    }
     return hash;
 }
 
@@ -1002,18 +1095,22 @@ Operator SortGroupBy::Make(std::vector<common::ManagedPointer<parser::AbstractEx
 }
 
 bool SortGroupBy::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::SORTGROUPBY)
+    if (r.GetOpType() != OpType::SORTGROUPBY) {
         return false;
+    }
     const SortGroupBy &node = *static_cast<const SortGroupBy *>(&r);
-    if (having_.size() != node.having_.size() || columns_.size() != node.columns_.size())
+    if (having_.size() != node.having_.size() || columns_.size() != node.columns_.size()) {
         return false;
+    }
     for (size_t i = 0; i < having_.size(); i++) {
-        if (having_[i] != node.having_[i])
+        if (having_[i] != node.having_[i]) {
             return false;
+        }
     }
     for (size_t i = 0; i < columns_.size(); i++) {
-        if (*(columns_[i]) != *(node.columns_[i]))
+        if (*(columns_[i]) != *(node.columns_[i])) {
             return false;
+        }
     }
     return true;
 }
@@ -1022,13 +1119,15 @@ common::hash_t SortGroupBy::Hash() const {
     common::hash_t hash = BaseOperatorNodeContents::Hash();
     for (auto &pred : having_) {
         auto expr = pred.GetExpr();
-        if (expr)
+        if (expr) {
             hash = common::HashUtil::SumHashes(hash, expr->Hash());
-        else
+        } else {
             hash = common::HashUtil::SumHashes(hash, BaseOperatorNodeContents::Hash());
+        }
     }
-    for (auto &expr : columns_)
+    for (auto &expr : columns_) {
         hash = common::HashUtil::SumHashes(hash, expr->Hash());
+    }
     return hash;
 }
 
@@ -1075,8 +1174,9 @@ common::hash_t CreateDatabase::Hash() const {
 }
 
 bool CreateDatabase::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::CREATEDATABASE)
+    if (r.GetOpType() != OpType::CREATEDATABASE) {
         return false;
+    }
     const CreateDatabase &node = *dynamic_cast<const CreateDatabase *>(&r);
     return node.database_name_ == database_name_;
 }
@@ -1105,32 +1205,41 @@ common::hash_t CreateTable::Hash() const {
     hash = common::HashUtil::CombineHashes(hash, common::HashUtil::Hash(namespace_oid_));
     hash = common::HashUtil::CombineHashes(hash, common::HashUtil::Hash(table_name_));
     hash = common::HashUtil::CombineHashInRange(hash, columns_.begin(), columns_.end());
-    for (const auto &col : columns_)
+    for (const auto &col : columns_) {
         hash = common::HashUtil::CombineHashes(hash, col->Hash());
-    for (const auto &fk : foreign_keys_)
+    }
+    for (const auto &fk : foreign_keys_) {
         hash = common::HashUtil::CombineHashes(hash, fk->Hash());
+    }
     return hash;
 }
 
 bool CreateTable::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::CREATETABLE)
+    if (r.GetOpType() != OpType::CREATETABLE) {
         return false;
-    const CreateTable &node = *dynamic_cast<const CreateTable *>(&r);
-    if (namespace_oid_ != node.namespace_oid_)
-        return false;
-    if (table_name_ != node.table_name_)
-        return false;
-    if (columns_.size() != node.columns_.size())
-        return false;
-    for (size_t i = 0; i < columns_.size(); i++) {
-        if (*(columns_[i]) != *(node.columns_[i]))
-            return false;
     }
-    if (foreign_keys_.size() != node.foreign_keys_.size())
+    const CreateTable &node = *dynamic_cast<const CreateTable *>(&r);
+    if (namespace_oid_ != node.namespace_oid_) {
         return false;
-    for (size_t i = 0; i < foreign_keys_.size(); i++) {
-        if (*(foreign_keys_[i]) != *(node.foreign_keys_[i]))
+    }
+    if (table_name_ != node.table_name_) {
+        return false;
+    }
+    if (columns_.size() != node.columns_.size()) {
+        return false;
+    }
+    for (size_t i = 0; i < columns_.size(); i++) {
+        if (*(columns_[i]) != *(node.columns_[i])) {
             return false;
+        }
+    }
+    if (foreign_keys_.size() != node.foreign_keys_.size()) {
+        return false;
+    }
+    for (size_t i = 0; i < foreign_keys_.size(); i++) {
+        if (*(foreign_keys_[i]) != *(node.foreign_keys_[i])) {
+            return false;
+        }
     }
     return true;
 }
@@ -1176,25 +1285,32 @@ common::hash_t CreateIndex::Hash() const {
     hash = common::HashUtil::CombineHashes(hash, common::HashUtil::Hash(namespace_oid_));
     hash = common::HashUtil::CombineHashes(hash, common::HashUtil::Hash(table_oid_));
     hash = common::HashUtil::CombineHashes(hash, common::HashUtil::Hash(index_name_));
-    if (schema_ != nullptr)
+    if (schema_ != nullptr) {
         hash = common::HashUtil::CombineHashes(hash, schema_->Hash());
+    }
     return hash;
 }
 
 bool CreateIndex::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::CREATEINDEX)
+    if (r.GetOpType() != OpType::CREATEINDEX) {
         return false;
+    }
     const CreateIndex &node = *dynamic_cast<const CreateIndex *>(&r);
-    if (namespace_oid_ != node.namespace_oid_)
+    if (namespace_oid_ != node.namespace_oid_) {
         return false;
-    if (table_oid_ != node.table_oid_)
+    }
+    if (table_oid_ != node.table_oid_) {
         return false;
-    if (index_name_ != node.index_name_)
+    }
+    if (index_name_ != node.index_name_) {
         return false;
-    if (schema_ != nullptr && *schema_ != *node.schema_)
+    }
+    if (schema_ != nullptr && *schema_ != *node.schema_) {
         return false;
-    if (schema_ == nullptr && node.schema_ != nullptr)
+    }
+    if (schema_ == nullptr && node.schema_ != nullptr) {
         return false;
+    }
     return (true);
 }
 
@@ -1218,8 +1334,9 @@ common::hash_t CreateNamespace::Hash() const {
 }
 
 bool CreateNamespace::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::CREATENAMESPACE)
+    if (r.GetOpType() != OpType::CREATENAMESPACE) {
         return false;
+    }
     const CreateNamespace &node = *dynamic_cast<const CreateNamespace *>(&r);
     return node.namespace_name_ == namespace_name_;
 }
@@ -1268,27 +1385,37 @@ common::hash_t CreateTrigger::Hash() const {
 }
 
 bool CreateTrigger::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::CREATETRIGGER)
+    if (r.GetOpType() != OpType::CREATETRIGGER) {
         return false;
+    }
     const CreateTrigger &node = *dynamic_cast<const CreateTrigger *>(&r);
-    if (database_oid_ != node.database_oid_)
+    if (database_oid_ != node.database_oid_) {
         return false;
-    if (namespace_oid_ != node.namespace_oid_)
+    }
+    if (namespace_oid_ != node.namespace_oid_) {
         return false;
-    if (table_oid_ != node.table_oid_)
+    }
+    if (table_oid_ != node.table_oid_) {
         return false;
-    if (trigger_name_ != node.trigger_name_)
+    }
+    if (trigger_name_ != node.trigger_name_) {
         return false;
-    if (trigger_funcnames_ != node.trigger_funcnames_)
+    }
+    if (trigger_funcnames_ != node.trigger_funcnames_) {
         return false;
-    if (trigger_args_ != node.trigger_args_)
+    }
+    if (trigger_args_ != node.trigger_args_) {
         return false;
-    if (trigger_columns_ != node.trigger_columns_)
+    }
+    if (trigger_columns_ != node.trigger_columns_) {
         return false;
-    if (trigger_type_ != node.trigger_type_)
+    }
+    if (trigger_type_ != node.trigger_type_) {
         return false;
-    if (trigger_when_ == nullptr)
+    }
+    if (trigger_when_ == nullptr) {
         return node.trigger_when_ == nullptr;
+    }
     return node.trigger_when_ != nullptr && *trigger_when_ == *node.trigger_when_;
 }
 
@@ -1316,23 +1443,29 @@ common::hash_t CreateView::Hash() const {
     hash = common::HashUtil::CombineHashes(hash, common::HashUtil::Hash(database_oid_));
     hash = common::HashUtil::CombineHashes(hash, common::HashUtil::Hash(namespace_oid_));
     hash = common::HashUtil::CombineHashes(hash, common::HashUtil::Hash(view_name_));
-    if (view_query_ != nullptr)
+    if (view_query_ != nullptr) {
         hash = common::HashUtil::CombineHashes(hash, view_query_->Hash());
+    }
     return hash;
 }
 
 bool CreateView::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::CREATEVIEW)
+    if (r.GetOpType() != OpType::CREATEVIEW) {
         return false;
+    }
     const CreateView &node = *dynamic_cast<const CreateView *>(&r);
-    if (database_oid_ != node.database_oid_)
+    if (database_oid_ != node.database_oid_) {
         return false;
-    if (namespace_oid_ != node.namespace_oid_)
+    }
+    if (namespace_oid_ != node.namespace_oid_) {
         return false;
-    if (view_name_ != node.view_name_)
+    }
+    if (view_name_ != node.view_name_) {
         return false;
-    if (view_query_ == nullptr)
+    }
+    if (view_query_ == nullptr) {
         return node.view_query_ == nullptr;
+    }
     return node.view_query_ != nullptr && *view_query_ == *node.view_query_;
 }
 
@@ -1385,27 +1518,37 @@ common::hash_t CreateFunction::Hash() const {
 }
 
 bool CreateFunction::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::CREATEFUNCTION)
+    if (r.GetOpType() != OpType::CREATEFUNCTION) {
         return false;
+    }
     const CreateFunction &node = *dynamic_cast<const CreateFunction *>(&r);
-    if (database_oid_ != node.database_oid_)
+    if (database_oid_ != node.database_oid_) {
         return false;
-    if (namespace_oid_ != node.namespace_oid_)
+    }
+    if (namespace_oid_ != node.namespace_oid_) {
         return false;
-    if (function_name_ != node.function_name_)
+    }
+    if (function_name_ != node.function_name_) {
         return false;
-    if (function_body_ != node.function_body_)
+    }
+    if (function_body_ != node.function_body_) {
         return false;
-    if (param_count_ != node.param_count_)
+    }
+    if (param_count_ != node.param_count_) {
         return false;
-    if (return_type_ != node.return_type_)
+    }
+    if (return_type_ != node.return_type_) {
         return false;
-    if (function_param_types_ != node.function_param_types_)
+    }
+    if (function_param_types_ != node.function_param_types_) {
         return false;
-    if (function_param_names_ != node.function_param_names_)
+    }
+    if (function_param_names_ != node.function_param_names_) {
         return false;
-    if (is_replace_ != node.is_replace_)
+    }
+    if (is_replace_ != node.is_replace_) {
         return false;
+    }
     return language_ == node.language_;
 }
 
@@ -1429,8 +1572,9 @@ common::hash_t DropDatabase::Hash() const {
 }
 
 bool DropDatabase::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::DROPDATABASE)
+    if (r.GetOpType() != OpType::DROPDATABASE) {
         return false;
+    }
     const DropDatabase &node = *dynamic_cast<const DropDatabase *>(&r);
     return node.db_oid_ == db_oid_;
 }
@@ -1455,8 +1599,9 @@ common::hash_t DropTable::Hash() const {
 }
 
 bool DropTable::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::DROPTABLE)
+    if (r.GetOpType() != OpType::DROPTABLE) {
         return false;
+    }
     const DropTable &node = *dynamic_cast<const DropTable *>(&r);
     return node.table_oid_ == table_oid_;
 }
@@ -1481,8 +1626,9 @@ common::hash_t DropIndex::Hash() const {
 }
 
 bool DropIndex::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::DROPINDEX)
+    if (r.GetOpType() != OpType::DROPINDEX) {
         return false;
+    }
     const DropIndex &node = *dynamic_cast<const DropIndex *>(&r);
     return node.index_oid_ == index_oid_;
 }
@@ -1507,8 +1653,9 @@ common::hash_t DropNamespace::Hash() const {
 }
 
 bool DropNamespace::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::DROPNAMESPACE)
+    if (r.GetOpType() != OpType::DROPNAMESPACE) {
         return false;
+    }
     const DropNamespace &node = *dynamic_cast<const DropNamespace *>(&r);
     return node.namespace_oid_ == namespace_oid_;
 }
@@ -1537,15 +1684,19 @@ common::hash_t DropTrigger::Hash() const {
 }
 
 bool DropTrigger::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::DROPTRIGGER)
+    if (r.GetOpType() != OpType::DROPTRIGGER) {
         return false;
+    }
     const DropTrigger &node = *dynamic_cast<const DropTrigger *>(&r);
-    if (database_oid_ != node.database_oid_)
+    if (database_oid_ != node.database_oid_) {
         return false;
-    if (trigger_oid_ != node.trigger_oid_)
+    }
+    if (trigger_oid_ != node.trigger_oid_) {
         return false;
-    if (if_exists_ != node.if_exists_)
+    }
+    if (if_exists_ != node.if_exists_) {
         return false;
+    }
     return node.namespace_oid_ == namespace_oid_;
 }
 
@@ -1573,13 +1724,16 @@ common::hash_t DropView::Hash() const {
 }
 
 bool DropView::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::DROPVIEW)
+    if (r.GetOpType() != OpType::DROPVIEW) {
         return false;
+    }
     const DropView &node = *dynamic_cast<const DropView *>(&r);
-    if (database_oid_ != node.database_oid_)
+    if (database_oid_ != node.database_oid_) {
         return false;
-    if (view_oid_ != node.view_oid_)
+    }
+    if (view_oid_ != node.view_oid_) {
         return false;
+    }
     return if_exists_ == node.if_exists_;
 }
 
@@ -1609,15 +1763,19 @@ common::hash_t Analyze::Hash() const {
 }
 
 bool Analyze::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::ANALYZE)
+    if (r.GetOpType() != OpType::ANALYZE) {
         return false;
+    }
     const Analyze &node = *dynamic_cast<const Analyze *>(&r);
-    if (database_oid_ != node.database_oid_)
+    if (database_oid_ != node.database_oid_) {
         return false;
-    if (table_oid_ != node.table_oid_)
+    }
+    if (table_oid_ != node.table_oid_) {
         return false;
-    if (columns_ != node.columns_)
+    }
+    if (columns_ != node.columns_) {
         return false;
+    }
     return true;
 }
 
@@ -1645,8 +1803,9 @@ Operator CteScan::Make(std::vector<std::vector<common::ManagedPointer<parser::Ab
 }
 
 bool CteScan::operator==(const BaseOperatorNodeContents &r) {
-    if (r.GetOpType() != OpType::CTESCAN)
+    if (r.GetOpType() != OpType::CTESCAN) {
         return false;
+    }
     const CteScan &node = *dynamic_cast<const CteScan *>(&r);
     return table_name_ == node.GetTableName();
 }

@@ -15,8 +15,9 @@ void DiskLogConsumerTask::RunTask() {
 
 void DiskLogConsumerTask::Terminate() {
     // If the task hasn't run yet, yield the thread until it's started
-    while (!run_task_)
+    while (!run_task_) {
         std::this_thread::yield();
+    }
     NOISEPAGE_ASSERT(run_task_, "Cant terminate a task that isnt running");
     // Signal to terminate and force a flush so task persists before LogManager closes buffers
     run_task_ = false;
@@ -51,8 +52,9 @@ uint64_t DiskLogConsumerTask::PersistLogFile() {
     }
     const auto num_buffers = commit_callbacks_.size();
     // Execute the callbacks for the transactions that have been persisted
-    for (auto &callback : commit_callbacks_)
+    for (auto &callback : commit_callbacks_) {
         callback.fn_(callback.arg_);
+    }
     commit_callbacks_.clear();
     return num_buffers;
 }

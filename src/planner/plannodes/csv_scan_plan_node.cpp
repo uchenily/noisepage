@@ -80,26 +80,31 @@ common::hash_t CSVScanPlanNode::Hash() const {
 
 // TODO(Gus): Are file names case sensitive?
 bool CSVScanPlanNode::operator==(const AbstractPlanNode &rhs) const {
-    if (!AbstractScanPlanNode::operator==(rhs))
+    if (!AbstractScanPlanNode::operator==(rhs)) {
         return false;
+    }
 
     const auto &other = static_cast<const CSVScanPlanNode &>(rhs);
 
     // Filename
-    if (file_name_ != other.file_name_)
+    if (file_name_ != other.file_name_) {
         return false;
+    }
 
     // Delimiter
-    if (delimiter_ != other.delimiter_)
+    if (delimiter_ != other.delimiter_) {
         return false;
+    }
 
     // Quote Char
-    if (quote_ != other.quote_)
+    if (quote_ != other.quote_) {
         return false;
+    }
 
     // Escape Char
-    if (escape_ != other.escape_)
+    if (escape_ != other.escape_) {
         return false;
+    }
 
     return value_types_ == other.value_types_;
 }

@@ -25,10 +25,12 @@ void Sema::VisitBinaryOpExpr(ast::BinaryOpExpr *node) {
         auto [result_type, left, right]
             = CheckLogicalOperands(node->Op(), node->Position(), node->Left(), node->Right());
         node->SetType(result_type);
-        if (node->Left() != left)
+        if (node->Left() != left) {
             node->SetLeft(left);
-        if (node->Right() != right)
+        }
+        if (node->Right() != right) {
             node->SetRight(right);
+        }
         break;
     }
     case parsing::Token::Type::AMPERSAND:
@@ -42,10 +44,12 @@ void Sema::VisitBinaryOpExpr(ast::BinaryOpExpr *node) {
         auto [result_type, left, right]
             = CheckArithmeticOperands(node->Op(), node->Position(), node->Left(), node->Right());
         node->SetType(result_type);
-        if (node->Left() != left)
+        if (node->Left() != left) {
             node->SetLeft(left);
-        if (node->Right() != right)
+        }
+        if (node->Right() != right) {
             node->SetRight(right);
+        }
         break;
     }
     default: {
@@ -73,10 +77,12 @@ void Sema::VisitComparisonOpExpr(ast::ComparisonOpExpr *node) {
         auto [result_type, left, right]
             = CheckComparisonOperands(node->Op(), node->Position(), node->Left(), node->Right());
         node->SetType(result_type);
-        if (node->Left() != left)
+        if (node->Left() != left) {
             node->SetLeft(left);
-        if (node->Right() != right)
+        }
+        if (node->Right() != right) {
             node->SetRight(right);
+        }
         break;
     }
     default: {

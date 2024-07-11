@@ -528,8 +528,9 @@ void LogicalInnerJoinToPhysicalInnerIndexJoin::Transform(
 
     // Combine the index scan predicates
     std::vector<AnnotatedExpression> join_preds = r_child->GetPredicates();
-    for (auto &pred : inner_join->GetJoinPredicates())
+    for (auto &pred : inner_join->GetJoinPredicates()) {
         join_preds.push_back(pred);
+    }
 
     std::vector<std::unique_ptr<AbstractOptimizerNode>> empty;
     auto                                                new_child
@@ -958,8 +959,9 @@ void LogicalCreateIndexToPhysicalCreateIndex::Transform(
             auto &col = tbl_schema.GetColumn(cve->GetColumnOid());
             name = cve->GetColumnName();
             nullable = col.Nullable();
-            if (is_var)
+            if (is_var) {
                 varlen_size = col.TypeModifier();
+            }
         } else {
             // TODO(Matt): derive a unique name
             // TODO(wz2): Derive nullability/varlen from non ColumnValue
@@ -967,10 +969,11 @@ void LogicalCreateIndexToPhysicalCreateIndex::Transform(
             varlen_size = UINT16_MAX;
         }
 
-        if (is_var)
+        if (is_var) {
             cols.emplace_back(name, type, varlen_size, nullable, *attr);
-        else
+        } else {
             cols.emplace_back(name, type, nullable, *attr);
+        }
     }
 
     storage::index::IndexType idx_type = storage::index::IndexType::BPLUSTREE;

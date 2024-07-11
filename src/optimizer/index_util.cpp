@@ -77,8 +77,9 @@ std::pair<bool, bool> IndexUtil::SatisfiesPredicateWithIndex(
     }
 
     std::unordered_set<catalog::col_oid_t> mapped_set;
-    for (auto col : mapped_cols)
+    for (auto col : mapped_cols) {
         mapped_set.insert(col);
+    }
 
     return CheckPredicates(index_schema,
                            tbl_oid,
@@ -110,8 +111,9 @@ std::pair<bool, bool> IndexUtil::CheckPredicates(
     bool                                                                     covered_all_columns = true;
     for (const auto &pred : predicates) {
         auto expr = pred.GetExpr();
-        if (expr->HasSubquery())
+        if (expr->HasSubquery()) {
             return std::make_pair(false, false);
+        }
 
         auto type = expr->GetExpressionType();
         switch (type) {
@@ -198,8 +200,9 @@ std::pair<bool, bool> IndexUtil::CheckPredicates(
     }
 
     // No predicate can actually be used
-    if (open_highs.empty() && open_lows.empty())
+    if (open_highs.empty() && open_lows.empty()) {
         return std::make_pair(false, false);
+    }
 
     // Check predicate open/close ordering
     planner::IndexScanType scan_type = planner::IndexScanType::AscendingClosed;
@@ -222,8 +225,9 @@ std::pair<bool, bool> IndexUtil::CheckPredicates(
             // A range is defined but we are doing exact scans, so make ascending closed
             // If already doing ascending closed, ascending open then it would be a matter of
             // picking the right low/high key at the plan_generator stage of processing.
-            if (open_highs[oid] != open_lows[oid] && scan_type == planner::IndexScanType::Exact)
+            if (open_highs[oid] != open_lows[oid] && scan_type == planner::IndexScanType::Exact) {
                 scan_type = planner::IndexScanType::AscendingClosed;
+            }
         } else if (open_highs.find(oid) != open_highs.end()) {
             if (scan_type == planner::IndexScanType::Exact || scan_type == planner::IndexScanType::AscendingClosed
                 || scan_type == planner::IndexScanType::AscendingOpenHigh) {

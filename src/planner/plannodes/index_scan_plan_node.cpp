@@ -84,16 +84,19 @@ common::hash_t IndexScanPlanNode::Hash() const {
 }
 
 bool IndexScanPlanNode::operator==(const AbstractPlanNode &rhs) const {
-    if (!AbstractScanPlanNode::operator==(rhs))
+    if (!AbstractScanPlanNode::operator==(rhs)) {
         return false;
+    }
 
     auto &other = static_cast<const IndexScanPlanNode &>(rhs);
 
-    if (column_oids_ != other.column_oids_)
+    if (column_oids_ != other.column_oids_) {
         return false;
+    }
 
-    if (cover_all_columns_ != other.cover_all_columns_)
+    if (cover_all_columns_ != other.cover_all_columns_) {
         return false;
+    }
 
     // Index Oid
     return (index_oid_ == other.index_oid_);

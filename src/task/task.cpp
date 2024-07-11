@@ -13,10 +13,11 @@ void TaskDDL::Execute(common::ManagedPointer<util::QueryExecUtil> query_exec_uti
     query_exec_util->EndTransaction(status);
 
     if (sync_) {
-        if (status)
+        if (status) {
             sync_->Success(DummyResult{});
-        else
+        } else {
             sync_->Fail(query_exec_util->GetError());
+        }
     }
 }
 
@@ -52,8 +53,9 @@ void TaskDML::Execute(common::ManagedPointer<util::QueryExecUtil> query_exec_uti
         // Execute with specified parameters only if compilation succeeded
         if (result) {
             for (auto &param_vec : params_) {
-                if (!result)
+                if (!result) {
                     break;
+                }
 
                 result &= query_exec_util->ExecuteQuery(query_text_,
                                                         tuple_fn_,
@@ -74,10 +76,11 @@ void TaskDML::Execute(common::ManagedPointer<util::QueryExecUtil> query_exec_uti
 
     query_exec_util->EndTransaction(result && !force_abort_);
     if (sync_) {
-        if (result)
+        if (result) {
             sync_->Success(DummyResult{});
-        else
+        } else {
             sync_->Fail(query_exec_util->GetError());
+        }
     }
 }
 

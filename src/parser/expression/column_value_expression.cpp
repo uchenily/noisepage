@@ -30,30 +30,38 @@ common::hash_t ColumnValueExpression::Hash() const {
 }
 
 bool ColumnValueExpression::operator==(const AbstractExpression &rhs) const {
-    if (GetExpressionType() != rhs.GetExpressionType())
+    if (GetExpressionType() != rhs.GetExpressionType()) {
         return false;
-    if (GetReturnValueType() != rhs.GetReturnValueType())
+    }
+    if (GetReturnValueType() != rhs.GetReturnValueType()) {
         return false;
+    }
 
     auto const &other = dynamic_cast<const ColumnValueExpression &>(rhs);
-    if (GetColumnName() != other.GetColumnName())
+    if (GetColumnName() != other.GetColumnName()) {
         return false;
-    if (GetTableAlias() != other.GetTableAlias())
+    }
+    if (GetTableAlias() != other.GetTableAlias()) {
         return false;
-    if (GetColumnOid() != other.GetColumnOid())
+    }
+    if (GetColumnOid() != other.GetColumnOid()) {
         return false;
-    if (GetTableOid() != other.GetTableOid())
+    }
+    if (GetTableOid() != other.GetTableOid()) {
         return false;
-    if (!(GetAlias() == rhs.GetAlias()))
+    }
+    if (!(GetAlias() == rhs.GetAlias())) {
         return false;
+    }
     return GetDatabaseOid() == other.GetDatabaseOid();
 }
 
 void ColumnValueExpression::DeriveExpressionName() {
-    if (!(this->GetAlias().Empty()))
+    if (!(this->GetAlias().Empty())) {
         this->SetExpressionName(this->GetAlias().GetName());
-    else
+    } else {
         this->SetExpressionName(column_name_);
+    }
 }
 
 void ColumnValueExpression::Accept(common::ManagedPointer<binder::SqlNodeVisitor> v) {

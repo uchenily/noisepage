@@ -226,8 +226,9 @@ void ModelServerManager::StopModelServer() {
             ::kill(py_pid_, SIGTERM);
         }
     }
-    if (thd_.joinable())
+    if (thd_.joinable()) {
         thd_.join();
+    }
 }
 
 bool ModelServerManager::TrainModel(ModelType::Type                                        model,

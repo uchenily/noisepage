@@ -143,8 +143,9 @@ void BPlusTreeIndex<KeyType>::ScanKey(const transaction::TransactionContext &txn
 
     // Perform visibility check on result
     for (const auto &result : results) {
-        if (IsVisible(txn, result))
+        if (IsVisible(txn, result)) {
             value_list->emplace_back(result);
+        }
     }
 
     NOISEPAGE_ASSERT(!(metadata_.GetSchema().Unique()) || (metadata_.GetSchema().Unique() && value_list->size() <= 1),
@@ -174,10 +175,12 @@ void BPlusTreeIndex<KeyType>::ScanAscending(const transaction::TransactionContex
 
     // Build search keys
     KeyType index_low_key, index_high_key;
-    if (low_key_exists)
+    if (low_key_exists) {
         index_low_key.SetFromProjectedRow(*low_key, metadata_, num_attrs);
-    if (high_key_exists)
+    }
+    if (high_key_exists) {
         index_high_key.SetFromProjectedRow(*high_key, metadata_, num_attrs);
+    }
 
     bool scan_completed = false;
 
@@ -216,8 +219,9 @@ void BPlusTreeIndex<KeyType>::ScanDescending(const transaction::TransactionConte
     }
 
     for (const auto &result : results) {
-        if (IsVisible(txn, result))
+        if (IsVisible(txn, result)) {
             value_list->emplace_back(result);
+        }
     }
 }
 

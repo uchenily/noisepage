@@ -106,8 +106,9 @@ common::hash_t AbstractPlanNode::Hash() const {
 }
 
 bool AbstractPlanNode::operator==(const AbstractPlanNode &rhs) const {
-    if (GetPlanNodeType() != rhs.GetPlanNodeType())
+    if (GetPlanNodeType() != rhs.GetPlanNodeType()) {
         return false;
+    }
 
     // OutputSchema
     auto other_output_schema = rhs.GetOutputSchema();
@@ -115,16 +116,19 @@ bool AbstractPlanNode::operator==(const AbstractPlanNode &rhs) const {
         || (output_schema_ != nullptr && other_output_schema == nullptr)) {
         return false;
     }
-    if (output_schema_ != nullptr && *output_schema_ != *other_output_schema)
+    if (output_schema_ != nullptr && *output_schema_ != *other_output_schema) {
         return false;
+    }
 
     // Children
     auto num = GetChildren().size();
-    if (num != rhs.GetChildren().size())
+    if (num != rhs.GetChildren().size()) {
         return false;
+    }
     for (unsigned int i = 0; i < num; i++) {
-        if (*GetChild(i) != *const_cast<AbstractPlanNode *>(rhs.GetChild(i)))
+        if (*GetChild(i) != *const_cast<AbstractPlanNode *>(rhs.GetChild(i))) {
             return false;
+        }
     }
     return true;
 }

@@ -79,8 +79,9 @@ bool JoinManager::AdvanceInitial(const uint32_t idx) {
     }
 
     // Reset in case we need to retry this step.
-    if (idx != 0)
+    if (idx != 0) {
         probes_[idx]->Reset();
+    }
 
     // We didn't find anything.
     return false;
@@ -118,8 +119,9 @@ bool JoinManager::Next() {
     first_join_ = false;
 
     // If we've advanced, apply the filter.
-    if (advanced)
+    if (advanced) {
         curr_vpi_->SetVectorProjection(input_batch);
+    }
 
     // Done.
     return advanced;

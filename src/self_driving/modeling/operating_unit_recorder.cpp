@@ -248,8 +248,9 @@ size_t OperatingUnitRecorder::ComputeKeySize(common::ManagedPointer<const catalo
                                              const std::vector<catalog::indexkeycol_oid_t>     &cols,
                                              size_t                                            *num_key) {
     std::unordered_set<catalog::indexkeycol_oid_t> kcols;
-    for (auto &col : cols)
+    for (auto &col : cols) {
         kcols.insert(col);
+    }
 
     size_t key_size = 0;
     for (auto &col : schema->GetColumns()) {
@@ -345,11 +346,12 @@ void OperatingUnitRecorder::AggregateFeatures(selfdriving::ExecutionOperatingUni
             auto index_scan_plan = reinterpret_cast<const planner::IndexScanPlanNode *>(plan);
             index_oid = index_scan_plan->GetIndexOid();
             table_oid = index_scan_plan->GetTableOid();
-            if (table_num_rows == 0)
+            if (table_num_rows == 0) {
                 // When we didn't run Analyze
                 num_rows = index_scan_plan->GetIndexSize();
-            else
+            } else {
                 num_rows = table_num_rows;
+            }
 
             const auto &idx_schema = accessor_->GetIndexSchema(index_oid);
             std::tie(specific_feature0, specific_feature1) = DeriveIndexSpecificFeatures(idx_schema);
@@ -603,8 +605,9 @@ void OperatingUnitRecorder::Visit(const planner::IndexScanPlanNode *plan) {
     // The total key size is the size of the key being used to lookup
     std::vector<catalog::indexkeycol_oid_t> col_vec;
     col_vec.reserve(cols.size());
-    for (auto col : cols)
+    for (auto col : cols) {
         col_vec.emplace_back(col);
+    }
 
     size_t num_keys = col_vec.size();
     size_t key_size = ComputeKeySize(plan->GetIndexOid(), col_vec, &num_keys);
@@ -860,10 +863,11 @@ void OperatingUnitRecorder::Visit(const planner::OrderByPlanNode *plan) {
         const auto *c_plan = plan->GetChild(0);
         RecordArithmeticFeatures(c_plan, 1);
         ExecutionOperatingUnitType ou_type;
-        if (plan->HasLimit())
+        if (plan->HasLimit()) {
             ou_type = ExecutionOperatingUnitType::SORT_TOPK_BUILD;
-        else
+        } else {
             ou_type = ExecutionOperatingUnitType::SORT_BUILD;
+        }
         AggregateFeatures(ou_type, key_size, num_key, c_plan, 1, scale);
     } else if (translator->IsScanPipeline(*current_pipeline_)) {
         // SORT_ITERATE will do any output computations

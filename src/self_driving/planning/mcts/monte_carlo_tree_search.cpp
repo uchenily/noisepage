@@ -67,8 +67,9 @@ MonteCarloTreeSearch::MonteCarloTreeSearch(common::ManagedPointer<PlanningContex
 void MonteCarloTreeSearch::RunSimulation(uint64_t simulation_number, uint64_t memory_constraint) {
     for (uint64_t i = 0; i < simulation_number; i++) {
         std::unordered_set<action_id_t> candidate_actions;
-        for (auto action_id : candidate_actions_)
+        for (auto action_id : candidate_actions_) {
             candidate_actions.insert(action_id);
+        }
         auto vertex = TreeNode::Selection(common::ManagedPointer(root_),
                                           *planning_context_,
                                           action_map_,

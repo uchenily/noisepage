@@ -24,38 +24,51 @@ nlohmann::json JoinDefinition::ToJson() const {
 
 common::hash_t JoinDefinition::Hash() const {
     common::hash_t hash = common::HashUtil::Hash(type_);
-    if (left_ != nullptr)
+    if (left_ != nullptr) {
         hash = common::HashUtil::CombineHashes(hash, left_->Hash());
-    if (right_ != nullptr)
+    }
+    if (right_ != nullptr) {
         hash = common::HashUtil::CombineHashes(hash, right_->Hash());
-    if (condition_ != nullptr)
+    }
+    if (condition_ != nullptr) {
         hash = common::HashUtil::CombineHashes(hash, condition_->Hash());
+    }
     return hash;
 }
 
 bool JoinDefinition::operator==(const JoinDefinition &rhs) const {
-    if (type_ != rhs.type_)
+    if (type_ != rhs.type_) {
         return false;
-    if (left_ != nullptr && rhs.left_ == nullptr)
+    }
+    if (left_ != nullptr && rhs.left_ == nullptr) {
         return false;
-    if (left_ == nullptr && rhs.left_ != nullptr)
+    }
+    if (left_ == nullptr && rhs.left_ != nullptr) {
         return false;
-    if (left_ != nullptr && rhs.left_ != nullptr && *(left_) != *(rhs.left_))
+    }
+    if (left_ != nullptr && rhs.left_ != nullptr && *(left_) != *(rhs.left_)) {
         return false;
+    }
 
-    if (right_ != nullptr && rhs.right_ == nullptr)
+    if (right_ != nullptr && rhs.right_ == nullptr) {
         return false;
-    if (right_ == nullptr && rhs.right_ != nullptr)
+    }
+    if (right_ == nullptr && rhs.right_ != nullptr) {
         return false;
-    if (right_ != nullptr && rhs.right_ != nullptr && *(right_) != *(rhs.right_))
+    }
+    if (right_ != nullptr && rhs.right_ != nullptr && *(right_) != *(rhs.right_)) {
         return false;
+    }
 
-    if (condition_ != nullptr && rhs.condition_ == nullptr)
+    if (condition_ != nullptr && rhs.condition_ == nullptr) {
         return false;
-    if (condition_ == nullptr && rhs.condition_ != nullptr)
+    }
+    if (condition_ == nullptr && rhs.condition_ != nullptr) {
         return false;
-    if (condition_ != nullptr && rhs.condition_ != nullptr && *(condition_) != *(rhs.condition_))
+    }
+    if (condition_ != nullptr && rhs.condition_ != nullptr && *(condition_) != *(rhs.condition_)) {
         return false;
+    }
     return true;
 }
 
@@ -162,12 +175,15 @@ DEFINE_JSON_BODY_DECLARATIONS(TableRef);
 common::hash_t TableRef::Hash() const {
     common::hash_t hash = common::HashUtil::Hash(type_);
     hash = common::HashUtil::CombineHashes(hash, std::hash<AliasType>{}(alias_));
-    if (table_info_ != nullptr)
+    if (table_info_ != nullptr) {
         hash = common::HashUtil::CombineHashes(hash, table_info_->Hash());
-    if (select_ != nullptr)
+    }
+    if (select_ != nullptr) {
         hash = common::HashUtil::CombineHashes(hash, select_->Hash());
-    if (join_ != nullptr)
+    }
+    if (join_ != nullptr) {
         hash = common::HashUtil::CombineHashes(hash, join_->Hash());
+    }
     for (const auto &tb : list_) {
         hash = common::HashUtil::CombineHashes(hash, tb->Hash());
     }
@@ -175,36 +191,50 @@ common::hash_t TableRef::Hash() const {
 }
 
 bool TableRef::operator==(const TableRef &rhs) const {
-    if (type_ != rhs.type_)
+    if (type_ != rhs.type_) {
         return false;
-    if (alias_ != rhs.alias_)
+    }
+    if (alias_ != rhs.alias_) {
         return false;
-    if (table_info_ != nullptr && rhs.table_info_ == nullptr)
+    }
+    if (table_info_ != nullptr && rhs.table_info_ == nullptr) {
         return false;
-    if (table_info_ == nullptr && rhs.table_info_ != nullptr)
+    }
+    if (table_info_ == nullptr && rhs.table_info_ != nullptr) {
         return false;
-    if (table_info_ != nullptr && rhs.table_info_ != nullptr && *(table_info_) != *(rhs.table_info_))
+    }
+    if (table_info_ != nullptr && rhs.table_info_ != nullptr && *(table_info_) != *(rhs.table_info_)) {
         return false;
+    }
 
-    if (select_ != nullptr && rhs.select_ == nullptr)
+    if (select_ != nullptr && rhs.select_ == nullptr) {
         return false;
-    if (select_ == nullptr && rhs.select_ != nullptr)
+    }
+    if (select_ == nullptr && rhs.select_ != nullptr) {
         return false;
-    if (select_ != nullptr && rhs.select_ != nullptr && *(select_) != *(rhs.select_))
+    }
+    if (select_ != nullptr && rhs.select_ != nullptr && *(select_) != *(rhs.select_)) {
         return false;
+    }
 
-    if (join_ != nullptr && rhs.join_ == nullptr)
+    if (join_ != nullptr && rhs.join_ == nullptr) {
         return false;
-    if (join_ == nullptr && rhs.join_ != nullptr)
+    }
+    if (join_ == nullptr && rhs.join_ != nullptr) {
         return false;
-    if (join_ != nullptr && rhs.join_ != nullptr && *(join_) != *(rhs.join_))
+    }
+    if (join_ != nullptr && rhs.join_ != nullptr && *(join_) != *(rhs.join_)) {
         return false;
+    }
 
-    if (list_.size() != rhs.list_.size())
+    if (list_.size() != rhs.list_.size()) {
         return false;
-    for (size_t i = 0; i < list_.size(); i++)
-        if (*(list_[i]) != *(rhs.list_[i]))
+    }
+    for (size_t i = 0; i < list_.size(); i++) {
+        if (*(list_[i]) != *(rhs.list_[i])) {
             return false;
+        }
+    }
     return true;
 }
 

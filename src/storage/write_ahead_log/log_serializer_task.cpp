@@ -140,8 +140,9 @@ std::tuple<uint64_t, uint64_t, uint64_t> LogSerializerTask::Process() {
         }
 
         // Mark the last buffer that was written to as full
-        if (buffers_processed)
+        if (buffers_processed) {
             HandFilledBufferToWriter();
+        }
 
         // Bulk remove all the transactions we serialized. This prevents having to take the TimestampManager's latch
         // once for each timestamp we remove.
@@ -227,8 +228,9 @@ LogSerializerTask::SerializeBuffer(IterableBufferSegment<LogRecord> *buffer_to_s
             // If a transaction is read-only, then the only record it generates is its commit record. This commit record
             // is necessary for the transaction's callback function to be invoked, but there is no need to serialize it,
             // as it corresponds to a transaction with nothing to redo.
-            if (!commit_record->IsReadOnly())
+            if (!commit_record->IsReadOnly()) {
                 num_bytes += SerializeRecord(record);
+            }
             commits_in_buffer_.emplace_back(CommitCallback{commit_record->CommitCallback(),
                                                            commit_record->CommitCallbackArg(),
                                                            record.TxnBegin(),

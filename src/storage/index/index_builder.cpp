@@ -35,18 +35,21 @@ Index *IndexBuilder::Build() const {
 
     switch (key_schema_.Type()) {
     case IndexType::BWTREE: {
-        if (simple_key && metadata.KeySize() <= COMPACTINTSKEY_MAX_SIZE)
+        if (simple_key && metadata.KeySize() <= COMPACTINTSKEY_MAX_SIZE) {
             return BuildBwTreeIntsKey(std::move(metadata));
+        }
         return BuildBwTreeGenericKey(std::move(metadata));
     }
     case IndexType::HASHMAP: {
-        if (simple_key && metadata.KeySize() <= HASHKEY_MAX_SIZE)
+        if (simple_key && metadata.KeySize() <= HASHKEY_MAX_SIZE) {
             return BuildHashIntsKey(std::move(metadata));
+        }
         return BuildHashGenericKey(std::move(metadata));
     }
     case IndexType::BPLUSTREE: {
-        if (simple_key && metadata.KeySize() <= COMPACTINTSKEY_MAX_SIZE)
+        if (simple_key && metadata.KeySize() <= COMPACTINTSKEY_MAX_SIZE) {
             return BuildBPlusTreeIntsKey(std::move(metadata));
+        }
         return BuildBPlusTreeGenericKey(std::move(metadata));
     }
     default:

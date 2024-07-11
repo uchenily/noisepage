@@ -47,14 +47,16 @@ common::hash_t AbstractScanPlanNode::Hash() const {
 }
 
 bool AbstractScanPlanNode::operator==(const AbstractPlanNode &rhs) const {
-    if (!AbstractPlanNode::operator==(rhs))
+    if (!AbstractPlanNode::operator==(rhs)) {
         return false;
+    }
 
     auto &other = dynamic_cast<const AbstractScanPlanNode &>(rhs);
 
     // Database Oid
-    if (database_oid_ != other.database_oid_)
+    if (database_oid_ != other.database_oid_) {
         return false;
+    }
 
     // Predicate
     if ((scan_predicate_ == nullptr && other.scan_predicate_ != nullptr)
@@ -66,8 +68,9 @@ bool AbstractScanPlanNode::operator==(const AbstractPlanNode &rhs) const {
     }
 
     // Is For Update Flag
-    if (is_for_update_ != other.is_for_update_)
+    if (is_for_update_ != other.is_for_update_) {
         return false;
+    }
 
     return true;
 }

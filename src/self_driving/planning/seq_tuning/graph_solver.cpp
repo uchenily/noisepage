@@ -44,13 +44,15 @@ GraphSolver::GraphSolver(PlanningContext                                        
 
         // initialize nodes with each of the config
         for (auto const &config_set : candidate_configurations_by_segment.at(segment_index)) {
-            if (config_set.empty() || !IsValidConfig(*planning_context, structure_map, config_set))
+            if (config_set.empty() || !IsValidConfig(*planning_context, structure_map, config_set)) {
                 continue;
+            }
 
             action_state.SetIntervals(segment_index + 1, end_segment_index);
 
-            for (auto const action : config_set)
+            for (auto const action : config_set) {
                 structure_map.at(action)->ModifyActionState(&action_state);
+            }
 
             // Compute memory consumption
             bool satisfy_memory_constraint = true;
@@ -60,8 +62,9 @@ GraphSolver::GraphSolver(PlanningContext                                        
                                                                   action_state,
                                                                   segment_index,
                                                                   structure_map);
-            if (memory > memory_constraint)
+            if (memory > memory_constraint) {
                 satisfy_memory_constraint = false;
+            }
 
             double node_cost = MEMORY_CONSUMPTION_VIOLATION_COST;
 
@@ -140,8 +143,9 @@ double GraphSolver::RecoverShortestPath(PathSolution *shortest_path) {
 
     while (curr_node != nullptr) {
         best_config_path->push_back(curr_node->GetConfig());
-        if (best_config_set != nullptr)
+        if (best_config_set != nullptr) {
             best_config_set->emplace(curr_node->GetConfig());
+        }
 
         SELFDRIVING_LOG_DEBUG(" Reversed LEVEL {} : config {}, node_cost {}, best_dist {}",
                               best_config_path->size(),

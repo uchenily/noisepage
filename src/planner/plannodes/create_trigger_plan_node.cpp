@@ -86,32 +86,38 @@ common::hash_t CreateTriggerPlanNode::Hash() const {
 }
 
 bool CreateTriggerPlanNode::operator==(const AbstractPlanNode &rhs) const {
-    if (!AbstractPlanNode::operator==(rhs))
+    if (!AbstractPlanNode::operator==(rhs)) {
         return false;
+    }
 
     auto &other = dynamic_cast<const CreateTriggerPlanNode &>(rhs);
 
     // Database OID
-    if (database_oid_ != other.database_oid_)
+    if (database_oid_ != other.database_oid_) {
         return false;
+    }
 
     // Namespace OID
-    if (namespace_oid_ != other.namespace_oid_)
+    if (namespace_oid_ != other.namespace_oid_) {
         return false;
+    }
 
     // Table OID
-    if (table_oid_ != other.table_oid_)
+    if (table_oid_ != other.table_oid_) {
         return false;
+    }
 
     // Trigger_name
-    if (GetTriggerName() != other.GetTriggerName())
+    if (GetTriggerName() != other.GetTriggerName()) {
         return false;
+    }
 
     // Trigger funcnames
     const auto &trigger_funcnames = GetTriggerFuncName();
     const auto &other_trigger_funcnames = other.GetTriggerFuncName();
-    if (trigger_funcnames.size() != other_trigger_funcnames.size())
+    if (trigger_funcnames.size() != other_trigger_funcnames.size()) {
         return false;
+    }
 
     for (size_t i = 0; i < trigger_funcnames.size(); i++) {
         if (trigger_funcnames[i] != other_trigger_funcnames[i]) {
@@ -122,8 +128,9 @@ bool CreateTriggerPlanNode::operator==(const AbstractPlanNode &rhs) const {
     // Trigger args
     const auto &trigger_args = GetTriggerArgs();
     const auto &other_trigger_args = other.GetTriggerArgs();
-    if (trigger_args.size() != other_trigger_args.size())
+    if (trigger_args.size() != other_trigger_args.size()) {
         return false;
+    }
 
     for (size_t i = 0; i < trigger_args.size(); i++) {
         if (trigger_args[i] != other_trigger_args[i]) {
@@ -134,8 +141,9 @@ bool CreateTriggerPlanNode::operator==(const AbstractPlanNode &rhs) const {
     // Trigger columns
     const auto &trigger_columns = GetTriggerColumns();
     const auto &other_trigger_columns = other.GetTriggerColumns();
-    if (trigger_columns.size() != other_trigger_columns.size())
+    if (trigger_columns.size() != other_trigger_columns.size()) {
         return false;
+    }
 
     for (size_t i = 0; i < trigger_columns.size(); i++) {
         if (trigger_columns[i] != other_trigger_columns[i]) {
@@ -147,14 +155,17 @@ bool CreateTriggerPlanNode::operator==(const AbstractPlanNode &rhs) const {
     auto trigger_when = GetTriggerWhen();
     auto other_trigger_when = other.GetTriggerWhen();
     if ((trigger_when == nullptr && other_trigger_when != nullptr)
-        || (trigger_when != nullptr && other_trigger_when == nullptr))
+        || (trigger_when != nullptr && other_trigger_when == nullptr)) {
         return false;
-    if (trigger_when != nullptr && *trigger_when != *other_trigger_when)
+    }
+    if (trigger_when != nullptr && *trigger_when != *other_trigger_when) {
         return false;
+    }
 
     // Trigger_type
-    if (GetTriggerType() != other.GetTriggerType())
+    if (GetTriggerType() != other.GetTriggerType()) {
         return false;
+    }
 
     return true;
 }

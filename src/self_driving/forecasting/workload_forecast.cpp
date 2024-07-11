@@ -76,8 +76,9 @@ void WorkloadForecast::CreateSegments() {
             curr_segment = std::unordered_map<execution::query_id_t, double>();
         }
 
-        if (curr_segment.find(it.second) == curr_segment.end())
+        if (curr_segment.find(it.second) == curr_segment.end()) {
             curr_segment.emplace(it.second, 0);
+        }
         curr_segment[it.second] += 1;
     }
 
@@ -97,14 +98,16 @@ void WorkloadForecast::LoadQueryText() {
     // Create an input filestream
     std::ifstream query_text_file(std::string(metrics::QueryTraceMetricRawData::FILES[0]).c_str());
     // Make sure the file is open
-    if (!query_text_file.is_open())
+    if (!query_text_file.is_open()) {
         throw PILOT_EXCEPTION(fmt::format("Could not open file {}", metrics::QueryTraceMetricRawData::FILES[0]),
                               common::ErrorCode::ERRCODE_IO_ERROR);
+    }
 
     // Helper vars
     std::string line;
-    if (!query_text_file.good())
+    if (!query_text_file.good()) {
         throw PILOT_EXCEPTION("File stream is not good", common::ErrorCode::ERRCODE_IO_ERROR);
+    }
 
     // ignore header
     std::getline(query_text_file, line);
@@ -146,8 +149,9 @@ void WorkloadForecast::LoadQueryText() {
             line.erase(0, pos + 2);
             colnum++;
         }
-        if (!parse_succ)
+        if (!parse_succ) {
             continue;
+        }
 
         db_oid = static_cast<uint64_t>(std::stoi(val_vec[0]));
         query_id = static_cast<execution::query_id_t>(std::stoi(val_vec[1]));
@@ -174,14 +178,16 @@ void WorkloadForecast::LoadQueryTrace() {
     // Create an input filestream
     std::ifstream trace_file(std::string(metrics::QueryTraceMetricRawData::FILES[1]).c_str());
     // Make sure the file is open
-    if (!trace_file.is_open())
+    if (!trace_file.is_open()) {
         throw PILOT_EXCEPTION(fmt::format("Could not open file {}", metrics::QueryTraceMetricRawData::FILES[1]),
                               common::ErrorCode::ERRCODE_IO_ERROR);
+    }
 
     // Helper vars
     std::string line, param_string;
-    if (!trace_file.good())
+    if (!trace_file.good()) {
         throw PILOT_EXCEPTION("File stream is not good", common::ErrorCode::ERRCODE_IO_ERROR);
+    }
 
     // ignore header
     std::getline(trace_file, line);
@@ -210,8 +216,9 @@ void WorkloadForecast::LoadQueryTrace() {
             colnum++;
         }
 
-        if (!parse_succ)
+        if (!parse_succ) {
             continue;
+        }
 
         // Database id is recorded here for consistency with LoadQueryText but no use for now.
         // db_oid = static_cast<uint64_t>(std::stoi(val_vec[0]));

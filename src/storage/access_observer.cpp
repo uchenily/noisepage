@@ -18,8 +18,9 @@ void AccessObserver::ObserveGCInvocation() {
 void AccessObserver::ObserveWrite(RawBlock *block) {
     // The compactor is only concerned with blocks that are already full. We assume that partially empty blocks are
     // always hot.
-    if (block->GetInsertHead() == block->data_table_->accessor_.GetBlockLayout().NumSlots())
+    if (block->GetInsertHead() == block->data_table_->accessor_.GetBlockLayout().NumSlots()) {
         last_touched_[block] = gc_epoch_;
+    }
 }
 
 } // namespace noisepage::storage

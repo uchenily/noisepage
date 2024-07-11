@@ -54,16 +54,19 @@ namespace {
     // Is the provided date a valid calendar date?
     bool IsValidCalendarDate(int32_t year, int32_t month, int32_t day) {
         // There isn't a year 0. We represent 1 BC as year zero, 2 BC as -1, etc.
-        if (year == 0)
+        if (year == 0) {
             return false;
+        }
 
         // Month.
-        if (month < 1 || month > K_MONTHS_PER_YEAR)
+        if (month < 1 || month > K_MONTHS_PER_YEAR) {
             return false;
+        }
 
         // Day.
-        if (day < 1 || day > K_DAYS_PER_MONTH[IsLeapYear(year)][month - 1])
+        if (day < 1 || day > K_DAYS_PER_MONTH[IsLeapYear(year)][month - 1]) {
             return false;
+        }
 
         // Looks good.
         return true;
@@ -135,8 +138,9 @@ namespace {
 
     // Check if a string value ends with string ending
     bool EndsWith(const char *str, std::size_t len, const char *suffix, std::size_t suffix_len) {
-        if (suffix_len > len)
+        if (suffix_len > len) {
             return false;
+        }
         return (strncmp(str + len - suffix_len, suffix, suffix_len) == 0);
     }
 
@@ -194,10 +198,12 @@ Date Date::FromString(const char *str, std::size_t len) {
     const char *ptr = str, *limit = ptr + len;
 
     // Trim leading and trailing whitespace
-    while (ptr != limit && static_cast<bool>(std::isspace(*ptr)))
+    while (ptr != limit && static_cast<bool>(std::isspace(*ptr))) {
         ptr++;
-    while (ptr != limit && static_cast<bool>(std::isspace(*(limit - 1))))
+    }
+    while (ptr != limit && static_cast<bool>(std::isspace(*(limit - 1)))) {
         limit--;
+    }
 
     uint32_t year = 0, month = 0, day = 0;
 
@@ -233,8 +239,9 @@ Date Date::FromString(const char *str, std::size_t len) {
 
     // Day
     while (true) {
-        if (ptr == limit)
+        if (ptr == limit) {
             break;
+        }
         char c = *ptr++;
         if (static_cast<bool>(std::isdigit(c))) {
             day = day * 10 + (c - '0');
@@ -364,8 +371,9 @@ int32_t Timestamp::ExtractDayOfWeek() const {
 
     date += 1;
     date %= 7;
-    if (date < 0)
+    if (date < 0) {
         date += 7;
+    }
     return date;
 }
 
@@ -425,13 +433,16 @@ Timestamp Timestamp::FromString(const char *str, std::size_t len) {
     const char *ptr = str, *limit = ptr + len;
 
     // Trim leading and trailing whitespace
-    while (ptr != limit && static_cast<bool>(std::isspace(*ptr)))
+    while (ptr != limit && static_cast<bool>(std::isspace(*ptr))) {
         ptr++;
-    while (ptr != limit && static_cast<bool>(std::isspace(*(limit - 1))))
+    }
+    while (ptr != limit && static_cast<bool>(std::isspace(*(limit - 1)))) {
         limit--;
+    }
 
-    if (EndsWith(ptr, static_cast<size_t>(limit - ptr), K_TIMESTAMP_SUFFIX.data(), K_TIMESTAMP_SUFFIX.size()))
+    if (EndsWith(ptr, static_cast<size_t>(limit - ptr), K_TIMESTAMP_SUFFIX.data(), K_TIMESTAMP_SUFFIX.size())) {
         limit -= K_TIMESTAMP_SUFFIX.size();
+    }
 
     uint32_t year = 0, month = 0, day = 0, hour = 0, min = 0, sec = 0, milli = 0, micro = 0;
 
@@ -589,14 +600,16 @@ Timestamp Timestamp::AdjustTimeZone(char        c,
                                     const char *ptr,
                                     const char *limit) {
     bool sign = false;
-    if (c == '+')
+    if (c == '+') {
         sign = true;
+    }
     int32_t timezone_diff = 0;
 
     // Parse timezone
     while (true) {
-        if (ptr == limit)
+        if (ptr == limit) {
             break;
+        }
         c = *ptr++;
         if (static_cast<bool>(std::isdigit(c))) {
             timezone_diff = timezone_diff * 10 + (c - '0');
@@ -608,8 +621,9 @@ Timestamp Timestamp::AdjustTimeZone(char        c,
     // If sign is + then must subtract hours to arrive at UTC, otherwise must add hours
     if (sign) {
         // Check valid timezone
-        if (timezone_diff > 14 || timezone_diff < 0)
+        if (timezone_diff > 14 || timezone_diff < 0) {
             throw CONVERSION_EXCEPTION(fmt::format("timezone +{} out of range", timezone_diff));
+        }
 
         hour -= timezone_diff;
 
@@ -628,8 +642,9 @@ Timestamp Timestamp::AdjustTimeZone(char        c,
         }
     } else {
         // Check valid timezone
-        if (timezone_diff > 12 || timezone_diff < 0)
+        if (timezone_diff > 12 || timezone_diff < 0) {
             throw CONVERSION_EXCEPTION(fmt::format("timezone -{} out of range", timezone_diff));
+        }
 
         hour += timezone_diff;
 

@@ -100,8 +100,9 @@ void RecoveryManager::RecoverFromLogs(const common::ManagedPointer<AbstractLogPr
         auto *log_record = pair.first;
 
         // If we have exhausted all the logs, break from the loop
-        if (log_record == nullptr)
+        if (log_record == nullptr) {
             break;
+        }
 
         switch (log_record->RecordType()) {
         case (LogRecordType::ABORT): {
@@ -230,8 +231,9 @@ RecoveryManager::ProcessDeferredTransactions(noisepage::transaction::timestamp_t
     }
 
     // If we actually processed some txns, remove them from the set
-    if (txns_processed > 0)
+    if (txns_processed > 0) {
         deferred_txns_.erase(deferred_txns_.begin(), upper_bound_it);
+    }
 
     return {txns_processed, records_processed};
 }
@@ -414,8 +416,9 @@ void RecoveryManager::UpdateIndexesOnTable(transaction::TransactionContext      
     }
 
     // If there's no indexes on the table, we can return
-    if (index_objects.empty())
+    if (index_objects.empty()) {
         return;
+    }
 
     // Compute largest PR size we need for index PRs.
     uint32_t max_index_key_pr_size = 0;

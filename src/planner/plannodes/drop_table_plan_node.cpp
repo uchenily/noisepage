@@ -31,8 +31,9 @@ common::hash_t DropTablePlanNode::Hash() const {
 }
 
 bool DropTablePlanNode::operator==(const AbstractPlanNode &rhs) const {
-    if (!AbstractPlanNode::operator==(rhs))
+    if (!AbstractPlanNode::operator==(rhs)) {
         return false;
+    }
 
     auto &other = dynamic_cast<const DropTablePlanNode &>(rhs);
 

@@ -59,10 +59,12 @@ common::hash_t SeqScanPlanNode::Hash() const {
 
 bool SeqScanPlanNode::operator==(const AbstractPlanNode &rhs) const {
     auto &other = static_cast<const SeqScanPlanNode &>(rhs);
-    if (!AbstractScanPlanNode::operator==(rhs))
+    if (!AbstractScanPlanNode::operator==(rhs)) {
         return false;
-    if (table_oid_ != other.table_oid_)
+    }
+    if (table_oid_ != other.table_oid_) {
         return false;
+    }
     return column_oids_ == other.column_oids_;
 }
 

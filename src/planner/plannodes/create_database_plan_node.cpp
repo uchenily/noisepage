@@ -34,8 +34,9 @@ common::hash_t CreateDatabasePlanNode::Hash() const {
 }
 
 bool CreateDatabasePlanNode::operator==(const AbstractPlanNode &rhs) const {
-    if (!AbstractPlanNode::operator==(rhs))
+    if (!AbstractPlanNode::operator==(rhs)) {
         return false;
+    }
 
     auto &other = dynamic_cast<const CreateDatabasePlanNode &>(rhs);
 

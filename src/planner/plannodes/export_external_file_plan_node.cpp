@@ -55,29 +55,35 @@ common::hash_t ExportExternalFilePlanNode::Hash() const {
 }
 
 bool ExportExternalFilePlanNode::operator==(const AbstractPlanNode &rhs) const {
-    if (!AbstractPlanNode::operator==(rhs))
+    if (!AbstractPlanNode::operator==(rhs)) {
         return false;
+    }
 
     const auto &other = static_cast<const ExportExternalFilePlanNode &>(rhs);
 
     // Filename
-    if (file_name_ != other.file_name_)
+    if (file_name_ != other.file_name_) {
         return false;
+    }
 
     // Delimiter
-    if (delimiter_ != other.delimiter_)
+    if (delimiter_ != other.delimiter_) {
         return false;
+    }
 
     // Quote Char
-    if (quote_ != other.quote_)
+    if (quote_ != other.quote_) {
         return false;
+    }
 
     // Escape Char
-    if (escape_ != other.escape_)
+    if (escape_ != other.escape_) {
         return false;
+    }
 
-    if (format_ != other.format_)
+    if (format_ != other.format_) {
         return false;
+    }
 
     return true;
 }

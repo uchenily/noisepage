@@ -47,8 +47,9 @@ int SubqueryExpression::DeriveDepth() {
     auto where = subselect_->GetSelectCondition();
     if (where != nullptr) {
         auto where_depth = const_cast<parser::AbstractExpression *>(where.Get())->DeriveDepth();
-        if (where_depth >= 0 && where_depth < current_depth)
+        if (where_depth >= 0 && where_depth < current_depth) {
             this->SetDepth(where_depth);
+        }
     }
     return this->GetDepth();
 }
@@ -60,8 +61,9 @@ common::hash_t SubqueryExpression::Hash() const {
     }
 
     hash = common::HashUtil::CombineHashes(hash, common::HashUtil::Hash(subselect_->IsSelectDistinct()));
-    if (subselect_->GetSelectCondition() != nullptr)
+    if (subselect_->GetSelectCondition() != nullptr) {
         hash = common::HashUtil::CombineHashes(hash, subselect_->GetSelectCondition()->Hash());
+    }
     return hash;
 }
 

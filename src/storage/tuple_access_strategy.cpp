@@ -35,8 +35,9 @@ void TupleAccessStrategy::InitializeRawBlock(storage::DataTable *const data_tabl
     raw->controller_.Initialize();
     auto *result = reinterpret_cast<TupleAccessStrategy::Block *>(raw);
     result->GetArrowBlockMetadata().Initialize(GetBlockLayout().NumColumns());
-    for (uint16_t i = 0; i < layout_.NumColumns(); i++)
+    for (uint16_t i = 0; i < layout_.NumColumns(); i++) {
         result->AttrOffsets(layout_)[i] = column_offsets_[i];
+    }
 
     result->SlotAllocationBitmap(layout_)->UnsafeClear(layout_.NumSlots());
     result->Column(layout_, VERSION_POINTER_COLUMN_ID)->NullBitmap()->UnsafeClear(layout_.NumSlots());
@@ -52,8 +53,9 @@ bool TupleAccessStrategy::Allocate(RawBlock *const block, TupleSlot *const slot)
     const uint32_t               start = block->GetInsertHead();
 
     // We are not allowed to insert into this block any more
-    if (start == layout_.NumSlots())
+    if (start == layout_.NumSlots()) {
         return false;
+    }
 
     uint32_t pos = start;
     // We do not support concurrent insertion to the same block anymore

@@ -47,23 +47,29 @@ common::hash_t CaseExpression::Hash() const {
 }
 
 bool CaseExpression::operator==(const AbstractExpression &rhs) const {
-    if (!AbstractExpression::operator==(rhs))
+    if (!AbstractExpression::operator==(rhs)) {
         return false;
+    }
     auto const &other = dynamic_cast<const CaseExpression &>(rhs);
     auto        clause_size = GetWhenClauseSize();
-    if (clause_size != other.GetWhenClauseSize())
+    if (clause_size != other.GetWhenClauseSize()) {
         return false;
+    }
 
-    for (size_t i = 0; i < clause_size; i++)
-        if (when_clauses_[i] != other.when_clauses_[i])
+    for (size_t i = 0; i < clause_size; i++) {
+        if (when_clauses_[i] != other.when_clauses_[i]) {
             return false;
+        }
+    }
 
     auto default_exp = GetDefaultClause();
     auto other_default_exp = other.GetDefaultClause();
-    if (default_exp == nullptr && other_default_exp == nullptr)
+    if (default_exp == nullptr && other_default_exp == nullptr) {
         return true;
-    if (default_exp == nullptr || other_default_exp == nullptr)
+    }
+    if (default_exp == nullptr || other_default_exp == nullptr) {
         return false;
+    }
     return (*default_exp == *other_default_exp);
 }
 

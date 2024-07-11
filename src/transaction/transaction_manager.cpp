@@ -18,8 +18,9 @@ TransactionContext *TransactionManager::BeginTransaction() {
           && common::thread_context.metrics_store_->ComponentToRecord(metrics::MetricsComponent::TRANSACTION);
 
     // start the operating unit resource tracker
-    if (txn_metrics_enabled)
+    if (txn_metrics_enabled) {
         common::thread_context.resource_tracker_.Start();
+    }
     start_time = timestamp_manager_->BeginTransaction();
     result = new TransactionContext(start_time, start_time + INT64_MIN, buffer_pool_, log_manager_);
     // Set the current default policies for durability and replication.
@@ -118,8 +119,9 @@ timestamp_t TransactionManager::UpdatingCommitCriticalSection(TransactionContext
     const timestamp_t        commit_time = timestamp_manager_->CheckOutTimestamp();
 
     // flip all timestamps to be committed
-    for (auto &it : txn->undo_buffer_)
+    for (auto &it : txn->undo_buffer_) {
         it.Timestamp().store(commit_time);
+    }
     return commit_time;
 }
 
@@ -131,8 +133,9 @@ TransactionManager::Commit(TransactionContext *const txn, transaction::callback_
           && common::thread_context.metrics_store_->ComponentToRecord(metrics::MetricsComponent::TRANSACTION);
 
     // start the operating unit resource tracker
-    if (txn_metrics_enabled)
+    if (txn_metrics_enabled) {
         common::thread_context.resource_tracker_.Start();
+    }
 
     NOISEPAGE_ASSERT(
         !txn->must_abort_,
@@ -248,8 +251,9 @@ timestamp_t TransactionManager::Abort(TransactionContext *const txn) {
     const timestamp_t abort_time = timestamp_manager_->CheckOutTimestamp();
     // There is no need to flip these timestamps in a critical section, because readers can never see the aborted
     // version either way, unlike in the commit case, where unrepeatable reads may occur.
-    for (auto &it : txn->undo_buffer_)
+    for (auto &it : txn->undo_buffer_) {
         it.Timestamp().store(abort_time);
+    }
     txn->finish_time_.store(abort_time);
     txn->aborted_ = true;
 
@@ -280,18 +284,21 @@ void TransactionManager::GCLastUpdateOnAbort(TransactionContext *const txn) {
     // if the update was indeed installed.
     // TODO(Tianyu): This way of gcing varlen implies that we abort right away on a conflict
     // and not perform any further updates. Shouldn't be a stretch.
-    if (last_log_record == nullptr)
+    if (last_log_record == nullptr) {
         return; // there are no updates
-    if (last_log_record->RecordType() != storage::LogRecordType::REDO)
+    }
+    if (last_log_record->RecordType() != storage::LogRecordType::REDO) {
         return; // Only redos need to be gc-ed.
+    }
 
     // Last update can potentially contain a varlen that needs to be gc-ed. We now need to check if it
     // was installed or not.
     auto *redo = last_log_record->GetUnderlyingRecordBodyAs<storage::RedoRecord>();
     NOISEPAGE_ASSERT(redo->GetTupleSlot() == last_undo_record->Slot(),
                      "Last undo record and redo record must correspond to each other");
-    if (last_undo_record->Table() != nullptr)
+    if (last_undo_record->Table() != nullptr) {
         return; // the update was installed and will be handled by the GC
+    }
 
     // We need to free any varlen memory in the last update if the code reaches here
     const storage::BlockLayout &layout = redo->GetTupleSlot().GetBlock()->data_table_->GetBlockLayout();
@@ -303,8 +310,9 @@ void TransactionManager::GCLastUpdateOnAbort(TransactionContext *const txn) {
             if (varlen != nullptr) {
                 NOISEPAGE_ASSERT(varlen->NeedReclaim() || varlen->IsInlined(),
                                  "Fresh updates cannot be compacted or compressed");
-                if (varlen->NeedReclaim())
+                if (varlen->NeedReclaim()) {
                     txn->loose_ptrs_.push_back(varlen->Content());
+                }
             }
         }
     }
@@ -366,8 +374,9 @@ void TransactionManager::DeallocateColumnUpdateIfVarlen(TransactionContext      
         if (varlen != nullptr) {
             NOISEPAGE_ASSERT(varlen->NeedReclaim() || varlen->IsInlined(),
                              "Fresh updates cannot be compacted or compressed");
-            if (varlen->NeedReclaim())
+            if (varlen->NeedReclaim()) {
                 txn->loose_ptrs_.push_back(varlen->Content());
+            }
         }
     }
 }
@@ -381,8 +390,9 @@ void TransactionManager::DeallocateInsertedTupleIfVarlen(TransactionContext     
         if (layout.IsVarlen(col_id)) {
             auto *varlen = reinterpret_cast<storage::VarlenEntry *>(accessor.AccessWithNullCheck(undo->Slot(), col_id));
             if (varlen != nullptr) {
-                if (varlen->NeedReclaim())
+                if (varlen->NeedReclaim()) {
                     txn->loose_ptrs_.push_back(varlen->Content());
+                }
             }
         }
     }

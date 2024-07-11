@@ -46,38 +46,46 @@ common::hash_t CreateViewPlanNode::Hash() const {
     hash = common::HashUtil::CombineHashes(hash, common::HashUtil::Hash(view_name_));
 
     // Hash view query
-    if (view_query_ != nullptr)
+    if (view_query_ != nullptr) {
         hash = common::HashUtil::CombineHashes(hash, view_query_->Hash());
+    }
     return hash;
 }
 
 bool CreateViewPlanNode::operator==(const AbstractPlanNode &rhs) const {
-    if (!AbstractPlanNode::operator==(rhs))
+    if (!AbstractPlanNode::operator==(rhs)) {
         return false;
+    }
 
     auto &other = dynamic_cast<const CreateViewPlanNode &>(rhs);
 
     // Database OID
-    if (database_oid_ != other.database_oid_)
+    if (database_oid_ != other.database_oid_) {
         return false;
+    }
 
     // Namespace OID
-    if (namespace_oid_ != other.namespace_oid_)
+    if (namespace_oid_ != other.namespace_oid_) {
         return false;
+    }
 
     // View name
-    if (GetViewName() != other.GetViewName())
+    if (GetViewName() != other.GetViewName()) {
         return false;
+    }
 
     // View query
     if (view_query_ != nullptr) {
-        if (other.view_query_ == nullptr)
+        if (other.view_query_ == nullptr) {
             return false;
-        if (*view_query_ != *other.view_query_)
+        }
+        if (*view_query_ != *other.view_query_) {
             return false;
+        }
     }
-    if (view_query_ == nullptr && other.view_query_ != nullptr)
+    if (view_query_ == nullptr && other.view_query_ != nullptr) {
         return false;
+    }
 
     return true;
 }

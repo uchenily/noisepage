@@ -12,8 +12,9 @@ RulePromise Rule::Promise(GroupExpression *group_expr) const {
     if (root_type != OpType::LEAF && root_type != group_expr->Contents()->GetOpType()) {
         return RulePromise::NO_PROMISE;
     }
-    if (IsPhysical())
+    if (IsPhysical()) {
         return RulePromise::PHYSICAL_PROMISE;
+    }
     return RulePromise::LOGICAL_PROMISE;
 }
 

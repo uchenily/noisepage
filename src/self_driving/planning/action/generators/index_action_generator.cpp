@@ -29,31 +29,35 @@ void IndexActionGenerator::FindMissingIndex(const planner::AbstractPlanNode     
                                             std::vector<action_id_t>                               *candidate_actions) {
     // Visit all the child nodes
     auto children = plan->GetChildren();
-    for (auto child : children)
+    for (auto child : children) {
         FindMissingIndex(child.Get(), action_map, candidate_actions);
+    }
 
     auto plan_type = plan->GetPlanNodeType();
     if (plan_type == planner::PlanNodeType::SEQSCAN || plan_type == planner::PlanNodeType::INDEXSCAN) {
         auto scan_plan = reinterpret_cast<const planner::AbstractScanPlanNode *>(plan);
         auto predicate = scan_plan->GetScanPredicate();
         // No predicate
-        if (predicate == nullptr)
+        if (predicate == nullptr) {
             return;
+        }
 
         // The index already covers all the indexable columns
         if (plan_type == planner::PlanNodeType::INDEXSCAN
-            && reinterpret_cast<const planner::IndexScanPlanNode *>(plan)->GetCoverAllColumns())
+            && reinterpret_cast<const planner::IndexScanPlanNode *>(plan)->GetCoverAllColumns()) {
             return;
+        }
 
         // Get database oid
         catalog::db_oid_t db_oid = scan_plan->GetDatabaseOid();
 
         // Get table oid
         catalog::table_oid_t table_oid;
-        if (plan_type == planner::PlanNodeType::INDEXSCAN)
+        if (plan_type == planner::PlanNodeType::INDEXSCAN) {
             table_oid = reinterpret_cast<const planner::IndexScanPlanNode *>(plan)->GetTableOid();
-        else
+        } else {
             table_oid = reinterpret_cast<const planner::SeqScanPlanNode *>(plan)->GetTableOid();
+        }
 
         // Generate the "missing" index based on the predicate
         std::vector<common::ManagedPointer<parser::ColumnValueExpression>> equality_columns;
@@ -63,10 +67,11 @@ void IndexActionGenerator::FindMissingIndex(const planner::AbstractPlanNode     
         // Generate the new index action
         if (indexable && (!equality_columns.empty() || !inequality_columns.empty())) {
             std::string table_name;
-            if (!equality_columns.empty())
+            if (!equality_columns.empty()) {
                 table_name = (*equality_columns.begin())->GetTableAlias().GetName();
-            else
+            } else {
                 table_name = (*inequality_columns.begin())->GetTableAlias().GetName();
+            }
 
             std::vector<IndexColumn>        index_columns;
             std::unordered_set<std::string> covered_columns;
@@ -138,8 +143,9 @@ bool IndexActionGenerator::GenerateIndexableColumns(
         return indexable;
     }
 
-    if (expr->HasSubquery())
+    if (expr->HasSubquery()) {
         return false;
+    }
 
     auto type = expr->GetExpressionType();
     switch (type) {
@@ -164,16 +170,18 @@ bool IndexActionGenerator::GenerateIndexableColumns(
         } else if (ltype == parser::ExpressionType::COLUMN_VALUE && rtype == parser::ExpressionType::COLUMN_VALUE) {
             auto lexpr = expr->GetChild(0).CastTo<parser::ColumnValueExpression>();
             auto rexpr = expr->GetChild(1).CastTo<parser::ColumnValueExpression>();
-            if (lexpr->GetTableOid() == table_oid)
+            if (lexpr->GetTableOid() == table_oid) {
                 tv_expr = lexpr;
-            else
+            } else {
                 tv_expr = rexpr;
+            }
         }
 
-        if (type == parser::ExpressionType::COMPARE_EQUAL)
+        if (type == parser::ExpressionType::COMPARE_EQUAL) {
             equality_columns->emplace_back(tv_expr);
-        else
+        } else {
             inequality_columns->emplace_back(tv_expr);
+        }
         break;
     }
     default:

@@ -29,8 +29,9 @@ void OpenFiles(std::vector<std::ofstream> *outfiles) {
         outfiles->emplace_back(file_name, std::ios_base::out | std::ios_base::app);
         if (!file_existed) {
             // write the column titles on the first line since we're creating a new csv file
-            if (!abstract_raw_data::FEATURE_COLUMNS[file].empty())
+            if (!abstract_raw_data::FEATURE_COLUMNS[file].empty()) {
                 outfiles->back() << abstract_raw_data::FEATURE_COLUMNS[file] << ", ";
+            }
             outfiles->back() << common::ResourceTracker::Metrics::COLUMNS << std::endl;
         }
     }
@@ -52,10 +53,11 @@ void MetricsManager::Aggregate() {
 
         for (uint8_t component = 0; component < NUM_COMPONENTS; component++) {
             if (enabled_metrics_.test(component)) {
-                if (aggregated_metrics_[component] == nullptr)
+                if (aggregated_metrics_[component] == nullptr) {
                     aggregated_metrics_[component] = std::move(raw_data[component]);
-                else
+                } else {
                     aggregated_metrics_[component]->Aggregate(raw_data[component].get());
+                }
 
                 NOISEPAGE_ASSERT(aggregated_metrics_[component], "Post-aggregation component should not be NULL");
             }

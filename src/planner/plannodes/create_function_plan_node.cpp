@@ -88,50 +88,61 @@ common::hash_t CreateFunctionPlanNode::Hash() const {
 }
 
 bool CreateFunctionPlanNode::operator==(const AbstractPlanNode &rhs) const {
-    if (!AbstractPlanNode::operator==(rhs))
+    if (!AbstractPlanNode::operator==(rhs)) {
         return false;
+    }
 
     auto &other = dynamic_cast<const CreateFunctionPlanNode &>(rhs);
 
     // Database OID
-    if (database_oid_ != other.database_oid_)
+    if (database_oid_ != other.database_oid_) {
         return false;
+    }
 
     // Namespace OID
-    if (namespace_oid_ != other.namespace_oid_)
+    if (namespace_oid_ != other.namespace_oid_) {
         return false;
+    }
 
     // Language
-    if (language_ != other.language_)
+    if (language_ != other.language_) {
         return false;
+    }
 
     // Function param names
-    if (function_param_names_ != other.function_param_names_)
+    if (function_param_names_ != other.function_param_names_) {
         return false;
+    }
 
     // Function param types
-    if (function_param_types_ != other.function_param_types_)
+    if (function_param_types_ != other.function_param_types_) {
         return false;
+    }
 
     // Function body
-    if (function_body_ != other.function_body_)
+    if (function_body_ != other.function_body_) {
         return false;
+    }
 
     // Is replace
-    if (is_replace_ != other.is_replace_)
+    if (is_replace_ != other.is_replace_) {
         return false;
+    }
 
     // Function name
-    if (function_name_ != other.function_name_)
+    if (function_name_ != other.function_name_) {
         return false;
+    }
 
     // Return type
-    if (return_type_ != other.return_type_)
+    if (return_type_ != other.return_type_) {
         return false;
+    }
 
     // Param count
-    if (param_count_ != other.param_count_)
+    if (param_count_ != other.param_count_) {
         return false;
+    }
 
     return true;
 }

@@ -251,14 +251,16 @@ void HashIndex<KeyType>::ScanKey(const transaction::TransactionContext &txn,
     auto key_found_fn = [value_list, &txn](const ValueType &value) -> void {
         if (std::holds_alternative<TupleSlot>(value)) {
             const auto existing_location = std::get<TupleSlot>(value);
-            if (IsVisible(txn, existing_location))
+            if (IsVisible(txn, existing_location)) {
                 value_list->emplace_back(existing_location);
+            }
         } else {
             const auto &value_map = std::get<ValueMap>(value);
 
             for (const auto i : value_map) {
-                if (IsVisible(txn, i))
+                if (IsVisible(txn, i)) {
                     value_list->emplace_back(i);
+                }
             }
         }
     };

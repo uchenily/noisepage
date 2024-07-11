@@ -55,8 +55,9 @@ PostgresPacketUtil::TextValueToInternalValue(const common::ManagedPointer<ReadBu
     case execution::sql::SqlTypeId::Boolean: {
         // Matt: as best as I can tell, we only expect 'TRUE' of 'FALSE' coming in here, rather than the 't' or 'f' that
         // results use. We can simplify this logic a bit if that assumption can be verified
-        if (string == "TRUE")
+        if (string == "TRUE") {
             return {type, execution::sql::BoolVal(true)};
+        }
         NOISEPAGE_ASSERT(string == "FALSE", "Input equals something other than TRUE or FALSE. We should check that.");
         return {type, execution::sql::BoolVal(false)};
     }

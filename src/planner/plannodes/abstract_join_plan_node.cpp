@@ -19,14 +19,16 @@ AbstractJoinPlanNode::AbstractJoinPlanNode(std::vector<std::unique_ptr<AbstractP
     , join_predicate_(predicate) {}
 
 bool AbstractJoinPlanNode::operator==(const AbstractPlanNode &rhs) const {
-    if (!AbstractPlanNode::operator==(rhs))
+    if (!AbstractPlanNode::operator==(rhs)) {
         return false;
+    }
 
     auto &other = dynamic_cast<const AbstractJoinPlanNode &>(rhs);
 
     // Check join type
-    if (join_type_ != other.join_type_)
+    if (join_type_ != other.join_type_) {
         return false;
+    }
 
     // Check predicate
     if ((join_predicate_ == nullptr && other.join_predicate_ != nullptr)

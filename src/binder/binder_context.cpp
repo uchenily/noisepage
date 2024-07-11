@@ -24,11 +24,13 @@ void BinderContext::AddRegularTable(const common::ManagedPointer<catalog::Catalo
                                     const catalog::db_oid_t                                db_id) {
     if (!(table_ref->GetDatabaseName().empty())) {
         const auto db_oid = accessor->GetDatabaseOid(table_ref->GetDatabaseName());
-        if (db_oid == catalog::INVALID_DATABASE_OID)
+        if (db_oid == catalog::INVALID_DATABASE_OID) {
             throw BINDER_EXCEPTION("Database does not exist", common::ErrorCode::ERRCODE_UNDEFINED_DATABASE);
-        if (db_oid != db_id)
+        }
+        if (db_oid != db_id) {
             throw BINDER_EXCEPTION("cross-database references are not implemented: ",
                                    common::ErrorCode::ERRCODE_FEATURE_NOT_SUPPORTED);
+        }
     }
 
     AddRegularTable(accessor,

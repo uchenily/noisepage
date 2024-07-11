@@ -149,48 +149,59 @@ common::hash_t CreateTablePlanNode::Hash() const {
 }
 
 bool CreateTablePlanNode::operator==(const AbstractPlanNode &rhs) const {
-    if (!AbstractPlanNode::operator==(rhs))
+    if (!AbstractPlanNode::operator==(rhs)) {
         return false;
+    }
 
     auto &other = dynamic_cast<const CreateTablePlanNode &>(rhs);
 
     // Namespace OID
-    if (namespace_oid_ != other.namespace_oid_)
+    if (namespace_oid_ != other.namespace_oid_) {
         return false;
+    }
 
     // Table name
-    if (table_name_ != other.table_name_)
+    if (table_name_ != other.table_name_) {
         return false;
+    }
 
     // Schema
     if (table_schema_ != nullptr) {
-        if (other.table_schema_ == nullptr)
+        if (other.table_schema_ == nullptr) {
             return false;
-        if (*table_schema_ != *other.table_schema_)
+        }
+        if (*table_schema_ != *other.table_schema_) {
             return false;
+        }
     }
-    if (table_schema_ == nullptr && other.table_schema_ != nullptr)
+    if (table_schema_ == nullptr && other.table_schema_ != nullptr) {
         return false;
+    }
 
     // Has primary key
-    if (has_primary_key_ != other.has_primary_key_)
+    if (has_primary_key_ != other.has_primary_key_) {
         return false;
+    }
 
     // Primary Key
-    if (has_primary_key_ && (primary_key_ != other.primary_key_))
+    if (has_primary_key_ && (primary_key_ != other.primary_key_)) {
         return false;
+    }
 
     // Foreign key
-    if (foreign_keys_ != other.foreign_keys_)
+    if (foreign_keys_ != other.foreign_keys_) {
         return false;
+    }
 
     // Unique constraints
-    if (con_uniques_ != other.con_uniques_)
+    if (con_uniques_ != other.con_uniques_) {
         return false;
+    }
 
     // Check constraints
-    if (con_checks_ != other.con_checks_)
+    if (con_checks_ != other.con_checks_) {
         return false;
+    }
 
     return true;
 }

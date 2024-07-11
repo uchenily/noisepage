@@ -456,8 +456,9 @@ std::string Vector::ToString() const {
     std::string result = TypeIdToString(type_) + "=[";
     bool        first = true;
     for (uint64_t i = 0; i < GetCount(); i++) {
-        if (!first)
+        if (!first) {
             result += ",";
+        }
         first = false;
         result += GetValue(i).ToString();
     }

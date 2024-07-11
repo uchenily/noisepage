@@ -284,18 +284,21 @@ std::function<void(void)> PgCoreImpl::GetTearDownFn(common::ManagedPointer<trans
             indexes{std::move(indexes)},
             table_schemas{std::move(table_schemas)},
             index_schemas{std::move(index_schemas)}]() {
-        for (auto table : tables)
+        for (auto table : tables) {
             delete table;
+        }
         for (auto index : indexes) {
             if (index->Type() == storage::index::IndexType::BWTREE) {
                 garbage_collector->UnregisterIndexForGC(common::ManagedPointer(index));
             }
             delete index;
         }
-        for (auto table_schema : table_schemas)
+        for (auto table_schema : table_schemas) {
             delete table_schema;
-        for (auto index_schema : index_schemas)
+        }
+        for (auto index_schema : index_schemas) {
             delete index_schema;
+        }
     };
 }
 
@@ -600,8 +603,9 @@ bool PgCoreImpl::CreateTableEntry(const common::ManagedPointer<transaction::Tran
         col_oid_t curr_col_oid(1);
         for (auto &col : schema.GetColumns()) {
             auto success = CreateColumn(txn, table_oid, curr_col_oid++, col);
-            if (!success)
+            if (!success) {
                 return false;
+            }
         }
     }
 
@@ -631,8 +635,9 @@ bool PgCoreImpl::DeleteTable(const common::ManagedPointer<transaction::Transacti
     // We should respect foreign key relations and attempt to delete the table's columns first.
     {
         auto result = DeleteColumns<Schema::Column, table_oid_t>(txn, table);
-        if (!result)
+        if (!result) {
             return false;
+        }
     }
 
     const auto &oid_pri = classes_oid_index_->GetProjectedRowInitializer();
@@ -885,8 +890,9 @@ bool PgCoreImpl::CreateIndexEntry(const common::ManagedPointer<transaction::Tran
         indexkeycol_oid_t curr_col_oid(1);
         for (auto &col : schema.GetColumns()) {
             auto success = CreateColumn(txn, index_oid, curr_col_oid++, col);
-            if (!success)
+            if (!success) {
                 return false;
+            }
         }
     }
 
@@ -923,8 +929,9 @@ bool PgCoreImpl::DeleteIndex(const common::ManagedPointer<transaction::Transacti
     {
         // We should respect foreign key relations and attempt to delete the index's columns first.
         auto result = DeleteColumns<IndexSchema::Column, index_oid_t>(txn, index);
-        if (!result)
+        if (!result) {
             return false;
+        }
     }
 
     // Allocate buffer for largest PR.
