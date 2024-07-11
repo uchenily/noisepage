@@ -34,8 +34,8 @@ LogicalInnerJoinCommutativity::LogicalInnerJoinCommutativity() {
     match_pattern_->AddChild(right_child);
 }
 
-bool LogicalInnerJoinCommutativity::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                          OptimizationContext                          *context) const {
+auto LogicalInnerJoinCommutativity::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                          OptimizationContext                          *context) const -> bool {
     (void) context;
     (void) plan;
     return true;
@@ -83,8 +83,8 @@ LogicalInnerJoinAssociativity::LogicalInnerJoinAssociativity() {
     match_pattern_->AddChild(right_child);
 }
 
-bool LogicalInnerJoinAssociativity::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                          OptimizationContext                          *context) const {
+auto LogicalInnerJoinAssociativity::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                          OptimizationContext                          *context) const -> bool {
     (void) context;
     (void) plan;
     return true;

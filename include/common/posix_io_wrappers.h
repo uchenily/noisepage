@@ -23,7 +23,7 @@ public:
      * @return a non-negative integer that is the file descriptor if the opened file.
      */
     template <class... Args>
-    static int Open(const char *path, int oflag, Args... args);
+    static auto Open(const char *path, int oflag, Args... args) -> int;
 
     /**
      * Wrapper around posix close call

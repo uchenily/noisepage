@@ -46,11 +46,11 @@ void OptimizerUtil::ExtractEquiJoinKeys(const std::vector<AnnotatedExpression> &
     }
 }
 
-std::vector<parser::AbstractExpression *>
-OptimizerUtil::GenerateTableColumnValueExprs(catalog::CatalogAccessor *accessor,
-                                             const parser::AliasType  &alias,
-                                             catalog::db_oid_t         db_oid,
-                                             catalog::table_oid_t      tbl_oid) {
+auto OptimizerUtil::GenerateTableColumnValueExprs(catalog::CatalogAccessor *accessor,
+                                                  const parser::AliasType  &alias,
+                                                  catalog::db_oid_t         db_oid,
+                                                  catalog::table_oid_t      tbl_oid)
+    -> std::vector<parser::AbstractExpression *> {
     // @note(boweic): we seems to provide all columns here, in case where there are
     // a lot of attributes and we're only visiting a few this is not efficient
     auto                                     &schema = accessor->GetSchema(tbl_oid);
@@ -64,10 +64,10 @@ OptimizerUtil::GenerateTableColumnValueExprs(catalog::CatalogAccessor *accessor,
     return exprs;
 }
 
-parser::AbstractExpression *OptimizerUtil::GenerateColumnValueExpr(const catalog::Schema::Column &column,
-                                                                   const parser::AliasType       &alias,
-                                                                   catalog::db_oid_t              db_oid,
-                                                                   catalog::table_oid_t           tbl_oid) {
+auto OptimizerUtil::GenerateColumnValueExpr(const catalog::Schema::Column &column,
+                                            const parser::AliasType       &alias,
+                                            catalog::db_oid_t              db_oid,
+                                            catalog::table_oid_t           tbl_oid) -> parser::AbstractExpression * {
     auto  col_oid = column.Oid();
     auto *col_expr = new parser::ColumnValueExpression(alias, column.Name());
     col_expr->SetReturnValueType(column.Type());
@@ -80,12 +80,12 @@ parser::AbstractExpression *OptimizerUtil::GenerateColumnValueExpr(const catalog
     return col_expr;
 }
 
-parser::AbstractExpression *OptimizerUtil::GenerateAggregateExpr(const catalog::Schema::Column &column,
-                                                                 parser::ExpressionType         aggregate_type,
-                                                                 bool                           distinct,
-                                                                 const parser::AliasType       &alias,
-                                                                 catalog::db_oid_t              db_oid,
-                                                                 catalog::table_oid_t           tbl_oid) {
+auto OptimizerUtil::GenerateAggregateExpr(const catalog::Schema::Column &column,
+                                          parser::ExpressionType         aggregate_type,
+                                          bool                           distinct,
+                                          const parser::AliasType       &alias,
+                                          catalog::db_oid_t              db_oid,
+                                          catalog::table_oid_t           tbl_oid) -> parser::AbstractExpression * {
     auto col_expr
         = std::unique_ptr<parser::AbstractExpression>(GenerateColumnValueExpr(column, alias, db_oid, tbl_oid));
     std::vector<std::unique_ptr<parser::AbstractExpression>> agg_child;
@@ -93,8 +93,8 @@ parser::AbstractExpression *OptimizerUtil::GenerateAggregateExpr(const catalog::
     return new parser::AggregateExpression(aggregate_type, std::move(agg_child), distinct);
 }
 
-parser::AbstractExpression *OptimizerUtil::GenerateStarAggregateExpr(parser::ExpressionType aggregate_type,
-                                                                     bool                   distinct) {
+auto OptimizerUtil::GenerateStarAggregateExpr(parser::ExpressionType aggregate_type, bool distinct)
+    -> parser::AbstractExpression * {
     auto                                                     star_expr = std::make_unique<parser::StarExpression>();
     std::vector<std::unique_ptr<parser::AbstractExpression>> agg_child;
     agg_child.emplace_back(std::move(star_expr));

@@ -4,12 +4,12 @@
 
 namespace noisepage::common {
 
-bool MathUtil::ApproxEqual(float left, float right) {
+auto MathUtil::ApproxEqual(float left, float right) -> bool {
     const double epsilon = std::fabs(right) * 0.01;
     return std::fabs(left - right) <= epsilon;
 }
 
-bool MathUtil::ApproxEqual(double left, double right) {
+auto MathUtil::ApproxEqual(double left, double right) -> bool {
     const double epsilon = std::fabs(right) * 0.01;
     return std::fabs(left - right) <= epsilon;
 }

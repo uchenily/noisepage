@@ -48,13 +48,13 @@ void CSVScanTranslator::DefineHelperStructs(util::RegionVector<ast::StructDecl *
     decls->push_back(codegen->DeclareStruct(base_row_type_, std::move(fields)));
 }
 
-ast::Expr *CSVScanTranslator::GetField(uint32_t field_index) const {
+auto CSVScanTranslator::GetField(uint32_t field_index) const -> ast::Expr * {
     auto           *codegen = GetCodeGen();
     ast::Identifier field_name = codegen->MakeIdentifier(FIELD_PREFIX + std::to_string(field_index));
     return codegen->AccessStructMember(base_row_.Get(codegen), field_name);
 }
 
-ast::Expr *CSVScanTranslator::GetFieldPtr(uint32_t field_index) const {
+auto CSVScanTranslator::GetFieldPtr(uint32_t field_index) const -> ast::Expr * {
     return GetCodeGen()->AddressOf(GetField(field_index));
 }
 
@@ -85,7 +85,7 @@ void CSVScanTranslator::PerformPipelineWork(WorkContext *context, FunctionBuilde
 #endif
 }
 
-ast::Expr *CSVScanTranslator::GetTableColumn(catalog::col_oid_t col_oid) const {
+auto CSVScanTranslator::GetTableColumn(catalog::col_oid_t col_oid) const -> ast::Expr * {
     const auto output_schema = GetPlan().GetOutputSchema();
     if (col_oid.UnderlyingValue() > output_schema->NumColumns()) {
         throw EXECUTION_EXCEPTION(

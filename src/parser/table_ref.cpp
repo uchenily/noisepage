@@ -13,7 +13,7 @@ namespace noisepage::parser {
 /**
  * @return JoinDefinition serialized to json
  */
-nlohmann::json JoinDefinition::ToJson() const {
+auto JoinDefinition::ToJson() const -> nlohmann::json {
     nlohmann::json j;
     j["type"] = type_;
     j["left"] = left_->ToJson();
@@ -22,7 +22,7 @@ nlohmann::json JoinDefinition::ToJson() const {
     return j;
 }
 
-common::hash_t JoinDefinition::Hash() const {
+auto JoinDefinition::Hash() const -> common::hash_t {
     common::hash_t hash = common::HashUtil::Hash(type_);
     if (left_ != nullptr) {
         hash = common::HashUtil::CombineHashes(hash, left_->Hash());
@@ -36,7 +36,7 @@ common::hash_t JoinDefinition::Hash() const {
     return hash;
 }
 
-bool JoinDefinition::operator==(const JoinDefinition &rhs) const {
+auto JoinDefinition::operator==(const JoinDefinition &rhs) const -> bool {
     if (type_ != rhs.type_) {
         return false;
     }
@@ -75,7 +75,7 @@ bool JoinDefinition::operator==(const JoinDefinition &rhs) const {
 /**
  * @param j json to deserialize
  */
-std::vector<std::unique_ptr<AbstractExpression>> JoinDefinition::FromJson(const nlohmann::json &j) {
+auto JoinDefinition::FromJson(const nlohmann::json &j) -> std::vector<std::unique_ptr<AbstractExpression>> {
     std::vector<std::unique_ptr<AbstractExpression>> exprs;
     // Deserialize type
     type_ = j.at("type").get<JoinType>();
@@ -109,11 +109,11 @@ std::vector<std::unique_ptr<AbstractExpression>> JoinDefinition::FromJson(const 
 
 DEFINE_JSON_BODY_DECLARATIONS(JoinDefinition);
 
-std::unique_ptr<JoinDefinition> JoinDefinition::Copy() {
+auto JoinDefinition::Copy() -> std::unique_ptr<JoinDefinition> {
     return std::make_unique<JoinDefinition>(type_, left_->Copy(), right_->Copy(), condition_);
 }
 
-nlohmann::json TableRef::ToJson() const {
+auto TableRef::ToJson() const -> nlohmann::json {
     nlohmann::json j;
     j["type"] = type_;
     j["alias"] = alias_.ToJson();
@@ -129,7 +129,7 @@ nlohmann::json TableRef::ToJson() const {
     return j;
 }
 
-std::vector<std::unique_ptr<AbstractExpression>> TableRef::FromJson(const nlohmann::json &j) {
+auto TableRef::FromJson(const nlohmann::json &j) -> std::vector<std::unique_ptr<AbstractExpression>> {
     std::vector<std::unique_ptr<AbstractExpression>> exprs;
     // Deserialize type
     type_ = j.at("type").get<TableReferenceType>();
@@ -172,7 +172,7 @@ std::vector<std::unique_ptr<AbstractExpression>> TableRef::FromJson(const nlohma
 
 DEFINE_JSON_BODY_DECLARATIONS(TableRef);
 
-common::hash_t TableRef::Hash() const {
+auto TableRef::Hash() const -> common::hash_t {
     common::hash_t hash = common::HashUtil::Hash(type_);
     hash = common::HashUtil::CombineHashes(hash, std::hash<AliasType>{}(alias_));
     if (table_info_ != nullptr) {
@@ -190,7 +190,7 @@ common::hash_t TableRef::Hash() const {
     return hash;
 }
 
-bool TableRef::operator==(const TableRef &rhs) const {
+auto TableRef::operator==(const TableRef &rhs) const -> bool {
     if (type_ != rhs.type_) {
         return false;
     }
@@ -238,7 +238,7 @@ bool TableRef::operator==(const TableRef &rhs) const {
     return true;
 }
 
-std::unique_ptr<TableRef> TableRef::Copy() const {
+auto TableRef::Copy() const -> std::unique_ptr<TableRef> {
     auto table_ref = std::make_unique<TableRef>();
 
     table_ref->type_ = type_;

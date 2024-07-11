@@ -73,7 +73,7 @@ void LogSerializerTask::LogSerializerTaskLoop() {
     NOISEPAGE_ASSERT(flush_queue_.empty(), "Termination of LogSerializerTask should hand off all buffers to consumers");
 }
 
-std::tuple<uint64_t, uint64_t, uint64_t> LogSerializerTask::Process() {
+auto LogSerializerTask::Process() -> std::tuple<uint64_t, uint64_t, uint64_t> {
     uint64_t num_bytes = 0, num_records = 0, num_txns = 0;
 
     bool buffers_processed = false;
@@ -173,7 +173,7 @@ std::tuple<uint64_t, uint64_t, uint64_t> LogSerializerTask::Process() {
  * Used by the serializer thread to get a buffer to serialize data to
  * @return buffer to write to
  */
-BufferedLogWriter *LogSerializerTask::GetCurrentWriteBuffer() {
+auto LogSerializerTask::GetCurrentWriteBuffer() -> BufferedLogWriter * {
     if (filled_buffer_ == nullptr) {
         empty_buffer_queue_->Dequeue(&filled_buffer_);
     }
@@ -214,8 +214,8 @@ void LogSerializerTask::HandFilledBufferToWriter() {
     filled_buffer_ = nullptr;
 }
 
-std::tuple<uint64_t, uint64_t, uint64_t>
-LogSerializerTask::SerializeBuffer(IterableBufferSegment<LogRecord> *buffer_to_serialize) {
+auto LogSerializerTask::SerializeBuffer(IterableBufferSegment<LogRecord> *buffer_to_serialize)
+    -> std::tuple<uint64_t, uint64_t, uint64_t> {
     uint64_t num_bytes = 0, num_records = 0, num_txns = 0;
 
     // Iterate over all redo records in the redo buffer through the provided iterator
@@ -260,7 +260,7 @@ LogSerializerTask::SerializeBuffer(IterableBufferSegment<LogRecord> *buffer_to_s
     return {num_bytes, num_records, num_txns};
 }
 
-uint64_t LogSerializerTask::SerializeRecord(const noisepage::storage::LogRecord &record) {
+auto LogSerializerTask::SerializeRecord(const noisepage::storage::LogRecord &record) -> uint64_t {
     uint64_t num_bytes = 0;
     // First, serialize out fields common across all LogRecordType's.
 
@@ -352,7 +352,7 @@ uint64_t LogSerializerTask::SerializeRecord(const noisepage::storage::LogRecord 
     return num_bytes;
 }
 
-uint32_t LogSerializerTask::WriteValue(const void *val, const uint32_t size) {
+auto LogSerializerTask::WriteValue(const void *val, const uint32_t size) -> uint32_t {
     // Serialize the value and copy it to the buffer
     BufferedLogWriter *out = GetCurrentWriteBuffer();
     uint32_t           size_written = 0;

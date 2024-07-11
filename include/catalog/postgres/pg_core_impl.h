@@ -301,10 +301,10 @@ private:
      * @return            True if the insert succeeded. False otherwise.
      */
     template <typename Column, typename ClassOid, typename ColOid>
-    bool CreateColumn(common::ManagedPointer<transaction::TransactionContext> txn,
+    auto CreateColumn(common::ManagedPointer<transaction::TransactionContext> txn,
                       ClassOid                                                class_oid,
                       ColOid                                                  col_oid,
-                      const Column                                           &col);
+                      const Column                                           &col) -> bool;
     /**
      * Get the columns corresponding to a particular entry in pg_attribute.
      *
@@ -314,7 +314,8 @@ private:
      * @return                The columns corresponding to the entry.
      */
     template <typename Column, typename ClassOid, typename ColOid>
-    std::vector<Column> GetColumns(common::ManagedPointer<transaction::TransactionContext> txn, ClassOid class_oid);
+    auto GetColumns(common::ManagedPointer<transaction::TransactionContext> txn, ClassOid class_oid)
+        -> std::vector<Column>;
 
     /**
      * Delete all columns corresponding to a particular entry in pg_attribute.
@@ -327,7 +328,7 @@ private:
      * TODO(Matt): We need a DeleteColumn.
      */
     template <typename Column, typename ClassOid>
-    bool DeleteColumns(common::ManagedPointer<transaction::TransactionContext> txn, ClassOid class_oid);
+    auto DeleteColumns(common::ManagedPointer<transaction::TransactionContext> txn, ClassOid class_oid) -> bool;
 
     /** Bootstrap functions. */
     ///@{
@@ -352,7 +353,7 @@ private:
      * @return                The requested column.
      */
     template <typename Column, typename ColOid>
-    static Column MakeColumn(storage::ProjectedRow *pr, const storage::ProjectionMap &pr_map);
+    static auto MakeColumn(storage::ProjectedRow *pr, const storage::ProjectionMap &pr_map) -> Column;
 
     const db_oid_t db_oid_;
 

@@ -23,7 +23,7 @@ ChangeKnobAction<T>::ChangeKnobAction(settings::Param                           
 }
 
 template <class T>
-const std::string &ChangeKnobAction<T>::GetSQLCommand() {
+auto ChangeKnobAction<T>::GetSQLCommand() -> const std::string & {
     sql_command_ = "set " + param_name_ + " = ";
     // Set the new value accordingly based on the param type
     if constexpr (std::is_same<T, bool>::value) { // NOLINT
@@ -67,7 +67,7 @@ void ChangeKnobAction<T>::ModifyActionState(ActionState *action_state) {
 }
 
 template <class T>
-bool ChangeKnobAction<T>::IsValid() {
+auto ChangeKnobAction<T>::IsValid() -> bool {
     if constexpr (std::is_same<T, bool>::value) { // NOLINT
         return true;
     } else if constexpr (std::is_same<T, int32_t>::value) { // NOLINT

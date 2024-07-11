@@ -11,7 +11,7 @@ namespace noisepage::planner {
 
 // TODO(Gus,Wen) Add SetParameters
 
-std::unique_ptr<DeletePlanNode> DeletePlanNode::Builder::Build() {
+auto DeletePlanNode::Builder::Build() -> std::unique_ptr<DeletePlanNode> {
     return std::unique_ptr<DeletePlanNode>(new DeletePlanNode(std::move(children_),
                                                               std::make_unique<OutputSchema>(),
                                                               database_oid_,
@@ -31,7 +31,7 @@ DeletePlanNode::DeletePlanNode(std::vector<std::unique_ptr<AbstractPlanNode>> &&
     , table_oid_(table_oid)
     , index_oids_(std::move(index_oids)) {}
 
-common::hash_t DeletePlanNode::Hash() const {
+auto DeletePlanNode::Hash() const -> common::hash_t {
     common::hash_t hash = AbstractPlanNode::Hash();
 
     // Hash database_oid
@@ -47,7 +47,7 @@ common::hash_t DeletePlanNode::Hash() const {
     return hash;
 }
 
-bool DeletePlanNode::operator==(const AbstractPlanNode &rhs) const {
+auto DeletePlanNode::operator==(const AbstractPlanNode &rhs) const -> bool {
     if (!AbstractPlanNode::operator==(rhs)) {
         return false;
     }
@@ -76,7 +76,7 @@ bool DeletePlanNode::operator==(const AbstractPlanNode &rhs) const {
     return true;
 }
 
-nlohmann::json DeletePlanNode::ToJson() const {
+auto DeletePlanNode::ToJson() const -> nlohmann::json {
     nlohmann::json j = AbstractPlanNode::ToJson();
     j["database_oid"] = database_oid_;
     j["table_oid"] = table_oid_;
@@ -84,7 +84,7 @@ nlohmann::json DeletePlanNode::ToJson() const {
     return j;
 }
 
-std::vector<std::unique_ptr<parser::AbstractExpression>> DeletePlanNode::FromJson(const nlohmann::json &j) {
+auto DeletePlanNode::FromJson(const nlohmann::json &j) -> std::vector<std::unique_ptr<parser::AbstractExpression>> {
     std::vector<std::unique_ptr<parser::AbstractExpression>> exprs;
     auto                                                     e1 = AbstractPlanNode::FromJson(j);
     exprs.insert(exprs.end(), std::make_move_iterator(e1.begin()), std::make_move_iterator(e1.end()));

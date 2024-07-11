@@ -46,9 +46,9 @@ void PgLanguageImpl::Bootstrap(common::ManagedPointer<transaction::TransactionCo
     BootstrapLanguages(txn, dbc);
 }
 
-bool PgLanguageImpl::CreateLanguage(const common::ManagedPointer<transaction::TransactionContext> txn,
+auto PgLanguageImpl::CreateLanguage(const common::ManagedPointer<transaction::TransactionContext> txn,
                                     const std::string                                            &lanname,
-                                    language_oid_t                                                oid) {
+                                    language_oid_t                                                oid) -> bool {
     auto *const redo = txn->StageWrite(db_oid_, PgLanguage::LANGUAGE_TABLE_OID, pg_language_all_cols_pri_);
     auto        delta = common::ManagedPointer(redo->Delta());
     auto       &pm = pg_language_all_cols_prm_;
@@ -99,8 +99,8 @@ bool PgLanguageImpl::CreateLanguage(const common::ManagedPointer<transaction::Tr
     return true;
 }
 
-language_oid_t PgLanguageImpl::GetLanguageOid(const common::ManagedPointer<transaction::TransactionContext> txn,
-                                              const std::string                                            &lanname) {
+auto PgLanguageImpl::GetLanguageOid(const common::ManagedPointer<transaction::TransactionContext> txn,
+                                    const std::string &lanname) -> language_oid_t {
     const auto &name_pri = languages_name_index_->GetProjectedRowInitializer();
     byte *const buffer = common::AllocationUtil::AllocateAligned(pg_language_all_cols_pri_.ProjectedRowSize());
 
@@ -132,8 +132,8 @@ language_oid_t PgLanguageImpl::GetLanguageOid(const common::ManagedPointer<trans
     return oid;
 }
 
-bool PgLanguageImpl::DropLanguage(const common::ManagedPointer<transaction::TransactionContext> txn,
-                                  language_oid_t                                                oid) {
+auto PgLanguageImpl::DropLanguage(const common::ManagedPointer<transaction::TransactionContext> txn, language_oid_t oid)
+    -> bool {
     NOISEPAGE_ASSERT(oid != INVALID_LANGUAGE_OID, "Invalid oid passed in to DropLanguage.");
     const auto &name_pri = languages_name_index_->GetProjectedRowInitializer();
     const auto &oid_pri = languages_oid_index_->GetProjectedRowInitializer();

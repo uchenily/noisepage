@@ -4,7 +4,7 @@
 
 namespace noisepage::parser {
 
-std::string ExpressionTypeToShortString(ExpressionType type) {
+auto ExpressionTypeToShortString(ExpressionType type) -> std::string {
     switch (type) {
         // clang-format off
     case ExpressionType::OPERATOR_PLUS:                     return "+";

@@ -46,11 +46,11 @@ void OptimizerTask::PushTask(OptimizerTask *task) {
     context_->GetOptimizerContext()->PushTask(task);
 }
 
-Memo &OptimizerTask::GetMemo() const {
+auto OptimizerTask::GetMemo() const -> Memo & {
     return context_->GetOptimizerContext()->GetMemo();
 }
 
-RuleSet &OptimizerTask::GetRuleSet() const {
+auto OptimizerTask::GetRuleSet() const -> RuleSet & {
     return context_->GetOptimizerContext()->GetRuleSet();
 }
 

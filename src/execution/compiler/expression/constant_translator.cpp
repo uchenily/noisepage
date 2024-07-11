@@ -13,7 +13,7 @@ ConstantTranslator::ConstantTranslator(const parser::ConstantValueExpression &ex
                                        CompilationContext                    *compilation_context)
     : ExpressionTranslator(expr, compilation_context) {}
 
-ast::Expr *ConstantTranslator::DeriveValue(WorkContext *ctx, const ColumnValueProvider *provider) const {
+auto ConstantTranslator::DeriveValue(WorkContext *ctx, const ColumnValueProvider *provider) const -> ast::Expr * {
     auto       *codegen = GetCodeGen();
     const auto &val = GetExpressionAs<const parser::ConstantValueExpression>();
     const auto  type_id = sql::GetTypeId(val.GetReturnValueType());

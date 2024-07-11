@@ -4,7 +4,7 @@
 
 namespace noisepage::catalog {
 
-nlohmann::json Schema::Column::ToJson() const {
+auto Schema::Column::ToJson() const -> nlohmann::json {
     nlohmann::json j;
     j["name"] = name_;
     j["type"] = type_;
@@ -16,7 +16,7 @@ nlohmann::json Schema::Column::ToJson() const {
     return j;
 }
 
-std::vector<std::unique_ptr<parser::AbstractExpression>> Schema::Column::FromJson(const nlohmann::json &j) {
+auto Schema::Column::FromJson(const nlohmann::json &j) -> std::vector<std::unique_ptr<parser::AbstractExpression>> {
     name_ = j.at("name").get<std::string>();
     type_ = j.at("type").get<execution::sql::SqlTypeId>();
     attr_length_ = j.at("attr_length").get<uint16_t>();
@@ -28,7 +28,7 @@ std::vector<std::unique_ptr<parser::AbstractExpression>> Schema::Column::FromJso
     return std::move(deserialized.non_owned_exprs_);
 }
 
-nlohmann::json Schema::ToJson() const {
+auto Schema::ToJson() const -> nlohmann::json {
     // Only need to serialize columns_ because col_oid_to_offset is derived from columns_
     nlohmann::json j;
     j["columns"] = columns_;
@@ -39,7 +39,7 @@ void Schema::FromJson(const nlohmann::json &j) {
     NOISEPAGE_ASSERT(false, "Schema::FromJson should never be invoked directly; use DeserializeSchema");
 }
 
-std::unique_ptr<Schema> Schema::DeserializeSchema(const nlohmann::json &j) {
+auto Schema::DeserializeSchema(const nlohmann::json &j) -> std::unique_ptr<Schema> {
     auto columns = j.at("columns").get<std::vector<Schema::Column>>();
     return std::make_unique<Schema>(columns);
 }

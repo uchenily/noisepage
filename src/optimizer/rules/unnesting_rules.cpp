@@ -32,12 +32,12 @@ UnnestMarkJoinToInnerJoin::UnnestMarkJoinToInnerJoin() {
     match_pattern_->AddChild(new Pattern(OpType::LEAF));
 }
 
-RulePromise UnnestMarkJoinToInnerJoin::Promise(GroupExpression *group_expr) const {
+auto UnnestMarkJoinToInnerJoin::Promise(GroupExpression *group_expr) const -> RulePromise {
     return RulePromise::LOGICAL_PROMISE;
 }
 
-bool UnnestMarkJoinToInnerJoin::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                      OptimizationContext                          *context) const {
+auto UnnestMarkJoinToInnerJoin::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                      OptimizationContext                          *context) const -> bool {
     (void) context;
     (void) plan;
 
@@ -77,12 +77,12 @@ UnnestSingleJoinToInnerJoin::UnnestSingleJoinToInnerJoin() {
     match_pattern_->AddChild(right_child);
 }
 
-RulePromise UnnestSingleJoinToInnerJoin::Promise(GroupExpression *group_expr) const {
+auto UnnestSingleJoinToInnerJoin::Promise(GroupExpression *group_expr) const -> RulePromise {
     return RulePromise::LOGICAL_PROMISE;
 }
 
-bool UnnestSingleJoinToInnerJoin::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                        OptimizationContext                          *context) const {
+auto UnnestSingleJoinToInnerJoin::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                        OptimizationContext                          *context) const -> bool {
     (void) context;
     (void) plan;
 
@@ -124,12 +124,12 @@ DependentSingleJoinToInnerJoin::DependentSingleJoinToInnerJoin() {
     match_pattern_->AddChild(right_child);
 }
 
-RulePromise DependentSingleJoinToInnerJoin::Promise(GroupExpression *group_expr) const {
+auto DependentSingleJoinToInnerJoin::Promise(GroupExpression *group_expr) const -> RulePromise {
     return RulePromise::LOGICAL_PROMISE;
 }
 
-bool DependentSingleJoinToInnerJoin::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                           OptimizationContext                          *context) const {
+auto DependentSingleJoinToInnerJoin::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                           OptimizationContext                          *context) const -> bool {
     (void) context;
     (void) plan;
 

@@ -158,7 +158,7 @@ void RecoveryManager::RecoverFromLogs(const common::ManagedPointer<AbstractLogPr
     }
 }
 
-uint32_t RecoveryManager::ProcessCommittedTransaction(noisepage::transaction::timestamp_t txn_id) {
+auto RecoveryManager::ProcessCommittedTransaction(noisepage::transaction::timestamp_t txn_id) -> uint32_t {
     auto records_processed = 0;
     // Begin a txn to replay changes with.
     auto *txn = txn_manager_->BeginTransaction();
@@ -215,8 +215,8 @@ void RecoveryManager::DeferRecordDeletes(noisepage::transaction::timestamp_t txn
     });
 }
 
-std::pair<uint32_t, uint32_t>
-RecoveryManager::ProcessDeferredTransactions(noisepage::transaction::timestamp_t upper_bound_ts) {
+auto RecoveryManager::ProcessDeferredTransactions(noisepage::transaction::timestamp_t upper_bound_ts)
+    -> std::pair<uint32_t, uint32_t> {
     auto txns_processed = 0;
     auto records_processed = 0;
     // If the upper bound is INVALID_TXN_TIMESTAMP, then we should process all deferred txns. We can accomplish this by
@@ -478,10 +478,10 @@ void RecoveryManager::UpdateIndexesOnTable(transaction::TransactionContext      
     delete[] index_buffer;
 }
 
-uint32_t RecoveryManager::ProcessSpecialCaseCatalogRecord(
+auto RecoveryManager::ProcessSpecialCaseCatalogRecord(
     transaction::TransactionContext                          *txn,
     std::vector<std::pair<LogRecord *, std::vector<byte *>>> *buffered_changes,
-    uint32_t                                                  start_idx) {
+    uint32_t                                                  start_idx) -> uint32_t {
     auto *curr_record = buffered_changes->at(start_idx).first;
     NOISEPAGE_ASSERT(curr_record->RecordType() == LogRecordType::REDO
                          || curr_record->RecordType() == LogRecordType::DELETE,
@@ -532,10 +532,10 @@ uint32_t RecoveryManager::ProcessSpecialCaseCatalogRecord(
     }
 }
 
-uint32_t RecoveryManager::ProcessSpecialCasePGDatabaseRecord(
+auto RecoveryManager::ProcessSpecialCasePGDatabaseRecord(
     noisepage::transaction::TransactionContext                                              *txn,
     std::vector<std::pair<noisepage::storage::LogRecord *, std::vector<noisepage::byte *>>> *buffered_changes,
-    uint32_t                                                                                 start_idx) {
+    uint32_t                                                                                 start_idx) -> uint32_t {
     auto *curr_record = buffered_changes->at(start_idx).first;
 
     if (curr_record->RecordType() == LogRecordType::REDO) {
@@ -665,10 +665,10 @@ uint32_t RecoveryManager::ProcessSpecialCasePGDatabaseRecord(
     return 0; // No additional logs processed
 }
 
-uint32_t RecoveryManager::ProcessSpecialCasePGClassRecord(
+auto RecoveryManager::ProcessSpecialCasePGClassRecord(
     noisepage::transaction::TransactionContext                                              *txn,
     std::vector<std::pair<noisepage::storage::LogRecord *, std::vector<noisepage::byte *>>> *buffered_changes,
-    uint32_t                                                                                 start_idx) {
+    uint32_t                                                                                 start_idx) -> uint32_t {
     auto *curr_record = buffered_changes->at(start_idx).first;
     if (curr_record->RecordType() == LogRecordType::REDO) {
         auto *redo_record = curr_record->GetUnderlyingRecordBodyAs<RedoRecord>();
@@ -964,9 +964,9 @@ uint32_t RecoveryManager::ProcessSpecialCasePGClassRecord(
     return 0; // No additional logs processed
 }
 
-common::ManagedPointer<storage::SqlTable> RecoveryManager::GetSqlTable(transaction::TransactionContext *txn,
-                                                                       const catalog::db_oid_t          db_oid,
-                                                                       const catalog::table_oid_t       table_oid) {
+auto RecoveryManager::GetSqlTable(transaction::TransactionContext *txn,
+                                  const catalog::db_oid_t          db_oid,
+                                  const catalog::table_oid_t table_oid) -> common::ManagedPointer<storage::SqlTable> {
     if (table_oid == catalog::postgres::PgDatabase::DATABASE_TABLE_OID) {
         return common::ManagedPointer(catalog_->databases_);
     }
@@ -1020,8 +1020,8 @@ common::ManagedPointer<storage::SqlTable> RecoveryManager::GetSqlTable(transacti
     return table_ptr;
 }
 
-std::vector<catalog::col_oid_t>
-RecoveryManager::GetOidsForRedoRecord(common::ManagedPointer<storage::SqlTable> sql_table, RedoRecord *record) {
+auto RecoveryManager::GetOidsForRedoRecord(common::ManagedPointer<storage::SqlTable> sql_table, RedoRecord *record)
+    -> std::vector<catalog::col_oid_t> {
     std::vector<catalog::col_oid_t> result;
     for (uint16_t i = 0; i < record->Delta()->NumColumns(); i++) {
         col_id_t col_id = record->Delta()->ColumnIds()[i];
@@ -1033,9 +1033,9 @@ RecoveryManager::GetOidsForRedoRecord(common::ManagedPointer<storage::SqlTable> 
     return result;
 }
 
-common::ManagedPointer<storage::index::Index>
-RecoveryManager::GetCatalogIndex(const catalog::index_oid_t                              oid,
-                                 const common::ManagedPointer<catalog::DatabaseCatalog> &db_catalog) {
+auto RecoveryManager::GetCatalogIndex(const catalog::index_oid_t                              oid,
+                                      const common::ManagedPointer<catalog::DatabaseCatalog> &db_catalog)
+    -> common::ManagedPointer<storage::index::Index> {
     NOISEPAGE_ASSERT((oid.UnderlyingValue()) < catalog::START_OID, "Oid must be a valid catalog oid");
 
     switch (oid.UnderlyingValue()) {
@@ -1136,10 +1136,10 @@ RecoveryManager::GetCatalogIndex(const catalog::index_oid_t                     
     }
 }
 
-uint32_t RecoveryManager::ProcessSpecialCasePGProcRecord(
+auto RecoveryManager::ProcessSpecialCasePGProcRecord(
     noisepage::transaction::TransactionContext                                              *txn,
     std::vector<std::pair<noisepage::storage::LogRecord *, std::vector<noisepage::byte *>>> *buffered_changes,
-    uint32_t                                                                                 start_idx) {
+    uint32_t                                                                                 start_idx) -> uint32_t {
     auto *curr_record = buffered_changes->at(start_idx).first;
 
     if (curr_record->RecordType() == LogRecordType::REDO) {
@@ -1170,10 +1170,9 @@ uint32_t RecoveryManager::ProcessSpecialCasePGProcRecord(
     return 0;
 }
 
-const catalog::Schema &
-RecoveryManager::GetTableSchema(transaction::TransactionContext                        *txn,
-                                const common::ManagedPointer<catalog::DatabaseCatalog> &db_catalog,
-                                const catalog::table_oid_t                              table_oid) const {
+auto RecoveryManager::GetTableSchema(transaction::TransactionContext                        *txn,
+                                     const common::ManagedPointer<catalog::DatabaseCatalog> &db_catalog,
+                                     const catalog::table_oid_t table_oid) const -> const catalog::Schema & {
     auto search = catalog_table_schemas_.find(table_oid);
     return (search != catalog_table_schemas_.end()) ? search->second
                                                     : db_catalog->GetSchema(common::ManagedPointer(txn), table_oid);

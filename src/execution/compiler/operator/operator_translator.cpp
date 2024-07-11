@@ -32,7 +32,7 @@ OperatorTranslator::OperatorTranslator(const planner::AbstractPlanNode        &p
     }
 }
 
-ast::Expr *OperatorTranslator::GetOutput(WorkContext *context, uint32_t attr_idx) const {
+auto OperatorTranslator::GetOutput(WorkContext *context, uint32_t attr_idx) const -> ast::Expr * {
     // Check valid output column.
     const auto output_schema = plan_.GetOutputSchema();
     if (attr_idx >= output_schema->NumColumns()) {
@@ -47,7 +47,8 @@ ast::Expr *OperatorTranslator::GetOutput(WorkContext *context, uint32_t attr_idx
     return context->DeriveValue(*output_expression, this);
 }
 
-ast::Expr *OperatorTranslator::GetChildOutput(WorkContext *context, uint32_t child_idx, uint32_t attr_idx) const {
+auto OperatorTranslator::GetChildOutput(WorkContext *context, uint32_t child_idx, uint32_t attr_idx) const
+    -> ast::Expr * {
     // Check valid child.
     if (child_idx >= plan_.GetChildrenSize()) {
         throw EXECUTION_EXCEPTION(fmt::format("Codegen: Plan type '{}' does not have child at index {}",
@@ -62,23 +63,23 @@ ast::Expr *OperatorTranslator::GetChildOutput(WorkContext *context, uint32_t chi
     return child_translator->GetOutput(context, attr_idx);
 }
 
-CodeGen *OperatorTranslator::GetCodeGen() const {
+auto OperatorTranslator::GetCodeGen() const -> CodeGen * {
     return compilation_context_->GetCodeGen();
 }
 
-ast::Expr *OperatorTranslator::GetQueryStatePtr() const {
+auto OperatorTranslator::GetQueryStatePtr() const -> ast::Expr * {
     return compilation_context_->GetQueryState()->GetStatePointer(GetCodeGen());
 }
 
-ast::Expr *OperatorTranslator::GetExecutionContext() const {
+auto OperatorTranslator::GetExecutionContext() const -> ast::Expr * {
     return compilation_context_->GetExecutionContextPtrFromQueryState();
 }
 
-ast::Expr *OperatorTranslator::GetThreadStateContainer() const {
+auto OperatorTranslator::GetThreadStateContainer() const -> ast::Expr * {
     return GetCodeGen()->ExecCtxGetTLS(GetExecutionContext());
 }
 
-ast::Expr *OperatorTranslator::GetMemoryPool() const {
+auto OperatorTranslator::GetMemoryPool() const -> ast::Expr * {
     return GetCodeGen()->ExecCtxGetMemoryPool(GetExecutionContext());
 }
 
@@ -100,15 +101,16 @@ void OperatorTranslator::GetAllChildOutputFields(const uint32_t                 
     }
 }
 
-bool OperatorTranslator::IsCountersEnabled() const {
+auto OperatorTranslator::IsCountersEnabled() const -> bool {
     return compilation_context_->IsCountersEnabled();
 }
 
-bool OperatorTranslator::IsPipelineMetricsEnabled() const {
+auto OperatorTranslator::IsPipelineMetricsEnabled() const -> bool {
     return compilation_context_->IsPipelineMetricsEnabled();
 }
 
-StateDescriptor::Entry OperatorTranslator::CounterDeclare(const std::string &counter_name, Pipeline *pipeline) const {
+auto OperatorTranslator::CounterDeclare(const std::string &counter_name, Pipeline *pipeline) const
+    -> StateDescriptor::Entry {
     auto *codegen = GetCodeGen();
 
     if (IsCountersEnabled()) {
@@ -170,7 +172,7 @@ void OperatorTranslator::CounterAdd(FunctionBuilder              *function,
     }
 }
 
-ast::Expr *OperatorTranslator::CounterVal(StateDescriptor::Entry entry) const {
+auto OperatorTranslator::CounterVal(StateDescriptor::Entry entry) const -> ast::Expr * {
     if (IsCountersEnabled()) {
         return entry.Get(GetCodeGen());
     }
@@ -266,8 +268,8 @@ void OperatorTranslator::FeatureArithmeticRecordMul(FunctionBuilder           *f
     }
 }
 
-util::RegionVector<ast::FieldDecl *>
-OperatorTranslator::GetHookParams(const Pipeline &pipeline, ast::Identifier *arg, ast::Expr *arg_type) const {
+auto OperatorTranslator::GetHookParams(const Pipeline &pipeline, ast::Identifier *arg, ast::Expr *arg_type) const
+    -> util::RegionVector<ast::FieldDecl *> {
     auto *codegen = GetCodeGen();
 
     auto params = pipeline.PipelineParams();

@@ -13,19 +13,19 @@ LexicalScope::LexicalScope(std::size_t id, std::size_t depth, const LexicalScope
     , depth_{depth}
     , enclosing_scope_{enclosing_scope} {}
 
-std::size_t LexicalScope::RefCount() const {
+auto LexicalScope::RefCount() const -> std::size_t {
     return references_.size();
 }
 
-std::size_t LexicalScope::ReadRefCount() const {
+auto LexicalScope::ReadRefCount() const -> std::size_t {
     return RefCountWithType(RefType::READ);
 }
 
-std::size_t LexicalScope::WriteRefCount() const {
+auto LexicalScope::WriteRefCount() const -> std::size_t {
     return RefCountWithType(RefType::WRITE);
 }
 
-std::size_t LexicalScope::RefCountWithType(RefType type) const {
+auto LexicalScope::RefCountWithType(RefType type) const -> std::size_t {
     return std::count_if(references_.cbegin(),
                          references_.cend(),
                          [=](const std::unique_ptr<ContextSensitiveTableRef> &r) {
@@ -33,11 +33,11 @@ std::size_t LexicalScope::RefCountWithType(RefType type) const {
                          });
 }
 
-std::vector<std::unique_ptr<ContextSensitiveTableRef>> &LexicalScope::References() {
+auto LexicalScope::References() -> std::vector<std::unique_ptr<ContextSensitiveTableRef>> & {
     return references_;
 }
 
-const std::vector<std::unique_ptr<ContextSensitiveTableRef>> &LexicalScope::References() const {
+auto LexicalScope::References() const -> const std::vector<std::unique_ptr<ContextSensitiveTableRef>> & {
     return references_;
 }
 
@@ -49,7 +49,7 @@ void LexicalScope::AddReference(std::unique_ptr<ContextSensitiveTableRef> &&ref)
     references_.push_back(std::move(ref));
 }
 
-std::size_t LexicalScope::PositionOf(std::string_view alias, RefType type) const {
+auto LexicalScope::PositionOf(std::string_view alias, RefType type) const -> std::size_t {
     auto it = std::find_if(references_.cbegin(),
                            references_.cend(),
                            [&](const std::unique_ptr<ContextSensitiveTableRef> &ref) {

@@ -45,15 +45,15 @@ SeqScanTranslator::SeqScanTranslator(const planner::SeqScanPlanNode &plan,
     num_scans_ = CounterDeclare("num_scans", pipeline);
 }
 
-bool SeqScanTranslator::HasPredicate() const {
+auto SeqScanTranslator::HasPredicate() const -> bool {
     return GetPlanAs<planner::SeqScanPlanNode>().GetScanPredicate() != nullptr;
 }
 
-catalog::Schema SeqScanTranslator::GetPlanSchema() const {
+auto SeqScanTranslator::GetPlanSchema() const -> catalog::Schema {
     return GetCodeGen()->GetCatalogAccessor()->GetSchema(GetPlanAs<planner::SeqScanPlanNode>().GetTableOid());
 }
 
-catalog::table_oid_t SeqScanTranslator::GetTableOid() const {
+auto SeqScanTranslator::GetTableOid() const -> catalog::table_oid_t {
     return GetPlanAs<planner::SeqScanPlanNode>().GetTableOid();
 }
 
@@ -355,7 +355,7 @@ void SeqScanTranslator::PerformPipelineWork(WorkContext *context, FunctionBuilde
     }
 }
 
-util::RegionVector<ast::FieldDecl *> SeqScanTranslator::GetWorkerParams() const {
+auto SeqScanTranslator::GetWorkerParams() const -> util::RegionVector<ast::FieldDecl *> {
     auto *codegen = GetCodeGen();
     auto *tvi_type = codegen->PointerType(ast::BuiltinType::TableVectorIterator);
     return codegen->MakeFieldList({codegen->MakeField(tvi_var_, tvi_type)});
@@ -370,7 +370,7 @@ void SeqScanTranslator::LaunchWork(FunctionBuilder *function, ast::Identifier wo
                                                         work_func));
 }
 
-ast::Expr *SeqScanTranslator::GetTableColumn(catalog::col_oid_t col_oid) const {
+auto SeqScanTranslator::GetTableColumn(catalog::col_oid_t col_oid) const -> ast::Expr * {
     execution::sql::SqlTypeId type;
     bool                      nullable;
     if (catalog::IsTempOid(GetTableOid())) {
@@ -387,11 +387,11 @@ ast::Expr *SeqScanTranslator::GetTableColumn(catalog::col_oid_t col_oid) const {
     return GetCodeGen()->VPIGet(GetCodeGen()->MakeExpr(vpi_var_), sql::GetTypeId(type), nullable, col_index);
 }
 
-ast::Expr *SeqScanTranslator::GetSlotAddress() const {
+auto SeqScanTranslator::GetSlotAddress() const -> ast::Expr * {
     return GetCodeGen()->AddressOf(slot_var_);
 }
 
-ast::Expr *SeqScanTranslator::GetVPI() const {
+auto SeqScanTranslator::GetVPI() const -> ast::Expr * {
     return GetCodeGen()->MakeExpr(vpi_var_);
 }
 
@@ -411,7 +411,7 @@ void SeqScanTranslator::DeclareColOids(FunctionBuilder *function) const {
     }
 }
 
-uint32_t SeqScanTranslator::GetColOidIndex(catalog::col_oid_t col_oid) const {
+auto SeqScanTranslator::GetColOidIndex(catalog::col_oid_t col_oid) const -> uint32_t {
     // TODO(WAN): this is sad code. How can we avoid doing this?
     const auto &col_oids = col_oids_;
     for (uint32_t i = 0; i < col_oids.size(); ++i) {
@@ -423,9 +423,9 @@ uint32_t SeqScanTranslator::GetColOidIndex(catalog::col_oid_t col_oid) const {
                               common::ErrorCode::ERRCODE_INTERNAL_ERROR);
 }
 
-std::vector<catalog::col_oid_t> SeqScanTranslator::MakeInputOids(const catalog::CatalogAccessor &accessor,
-                                                                 catalog::table_oid_t            table,
-                                                                 const planner::SeqScanPlanNode &op) {
+auto SeqScanTranslator::MakeInputOids(const catalog::CatalogAccessor &accessor,
+                                      catalog::table_oid_t            table,
+                                      const planner::SeqScanPlanNode &op) -> std::vector<catalog::col_oid_t> {
     if (op.GetColumnOids().empty()) {
         catalog::Schema schema;
         if (catalog::IsTempOid(table)) {

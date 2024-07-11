@@ -115,7 +115,7 @@ void HashJoinTranslator::DefineHelperFunctions(util::RegionVector<ast::FunctionD
     }
 }
 
-ast::FunctionDecl *HashJoinTranslator::GenerateStartHookFunction() const {
+auto HashJoinTranslator::GenerateStartHookFunction() const -> ast::FunctionDecl * {
     auto *codegen = GetCodeGen();
     auto *pipeline = &left_pipeline_;
 
@@ -126,7 +126,7 @@ ast::FunctionDecl *HashJoinTranslator::GenerateStartHookFunction() const {
     return builder.Finish();
 }
 
-ast::FunctionDecl *HashJoinTranslator::GenerateEndHookFunction() const {
+auto HashJoinTranslator::GenerateEndHookFunction() const -> ast::FunctionDecl * {
     auto *codegen = GetCodeGen();
     auto *pipeline = &left_pipeline_;
 
@@ -235,10 +235,10 @@ void HashJoinTranslator::EndParallelPipelineWork(const Pipeline &pipeline, Funct
     RecordCounters(pipeline, function);
 }
 
-ast::Expr *
-HashJoinTranslator::HashKeys(WorkContext                                                           *ctx,
-                             FunctionBuilder                                                       *function,
-                             const std::vector<common::ManagedPointer<parser::AbstractExpression>> &hash_keys) const {
+auto HashJoinTranslator::HashKeys(
+    WorkContext                                                           *ctx,
+    FunctionBuilder                                                       *function,
+    const std::vector<common::ManagedPointer<parser::AbstractExpression>> &hash_keys) const -> ast::Expr * {
     auto *codegen = GetCodeGen();
 
     std::vector<ast::Expr *> key_values;
@@ -253,7 +253,7 @@ HashJoinTranslator::HashKeys(WorkContext                                        
     return codegen->MakeExpr(hash_val_name);
 }
 
-ast::Expr *HashJoinTranslator::GetRowAttribute(ast::Expr *row, uint32_t attr_idx) const {
+auto HashJoinTranslator::GetRowAttribute(ast::Expr *row, uint32_t attr_idx) const -> ast::Expr * {
     auto *codegen = GetCodeGen();
     auto  attr_name = codegen->MakeIdentifier(row_attr_prefix + std::to_string(attr_idx));
     return codegen->AccessStructMember(row, attr_name);
@@ -543,7 +543,8 @@ void HashJoinTranslator::FinishPipelineWork(const Pipeline &pipeline, FunctionBu
     }
 }
 
-ast::Expr *HashJoinTranslator::GetChildOutput(WorkContext *context, uint32_t child_idx, uint32_t attr_idx) const {
+auto HashJoinTranslator::GetChildOutput(WorkContext *context, uint32_t child_idx, uint32_t attr_idx) const
+    -> ast::Expr * {
     // If the request is in the probe pipeline and for an attribute in the left
     // child, we read it from the probe/materialized build row.
     //

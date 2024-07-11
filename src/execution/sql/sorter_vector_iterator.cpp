@@ -38,7 +38,7 @@ SorterVectorIterator::~SorterVectorIterator() {
     memory_->DeallocateArray(temp_rows_, common::Constants::K_DEFAULT_VECTOR_SIZE);
 }
 
-bool SorterVectorIterator::HasNext() const {
+auto SorterVectorIterator::HasNext() const -> bool {
     return vector_projection_->GetSelectedTupleCount() > 0;
 }
 

@@ -18,7 +18,7 @@
 
 namespace noisepage::storage::index {
 
-Index *IndexBuilder::Build() const {
+auto IndexBuilder::Build() const -> Index * {
     NOISEPAGE_ASSERT(!key_schema_.GetColumns().empty(), "Cannot build an index without a KeySchema.");
 
     IndexMetadata metadata(key_schema_);
@@ -57,12 +57,12 @@ Index *IndexBuilder::Build() const {
     }
 }
 
-IndexBuilder &IndexBuilder::SetKeySchema(const catalog::IndexSchema &key_schema) {
+auto IndexBuilder::SetKeySchema(const catalog::IndexSchema &key_schema) -> IndexBuilder & {
     key_schema_ = key_schema;
     return *this;
 }
 
-Index *IndexBuilder::BuildBwTreeIntsKey(IndexMetadata metadata) const {
+auto IndexBuilder::BuildBwTreeIntsKey(IndexMetadata metadata) const -> Index * {
     metadata.SetKeyKind(IndexKeyKind::COMPACTINTSKEY);
     const auto key_size = metadata.KeySize();
     NOISEPAGE_ASSERT(key_size <= COMPACTINTSKEY_MAX_SIZE, "Key size exceeds maximum for this key type.");
@@ -84,7 +84,7 @@ Index *IndexBuilder::BuildBwTreeIntsKey(IndexMetadata metadata) const {
     return index;
 }
 
-Index *IndexBuilder::BuildBwTreeGenericKey(IndexMetadata metadata) const {
+auto IndexBuilder::BuildBwTreeGenericKey(IndexMetadata metadata) const -> Index * {
     metadata.SetKeyKind(IndexKeyKind::GENERICKEY);
     const auto pr_size = metadata.GetInlinedPRInitializer().ProjectedRowSize();
     Index     *index = nullptr;
@@ -111,7 +111,7 @@ Index *IndexBuilder::BuildBwTreeGenericKey(IndexMetadata metadata) const {
     return index;
 }
 
-Index *IndexBuilder::BuildBPlusTreeIntsKey(IndexMetadata &&metadata) const {
+auto IndexBuilder::BuildBPlusTreeIntsKey(IndexMetadata &&metadata) const -> Index * {
     metadata.SetKeyKind(IndexKeyKind::COMPACTINTSKEY);
     const auto key_size = metadata.KeySize();
     NOISEPAGE_ASSERT(key_size <= COMPACTINTSKEY_MAX_SIZE, "Key size exceeds maximum for this key type.");
@@ -133,7 +133,7 @@ Index *IndexBuilder::BuildBPlusTreeIntsKey(IndexMetadata &&metadata) const {
     return index;
 }
 
-Index *IndexBuilder::BuildBPlusTreeGenericKey(IndexMetadata metadata) const {
+auto IndexBuilder::BuildBPlusTreeGenericKey(IndexMetadata metadata) const -> Index * {
     metadata.SetKeyKind(IndexKeyKind::GENERICKEY);
     const auto pr_size = metadata.GetInlinedPRInitializer().ProjectedRowSize();
     Index     *index = nullptr;
@@ -160,7 +160,7 @@ Index *IndexBuilder::BuildBPlusTreeGenericKey(IndexMetadata metadata) const {
     return index;
 }
 
-Index *IndexBuilder::BuildHashIntsKey(IndexMetadata metadata) const {
+auto IndexBuilder::BuildHashIntsKey(IndexMetadata metadata) const -> Index * {
     metadata.SetKeyKind(IndexKeyKind::HASHKEY);
     const auto key_size = metadata.KeySize();
     NOISEPAGE_ASSERT(metadata.KeySize() <= HASHKEY_MAX_SIZE, "Key size exceeds maximum for this key type.");
@@ -188,7 +188,7 @@ Index *IndexBuilder::BuildHashIntsKey(IndexMetadata metadata) const {
     return index;
 }
 
-Index *IndexBuilder::BuildHashGenericKey(IndexMetadata metadata) const {
+auto IndexBuilder::BuildHashGenericKey(IndexMetadata metadata) const -> Index * {
     metadata.SetKeyKind(IndexKeyKind::GENERICKEY);
     const auto pr_size = metadata.GetInlinedPRInitializer().ProjectedRowSize();
     Index     *index = nullptr;

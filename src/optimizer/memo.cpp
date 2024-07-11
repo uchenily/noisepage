@@ -9,7 +9,7 @@
 
 namespace noisepage::optimizer {
 
-GroupExpression *Memo::InsertExpression(GroupExpression *gexpr, group_id_t target_group, bool enforced) {
+auto Memo::InsertExpression(GroupExpression *gexpr, group_id_t target_group, bool enforced) -> GroupExpression * {
     // If leaf, then just return
     if (gexpr->Contents()->GetOpType() == OpType::LEAF) {
         const auto leaf = gexpr->Contents()->GetContentsAs<LeafOperator>();
@@ -47,7 +47,7 @@ GroupExpression *Memo::InsertExpression(GroupExpression *gexpr, group_id_t targe
     return gexpr;
 }
 
-group_id_t Memo::AddNewGroup(GroupExpression *gexpr) {
+auto Memo::AddNewGroup(GroupExpression *gexpr) -> group_id_t {
     auto new_group_id = group_id_t(groups_.size());
 
     // Find out the table alias that this group represents

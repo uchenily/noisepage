@@ -11,7 +11,7 @@
 
 namespace noisepage::execution::sql {
 
-bool GenericValue::Equals(const GenericValue &other) const {
+auto GenericValue::Equals(const GenericValue &other) const -> bool {
     if (type_id_ != other.type_id_) {
         return false;
     }
@@ -50,7 +50,7 @@ bool GenericValue::Equals(const GenericValue &other) const {
     return false;
 }
 
-GenericValue GenericValue::CastTo(const exec::ExecutionSettings &exec_settings, TypeId type) {
+auto GenericValue::CastTo(const exec::ExecutionSettings &exec_settings, TypeId type) -> GenericValue {
     // Copy if same type
     if (type_id_ == type) {
         return GenericValue(*this);
@@ -61,7 +61,7 @@ GenericValue GenericValue::CastTo(const exec::ExecutionSettings &exec_settings, 
     return result.GetValue(0);
 }
 
-std::string GenericValue::ToString() const {
+auto GenericValue::ToString() const -> std::string {
     if (is_null_) {
         return "NULL";
     }
@@ -95,110 +95,110 @@ std::string GenericValue::ToString() const {
     }
 }
 
-std::ostream &operator<<(std::ostream &out, const GenericValue &val) {
+auto operator<<(std::ostream &out, const GenericValue &val) -> std::ostream & {
     out << val.ToString();
     return out;
 }
 
-GenericValue GenericValue::CreateNull(TypeId type_id) {
+auto GenericValue::CreateNull(TypeId type_id) -> GenericValue {
     GenericValue result(type_id);
     result.is_null_ = true;
     return result;
 }
 
-GenericValue GenericValue::CreateBoolean(const bool value) {
+auto GenericValue::CreateBoolean(const bool value) -> GenericValue {
     GenericValue result(TypeId::Boolean);
     result.value_.boolean_ = value;
     result.is_null_ = false;
     return result;
 }
 
-GenericValue GenericValue::CreateTinyInt(const int8_t value) {
+auto GenericValue::CreateTinyInt(const int8_t value) -> GenericValue {
     GenericValue result(TypeId::TinyInt);
     result.value_.tinyint_ = value;
     result.is_null_ = false;
     return result;
 }
 
-GenericValue GenericValue::CreateSmallInt(const int16_t value) {
+auto GenericValue::CreateSmallInt(const int16_t value) -> GenericValue {
     GenericValue result(TypeId::SmallInt);
     result.value_.smallint_ = value;
     result.is_null_ = false;
     return result;
 }
 
-GenericValue GenericValue::CreateInteger(const int32_t value) {
+auto GenericValue::CreateInteger(const int32_t value) -> GenericValue {
     GenericValue result(TypeId::Integer);
     result.value_.integer_ = value;
     result.is_null_ = false;
     return result;
 }
 
-GenericValue GenericValue::CreateBigInt(const int64_t value) {
+auto GenericValue::CreateBigInt(const int64_t value) -> GenericValue {
     GenericValue result(TypeId::BigInt);
     result.value_.bigint_ = value;
     result.is_null_ = false;
     return result;
 }
-GenericValue GenericValue::CreateHash(hash_t value) {
+auto GenericValue::CreateHash(hash_t value) -> GenericValue {
     GenericValue result(TypeId::Hash);
     result.value_.hash_ = value;
     result.is_null_ = false;
     return result;
 }
 
-GenericValue GenericValue::CreatePointer(uintptr_t value) {
+auto GenericValue::CreatePointer(uintptr_t value) -> GenericValue {
     GenericValue result(TypeId::Pointer);
     result.value_.pointer_ = value;
     result.is_null_ = false;
     return result;
 }
 
-GenericValue GenericValue::CreateReal(const float value) {
+auto GenericValue::CreateReal(const float value) -> GenericValue {
     GenericValue result(TypeId::Float);
     result.value_.float_ = value;
     result.is_null_ = false;
     return result;
 }
 
-GenericValue GenericValue::CreateDouble(const double value) {
+auto GenericValue::CreateDouble(const double value) -> GenericValue {
     GenericValue result(TypeId::Double);
     result.value_.double_ = value;
     result.is_null_ = false;
     return result;
 }
 
-GenericValue GenericValue::CreateDate(Date date) {
+auto GenericValue::CreateDate(Date date) -> GenericValue {
     GenericValue result(TypeId::Date);
     result.value_.date_ = date;
     result.is_null_ = false;
     return result;
 }
 
-GenericValue GenericValue::CreateDate(uint32_t year, uint32_t month, uint32_t day) {
+auto GenericValue::CreateDate(uint32_t year, uint32_t month, uint32_t day) -> GenericValue {
     return CreateDate(Date::FromYMD(year, month, day));
 }
 
-GenericValue GenericValue::CreateTimestamp(Timestamp timestamp) {
+auto GenericValue::CreateTimestamp(Timestamp timestamp) -> GenericValue {
     GenericValue result(TypeId::Timestamp);
     result.value_.timestamp_ = timestamp;
     result.is_null_ = false;
     return result;
 }
 
-GenericValue
-GenericValue::CreateTimestamp(int32_t year, int32_t month, int32_t day, int32_t hour, int32_t min, int32_t sec) {
+auto GenericValue::CreateTimestamp(int32_t year, int32_t month, int32_t day, int32_t hour, int32_t min, int32_t sec)
+    -> GenericValue {
     return CreateTimestamp(Timestamp::FromYMDHMS(year, month, day, hour, min, sec));
 }
 
-GenericValue GenericValue::CreateVarchar(std::string_view str) {
+auto GenericValue::CreateVarchar(std::string_view str) -> GenericValue {
     GenericValue result(TypeId::Varchar);
     result.is_null_ = false;
     result.str_value_ = str;
     return result;
 }
 
-GenericValue GenericValue::CreateFromRuntimeValue(const TypeId type_id, const Val &val) {
+auto GenericValue::CreateFromRuntimeValue(const TypeId type_id, const Val &val) -> GenericValue {
     switch (type_id) {
     case TypeId::Boolean:
         return GenericValue::CreateBoolean(static_cast<const BoolVal &>(val).val_);

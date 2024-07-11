@@ -63,7 +63,7 @@ CteScanIterator::CteScanIterator(noisepage::execution::exec::ExecutionContext *e
     });
 }
 
-storage::ProjectedRow *CteScanIterator::GetInsertTempTablePR() {
+auto CteScanIterator::GetInsertTempTablePR() -> storage::ProjectedRow * {
     // We need all the columns
     storage::ProjectedRowInitializer pri = cte_table_->InitializerForProjectedRow(col_oids_);
     auto                             txn = exec_ctx_->GetTxn();
@@ -71,7 +71,7 @@ storage::ProjectedRow *CteScanIterator::GetInsertTempTablePR() {
     return table_redo_->Delta();
 }
 
-storage::TupleSlot CteScanIterator::TableInsert() {
+auto CteScanIterator::TableInsert() -> storage::TupleSlot {
     // This should only happen in root plan nodes, so should reflect count of query
     exec_ctx_->AddRowsAffected(1);
     return cte_table_->Insert(exec_ctx_->GetTxn(), table_redo_);

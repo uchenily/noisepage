@@ -9,7 +9,7 @@
 
 namespace noisepage::planner {
 
-std::unique_ptr<IndexJoinPlanNode> IndexJoinPlanNode::Builder::Build() {
+auto IndexJoinPlanNode::Builder::Build() -> std::unique_ptr<IndexJoinPlanNode> {
     return std::unique_ptr<IndexJoinPlanNode>(new IndexJoinPlanNode(std::move(children_),
                                                                     std::move(output_schema_),
                                                                     join_type_,
@@ -42,11 +42,11 @@ IndexJoinPlanNode::IndexJoinPlanNode(std::vector<std::unique_ptr<AbstractPlanNod
     , hi_index_cols_(std::move(hi_cols))
     , index_size_(index_size) {}
 
-common::hash_t IndexJoinPlanNode::Hash() const {
+auto IndexJoinPlanNode::Hash() const -> common::hash_t {
     return AbstractJoinPlanNode::Hash();
 }
 
-bool IndexJoinPlanNode::operator==(const AbstractPlanNode &rhs) const {
+auto IndexJoinPlanNode::operator==(const AbstractPlanNode &rhs) const -> bool {
     if (!AbstractJoinPlanNode::operator==(rhs)) {
         return false;
     }
@@ -55,7 +55,7 @@ bool IndexJoinPlanNode::operator==(const AbstractPlanNode &rhs) const {
     return other.table_oid_ == table_oid_ && other.index_oid_ == index_oid_;
 }
 
-nlohmann::json IndexJoinPlanNode::ToJson() const {
+auto IndexJoinPlanNode::ToJson() const -> nlohmann::json {
     nlohmann::json j = AbstractJoinPlanNode::ToJson();
     j["index_oid"] = index_oid_;
     j["table_oid"] = table_oid_;
@@ -65,7 +65,7 @@ nlohmann::json IndexJoinPlanNode::ToJson() const {
     return j;
 }
 
-std::vector<std::unique_ptr<parser::AbstractExpression>> IndexJoinPlanNode::FromJson(const nlohmann::json &j) {
+auto IndexJoinPlanNode::FromJson(const nlohmann::json &j) -> std::vector<std::unique_ptr<parser::AbstractExpression>> {
     std::vector<std::unique_ptr<parser::AbstractExpression>> exprs;
     auto                                                     e1 = AbstractJoinPlanNode::FromJson(j);
     exprs.insert(exprs.end(), std::make_move_iterator(e1.begin()), std::make_move_iterator(e1.end()));
@@ -74,7 +74,7 @@ std::vector<std::unique_ptr<parser::AbstractExpression>> IndexJoinPlanNode::From
     return exprs;
 }
 
-std::vector<catalog::col_oid_t> IndexJoinPlanNode::CollectInputOids() const {
+auto IndexJoinPlanNode::CollectInputOids() const -> std::vector<catalog::col_oid_t> {
     std::vector<catalog::col_oid_t> result;
     // Scan predicate
     if (GetJoinPredicate() != nullptr) {

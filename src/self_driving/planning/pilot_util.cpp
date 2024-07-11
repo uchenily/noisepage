@@ -129,8 +129,8 @@ void PilotUtil::SumFeatureInPlace(std::vector<double>       *feature,
     }
 }
 
-std::vector<double> PilotUtil::GetInterferenceFeature(const std::vector<double> &feature,
-                                                      const std::vector<double> &normalized_feat_sum) {
+auto PilotUtil::GetInterferenceFeature(const std::vector<double> &feature,
+                                       const std::vector<double> &normalized_feat_sum) -> std::vector<double> {
     std::vector<double> interference_feat;
     for (size_t i = 0; i < feature.size(); i++) {
         // normalize the output of ou_model by the elapsed time
@@ -144,12 +144,12 @@ std::vector<double> PilotUtil::GetInterferenceFeature(const std::vector<double> 
     return interference_feat;
 }
 
-double PilotUtil::ComputeCost(PlanningContext                         *planning_context,
-                              common::ManagedPointer<WorkloadForecast> forecast,
-                              uint64_t                                 start_segment_index,
-                              uint64_t                                 end_segment_index,
-                              std::optional<AbstractAction *>          action,
-                              std::optional<uint64_t *>                action_segments) {
+auto PilotUtil::ComputeCost(PlanningContext                         *planning_context,
+                            common::ManagedPointer<WorkloadForecast> forecast,
+                            uint64_t                                 start_segment_index,
+                            uint64_t                                 end_segment_index,
+                            std::optional<AbstractAction *>          action,
+                            std::optional<uint64_t *>                action_segments) -> double {
     // Compute cost as total latency of queries based on their num of exec
     InferenceResults inference_results;
     // Get the initial action_segments
@@ -192,13 +192,12 @@ double PilotUtil::ComputeCost(PlanningContext                         *planning_
     return total_cost;
 }
 
-std::unique_ptr<metrics::PipelineMetricRawData>
-PilotUtil::CollectPipelineFeatures(const PlanningContext                                &planning_context,
-                                   common::ManagedPointer<selfdriving::WorkloadForecast> forecast,
-                                   uint64_t                                              start_segment_index,
-                                   uint64_t                                              end_segment_index,
-                                   std::vector<execution::query_id_t>                   *pipeline_qids,
-                                   const bool                                            execute_query) {
+auto PilotUtil::CollectPipelineFeatures(const PlanningContext                                &planning_context,
+                                        common::ManagedPointer<selfdriving::WorkloadForecast> forecast,
+                                        uint64_t                                              start_segment_index,
+                                        uint64_t                                              end_segment_index,
+                                        std::vector<execution::query_id_t>                   *pipeline_qids,
+                                        const bool execute_query) -> std::unique_ptr<metrics::PipelineMetricRawData> {
     std::unordered_set<execution::query_id_t> qids;
     for (auto i = start_segment_index; i <= end_segment_index; i++) {
         for (auto &it : forecast->GetSegmentByIndex(i).GetIdToNumexec()) {
@@ -611,7 +610,8 @@ void PilotUtil::GroupFeaturesByOU(
     }
 }
 
-MemoryInfo PilotUtil::ComputeMemoryInfo(const PlanningContext &planning_context, const WorkloadForecast *forecast) {
+auto PilotUtil::ComputeMemoryInfo(const PlanningContext &planning_context, const WorkloadForecast *forecast)
+    -> MemoryInfo {
     MemoryInfo memory_info;
     PilotUtil::ComputeTableSizeRatios(planning_context, forecast, &memory_info);
     PilotUtil::ComputeTableIndexSizes(planning_context, &memory_info);
@@ -832,10 +832,11 @@ void PilotUtil::EstimateCreateIndexAction(PlanningContext   *planning_context,
     create_action->SetEstimatedMetrics(std::move(pipeline_sum));
 }
 
-size_t PilotUtil::CalculateMemoryConsumption(const MemoryInfo  &memory_info,
-                                             const ActionState &action_state,
-                                             uint64_t           segment_index,
-                                             const std::map<action_id_t, std::unique_ptr<AbstractAction>> &action_map) {
+auto PilotUtil::CalculateMemoryConsumption(const MemoryInfo                                             &memory_info,
+                                           const ActionState                                            &action_state,
+                                           uint64_t                                                      segment_index,
+                                           const std::map<action_id_t, std::unique_ptr<AbstractAction>> &action_map)
+    -> size_t {
     auto &created_indexes = action_state.GetCreatedIndexes();
     auto &dropped_indexes = action_state.GetDroppedIndexes();
     auto &index_action_map = action_state.GetIndexActionMap();
@@ -880,7 +881,7 @@ size_t PilotUtil::CalculateMemoryConsumption(const MemoryInfo  &memory_info,
     return total_memory;
 }
 
-std::string PilotUtil::ConfigToString(const std::set<action_id_t> &config_set) {
+auto PilotUtil::ConfigToString(const std::set<action_id_t> &config_set) -> std::string {
     std::string set_string = "{";
     for (auto action : config_set) {
         set_string += fmt::format(" action_id {} ", action);

@@ -234,8 +234,8 @@ void PgCoreImpl::Bootstrap(const common::ManagedPointer<transaction::Transaction
 // Other functions
 // --------------------------------------------------------------------------------------------------------------------
 
-std::function<void(void)> PgCoreImpl::GetTearDownFn(common::ManagedPointer<transaction::TransactionContext> txn,
-                                                    const common::ManagedPointer<DatabaseCatalog>           dbc) {
+auto PgCoreImpl::GetTearDownFn(common::ManagedPointer<transaction::TransactionContext> txn,
+                               const common::ManagedPointer<DatabaseCatalog> dbc) -> std::function<void(void)> {
     std::vector<Schema *>                table_schemas;
     std::vector<storage::SqlTable *>     tables;
     std::vector<IndexSchema *>           index_schemas;
@@ -306,9 +306,9 @@ std::function<void(void)> PgCoreImpl::GetTearDownFn(common::ManagedPointer<trans
 // pg_namespace
 // --------------------------------------------------------------------------------------------------------------------
 
-bool PgCoreImpl::CreateNamespace(const common::ManagedPointer<transaction::TransactionContext> txn,
+auto PgCoreImpl::CreateNamespace(const common::ManagedPointer<transaction::TransactionContext> txn,
                                  const std::string                                            &name,
-                                 const namespace_oid_t                                         ns_oid) {
+                                 const namespace_oid_t                                         ns_oid) -> bool {
     auto *const redo = txn->StageWrite(db_oid_, PgNamespace::NAMESPACE_TABLE_OID, pg_namespace_all_cols_pri_);
     auto        delta = common::ManagedPointer(redo->Delta());
     const auto &pm = pg_namespace_all_cols_prm_;
@@ -350,9 +350,9 @@ bool PgCoreImpl::CreateNamespace(const common::ManagedPointer<transaction::Trans
     return true;
 }
 
-bool PgCoreImpl::DeleteNamespace(const common::ManagedPointer<transaction::TransactionContext> txn,
+auto PgCoreImpl::DeleteNamespace(const common::ManagedPointer<transaction::TransactionContext> txn,
                                  const common::ManagedPointer<DatabaseCatalog>                 dbc,
-                                 const namespace_oid_t                                         ns_oid) {
+                                 const namespace_oid_t                                         ns_oid) -> bool {
     // This buffer is large enough for all prs because it's meant to hold 1 VarlenEntry.
     byte *const buffer = common::AllocationUtil::AllocateAligned(delete_namespace_pri_.ProjectedRowSize());
 
@@ -448,8 +448,8 @@ bool PgCoreImpl::DeleteNamespace(const common::ManagedPointer<transaction::Trans
     return true;
 }
 
-namespace_oid_t PgCoreImpl::GetNamespaceOid(const common::ManagedPointer<transaction::TransactionContext> txn,
-                                            const std::string                                            &name) {
+auto PgCoreImpl::GetNamespaceOid(const common::ManagedPointer<transaction::TransactionContext> txn,
+                                 const std::string &name) -> namespace_oid_t {
     // Buffer is large enough for all prs because it's meant to hold 1 VarlenEntry
     const auto &name_pri = namespaces_name_index_->GetProjectedRowInitializer();
     byte *const buffer = common::AllocationUtil::AllocateAligned(name_pri.ProjectedRowSize());
@@ -486,10 +486,10 @@ namespace_oid_t PgCoreImpl::GetNamespaceOid(const common::ManagedPointer<transac
 }
 
 template <typename ClassOid, typename Ptr>
-bool PgCoreImpl::SetClassPointer(const common::ManagedPointer<transaction::TransactionContext> txn,
+auto PgCoreImpl::SetClassPointer(const common::ManagedPointer<transaction::TransactionContext> txn,
                                  const ClassOid                                                oid,
                                  const Ptr *const                                              pointer,
-                                 const col_oid_t                                               class_col) {
+                                 const col_oid_t                                               class_col) -> bool {
     static_assert(std::is_same_v<ClassOid, table_oid_t> || std::is_same_v<ClassOid, index_oid_t>, "Invalid ClassOid.");
     static_assert((std::is_same_v<ClassOid, table_oid_t> && std::is_same_v<Ptr, storage::SqlTable>)
                       || (std::is_same_v<ClassOid, table_oid_t> && std::is_same_v<Ptr, Schema>)
@@ -528,11 +528,11 @@ bool PgCoreImpl::SetClassPointer(const common::ManagedPointer<transaction::Trans
     return classes_->Update(txn, update_redo);
 }
 
-bool PgCoreImpl::CreateTableEntry(const common::ManagedPointer<transaction::TransactionContext> txn,
+auto PgCoreImpl::CreateTableEntry(const common::ManagedPointer<transaction::TransactionContext> txn,
                                   const table_oid_t                                             table_oid,
                                   const namespace_oid_t                                         ns_oid,
                                   const std::string                                            &name,
-                                  const Schema                                                 &schema) {
+                                  const Schema                                                 &schema) -> bool {
     auto *const insert_redo = txn->StageWrite(db_oid_, PgClass::CLASS_TABLE_OID, pg_class_all_cols_pri_);
     auto        delta = common::ManagedPointer(insert_redo->Delta());
     auto       &pm = pg_class_all_cols_prm_;
@@ -629,9 +629,9 @@ bool PgCoreImpl::CreateTableEntry(const common::ManagedPointer<transaction::Tran
     return true;
 }
 
-bool PgCoreImpl::DeleteTable(const common::ManagedPointer<transaction::TransactionContext> txn,
+auto PgCoreImpl::DeleteTable(const common::ManagedPointer<transaction::TransactionContext> txn,
                              const common::ManagedPointer<DatabaseCatalog>                 dbc,
-                             const table_oid_t                                             table) {
+                             const table_oid_t                                             table) -> bool {
     // We should respect foreign key relations and attempt to delete the table's columns first.
     {
         auto result = DeleteColumns<Schema::Column, table_oid_t>(txn, table);
@@ -743,21 +743,21 @@ bool PgCoreImpl::DeleteTable(const common::ManagedPointer<transaction::Transacti
     return true;
 }
 
-bool PgCoreImpl::RenameTable(const common::ManagedPointer<transaction::TransactionContext> txn,
+auto PgCoreImpl::RenameTable(const common::ManagedPointer<transaction::TransactionContext> txn,
                              const common::ManagedPointer<DatabaseCatalog>                 dbc,
                              const table_oid_t                                             table,
-                             const std::string                                            &name) {
+                             const std::string                                            &name) -> bool {
     // TODO(John): Implement
     NOISEPAGE_ASSERT(false, "Not implemented");
     return false;
 }
 
-bool PgCoreImpl::CreateIndexEntry(const common::ManagedPointer<transaction::TransactionContext> txn,
+auto PgCoreImpl::CreateIndexEntry(const common::ManagedPointer<transaction::TransactionContext> txn,
                                   const namespace_oid_t                                         ns_oid,
                                   const table_oid_t                                             table_oid,
                                   const index_oid_t                                             index_oid,
                                   const std::string                                            &name,
-                                  const IndexSchema                                            &schema) {
+                                  const IndexSchema                                            &schema) -> bool {
     auto *const class_insert_redo = txn->StageWrite(db_oid_, PgClass::CLASS_TABLE_OID, pg_class_all_cols_pri_);
 
     const auto name_varlen = storage::StorageUtil::CreateVarlen(name);
@@ -923,9 +923,9 @@ bool PgCoreImpl::CreateIndexEntry(const common::ManagedPointer<transaction::Tran
     return true;
 }
 
-bool PgCoreImpl::DeleteIndex(const common::ManagedPointer<transaction::TransactionContext> txn,
+auto PgCoreImpl::DeleteIndex(const common::ManagedPointer<transaction::TransactionContext> txn,
                              common::ManagedPointer<DatabaseCatalog>                       dbc,
-                             index_oid_t                                                   index) {
+                             index_oid_t                                                   index) -> bool {
     {
         // We should respect foreign key relations and attempt to delete the index's columns first.
         auto result = DeleteColumns<IndexSchema::Column, index_oid_t>(txn, index);
@@ -1100,8 +1100,8 @@ bool PgCoreImpl::DeleteIndex(const common::ManagedPointer<transaction::Transacti
     return true;
 }
 
-std::vector<std::pair<common::ManagedPointer<storage::index::Index>, const IndexSchema &>>
-PgCoreImpl::GetIndexes(const common::ManagedPointer<transaction::TransactionContext> txn, table_oid_t table) {
+auto PgCoreImpl::GetIndexes(const common::ManagedPointer<transaction::TransactionContext> txn, table_oid_t table)
+    -> std::vector<std::pair<common::ManagedPointer<storage::index::Index>, const IndexSchema &>> {
     const auto &indexes_oid_pri = indexes_table_index_->GetProjectedRowInitializer();
     NOISEPAGE_ASSERT(get_class_object_and_schema_pri_.ProjectedRowSize() >= indexes_oid_pri.ProjectedRowSize()
                          && get_class_object_and_schema_pri_.ProjectedRowSize() >= get_indexes_pri_.ProjectedRowSize()
@@ -1192,8 +1192,8 @@ PgCoreImpl::GetIndexes(const common::ManagedPointer<transaction::TransactionCont
     return index_objects;
 }
 
-std::vector<index_oid_t> PgCoreImpl::GetIndexOids(const common::ManagedPointer<transaction::TransactionContext> txn,
-                                                  table_oid_t                                                   table) {
+auto PgCoreImpl::GetIndexOids(const common::ManagedPointer<transaction::TransactionContext> txn, table_oid_t table)
+    -> std::vector<index_oid_t> {
     const auto &oid_pri = indexes_table_index_->GetProjectedRowInitializer();
     NOISEPAGE_ASSERT(get_indexes_pri_.ProjectedRowSize() >= oid_pri.ProjectedRowSize(),
                      "Buffer must be allocated to fit largest PR");
@@ -1231,9 +1231,9 @@ std::vector<index_oid_t> PgCoreImpl::GetIndexOids(const common::ManagedPointer<t
     return index_oids;
 }
 
-std::vector<std::pair<uint32_t, PgClass::RelKind>>
-PgCoreImpl::GetNamespaceClassOids(const common::ManagedPointer<transaction::TransactionContext> txn,
-                                  const namespace_oid_t                                         ns_oid) {
+auto PgCoreImpl::GetNamespaceClassOids(const common::ManagedPointer<transaction::TransactionContext> txn,
+                                       const namespace_oid_t                                         ns_oid)
+    -> std::vector<std::pair<uint32_t, PgClass::RelKind>> {
     // Initialize both PR initializers, allocate buffer using size of largest one so we can reuse buffer.
     const auto &oid_pri = classes_namespace_index_->GetProjectedRowInitializer();
     auto *const buffer = common::AllocationUtil::AllocateAligned(get_class_oid_kind_pri_.ProjectedRowSize());
@@ -1273,8 +1273,8 @@ PgCoreImpl::GetNamespaceClassOids(const common::ManagedPointer<transaction::Tran
     return ns_objects;
 }
 
-std::pair<void *, PgClass::RelKind>
-PgCoreImpl::GetClassPtrKind(const common::ManagedPointer<transaction::TransactionContext> txn, uint32_t oid) {
+auto PgCoreImpl::GetClassPtrKind(const common::ManagedPointer<transaction::TransactionContext> txn, uint32_t oid)
+    -> std::pair<void *, PgClass::RelKind> {
     // Initialize both PR initializers, allocate buffer using size of largest one so we can reuse buffer.
     const auto &oid_pri = classes_oid_index_->GetProjectedRowInitializer();
 
@@ -1317,8 +1317,8 @@ PgCoreImpl::GetClassPtrKind(const common::ManagedPointer<transaction::Transactio
     return {ptr, kind};
 }
 
-std::pair<void *, PgClass::RelKind>
-PgCoreImpl::GetClassSchemaPtrKind(const common::ManagedPointer<transaction::TransactionContext> txn, uint32_t oid) {
+auto PgCoreImpl::GetClassSchemaPtrKind(const common::ManagedPointer<transaction::TransactionContext> txn, uint32_t oid)
+    -> std::pair<void *, PgClass::RelKind> {
     // Initialize both PR initializers, allocate buffer using size of largest one so we can reuse buffer.
     const auto &oid_pri = classes_oid_index_->GetProjectedRowInitializer();
 
@@ -1356,10 +1356,9 @@ PgCoreImpl::GetClassSchemaPtrKind(const common::ManagedPointer<transaction::Tran
     return {ptr, kind};
 }
 
-std::pair<uint32_t, PgClass::RelKind>
-PgCoreImpl::GetClassOidKind(const common::ManagedPointer<transaction::TransactionContext> txn,
-                            const namespace_oid_t                                         ns_oid,
-                            const std::string                                            &name) {
+auto PgCoreImpl::GetClassOidKind(const common::ManagedPointer<transaction::TransactionContext> txn,
+                                 const namespace_oid_t                                         ns_oid,
+                                 const std::string &name) -> std::pair<uint32_t, PgClass::RelKind> {
     const auto &name_pri = classes_name_index_->GetProjectedRowInitializer();
 
     // Buffer is large enough to hold all PRs.
@@ -1413,8 +1412,8 @@ PgCoreImpl::GetClassOidKind(const common::ManagedPointer<transaction::Transactio
     return std::make_pair(oid, kind);
 }
 
-std::pair<std::string_view, PgClass::RelKind>
-PgCoreImpl::GetClassNameKind(common::ManagedPointer<transaction::TransactionContext> txn, uint32_t oid) {
+auto PgCoreImpl::GetClassNameKind(common::ManagedPointer<transaction::TransactionContext> txn, uint32_t oid)
+    -> std::pair<std::string_view, PgClass::RelKind> {
     // Buffer is large enough to hold all PRs.
     byte *const buffer = common::AllocationUtil::AllocateAligned(get_class_name_kind_pri_.ProjectedRowSize());
 

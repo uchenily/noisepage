@@ -21,14 +21,14 @@ void Operator::Accept(common::ManagedPointer<OperatorVisitor> v) const {
     contents_->Accept(v);
 }
 
-std::string Operator::GetName() const {
+auto Operator::GetName() const -> std::string {
     if (IsDefined()) {
         return contents_->GetName();
     }
     return "Undefined";
 }
 
-OpType Operator::GetOpType() const {
+auto Operator::GetOpType() const -> OpType {
     if (IsDefined()) {
         return contents_->GetOpType();
     }
@@ -36,32 +36,32 @@ OpType Operator::GetOpType() const {
     return OpType::UNDEFINED;
 }
 
-parser::ExpressionType Operator::GetExpType() const {
+auto Operator::GetExpType() const -> parser::ExpressionType {
     return parser::ExpressionType::INVALID;
 }
 
-bool Operator::IsLogical() const {
+auto Operator::IsLogical() const -> bool {
     if (IsDefined()) {
         return contents_->IsLogical();
     }
     return false;
 }
 
-bool Operator::IsPhysical() const {
+auto Operator::IsPhysical() const -> bool {
     if (IsDefined()) {
         return contents_->IsPhysical();
     }
     return false;
 }
 
-common::hash_t Operator::Hash() const {
+auto Operator::Hash() const -> common::hash_t {
     if (IsDefined()) {
         return contents_->Hash();
     }
     return 0;
 }
 
-bool Operator::operator==(const Operator &rhs) const {
+auto Operator::operator==(const Operator &rhs) const -> bool {
     if (IsDefined() && rhs.IsDefined()) {
         return *contents_ == *rhs.contents_;
     }
@@ -69,11 +69,11 @@ bool Operator::operator==(const Operator &rhs) const {
     return !IsDefined() && !rhs.IsDefined();
 }
 
-bool Operator::IsDefined() const {
+auto Operator::IsDefined() const -> bool {
     return contents_ != nullptr;
 }
 
-Operator Operator::RegisterWithTxnContext(transaction::TransactionContext *txn) {
+auto Operator::RegisterWithTxnContext(transaction::TransactionContext *txn) -> Operator {
     auto *op = dynamic_cast<BaseOperatorNodeContents *>(contents_.Get());
     if (txn != nullptr) {
         txn->RegisterCommitAction([=]() {

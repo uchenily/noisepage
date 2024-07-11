@@ -152,7 +152,7 @@ void IndexJoinTranslator::FinishPipelineWork(const Pipeline &pipeline, FunctionB
     FeatureArithmeticRecordMul(function, pipeline, GetTranslatorId(), CounterVal(num_scans_index_));
 }
 
-ast::Expr *IndexJoinTranslator::GetTableColumn(catalog::col_oid_t col_oid) const {
+auto IndexJoinTranslator::GetTableColumn(catalog::col_oid_t col_oid) const -> ast::Expr * {
     // @prGet(table_pr, type, nullable, attr_idx)
     auto     type = table_schema_.GetColumn(col_oid).Type();
     auto     nullable = table_schema_.GetColumn(col_oid).Nullable();
@@ -237,7 +237,7 @@ void IndexJoinTranslator::FillKey(
     }
 }
 
-ast::Expr *IndexJoinTranslator::GetSlotAddress() const {
+auto IndexJoinTranslator::GetSlotAddress() const -> ast::Expr * {
     // &slot
     return GetCodeGen()->AddressOf(slot_);
 }

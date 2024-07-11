@@ -38,7 +38,7 @@ void Group::AddExpression(GroupExpression *expr, bool enforced) {
     }
 }
 
-bool Group::SetExpressionCost(GroupExpression *expr, double cost, PropertySet *properties) {
+auto Group::SetExpressionCost(GroupExpression *expr, double cost, PropertySet *properties) -> bool {
     OPTIMIZER_LOG_TRACE("Adding expression cost on group " + std::to_string(expr->GetGroupID().UnderlyingValue())
                         + " with op {1}" + expr->Contents()->GetName());
 
@@ -60,7 +60,7 @@ bool Group::SetExpressionCost(GroupExpression *expr, double cost, PropertySet *p
     return false;
 }
 
-GroupExpression *Group::GetBestExpression(PropertySet *properties) {
+auto Group::GetBestExpression(PropertySet *properties) -> GroupExpression * {
     auto it = lowest_cost_expressions_.find(properties);
     if (it != lowest_cost_expressions_.end()) {
         return std::get<1>(it->second);
@@ -69,7 +69,7 @@ GroupExpression *Group::GetBestExpression(PropertySet *properties) {
     return nullptr;
 }
 
-bool Group::HasExpressions(PropertySet *properties) const {
+auto Group::HasExpressions(PropertySet *properties) const -> bool {
     const auto &it = lowest_cost_expressions_.find(properties);
     return (it != lowest_cost_expressions_.end());
 }

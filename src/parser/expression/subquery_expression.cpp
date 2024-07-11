@@ -4,7 +4,7 @@
 
 namespace noisepage::parser {
 
-std::unique_ptr<AbstractExpression> SubqueryExpression::Copy() const {
+auto SubqueryExpression::Copy() const -> std::unique_ptr<AbstractExpression> {
     std::vector<common::ManagedPointer<AbstractExpression>> select_columns;
     for (const auto &col : subselect_->GetSelectColumns()) {
         select_columns.emplace_back(common::ManagedPointer(col));
@@ -35,7 +35,7 @@ std::unique_ptr<AbstractExpression> SubqueryExpression::Copy() const {
     return expr;
 }
 
-int SubqueryExpression::DeriveDepth() {
+auto SubqueryExpression::DeriveDepth() -> int {
     int current_depth = this->GetDepth();
     for (auto &select_elem : subselect_->GetSelectColumns()) {
         int select_depth = select_elem->DeriveDepth();
@@ -54,7 +54,7 @@ int SubqueryExpression::DeriveDepth() {
     return this->GetDepth();
 }
 
-common::hash_t SubqueryExpression::Hash() const {
+auto SubqueryExpression::Hash() const -> common::hash_t {
     common::hash_t hash = AbstractExpression::Hash();
     for (auto select_elem : subselect_->GetSelectColumns()) {
         hash = common::HashUtil::CombineHashes(hash, select_elem->Hash());
@@ -67,13 +67,13 @@ common::hash_t SubqueryExpression::Hash() const {
     return hash;
 }
 
-nlohmann::json SubqueryExpression::ToJson() const {
+auto SubqueryExpression::ToJson() const -> nlohmann::json {
     nlohmann::json j = AbstractExpression::ToJson();
     j["subselect"] = subselect_->ToJson();
     return j;
 }
 
-std::vector<std::unique_ptr<AbstractExpression>> SubqueryExpression::FromJson(const nlohmann::json &j) {
+auto SubqueryExpression::FromJson(const nlohmann::json &j) -> std::vector<std::unique_ptr<AbstractExpression>> {
     std::vector<std::unique_ptr<AbstractExpression>> exprs;
     auto                                             e1 = AbstractExpression::FromJson(j);
     exprs.insert(exprs.end(), std::make_move_iterator(e1.begin()), std::make_move_iterator(e1.end()));

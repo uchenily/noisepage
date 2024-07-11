@@ -94,11 +94,11 @@ GraphSolver::GraphSolver(PlanningContext                                        
     dest_node_->RelaxNode(structure_map, nodes_by_segment_index_.back());
 }
 
-double GraphSolver::ComputeConfigCost(PlanningContext                                              *planning_context,
-                                      common::ManagedPointer<selfdriving::WorkloadForecast>         forecast,
-                                      const std::map<action_id_t, std::unique_ptr<AbstractAction>> &structure_map,
-                                      const std::set<action_id_t>                                  &config_set,
-                                      uint64_t                                                      segment_index) {
+auto GraphSolver::ComputeConfigCost(PlanningContext                                              *planning_context,
+                                    common::ManagedPointer<selfdriving::WorkloadForecast>         forecast,
+                                    const std::map<action_id_t, std::unique_ptr<AbstractAction>> &structure_map,
+                                    const std::set<action_id_t>                                  &config_set,
+                                    uint64_t segment_index) -> double {
     for (auto const action : config_set) {
         PilotUtil::ApplyAction(*planning_context,
                                structure_map.at(action)->GetSQLCommand(),
@@ -122,9 +122,9 @@ double GraphSolver::ComputeConfigCost(PlanningContext                           
     return node_cost;
 }
 
-bool GraphSolver::IsValidConfig(const PlanningContext                                        &planning_context,
+auto GraphSolver::IsValidConfig(const PlanningContext                                        &planning_context,
                                 const std::map<action_id_t, std::unique_ptr<AbstractAction>> &structure_map,
-                                const std::set<action_id_t>                                  &config_set) {
+                                const std::set<action_id_t>                                  &config_set) -> bool {
     for (auto candidate_action : config_set) {
         if (!structure_map.at(candidate_action)->IsValid()) {
             return false;
@@ -133,7 +133,7 @@ bool GraphSolver::IsValidConfig(const PlanningContext                           
     return true;
 }
 
-double GraphSolver::RecoverShortestPath(PathSolution *shortest_path) {
+auto GraphSolver::RecoverShortestPath(PathSolution *shortest_path) -> double {
     auto curr_node = dest_node_->GetBestParent();
     // get all configs on best path
     SELFDRIVING_LOG_DEBUG("PRINTING Shortest Config Path");

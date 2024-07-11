@@ -30,8 +30,8 @@
 
 namespace noisepage::util {
 
-std::unique_ptr<util::QueryExecUtil>
-QueryExecUtil::ConstructThreadLocal(common::ManagedPointer<util::QueryExecUtil> util) {
+auto QueryExecUtil::ConstructThreadLocal(common::ManagedPointer<util::QueryExecUtil> util)
+    -> std::unique_ptr<util::QueryExecUtil> {
     return std::make_unique<util::QueryExecUtil>(util->txn_manager_,
                                                  util->catalog_,
                                                  util->settings_,
@@ -101,11 +101,11 @@ void QueryExecUtil::EndTransaction(bool commit) {
     own_txn_ = false;
 }
 
-std::unique_ptr<network::Statement>
-QueryExecUtil::PlanStatement(const std::string                                                   &query,
-                             common::ManagedPointer<std::vector<parser::ConstantValueExpression>> params,
-                             common::ManagedPointer<std::vector<execution::sql::SqlTypeId>>       param_types,
-                             std::unique_ptr<optimizer::AbstractCostModel>                        cost) {
+auto QueryExecUtil::PlanStatement(const std::string                                                   &query,
+                                  common::ManagedPointer<std::vector<parser::ConstantValueExpression>> params,
+                                  common::ManagedPointer<std::vector<execution::sql::SqlTypeId>>       param_types,
+                                  std::unique_ptr<optimizer::AbstractCostModel>                        cost)
+    -> std::unique_ptr<network::Statement> {
     NOISEPAGE_ASSERT(txn_ != nullptr, "Transaction must have been started");
     ResetError();
     auto txn = common::ManagedPointer<transaction::TransactionContext>(txn_);
@@ -158,7 +158,7 @@ QueryExecUtil::PlanStatement(const std::string                                  
     return statement;
 }
 
-bool QueryExecUtil::ExecuteDDL(const std::string &query, bool what_if) {
+auto QueryExecUtil::ExecuteDDL(const std::string &query, bool what_if) -> bool {
     NOISEPAGE_ASSERT(txn_ != nullptr, "Requires BeginTransaction() or UseTransaction()");
     ResetError();
     auto txn = common::ManagedPointer<transaction::TransactionContext>(txn_);
@@ -234,12 +234,12 @@ bool QueryExecUtil::ExecuteDDL(const std::string &query, bool what_if) {
     return status;
 }
 
-bool QueryExecUtil::CompileQuery(const std::string                                                   &statement,
+auto QueryExecUtil::CompileQuery(const std::string                                                   &statement,
                                  common::ManagedPointer<std::vector<parser::ConstantValueExpression>> params,
                                  common::ManagedPointer<std::vector<execution::sql::SqlTypeId>>       param_types,
                                  std::unique_ptr<optimizer::AbstractCostModel>                        cost,
                                  std::optional<execution::query_id_t>                                 override_qid,
-                                 const execution::exec::ExecutionSettings                            &exec_settings) {
+                                 const execution::exec::ExecutionSettings &exec_settings) -> bool {
     ResetError();
     if (exec_queries_.find(statement) != exec_queries_.end()) {
         // We have already optimized and compiled this query before
@@ -269,11 +269,11 @@ bool QueryExecUtil::CompileQuery(const std::string                              
     return true;
 }
 
-bool QueryExecUtil::ExecuteQuery(const std::string                                                   &statement,
+auto QueryExecUtil::ExecuteQuery(const std::string                                                   &statement,
                                  TupleFunction                                                        tuple_fn,
                                  common::ManagedPointer<std::vector<parser::ConstantValueExpression>> params,
                                  common::ManagedPointer<metrics::MetricsManager>                      metrics,
-                                 const execution::exec::ExecutionSettings                            &exec_settings) {
+                                 const execution::exec::ExecutionSettings &exec_settings) -> bool {
     NOISEPAGE_ASSERT(exec_queries_.find(statement) != exec_queries_.end(), "Cached query not found");
     NOISEPAGE_ASSERT(txn_ != nullptr, "Requires BeginTransaction() or UseTransaction()");
     ResetError();
@@ -329,14 +329,14 @@ bool QueryExecUtil::ExecuteQuery(const std::string                              
     return true;
 }
 
-bool QueryExecUtil::ExecuteDML(const std::string                                                   &query,
+auto QueryExecUtil::ExecuteDML(const std::string                                                   &query,
                                common::ManagedPointer<std::vector<parser::ConstantValueExpression>> params,
                                common::ManagedPointer<std::vector<execution::sql::SqlTypeId>>       param_types,
                                TupleFunction                                                        tuple_fn,
                                common::ManagedPointer<metrics::MetricsManager>                      metrics,
                                std::unique_ptr<optimizer::AbstractCostModel>                        cost,
                                std::optional<execution::query_id_t>                                 override_qid,
-                               const execution::exec::ExecutionSettings                            &exec_settings) {
+                               const execution::exec::ExecutionSettings &exec_settings) -> bool {
     if (!CompileQuery(query, params, param_types, std::move(cost), override_qid, exec_settings)) {
         return false;
     }

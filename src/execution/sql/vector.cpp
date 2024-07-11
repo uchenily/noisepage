@@ -69,7 +69,7 @@ void Vector::Destroy() {
     null_mask_.Reset();
 }
 
-GenericValue Vector::GetValue(const uint64_t index) const {
+auto Vector::GetValue(const uint64_t index) const -> GenericValue {
     NOISEPAGE_ASSERT(index < count_, "Out-of-bounds vector access");
     if (IsNull(index)) {
         return GenericValue::CreateNull(type_);
@@ -452,7 +452,7 @@ void Vector::Append(const Vector &other) {
     }
 }
 
-std::string Vector::ToString() const {
+auto Vector::ToString() const -> std::string {
     std::string result = TypeIdToString(type_) + "=[";
     bool        first = true;
     for (uint64_t i = 0; i < GetCount(); i++) {

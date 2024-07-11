@@ -21,7 +21,7 @@ FunctionBuilder::~FunctionBuilder() {
     Finish();
 }
 
-ast::Expr *FunctionBuilder::GetParameterByPosition(uint32_t param_idx) {
+auto FunctionBuilder::GetParameterByPosition(uint32_t param_idx) -> ast::Expr * {
     if (param_idx < params_.size()) {
         return codegen_->MakeExpr(params_[param_idx]->Name());
     }
@@ -43,7 +43,7 @@ void FunctionBuilder::Append(ast::VariableDecl *decl) {
     Append(codegen_->GetFactory()->NewDeclStmt(decl));
 }
 
-ast::FunctionDecl *FunctionBuilder::Finish(ast::Expr *ret) {
+auto FunctionBuilder::Finish(ast::Expr *ret) -> ast::FunctionDecl * {
     if (decl_ != nullptr) {
         return decl_;
     }

@@ -18,7 +18,7 @@ AbstractJoinPlanNode::AbstractJoinPlanNode(std::vector<std::unique_ptr<AbstractP
     , join_type_(join_type)
     , join_predicate_(predicate) {}
 
-bool AbstractJoinPlanNode::operator==(const AbstractPlanNode &rhs) const {
+auto AbstractJoinPlanNode::operator==(const AbstractPlanNode &rhs) const -> bool {
     if (!AbstractPlanNode::operator==(rhs)) {
         return false;
     }
@@ -42,7 +42,7 @@ bool AbstractJoinPlanNode::operator==(const AbstractPlanNode &rhs) const {
     return true;
 }
 
-common::hash_t AbstractJoinPlanNode::Hash() const {
+auto AbstractJoinPlanNode::Hash() const -> common::hash_t {
     common::hash_t hash = AbstractPlanNode::Hash();
 
     // Join Type
@@ -56,14 +56,15 @@ common::hash_t AbstractJoinPlanNode::Hash() const {
     return hash;
 }
 
-nlohmann::json AbstractJoinPlanNode::ToJson() const {
+auto AbstractJoinPlanNode::ToJson() const -> nlohmann::json {
     nlohmann::json j = AbstractPlanNode::ToJson();
     j["join_type"] = join_type_;
     j["join_predicate"] = join_predicate_ == nullptr ? nlohmann::json{nullptr} : join_predicate_->ToJson();
     return j;
 }
 
-std::vector<std::unique_ptr<parser::AbstractExpression>> AbstractJoinPlanNode::FromJson(const nlohmann::json &j) {
+auto AbstractJoinPlanNode::FromJson(const nlohmann::json &j)
+    -> std::vector<std::unique_ptr<parser::AbstractExpression>> {
     std::vector<std::unique_ptr<parser::AbstractExpression>> exprs;
     auto                                                     e1 = AbstractPlanNode::FromJson(j);
     exprs.insert(exprs.end(), std::make_move_iterator(e1.begin()), std::make_move_iterator(e1.end()));

@@ -5,7 +5,7 @@
 
 namespace noisepage::optimizer {
 
-double SelectivityUtil::ComputeSelectivity(const TableStats &table_stats, const ValueCondition &condition) {
+auto SelectivityUtil::ComputeSelectivity(const TableStats &table_stats, const ValueCondition &condition) -> double {
     if (table_stats.GetNumRows() == 0) {
         return 0.0;
     }
@@ -94,8 +94,8 @@ double SelectivityUtil::ComputeSelectivity(common::ManagedPointer<ColumnStats<T>
 }
 
 template <typename T>
-double SelectivityUtil::LessThanOrEqualTo(common::ManagedPointer<ColumnStats<T>> column_stats,
-                                          const ValueCondition                  &condition) {
+auto SelectivityUtil::LessThanOrEqualTo(common::ManagedPointer<ColumnStats<T>> column_stats,
+                                        const ValueCondition                  &condition) -> double {
     const auto value = condition.GetPointerToValue()->Peek<decltype(T::val_)>();
 
     // Return default selectivity if empty column_stats
@@ -123,7 +123,8 @@ double SelectivityUtil::LessThanOrEqualTo(common::ManagedPointer<ColumnStats<T>>
 }
 
 template <typename T>
-double SelectivityUtil::Equal(common::ManagedPointer<ColumnStats<T>> column_stats, const ValueCondition &condition) {
+auto SelectivityUtil::Equal(common::ManagedPointer<ColumnStats<T>> column_stats, const ValueCondition &condition)
+    -> double {
     // Convert value type to raw value (double)
     const auto value = condition.GetPointerToValue()->Peek<decltype(T::val_)>();
     if (column_stats == nullptr) {

@@ -12,7 +12,7 @@ UnaryTranslator::UnaryTranslator(const parser::OperatorExpression &expr, Compila
     compilation_context->Prepare(*expr.GetChild(0));
 }
 
-ast::Expr *UnaryTranslator::DeriveValue(WorkContext *ctx, const ColumnValueProvider *provider) const {
+auto UnaryTranslator::DeriveValue(WorkContext *ctx, const ColumnValueProvider *provider) const -> ast::Expr * {
     auto *codegen = GetCodeGen();
     auto  input = ctx->DeriveValue(*GetExpression().GetChild(0), provider);
 

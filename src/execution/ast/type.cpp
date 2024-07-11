@@ -26,7 +26,7 @@ namespace noisepage::execution::ast {
 // ---------------------------------------------------------
 
 // TODO(pmenon): Fix me
-bool Type::IsArithmetic() const {
+auto Type::IsArithmetic() const -> bool {
     return IsIntegerType() ||                         // Primitive TPL integers
            IsFloatType() ||                           // Primitive TPL floats
            IsSpecificBuiltin(BuiltinType::Integer) || // SQL integer

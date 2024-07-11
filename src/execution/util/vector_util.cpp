@@ -8,11 +8,11 @@
 
 namespace noisepage::execution::util {
 
-uint32_t VectorUtil::IntersectSelected(const sel_t   *sel_vector_1,
-                                       const uint32_t sel_vector_1_len,
-                                       const sel_t   *sel_vector_2,
-                                       const uint32_t sel_vector_2_len,
-                                       sel_t         *out_sel_vector) {
+auto VectorUtil::IntersectSelected(const sel_t   *sel_vector_1,
+                                   const uint32_t sel_vector_1_len,
+                                   const sel_t   *sel_vector_2,
+                                   const uint32_t sel_vector_2_len,
+                                   sel_t         *out_sel_vector) -> uint32_t {
     // No-op if either vector is empty
     if (sel_vector_1_len == 0 || sel_vector_2_len == 0) {
         return 0;
@@ -45,11 +45,11 @@ uint32_t VectorUtil::IntersectSelected(const sel_t   *sel_vector_1,
     return k;
 }
 
-uint32_t VectorUtil::IntersectSelected(const sel_t    *sel_vector,
-                                       const uint32_t  sel_vector_len,
-                                       const uint64_t *bit_vector,
-                                       const uint32_t  bit_vector_len,
-                                       sel_t          *out_sel_vector) {
+auto VectorUtil::IntersectSelected(const sel_t    *sel_vector,
+                                   const uint32_t  sel_vector_len,
+                                   const uint64_t *bit_vector,
+                                   const uint32_t  bit_vector_len,
+                                   sel_t          *out_sel_vector) -> uint32_t {
     uint32_t k = 0;
     for (uint32_t i = 0; i < sel_vector_len; i++) {
         const auto index = sel_vector[i];
@@ -60,7 +60,8 @@ uint32_t VectorUtil::IntersectSelected(const sel_t    *sel_vector,
     return k;
 }
 
-uint32_t VectorUtil::DiffSelectedScalar(uint32_t n, const sel_t *sel_vector, uint32_t m, sel_t *out_sel_vector) {
+auto VectorUtil::DiffSelectedScalar(uint32_t n, const sel_t *sel_vector, uint32_t m, sel_t *out_sel_vector)
+    -> uint32_t {
     uint32_t i = 0, j = 0, k = 0;
     for (; i < m; i++, j++) {
         while (j < sel_vector[i]) {
@@ -74,11 +75,11 @@ uint32_t VectorUtil::DiffSelectedScalar(uint32_t n, const sel_t *sel_vector, uin
     return n - m;
 }
 
-uint32_t VectorUtil::DiffSelectedWithScratchPad(uint32_t     n,
-                                                const sel_t *sel_vector,
-                                                uint32_t     sel_vector_len,
-                                                sel_t       *out_sel_vector,
-                                                uint8_t     *scratch) {
+auto VectorUtil::DiffSelectedWithScratchPad(uint32_t     n,
+                                            const sel_t *sel_vector,
+                                            uint32_t     sel_vector_len,
+                                            sel_t       *out_sel_vector,
+                                            uint8_t     *scratch) -> uint32_t {
     NOISEPAGE_ASSERT(n <= common::Constants::K_DEFAULT_VECTOR_SIZE, "Selection vector too large");
     std::memset(scratch, 0, n);
     VectorUtil::SelectionVectorToByteVector(sel_vector, sel_vector_len, scratch);
@@ -88,10 +89,10 @@ uint32_t VectorUtil::DiffSelectedWithScratchPad(uint32_t     n,
     return VectorUtil::ByteVectorToSelectionVector(scratch, n, out_sel_vector);
 }
 
-uint32_t VectorUtil::DiffSelected(const uint32_t n,
-                                  const sel_t   *sel_vector,
-                                  const uint32_t sel_vector_len,
-                                  sel_t         *out_sel_vector) {
+auto VectorUtil::DiffSelected(const uint32_t n,
+                              const sel_t   *sel_vector,
+                              const uint32_t sel_vector_len,
+                              sel_t         *out_sel_vector) -> uint32_t {
     uint8_t scratch[common::Constants::K_DEFAULT_VECTOR_SIZE];
     return DiffSelectedWithScratchPad(n, sel_vector, sel_vector_len, out_sel_vector, scratch);
 }
@@ -103,8 +104,8 @@ void VectorUtil::SelectionVectorToByteVector(const sel_t *sel_vector, const uint
 }
 
 // TODO(pmenon): Consider splitting into dense and sparse implementations.
-uint32_t
-VectorUtil::ByteVectorToSelectionVector(const uint8_t *byte_vector, const uint32_t num_bytes, sel_t *sel_vector) {
+auto VectorUtil::ByteVectorToSelectionVector(const uint8_t *byte_vector, const uint32_t num_bytes, sel_t *sel_vector)
+    -> uint32_t {
     // Byte-vector index
     uint32_t i = 0;
 
@@ -196,8 +197,8 @@ void VectorUtil::BitVectorToByteVector(const uint64_t *bit_vector, const uint32_
     }
 }
 
-uint32_t
-VectorUtil::BitVectorToSelectionVectorSparse(const uint64_t *bit_vector, uint32_t num_bits, sel_t *sel_vector) {
+auto VectorUtil::BitVectorToSelectionVectorSparse(const uint64_t *bit_vector, uint32_t num_bits, sel_t *sel_vector)
+    -> uint32_t {
     const uint32_t num_words = common::MathUtil::DivRoundUp(num_bits, 64);
 
     uint32_t k = 0;
@@ -213,8 +214,8 @@ VectorUtil::BitVectorToSelectionVectorSparse(const uint64_t *bit_vector, uint32_
     return k;
 }
 
-uint32_t
-VectorUtil::BitVectorToSelectionVectorDenseAvX2(const uint64_t *bit_vector, uint32_t num_bits, sel_t *sel_vector) {
+auto VectorUtil::BitVectorToSelectionVectorDenseAvX2(const uint64_t *bit_vector, uint32_t num_bits, sel_t *sel_vector)
+    -> uint32_t {
     // Vector of '8's = [8,8,8,8,8,8,8]
     const auto eight = _mm_set1_epi16(8);
 
@@ -307,7 +308,8 @@ VectorUtil::BitVectorToSelectionVectorDenseAVX512(const uint64_t *bit_vector, ui
 }
 #endif
 
-uint32_t VectorUtil::BitVectorToSelectionVectorDense(const uint64_t *bit_vector, uint32_t num_bits, sel_t *sel_vector) {
+auto VectorUtil::BitVectorToSelectionVectorDense(const uint64_t *bit_vector, uint32_t num_bits, sel_t *sel_vector)
+    -> uint32_t {
 #if __AVX512VBMI2__
     return BitVectorToSelectionVectorDenseAVX512(bit_vector, num_bits, sel_vector);
 #else
@@ -315,8 +317,8 @@ uint32_t VectorUtil::BitVectorToSelectionVectorDense(const uint64_t *bit_vector,
 #endif
 }
 
-uint32_t
-VectorUtil::BitVectorToSelectionVector(const uint64_t *bit_vector, const uint32_t num_bits, sel_t *sel_vector) {
+auto VectorUtil::BitVectorToSelectionVector(const uint64_t *bit_vector, const uint32_t num_bits, sel_t *sel_vector)
+    -> uint32_t {
     // TODO(pmenon): For short bit vectors, like those used in vectorized execution (2048 bits), doing
     //               a full population count to determine sparsity/density is practical. In general,
     //               a full population count isn't necessary, and isn't feasible for long bit vectors.

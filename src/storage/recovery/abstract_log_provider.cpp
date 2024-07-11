@@ -8,7 +8,7 @@
 
 namespace noisepage::storage {
 
-std::pair<LogRecord *, std::vector<byte *>> AbstractLogProvider::ReadNextRecord() {
+auto AbstractLogProvider::ReadNextRecord() -> std::pair<LogRecord *, std::vector<byte *>> {
     // Pointer to buffers for non-aligned varlen entries so we can clean them up down the road
     std::vector<byte *> varlen_contents;
     // Read in LogRecord header data

@@ -46,7 +46,7 @@ void ErrorReporter::MessageArgument::FormatMessageArgument(std::string *str) con
         arg_);
 }
 
-std::string ErrorReporter::MessageWithArgs::FormatMessage() const {
+auto ErrorReporter::MessageWithArgs::FormatMessage() const -> std::string {
     std::string msg;
 
     auto msg_idx = static_cast<std::underlying_type_t<ErrorMessageId>>(GetErrorMessageId());
@@ -82,7 +82,7 @@ std::string ErrorReporter::MessageWithArgs::FormatMessage() const {
     return msg;
 }
 
-std::string ErrorReporter::SerializeErrors() {
+auto ErrorReporter::SerializeErrors() -> std::string {
     std::string error_str;
 
     for (const auto &error : errors_) {

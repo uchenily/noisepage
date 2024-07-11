@@ -62,15 +62,15 @@ public:
     void SetInnerNodeSizeLowerThreshold(int threshold);
 
     /** @return inner node upper threshold (split) */
-    int GetInnerNodeSizeUpperThreshold() const;
+    auto GetInnerNodeSizeUpperThreshold() const -> int;
 
     /** @return inner node lower threshold (merge) */
-    int GetInnerNodeSizeLowerThreshold() const;
+    auto GetInnerNodeSizeLowerThreshold() const -> int;
 
     /**
      * @return approximate number of bytes allocated on the heap for this index data structure
      */
-    size_t EstimateHeapUsage() const final;
+    auto EstimateHeapUsage() const -> size_t final;
 
     /**
      * Inserts a new key-value pair into the index, used for non-unique key indexes.
@@ -79,9 +79,9 @@ public:
      * @param location value
      * @return false if the value already exists, true otherwise
      */
-    bool Insert(common::ManagedPointer<transaction::TransactionContext> txn,
+    auto Insert(common::ManagedPointer<transaction::TransactionContext> txn,
                 const ProjectedRow                                     &tuple,
-                TupleSlot                                               location) final;
+                TupleSlot                                               location) -> bool final;
 
     /**
      * Inserts a key-value pair only if any matching keys have TupleSlots that don't conflict with the calling txn
@@ -91,9 +91,9 @@ public:
      * @return true if the value was inserted, false otherwise
      *         (either because value exists, or predicate returns true for one of the existing values)
      */
-    bool InsertUnique(common::ManagedPointer<transaction::TransactionContext> txn,
+    auto InsertUnique(common::ManagedPointer<transaction::TransactionContext> txn,
                       const ProjectedRow                                     &tuple,
-                      TupleSlot                                               location) final;
+                      TupleSlot                                               location) -> bool final;
 
     /**
      * Doesn't immediately call delete on the index. Registers a commit action in the txn that will eventually register
@@ -161,7 +161,7 @@ public:
                              uint32_t                               limit) final;
 
     /** @return The number of keys in the index. */
-    uint64_t GetSize() const final;
+    auto GetSize() const -> uint64_t final;
 };
 
 extern template class BPlusTreeIndex<CompactIntsKey<8>>;

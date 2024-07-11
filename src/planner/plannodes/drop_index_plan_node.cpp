@@ -10,7 +10,7 @@
 
 namespace noisepage::planner {
 
-std::unique_ptr<DropIndexPlanNode> DropIndexPlanNode::Builder::Build() {
+auto DropIndexPlanNode::Builder::Build() -> std::unique_ptr<DropIndexPlanNode> {
     return std::unique_ptr<DropIndexPlanNode>(
         new DropIndexPlanNode(std::move(children_), std::move(output_schema_), index_oid_, plan_node_id_));
 }
@@ -22,7 +22,7 @@ DropIndexPlanNode::DropIndexPlanNode(std::vector<std::unique_ptr<AbstractPlanNod
     : AbstractPlanNode(std::move(children), std::move(output_schema), plan_node_id)
     , index_oid_(index_oid) {}
 
-common::hash_t DropIndexPlanNode::Hash() const {
+auto DropIndexPlanNode::Hash() const -> common::hash_t {
     common::hash_t hash = AbstractPlanNode::Hash();
 
     hash = common::HashUtil::CombineHashes(hash, common::HashUtil::Hash(index_oid_));
@@ -30,7 +30,7 @@ common::hash_t DropIndexPlanNode::Hash() const {
     return hash;
 }
 
-bool DropIndexPlanNode::operator==(const AbstractPlanNode &rhs) const {
+auto DropIndexPlanNode::operator==(const AbstractPlanNode &rhs) const -> bool {
     if (!AbstractPlanNode::operator==(rhs)) {
         return false;
     }
@@ -40,13 +40,13 @@ bool DropIndexPlanNode::operator==(const AbstractPlanNode &rhs) const {
     return index_oid_ == other.index_oid_;
 }
 
-nlohmann::json DropIndexPlanNode::ToJson() const {
+auto DropIndexPlanNode::ToJson() const -> nlohmann::json {
     nlohmann::json j = AbstractPlanNode::ToJson();
     j["index_oid"] = index_oid_;
     return j;
 }
 
-std::vector<std::unique_ptr<parser::AbstractExpression>> DropIndexPlanNode::FromJson(const nlohmann::json &j) {
+auto DropIndexPlanNode::FromJson(const nlohmann::json &j) -> std::vector<std::unique_ptr<parser::AbstractExpression>> {
     std::vector<std::unique_ptr<parser::AbstractExpression>> exprs;
     auto                                                     e1 = AbstractPlanNode::FromJson(j);
     exprs.insert(exprs.end(), std::make_move_iterator(e1.begin()), std::make_move_iterator(e1.end()));

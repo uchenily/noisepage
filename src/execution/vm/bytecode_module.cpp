@@ -23,7 +23,7 @@ BytecodeModule::BytecodeModule(std::string                 name,
     , functions_(std::move(functions))
     , static_locals_(std::move(static_locals)) {}
 
-std::size_t BytecodeModule::GetInstructionCount() const {
+auto BytecodeModule::GetInstructionCount() const -> std::size_t {
     std::size_t count = 0;
     for (BytecodeIterator iter(code_); !iter.Done(); iter.Advance()) {
         count++;

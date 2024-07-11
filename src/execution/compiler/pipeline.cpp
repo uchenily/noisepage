@@ -19,7 +19,7 @@
 
 namespace noisepage::execution::compiler {
 
-query_id_t Pipeline::GetQueryId() const {
+auto Pipeline::GetQueryId() const -> query_id_t {
     return compilation_context_->GetQueryId();
 }
 
@@ -77,12 +77,12 @@ void Pipeline::RegisterExpression(ExpressionTranslator *expression) {
     expressions_.push_back(expression);
 }
 
-StateDescriptor::Entry Pipeline::DeclarePipelineStateEntry(const std::string &name, ast::Expr *type_repr) {
+auto Pipeline::DeclarePipelineStateEntry(const std::string &name, ast::Expr *type_repr) -> StateDescriptor::Entry {
     auto &state = GetPipelineStateDescriptor();
     return state.DeclareStateEntry(codegen_, name, type_repr);
 }
 
-std::string Pipeline::CreatePipelineFunctionName(const std::string &func_name) const {
+auto Pipeline::CreatePipelineFunctionName(const std::string &func_name) const -> std::string {
     auto result = fmt::format("{}_Pipeline{}", compilation_context_->GetFunctionPrefix(), id_);
     if (!func_name.empty()) {
         result += "_" + func_name;
@@ -90,15 +90,15 @@ std::string Pipeline::CreatePipelineFunctionName(const std::string &func_name) c
     return result;
 }
 
-ast::Identifier Pipeline::GetSetupPipelineStateFunctionName() const {
+auto Pipeline::GetSetupPipelineStateFunctionName() const -> ast::Identifier {
     return codegen_->MakeIdentifier(CreatePipelineFunctionName("InitPipelineState"));
 }
 
-ast::Identifier Pipeline::GetTearDownPipelineStateFunctionName() const {
+auto Pipeline::GetTearDownPipelineStateFunctionName() const -> ast::Identifier {
     return codegen_->MakeIdentifier(CreatePipelineFunctionName("TearDownPipelineState"));
 }
 
-ast::Identifier Pipeline::GetWorkFunctionName() const {
+auto Pipeline::GetWorkFunctionName() const -> ast::Identifier {
     return codegen_->MakeIdentifier(CreatePipelineFunctionName(IsParallel() ? "ParallelWork" : "SerialWork"));
 }
 
@@ -151,7 +151,7 @@ void Pipeline::InjectEndResourceTracker(FunctionBuilder *builder, bool is_hook) 
     }
 }
 
-util::RegionVector<ast::FieldDecl *> Pipeline::PipelineParams() const {
+auto Pipeline::PipelineParams() const -> util::RegionVector<ast::FieldDecl *> {
     // The main query parameters.
     util::RegionVector<ast::FieldDecl *> query_params = compilation_context_->QueryParams();
     // Tag on the pipeline state.
@@ -258,7 +258,7 @@ void Pipeline::Prepare(const exec::ExecutionSettings &exec_settings) {
     prepared_ = true;
 }
 
-ast::FunctionDecl *Pipeline::GenerateSetupPipelineStateFunction() const {
+auto Pipeline::GenerateSetupPipelineStateFunction() const -> ast::FunctionDecl * {
     auto            name = GetSetupPipelineStateFunctionName();
     FunctionBuilder builder(codegen_, name, PipelineParams(), codegen_->Nil());
     {
@@ -271,7 +271,7 @@ ast::FunctionDecl *Pipeline::GenerateSetupPipelineStateFunction() const {
     return builder.Finish();
 }
 
-ast::FunctionDecl *Pipeline::GenerateTearDownPipelineStateFunction() const {
+auto Pipeline::GenerateTearDownPipelineStateFunction() const -> ast::FunctionDecl * {
     auto            name = GetTearDownPipelineStateFunctionName();
     FunctionBuilder builder(codegen_, name, PipelineParams(), codegen_->Nil());
     {
@@ -291,7 +291,7 @@ ast::FunctionDecl *Pipeline::GenerateTearDownPipelineStateFunction() const {
     return builder.Finish();
 }
 
-ast::FunctionDecl *Pipeline::GenerateInitPipelineFunction() const {
+auto Pipeline::GenerateInitPipelineFunction() const -> ast::FunctionDecl * {
     auto            query_state = compilation_context_->GetQueryState();
     auto            name = codegen_->MakeIdentifier(CreatePipelineFunctionName("Init"));
     auto            params = compilation_context_->QueryParams();
@@ -331,7 +331,7 @@ ast::FunctionDecl *Pipeline::GenerateInitPipelineFunction() const {
     return builder.Finish();
 }
 
-ast::FunctionDecl *Pipeline::GeneratePipelineWorkFunction() const {
+auto Pipeline::GeneratePipelineWorkFunction() const -> ast::FunctionDecl * {
     auto params = PipelineParams();
     for (auto field : extra_pipeline_params_) {
         params.push_back(field);
@@ -369,7 +369,7 @@ ast::FunctionDecl *Pipeline::GeneratePipelineWorkFunction() const {
     return builder.Finish();
 }
 
-std::vector<ast::Expr *> Pipeline::GenerateSingleRunPipelineFunction() const {
+auto Pipeline::GenerateSingleRunPipelineFunction() const -> std::vector<ast::Expr *> {
     NOISEPAGE_ASSERT(!nested_, "can't call a nested pipeline like this");
     return {codegen_->Call(GetInitPipelineFunctionName(),
                            {compilation_context_->GetQueryState()->GetStatePointer(codegen_)}),
@@ -402,26 +402,26 @@ void Pipeline::CallNestedRunPipelineFunction(WorkContext              *ctx,
                                     {compilation_context_->GetQueryState()->GetStatePointer(codegen_), p_state_ptr}));
 }
 
-ast::Identifier Pipeline::GetInitPipelineFunctionName() const {
+auto Pipeline::GetInitPipelineFunctionName() const -> ast::Identifier {
     return codegen_->MakeIdentifier(CreatePipelineFunctionName("Init"));
 }
 
-ast::Identifier Pipeline::GetTeardownPipelineFunctionName() const {
+auto Pipeline::GetTeardownPipelineFunctionName() const -> ast::Identifier {
     return codegen_->MakeIdentifier(CreatePipelineFunctionName("TearDown"));
 }
 
-ast::Identifier Pipeline::GetRunPipelineFunctionName() const {
+auto Pipeline::GetRunPipelineFunctionName() const -> ast::Identifier {
     return codegen_->MakeIdentifier(CreatePipelineFunctionName("Run"));
 }
 
-ast::Expr *Pipeline::GetNestedInputArg(uint32_t index) const {
+auto Pipeline::GetNestedInputArg(uint32_t index) const -> ast::Expr * {
     NOISEPAGE_ASSERT(nested_, "Asking for input arg on non-nested pipeline");
     NOISEPAGE_ASSERT(index < extra_pipeline_params_.size(),
                      "Asking for input arg on non-nested pipeline that doesn't exist");
     return codegen_->UnaryOp(parsing::Token::Type::STAR, codegen_->MakeExpr(extra_pipeline_params_[index]->Name()));
 }
 
-ast::FunctionDecl *Pipeline::GenerateRunPipelineFunction() const {
+auto Pipeline::GenerateRunPipelineFunction() const -> ast::FunctionDecl * {
     bool started_tracker = false;
     auto name = codegen_->MakeIdentifier(CreatePipelineFunctionName("Run"));
     auto params = compilation_context_->QueryParams();
@@ -490,7 +490,7 @@ ast::FunctionDecl *Pipeline::GenerateRunPipelineFunction() const {
     return builder.Finish();
 }
 
-ast::FunctionDecl *Pipeline::GenerateTearDownPipelineFunction() const {
+auto Pipeline::GenerateTearDownPipelineFunction() const -> ast::FunctionDecl * {
     auto            name = codegen_->MakeIdentifier(CreatePipelineFunctionName("TearDown"));
     auto            params = compilation_context_->QueryParams();
     ast::FieldDecl *p_state_ptr = nullptr;

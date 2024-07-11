@@ -129,7 +129,7 @@ StorageUtil::ApplyDelta<execution::sql::VectorProjection::RowView>(const BlockLa
                                                                    const ProjectedRow                        &delta,
                                                                    execution::sql::VectorProjection::RowView *buffer);
 
-uint32_t StorageUtil::PadUpToSize(const uint8_t word_size, const uint32_t offset) {
+auto StorageUtil::PadUpToSize(const uint8_t word_size, const uint32_t offset) -> uint32_t {
     NOISEPAGE_ASSERT((word_size & (word_size - 1)) == 0, "word_size should be a power of two.");
     // Because size is a power of two, mask is always all 1s up to the length of size.
     // example, size is 8 (1000), mask is (0111)
@@ -138,8 +138,8 @@ uint32_t StorageUtil::PadUpToSize(const uint8_t word_size, const uint32_t offset
     return (offset + mask) & (~mask);
 }
 
-std::vector<uint16_t> StorageUtil::ComputeBaseAttributeOffsets(const std::vector<uint16_t> &attr_sizes,
-                                                               uint16_t                     num_reserved_columns) {
+auto StorageUtil::ComputeBaseAttributeOffsets(const std::vector<uint16_t> &attr_sizes, uint16_t num_reserved_columns)
+    -> std::vector<uint16_t> {
     // First compute {count_varlen, count_8, count_4, count_2, count_1}
     // Then {offset_varlen, offset_8, offset_4, offset_2, offset_1} is the inclusive scan of the counts
     std::vector<uint16_t> offsets;
@@ -181,7 +181,7 @@ std::vector<uint16_t> StorageUtil::ComputeBaseAttributeOffsets(const std::vector
     return offsets;
 }
 
-uint8_t StorageUtil::AttrSizeFromBoundaries(const std::vector<uint16_t> &boundaries, const uint16_t col_idx) {
+auto StorageUtil::AttrSizeFromBoundaries(const std::vector<uint16_t> &boundaries, const uint16_t col_idx) -> uint8_t {
     NOISEPAGE_ASSERT(boundaries.size() == NUM_ATTR_BOUNDARIES,
                      "Boudaries vector size should equal to number of boundaries");
     // Since the columns are sorted (DESC) by size, the boundaries denote the index boundaries between columns of size
@@ -229,7 +229,7 @@ void StorageUtil::ComputeAttributeSizeBoundaries(const noisepage::storage::Block
     }
 }
 
-std::vector<storage::col_id_t> StorageUtil::ProjectionListAllColumns(const storage::BlockLayout &layout) {
+auto StorageUtil::ProjectionListAllColumns(const storage::BlockLayout &layout) -> std::vector<storage::col_id_t> {
     std::vector<storage::col_id_t> col_ids(layout.NumColumns() - NUM_RESERVED_COLUMNS);
     // Add all of the column ids from the layout to the projection list
     // 0 is version vector so we skip it

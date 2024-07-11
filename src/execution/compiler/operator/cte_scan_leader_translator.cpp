@@ -116,7 +116,7 @@ void CteScanLeaderTranslator::InitializeQueryState(FunctionBuilder *function) co
     DeclareCteScanIterator(function);
 }
 
-ast::Expr *CteScanLeaderTranslator::GetCteScanPtr(CodeGen *codegen) const {
+auto CteScanLeaderTranslator::GetCteScanPtr(CodeGen *codegen) const -> ast::Expr * {
     return cte_scan_ptr_entry_.Get(codegen);
 }
 

@@ -152,14 +152,15 @@ void UpdateTranslator::GenUpdaterFree(noisepage::execution::compiler::FunctionBu
     builder->Append(GetCodeGen()->MakeStmt(updater_free));
 }
 
-ast::Expr *UpdateTranslator::GetChildOutput(WorkContext *context, uint32_t child_idx, uint32_t attr_idx) const {
+auto UpdateTranslator::GetChildOutput(WorkContext *context, uint32_t child_idx, uint32_t attr_idx) const
+    -> ast::Expr * {
     NOISEPAGE_ASSERT(child_idx == 0, "Update plan can only have one child");
     const auto &op = GetPlanAs<planner::UpdatePlanNode>();
     const auto &child_translator = GetCompilationContext()->LookupTranslator(*op.GetChild(0));
     return child_translator->GetOutput(context, attr_idx);
 }
 
-ast::Expr *UpdateTranslator::GetTableColumn(catalog::col_oid_t col_oid) const {
+auto UpdateTranslator::GetTableColumn(catalog::col_oid_t col_oid) const -> ast::Expr * {
     auto column = table_schema_.GetColumn(col_oid);
     auto type = column.Type();
     auto nullable = column.Nullable();
@@ -341,7 +342,7 @@ void UpdateTranslator::GenIndexDelete(FunctionBuilder            *builder,
     builder->Append(GetCodeGen()->MakeStmt(index_delete_call));
 }
 
-std::vector<catalog::col_oid_t> UpdateTranslator::CollectOids(const catalog::Schema &schema) {
+auto UpdateTranslator::CollectOids(const catalog::Schema &schema) -> std::vector<catalog::col_oid_t> {
     std::vector<catalog::col_oid_t> oids;
     for (const auto &col : schema.GetColumns()) {
         oids.emplace_back(col.Oid());

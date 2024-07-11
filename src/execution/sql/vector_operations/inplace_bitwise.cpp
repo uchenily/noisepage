@@ -9,7 +9,7 @@ namespace traits {
 
     template <typename T>
     struct ShouldPerformFullCompute<noisepage::execution::sql::BitwiseANDInPlace<T>> {
-        bool operator()(const exec::ExecutionSettings &exec_settings, const TupleIdList *tid_list) const {
+        auto operator()(const exec::ExecutionSettings &exec_settings, const TupleIdList *tid_list) const -> bool {
             auto full_compute_threshold = exec_settings.GetArithmeticFullComputeOptThreshold();
             return tid_list == nullptr || full_compute_threshold <= tid_list->ComputeSelectivity();
         }

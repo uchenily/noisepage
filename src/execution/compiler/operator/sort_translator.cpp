@@ -152,7 +152,7 @@ void SortTranslator::TearDownQueryState(FunctionBuilder *function) const {
     TearDownSorter(function, global_sorter_.GetPtr(GetCodeGen()));
 }
 
-ast::FunctionDecl *SortTranslator::GenerateStartTLHookFunction(bool is_sort) const {
+auto SortTranslator::GenerateStartTLHookFunction(bool is_sort) const -> ast::FunctionDecl * {
     auto *codegen = GetCodeGen();
     auto *pipeline = &build_pipeline_;
 
@@ -183,7 +183,7 @@ ast::FunctionDecl *SortTranslator::GenerateStartTLHookFunction(bool is_sort) con
     return builder.Finish();
 }
 
-ast::FunctionDecl *SortTranslator::GenerateEndTLSortHookFunction() const {
+auto SortTranslator::GenerateEndTLSortHookFunction() const -> ast::FunctionDecl * {
     auto *codegen = GetCodeGen();
     auto *pipeline = &build_pipeline_;
     auto  params = GetHookParams(*pipeline, nullptr, nullptr);
@@ -223,7 +223,7 @@ ast::FunctionDecl *SortTranslator::GenerateEndTLSortHookFunction() const {
     return builder.Finish();
 }
 
-ast::FunctionDecl *SortTranslator::GenerateEndTLMergeHookFunction() const {
+auto SortTranslator::GenerateEndTLMergeHookFunction() const -> ast::FunctionDecl * {
     auto *codegen = GetCodeGen();
     auto *pipeline = &build_pipeline_;
 
@@ -259,7 +259,7 @@ ast::FunctionDecl *SortTranslator::GenerateEndTLMergeHookFunction() const {
     return builder.Finish();
 }
 
-ast::FunctionDecl *SortTranslator::GenerateEndSingleSorterHookFunction() const {
+auto SortTranslator::GenerateEndSingleSorterHookFunction() const -> ast::FunctionDecl * {
     auto *codegen = GetCodeGen();
     auto *pipeline = &build_pipeline_;
 
@@ -369,7 +369,7 @@ void SortTranslator::TearDownPipelineState(const Pipeline &pipeline, FunctionBui
     }
 }
 
-ast::Expr *SortTranslator::GetSortRowAttribute(ast::Identifier sort_row, uint32_t attr_idx) const {
+auto SortTranslator::GetSortRowAttribute(ast::Identifier sort_row, uint32_t attr_idx) const -> ast::Expr * {
     auto           *codegen = GetCodeGen();
     ast::Identifier attr_name = codegen->MakeIdentifier(SORT_ROW_ATTR_PREFIX + std::to_string(attr_idx));
     return codegen->AccessStructMember(codegen->MakeExpr(sort_row), attr_name);
@@ -503,8 +503,8 @@ void SortTranslator::FinishPipelineWork(const Pipeline &pipeline, FunctionBuilde
     //  However, due to overhead and engineering complexity, we settle for the size of the sorter.
 }
 
-ast::Expr *
-SortTranslator::GetChildOutput(WorkContext *context, [[maybe_unused]] uint32_t child_idx, uint32_t attr_idx) const {
+auto SortTranslator::GetChildOutput(WorkContext *context, [[maybe_unused]] uint32_t child_idx, uint32_t attr_idx) const
+    -> ast::Expr * {
     if (IsScanPipeline(context->GetPipeline())) {
         return GetSortRowAttribute(sort_row_var_, attr_idx);
     }

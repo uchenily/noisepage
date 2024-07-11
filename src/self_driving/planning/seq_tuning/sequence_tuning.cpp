@@ -99,10 +99,10 @@ void SequenceTuning::BestAction(
     ExtractActionsFromConfigPath(best_final_path.config_on_path_, best_actions_seq);
 }
 
-double SequenceTuning::UnionPair(const PathSolution &path_one,
-                                 const PathSolution &path_two,
-                                 uint64_t            memory_constraint,
-                                 PathSolution       *merged_solution) {
+auto SequenceTuning::UnionPair(const PathSolution &path_one,
+                               const PathSolution &path_two,
+                               uint64_t            memory_constraint,
+                               PathSolution       *merged_solution) -> double {
     std::vector<std::set<std::set<action_id_t>>> candidate_structures_by_segment;
 
     auto const &seq_one = path_one.config_on_path_;
@@ -171,10 +171,10 @@ void SequenceTuning::GreedySeq(const std::map<action_id_t, PathSolution> &best_p
     SELFDRIVING_LOG_DEBUG("[GREEDY-SEQ] final solution cost {}", final_soln_cost);
 }
 
-std::set<action_id_t> SequenceTuning::ExtractActionsFromConfigTransition(
+auto SequenceTuning::ExtractActionsFromConfigTransition(
     const std::map<pilot::action_id_t, std::unique_ptr<pilot::AbstractAction>> &structure_map,
     const std::set<action_id_t>                                                &start_config,
-    const std::set<action_id_t>                                                &end_config) {
+    const std::set<action_id_t>                                                &end_config) -> std::set<action_id_t> {
     std::set<action_id_t> actions;
     // include actions that added structures
     for (auto structure_id : end_config) {
@@ -212,10 +212,10 @@ void SequenceTuning::ExtractActionsFromConfigPath(
     }
 }
 
-double SequenceTuning::ConfigTransitionCost(
+auto SequenceTuning::ConfigTransitionCost(
     const std::map<pilot::action_id_t, std::unique_ptr<pilot::AbstractAction>> &structure_map,
     const std::set<pilot::action_id_t>                                         &start_config,
-    const std::set<pilot::action_id_t>                                         &end_config) {
+    const std::set<pilot::action_id_t>                                         &end_config) -> double {
     auto   action_id_set = ExtractActionsFromConfigTransition(structure_map, start_config, end_config);
     double total_cost = 0.0;
     for (auto action_id : action_id_set) {

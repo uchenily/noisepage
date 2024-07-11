@@ -17,7 +17,7 @@ namespace traits {
         std::enable_if_t<std::is_same_v<Op<T>, noisepage::execution::sql::Add<T>>
                          || std::is_same_v<Op<T>, noisepage::execution::sql::Subtract<T>>
                          || std::is_same_v<Op<T>, noisepage::execution::sql::Multiply<T>>>> {
-        bool operator()(const exec::ExecutionSettings &exec_settings, const TupleIdList *tid_list) const {
+        auto operator()(const exec::ExecutionSettings &exec_settings, const TupleIdList *tid_list) const -> bool {
             auto full_compute_threshold = exec_settings.GetArithmeticFullComputeOptThreshold();
             return tid_list == nullptr || full_compute_threshold <= tid_list->ComputeSelectivity();
         }

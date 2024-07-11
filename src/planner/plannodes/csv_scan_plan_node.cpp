@@ -10,7 +10,7 @@
 
 namespace noisepage::planner {
 
-std::unique_ptr<CSVScanPlanNode> CSVScanPlanNode::Builder::Build() {
+auto CSVScanPlanNode::Builder::Build() -> std::unique_ptr<CSVScanPlanNode> {
     return std::unique_ptr<CSVScanPlanNode>(new CSVScanPlanNode(std::move(children_),
                                                                 std::move(output_schema_),
                                                                 nullptr /* predicate */,
@@ -59,7 +59,7 @@ CSVScanPlanNode::CSVScanPlanNode(std::vector<std::unique_ptr<AbstractPlanNode>> 
     , escape_(escape)
     , value_types_(std::move(value_types)) {}
 
-common::hash_t CSVScanPlanNode::Hash() const {
+auto CSVScanPlanNode::Hash() const -> common::hash_t {
     common::hash_t hash = AbstractScanPlanNode::Hash();
 
     // Filename
@@ -79,7 +79,7 @@ common::hash_t CSVScanPlanNode::Hash() const {
 }
 
 // TODO(Gus): Are file names case sensitive?
-bool CSVScanPlanNode::operator==(const AbstractPlanNode &rhs) const {
+auto CSVScanPlanNode::operator==(const AbstractPlanNode &rhs) const -> bool {
     if (!AbstractScanPlanNode::operator==(rhs)) {
         return false;
     }
@@ -109,7 +109,7 @@ bool CSVScanPlanNode::operator==(const AbstractPlanNode &rhs) const {
     return value_types_ == other.value_types_;
 }
 
-nlohmann::json CSVScanPlanNode::ToJson() const {
+auto CSVScanPlanNode::ToJson() const -> nlohmann::json {
     nlohmann::json j = AbstractScanPlanNode::ToJson();
     j["file_name"] = file_name_;
     j["delimiter"] = delimiter_;
@@ -119,7 +119,7 @@ nlohmann::json CSVScanPlanNode::ToJson() const {
     return j;
 }
 
-std::vector<std::unique_ptr<parser::AbstractExpression>> CSVScanPlanNode::FromJson(const nlohmann::json &j) {
+auto CSVScanPlanNode::FromJson(const nlohmann::json &j) -> std::vector<std::unique_ptr<parser::AbstractExpression>> {
     std::vector<std::unique_ptr<parser::AbstractExpression>> exprs;
     auto                                                     e1 = AbstractScanPlanNode::FromJson(j);
     exprs.insert(exprs.end(), std::make_move_iterator(e1.begin()), std::make_move_iterator(e1.end()));

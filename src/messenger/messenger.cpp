@@ -93,11 +93,11 @@
 
 namespace noisepage::messenger {
 
-ZmqMessage ZmqMessage::Build(message_id_t       message_id,
-                             callback_id_t      source_cb_id,
-                             callback_id_t      dest_cb_id,
-                             const std::string &routing_id,
-                             std::string_view   message) {
+auto ZmqMessage::Build(message_id_t       message_id,
+                       callback_id_t      source_cb_id,
+                       callback_id_t      dest_cb_id,
+                       const std::string &routing_id,
+                       std::string_view   message) -> ZmqMessage {
     return ZmqMessage{routing_id,
                       fmt::format("{}-{}-{}-{}",
                                   message_id.UnderlyingValue(),
@@ -106,7 +106,7 @@ ZmqMessage ZmqMessage::Build(message_id_t       message_id,
                                   message)};
 }
 
-ZmqMessage ZmqMessage::Parse(const std::string &routing_id, const std::string &message) {
+auto ZmqMessage::Parse(const std::string &routing_id, const std::string &message) -> ZmqMessage {
     return ZmqMessage{routing_id, message};
 }
 
@@ -153,7 +153,7 @@ public:
      * @return    The list of items to be polled on and their corresponding sockets.
      * @warning   Only one thread should be invoking GetPollItems().
      */
-    PollItems &GetPollItems() {
+    auto GetPollItems() -> PollItems & {
         // If there are pending poll items, add all of them to the main list of poll items.
         if (!writer_.items_.empty()) {
             // Note that there is a TOCTOU here that does not matter. Stale reads are OK.
@@ -210,7 +210,7 @@ namespace noisepage::messenger {
 class ZmqUtil {
 private:
     /** @return True if there are more parts of the same multipart message to be received. */
-    static bool HasMoreMessagePartsToReceive(const common::ManagedPointer<zmq::socket_t> socket) {
+    static auto HasMoreMessagePartsToReceive(const common::ManagedPointer<zmq::socket_t> socket) -> bool {
         return socket->get(zmq::sockopt::rcvmore) > 0;
     }
 
@@ -222,7 +222,7 @@ public:
     static constexpr int MAX_ROUTING_ID_LEN = 255;
 
     /** @return The routing ID of the socket. */
-    static std::string GetRoutingId(const common::ManagedPointer<zmq::socket_t> socket) {
+    static auto GetRoutingId(const common::ManagedPointer<zmq::socket_t> socket) -> std::string {
         return socket->get(zmq::sockopt::routing_id);
     }
 
@@ -230,7 +230,7 @@ public:
      * @return    The next string to be read off the socket.
      * @warning   Socket must be effectively latched!
      */
-    static std::string Recv(const common::ManagedPointer<zmq::socket_t> socket, zmq::recv_flags flags) {
+    static auto Recv(const common::ManagedPointer<zmq::socket_t> socket, zmq::recv_flags flags) -> std::string {
         zmq::message_t message;
         auto           received = socket->recv(message, flags);
         if (!received.has_value()) {
@@ -243,7 +243,7 @@ public:
      * @return    The next ZmqMessage (identity and payload) read off the socket.
      * @warning   Socket must be effectively latched!
      */
-    static ZmqMessage RecvMsg(const common::ManagedPointer<zmq::socket_t> socket) {
+    static auto RecvMsg(const common::ManagedPointer<zmq::socket_t> socket) -> ZmqMessage {
         std::string identity = Recv(socket, zmq::recv_flags::none);
         NOISEPAGE_ASSERT(HasMoreMessagePartsToReceive(socket), "Bad multipart message.");
         std::string delimiter = Recv(socket, zmq::recv_flags::none);
@@ -345,15 +345,15 @@ ConnectionRouter::ConnectionRouter(common::ManagedPointer<Messenger> messenger,
 
 ConnectionRouter::~ConnectionRouter() = default;
 
-ConnectionDestination Messenger::GetEndpointTCP(std::string target_name, const uint16_t port) {
+auto Messenger::GetEndpointTCP(std::string target_name, const uint16_t port) -> ConnectionDestination {
     return ConnectionDestination::MakeTCP(std::move(target_name), MESSENGER_DEFAULT_TCP, port);
 }
 
-ConnectionDestination Messenger::GetEndpointIPC(std::string target_name, const uint16_t port) {
+auto Messenger::GetEndpointIPC(std::string target_name, const uint16_t port) -> ConnectionDestination {
     return ConnectionDestination::MakeIPC(std::move(target_name), fmt::format(MESSENGER_DEFAULT_IPC, port));
 }
 
-ConnectionDestination Messenger::GetEndpointINPROC(std::string target_name, const uint16_t port) {
+auto Messenger::GetEndpointINPROC(std::string target_name, const uint16_t port) -> ConnectionDestination {
     return ConnectionDestination::MakeInProc(std::move(target_name), fmt::format(MESSENGER_DEFAULT_INPROC, port));
 }
 
@@ -426,8 +426,9 @@ void Messenger::Terminate() {
     is_messenger_running_ = false;
 }
 
-router_id_t
-Messenger::ListenForConnection(const ConnectionDestination &target, const std::string &identity, CallbackFn callback) {
+auto Messenger::ListenForConnection(const ConnectionDestination &target,
+                                    const std::string           &identity,
+                                    CallbackFn                   callback) -> router_id_t {
     // ZeroMQ is not thread-safe, and the actual binding of new connection endpoints must be done from the same
     // thread that is going to poll the endpoints. See RouterToBeAdded docstring.
     std::unique_lock lock(routers_add_mutex_);
@@ -437,7 +438,7 @@ Messenger::ListenForConnection(const ConnectionDestination &target, const std::s
     return router_id;
 }
 
-connection_id_t Messenger::MakeConnection(const ConnectionDestination &target) {
+auto Messenger::MakeConnection(const ConnectionDestination &target) -> connection_id_t {
     // ZeroMQ is not thread-safe, and the actual creation of new sockets must be done from the same
     // thread that is going to send and receive using those sockets. See ConnectionToBeAdded docstring.
     std::unique_lock lock(connections_add_mutex_);
@@ -504,7 +505,7 @@ void Messenger::SendMessage(const router_id_t  router_id,
     }
 }
 
-callback_id_t Messenger::GetNextSendCallbackId() {
+auto Messenger::GetNextSendCallbackId() -> callback_id_t {
     callback_id_t send_cb_id = next_callback_id_++;
 
     // Check for wraparound.
@@ -654,7 +655,7 @@ void Messenger::ServerLoopRecvAndProcessMessages() {
     }
 }
 
-bool Messenger::UpdateMessagesSeen(const std::string &replica, const message_id_t message_id) {
+auto Messenger::UpdateMessagesSeen(const std::string &replica, const message_id_t message_id) -> bool {
     // See the algorithm description in docs/design_messenger.md.
     if (seen_messages_max_.find(replica) == seen_messages_max_.end()) {
         seen_messages_max_.emplace(replica, message_id);

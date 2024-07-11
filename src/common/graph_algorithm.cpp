@@ -13,7 +13,7 @@ namespace noisepage::common::graph {
 // graph::Isomorphic
 // ----------------------------------------------------------------------------
 
-bool Isomorphic(const Graph &lhs, const Graph &rhs) {
+auto Isomorphic(const Graph &lhs, const Graph &rhs) -> bool {
     auto lhs_nodes = lhs.VertexSet();
     auto rhs_nodes = rhs.VertexSet();
     std::sort(lhs_nodes.begin(), lhs_nodes.end());
@@ -70,9 +70,9 @@ namespace detail {
      * @param youngest_txn The out-parameter used to return the transaction ID of
      * the youngest transaction in the first cycle found in the graph, if present
      */
-    bool HasCycleFrom(const Graph                                &graph,
+    auto HasCycleFrom(const Graph                                &graph,
                       std::unordered_map<std::size_t, NodeState> *node_states,
-                      std::stack<std::size_t>                    *to_visit) {
+                      std::stack<std::size_t>                    *to_visit) -> bool {
         // TODO(Kyle): This is gross, sorting the vertices WITHIN the graph...
         const auto               id = to_visit->top();
         std::vector<std::size_t> adjacent{graph.AdjacenciesFor(id).cbegin(), graph.AdjacenciesFor(id).cend()};
@@ -101,7 +101,7 @@ namespace detail {
     }
 } // namespace detail
 
-bool HasCycle(const Graph &graph) {
+auto HasCycle(const Graph &graph) -> bool {
     // Initialize vertex states
     std::unordered_map<std::size_t, detail::NodeState> node_states{};
     for (const auto &id : graph.VertexSet()) {
@@ -174,7 +174,7 @@ namespace detail {
      * @return A map that denotes finishing time for each vertex in `graph`
      *  Node ID -> Finishing Time
      */
-    static std::unordered_map<std::size_t, std::size_t> FinishingTimeDFS(const Graph &graph) {
+    static auto FinishingTimeDFS(const Graph &graph) -> std::unordered_map<std::size_t, std::size_t> {
         // The data structure we will populate
         std::unordered_map<std::size_t, std::size_t> finishing_times{};
 
@@ -195,7 +195,7 @@ namespace detail {
     }
 } // namespace detail
 
-std::vector<std::size_t> TopologicalSort(const Graph &graph) {
+auto TopologicalSort(const Graph &graph) -> std::vector<std::size_t> {
     NOISEPAGE_ASSERT(!HasCycle(graph), "Graph must be acyclic to compute a topological sort");
 
     // Compute the finishing time for each node in the graph

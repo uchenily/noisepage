@@ -13,7 +13,7 @@
 
 namespace noisepage::planner {
 
-std::unique_ptr<CreateTriggerPlanNode> CreateTriggerPlanNode::Builder::Build() {
+auto CreateTriggerPlanNode::Builder::Build() -> std::unique_ptr<CreateTriggerPlanNode> {
     return std::unique_ptr<CreateTriggerPlanNode>(new CreateTriggerPlanNode(std::move(children_),
                                                                             std::move(output_schema_),
                                                                             database_oid_,
@@ -51,7 +51,7 @@ CreateTriggerPlanNode::CreateTriggerPlanNode(std::vector<std::unique_ptr<Abstrac
     , trigger_when_(trigger_when)
     , trigger_type_(trigger_type) {}
 
-common::hash_t CreateTriggerPlanNode::Hash() const {
+auto CreateTriggerPlanNode::Hash() const -> common::hash_t {
     common::hash_t hash = AbstractPlanNode::Hash();
 
     // Hash database_oid
@@ -85,7 +85,7 @@ common::hash_t CreateTriggerPlanNode::Hash() const {
     return hash;
 }
 
-bool CreateTriggerPlanNode::operator==(const AbstractPlanNode &rhs) const {
+auto CreateTriggerPlanNode::operator==(const AbstractPlanNode &rhs) const -> bool {
     if (!AbstractPlanNode::operator==(rhs)) {
         return false;
     }
@@ -170,7 +170,7 @@ bool CreateTriggerPlanNode::operator==(const AbstractPlanNode &rhs) const {
     return true;
 }
 
-nlohmann::json CreateTriggerPlanNode::ToJson() const {
+auto CreateTriggerPlanNode::ToJson() const -> nlohmann::json {
     nlohmann::json j = AbstractPlanNode::ToJson();
     j["database_oid"] = database_oid_;
     j["namespace_oid"] = namespace_oid_;
@@ -184,7 +184,8 @@ nlohmann::json CreateTriggerPlanNode::ToJson() const {
     return j;
 }
 
-std::vector<std::unique_ptr<parser::AbstractExpression>> CreateTriggerPlanNode::FromJson(const nlohmann::json &j) {
+auto CreateTriggerPlanNode::FromJson(const nlohmann::json &j)
+    -> std::vector<std::unique_ptr<parser::AbstractExpression>> {
     std::vector<std::unique_ptr<parser::AbstractExpression>> exprs;
     auto                                                     e1 = AbstractPlanNode::FromJson(j);
     exprs.insert(exprs.end(), std::make_move_iterator(e1.begin()), std::make_move_iterator(e1.end()));

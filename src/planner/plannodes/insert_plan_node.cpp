@@ -13,7 +13,7 @@
 
 namespace noisepage::planner {
 
-std::unique_ptr<InsertPlanNode> InsertPlanNode::Builder::Build() {
+auto InsertPlanNode::Builder::Build() -> std::unique_ptr<InsertPlanNode> {
     NOISEPAGE_ASSERT(!children_.empty() || !values_.empty(), "Can't have an empty insert plan");
     NOISEPAGE_ASSERT(!children_.empty() || values_[0].size() == parameter_info_.size(),
                      "Must have parameter info for each value");
@@ -45,7 +45,7 @@ InsertPlanNode::InsertPlanNode(std::vector<std::unique_ptr<AbstractPlanNode>> &&
     , index_oids_(std::move(index_oids))
     , insert_type_(insert_type) {}
 
-common::hash_t InsertPlanNode::Hash() const {
+auto InsertPlanNode::Hash() const -> common::hash_t {
     common::hash_t hash = AbstractPlanNode::Hash();
 
     // Hash database_oid
@@ -73,7 +73,7 @@ common::hash_t InsertPlanNode::Hash() const {
     return hash;
 }
 
-bool InsertPlanNode::operator==(const AbstractPlanNode &rhs) const {
+auto InsertPlanNode::operator==(const AbstractPlanNode &rhs) const -> bool {
     if (!AbstractPlanNode::operator==(rhs)) {
         return false;
     }
@@ -130,7 +130,7 @@ bool InsertPlanNode::operator==(const AbstractPlanNode &rhs) const {
     return true;
 }
 
-nlohmann::json InsertPlanNode::ToJson() const {
+auto InsertPlanNode::ToJson() const -> nlohmann::json {
     nlohmann::json j = AbstractPlanNode::ToJson();
     j["database_oid"] = database_oid_;
     j["table_oid"] = table_oid_;
@@ -151,7 +151,7 @@ nlohmann::json InsertPlanNode::ToJson() const {
     return j;
 }
 
-std::vector<std::unique_ptr<parser::AbstractExpression>> InsertPlanNode::FromJson(const nlohmann::json &j) {
+auto InsertPlanNode::FromJson(const nlohmann::json &j) -> std::vector<std::unique_ptr<parser::AbstractExpression>> {
     std::vector<std::unique_ptr<parser::AbstractExpression>> exprs;
     auto                                                     e1 = AbstractPlanNode::FromJson(j);
     exprs.insert(exprs.end(), std::make_move_iterator(e1.begin()), std::make_move_iterator(e1.end()));

@@ -55,21 +55,21 @@ public:
     /**
      * @return True if the expression is an L-Value expression; false otherwise.
      */
-    bool IsLValue() const {
+    auto IsLValue() const -> bool {
         return kind_ == ast::Expr::Context::LValue;
     }
 
     /**
      * @return True if the expression is an R-Value expression; false otherwise.
      */
-    bool IsRValue() const {
+    auto IsRValue() const -> bool {
         return kind_ == ast::Expr::Context::RValue;
     }
 
     /**
      * @return True if the expression has an assigned destination where the result is written to.
      */
-    bool HasDestination() const {
+    auto HasDestination() const -> bool {
         return !GetDestination().IsInvalid();
     }
 
@@ -79,7 +79,7 @@ public:
      * @param type The type of the result of the expression.
      * @return The destination where the result of the expression is written to.
      */
-    LocalVar GetOrCreateDestination(ast::Type *type) {
+    auto GetOrCreateDestination(ast::Type *type) -> LocalVar {
         if (!HasDestination()) {
             destination_ = generator_->GetCurrentFunction()->NewLocal(type);
         }
@@ -90,7 +90,7 @@ public:
     /**
      * @return The destination local where the result is written.
      */
-    LocalVar GetDestination() const {
+    auto GetDestination() const -> LocalVar {
         return destination_;
     }
 
@@ -1435,10 +1435,10 @@ namespace {
     // Given an aggregate kind and the operation to perform on it, determine the
     // appropriate bytecode
     template <AggOpKind OpKind>
-    Bytecode OpForAgg(ast::BuiltinType::Kind agg_kind);
+    auto OpForAgg(ast::BuiltinType::Kind agg_kind) -> Bytecode;
 
     template <>
-    Bytecode OpForAgg<AggOpKind::Init>(const ast::BuiltinType::Kind agg_kind) {
+    auto OpForAgg<AggOpKind::Init>(const ast::BuiltinType::Kind agg_kind) -> Bytecode {
         switch (agg_kind) {
         default: {
             UNREACHABLE("Impossible aggregate type");
@@ -1452,7 +1452,7 @@ namespace {
     }
 
     template <>
-    Bytecode OpForAgg<AggOpKind::Advance>(const ast::BuiltinType::Kind agg_kind) {
+    auto OpForAgg<AggOpKind::Advance>(const ast::BuiltinType::Kind agg_kind) -> Bytecode {
         switch (agg_kind) {
         default: {
             UNREACHABLE("Impossible aggregate type");
@@ -1466,7 +1466,7 @@ namespace {
     }
 
     template <>
-    Bytecode OpForAgg<AggOpKind::GetResult>(const ast::BuiltinType::Kind agg_kind) {
+    auto OpForAgg<AggOpKind::GetResult>(const ast::BuiltinType::Kind agg_kind) -> Bytecode {
         switch (agg_kind) {
         default: {
             UNREACHABLE("Impossible aggregate type");
@@ -1480,7 +1480,7 @@ namespace {
     }
 
     template <>
-    Bytecode OpForAgg<AggOpKind::Merge>(const ast::BuiltinType::Kind agg_kind) {
+    auto OpForAgg<AggOpKind::Merge>(const ast::BuiltinType::Kind agg_kind) -> Bytecode {
         switch (agg_kind) {
         default: {
             UNREACHABLE("Impossible aggregate type");
@@ -1494,7 +1494,7 @@ namespace {
     }
 
     template <>
-    Bytecode OpForAgg<AggOpKind::Reset>(const ast::BuiltinType::Kind agg_kind) {
+    auto OpForAgg<AggOpKind::Reset>(const ast::BuiltinType::Kind agg_kind) -> Bytecode {
         switch (agg_kind) {
         default: {
             UNREACHABLE("Impossible aggregate type");
@@ -1508,7 +1508,7 @@ namespace {
     }
 
     template <>
-    Bytecode OpForAgg<AggOpKind::Free>(const ast::BuiltinType::Kind agg_kind) {
+    auto OpForAgg<AggOpKind::Free>(const ast::BuiltinType::Kind agg_kind) -> Bytecode {
         switch (agg_kind) {
         default: {
             UNREACHABLE("Impossible aggregate type");
@@ -3911,7 +3911,7 @@ void BytecodeGenerator::BuildDeref(LocalVar dest, LocalVar ptr, ast::Type *dest_
     }
 }
 
-LocalVar BytecodeGenerator::BuildLoadPointer(LocalVar double_ptr, ast::Type *type) {
+auto BytecodeGenerator::BuildLoadPointer(LocalVar double_ptr, ast::Type *type) -> LocalVar {
     if (double_ptr.GetAddressMode() == LocalVar::AddressMode::Address) {
         return double_ptr.ValueOf();
     }
@@ -4012,7 +4012,8 @@ void BytecodeGenerator::VisitMapTypeRepr(ast::MapTypeRepr *node) {
     NOISEPAGE_ASSERT(false, "Should not visit type-representation nodes!");
 }
 
-FunctionInfo *BytecodeGenerator::AllocateFunc(const std::string &func_name, ast::FunctionType *const func_type) {
+auto BytecodeGenerator::AllocateFunc(const std::string &func_name, ast::FunctionType *const func_type)
+    -> FunctionInfo * {
     // Allocate function
     const auto func_id = static_cast<FunctionId>(functions_.size());
     functions_.emplace_back(func_id, func_name, func_type);
@@ -4034,7 +4035,7 @@ FunctionInfo *BytecodeGenerator::AllocateFunc(const std::string &func_name, ast:
     return func;
 }
 
-FunctionId BytecodeGenerator::LookupFuncIdByName(const std::string &name) const {
+auto BytecodeGenerator::LookupFuncIdByName(const std::string &name) const -> FunctionId {
     auto iter = func_map_.find(name);
     if (iter == func_map_.end()) {
         return FunctionInfo::K_INVALID_FUNC_ID;
@@ -4042,7 +4043,7 @@ FunctionId BytecodeGenerator::LookupFuncIdByName(const std::string &name) const 
     return iter->second;
 }
 
-LocalVar BytecodeGenerator::NewStatic(const std::string &name, ast::Type *type, const void *contents) {
+auto BytecodeGenerator::NewStatic(const std::string &name, ast::Type *type, const void *contents) -> LocalVar {
     std::size_t offset = data_.size();
 
     if (!common::MathUtil::IsAligned(offset, type->GetAlignment())) {
@@ -4060,7 +4061,7 @@ LocalVar BytecodeGenerator::NewStatic(const std::string &name, ast::Type *type, 
     return LocalVar(offset, LocalVar::AddressMode::Address);
 }
 
-LocalVar BytecodeGenerator::NewStaticString(ast::Context *ctx, const ast::Identifier string) {
+auto BytecodeGenerator::NewStaticString(ast::Context *ctx, const ast::Identifier string) -> LocalVar {
     // Check cache
     if (auto iter = static_string_cache_.find(string); iter != static_string_cache_.end()) {
         return LocalVar(iter->second.GetOffset(), LocalVar::AddressMode::Address);
@@ -4076,19 +4077,19 @@ LocalVar BytecodeGenerator::NewStaticString(ast::Context *ctx, const ast::Identi
     return static_local;
 }
 
-LocalVar BytecodeGenerator::VisitExpressionForLValue(ast::Expr *expr) {
+auto BytecodeGenerator::VisitExpressionForLValue(ast::Expr *expr) -> LocalVar {
     LValueResultScope scope(this);
     Visit(expr);
     return scope.GetDestination();
 }
 
-LocalVar BytecodeGenerator::VisitExpressionForRValue(ast::Expr *expr) {
+auto BytecodeGenerator::VisitExpressionForRValue(ast::Expr *expr) -> LocalVar {
     RValueResultScope scope(this);
     Visit(expr);
     return scope.GetDestination();
 }
 
-LocalVar BytecodeGenerator::VisitExpressionForSQLValue(ast::Expr *expr) {
+auto BytecodeGenerator::VisitExpressionForSQLValue(ast::Expr *expr) -> LocalVar {
     return VisitExpressionForLValue(expr);
 }
 
@@ -4126,14 +4127,14 @@ void BytecodeGenerator::VisitExpressionForTest(ast::Expr      *expr,
     }
 }
 
-Bytecode BytecodeGenerator::GetIntTypedBytecode(Bytecode bytecode, ast::Type *type) {
+auto BytecodeGenerator::GetIntTypedBytecode(Bytecode bytecode, ast::Type *type) -> Bytecode {
     NOISEPAGE_ASSERT(type->IsIntegerType(), "Type must be integer type");
     auto int_kind = type->SafeAs<ast::BuiltinType>()->GetKind();
     auto kind_idx = static_cast<uint8_t>(int_kind - ast::BuiltinType::Int8);
     return Bytecodes::FromByte(Bytecodes::ToByte(bytecode) + kind_idx);
 }
 
-Bytecode BytecodeGenerator::GetFloatTypedBytecode(Bytecode bytecode, ast::Type *type) {
+auto BytecodeGenerator::GetFloatTypedBytecode(Bytecode bytecode, ast::Type *type) -> Bytecode {
     NOISEPAGE_ASSERT(type->IsFloatType(), "Type must be floating-point type");
     auto float_kind = type->SafeAs<ast::BuiltinType>()->GetKind();
     auto kind_idx = static_cast<uint8_t>(float_kind - ast::BuiltinType::Float32);
@@ -4141,7 +4142,7 @@ Bytecode BytecodeGenerator::GetFloatTypedBytecode(Bytecode bytecode, ast::Type *
 }
 
 // static
-std::unique_ptr<BytecodeModule> BytecodeGenerator::Compile(ast::AstNode *root, const std::string &name) {
+auto BytecodeGenerator::Compile(ast::AstNode *root, const std::string &name) -> std::unique_ptr<BytecodeModule> {
     BytecodeGenerator generator{};
     generator.Visit(root);
 

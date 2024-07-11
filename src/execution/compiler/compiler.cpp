@@ -55,7 +55,7 @@ Compiler::Compiler(const Compiler::Input &input)
 // Required because we forward-declared the classes we use as templates to unique_ptr<> members.
 Compiler::~Compiler() = default;
 
-sema::ErrorReporter *Compiler::GetErrorReporter() const {
+auto Compiler::GetErrorReporter() const -> sema::ErrorReporter * {
     return GetContext()->GetErrorReporter();
 }
 
@@ -175,7 +175,7 @@ namespace {
         void TakeOwnership(std::unique_ptr<vm::Module> module) override {
             module_ = std::move(module);
         }
-        std::unique_ptr<vm::Module> TakeModule() {
+        auto TakeModule() -> std::unique_ptr<vm::Module> {
             return std::move(module_);
         }
 
@@ -185,13 +185,13 @@ namespace {
 
 } // namespace
 
-std::unique_ptr<vm::Module> Compiler::RunCompilationSimple(const Compiler::Input &input) {
+auto Compiler::RunCompilationSimple(const Compiler::Input &input) -> std::unique_ptr<vm::Module> {
     NoOpCallbacks no_op_callbacks;
     RunCompilation(input, &no_op_callbacks);
     return no_op_callbacks.TakeModule();
 }
 
-std::string Compiler::CompilerPhaseToString(Compiler::Phase phase) {
+auto Compiler::CompilerPhaseToString(Compiler::Phase phase) -> std::string {
     switch (phase) {
     case Phase::Parsing:
         return "Parsing";

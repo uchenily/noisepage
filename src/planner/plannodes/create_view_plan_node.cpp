@@ -10,7 +10,7 @@
 
 namespace noisepage::planner {
 
-std::unique_ptr<CreateViewPlanNode> CreateViewPlanNode::Builder::Build() {
+auto CreateViewPlanNode::Builder::Build() -> std::unique_ptr<CreateViewPlanNode> {
     return std::unique_ptr<CreateViewPlanNode>(new CreateViewPlanNode(std::move(children_),
                                                                       std::move(output_schema_),
                                                                       database_oid_,
@@ -33,7 +33,7 @@ CreateViewPlanNode::CreateViewPlanNode(std::vector<std::unique_ptr<AbstractPlanN
     , view_name_(std::move(view_name))
     , view_query_(std::move(view_query)) {}
 
-common::hash_t CreateViewPlanNode::Hash() const {
+auto CreateViewPlanNode::Hash() const -> common::hash_t {
     common::hash_t hash = AbstractPlanNode::Hash();
 
     // Hash database_oid
@@ -52,7 +52,7 @@ common::hash_t CreateViewPlanNode::Hash() const {
     return hash;
 }
 
-bool CreateViewPlanNode::operator==(const AbstractPlanNode &rhs) const {
+auto CreateViewPlanNode::operator==(const AbstractPlanNode &rhs) const -> bool {
     if (!AbstractPlanNode::operator==(rhs)) {
         return false;
     }
@@ -90,7 +90,7 @@ bool CreateViewPlanNode::operator==(const AbstractPlanNode &rhs) const {
     return true;
 }
 
-nlohmann::json CreateViewPlanNode::ToJson() const {
+auto CreateViewPlanNode::ToJson() const -> nlohmann::json {
     nlohmann::json j = AbstractPlanNode::ToJson();
     j["database_oid"] = database_oid_;
     j["namespace_oid"] = namespace_oid_;
@@ -99,7 +99,7 @@ nlohmann::json CreateViewPlanNode::ToJson() const {
     return j;
 }
 
-std::vector<std::unique_ptr<parser::AbstractExpression>> CreateViewPlanNode::FromJson(const nlohmann::json &j) {
+auto CreateViewPlanNode::FromJson(const nlohmann::json &j) -> std::vector<std::unique_ptr<parser::AbstractExpression>> {
     std::vector<std::unique_ptr<parser::AbstractExpression>> exprs;
     auto                                                     e1 = AbstractPlanNode::FromJson(j);
     exprs.insert(exprs.end(), std::make_move_iterator(e1.begin()), std::make_move_iterator(e1.end()));

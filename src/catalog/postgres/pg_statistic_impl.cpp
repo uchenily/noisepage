@@ -76,8 +76,8 @@ void PgStatisticImpl::CreateColumnStatistic(const common::ManagedPointer<transac
     delete[] buffer;
 }
 
-bool PgStatisticImpl::DeleteColumnStatistics(const common::ManagedPointer<transaction::TransactionContext> txn,
-                                             const table_oid_t                                             table_oid) {
+auto PgStatisticImpl::DeleteColumnStatistics(const common::ManagedPointer<transaction::TransactionContext> txn,
+                                             const table_oid_t table_oid) -> bool {
     const auto &oid_pri = statistic_oid_index_->GetProjectedRowInitializer();
     const auto &oid_prm = statistic_oid_index_->GetKeyOidToOffsetMap();
 
@@ -142,11 +142,10 @@ bool PgStatisticImpl::DeleteColumnStatistics(const common::ManagedPointer<transa
     return true;
 }
 
-std::unique_ptr<optimizer::ColumnStatsBase>
-PgStatisticImpl::GetColumnStatistics(common::ManagedPointer<transaction::TransactionContext> txn,
-                                     common::ManagedPointer<DatabaseCatalog>                 database_catalog,
-                                     table_oid_t                                             table_oid,
-                                     col_oid_t                                               col_oid) {
+auto PgStatisticImpl::GetColumnStatistics(common::ManagedPointer<transaction::TransactionContext> txn,
+                                          common::ManagedPointer<DatabaseCatalog>                 database_catalog,
+                                          table_oid_t                                             table_oid,
+                                          col_oid_t col_oid) -> std::unique_ptr<optimizer::ColumnStatsBase> {
     const auto &oid_pri = statistic_oid_index_->GetProjectedRowInitializer();
     const auto &oid_prm = statistic_oid_index_->GetKeyOidToOffsetMap();
 
@@ -173,9 +172,9 @@ PgStatisticImpl::GetColumnStatistics(common::ManagedPointer<transaction::Transac
     return column_stats;
 }
 
-optimizer::TableStats PgStatisticImpl::GetTableStatistics(common::ManagedPointer<transaction::TransactionContext> txn,
-                                                          common::ManagedPointer<DatabaseCatalog> database_catalog,
-                                                          table_oid_t                             table_oid) {
+auto PgStatisticImpl::GetTableStatistics(common::ManagedPointer<transaction::TransactionContext> txn,
+                                         common::ManagedPointer<DatabaseCatalog>                 database_catalog,
+                                         table_oid_t table_oid) -> optimizer::TableStats {
     const auto &oid_pri = statistic_oid_index_->GetProjectedRowInitializer();
     const auto &oid_prm = statistic_oid_index_->GetKeyOidToOffsetMap();
 
@@ -219,11 +218,10 @@ optimizer::TableStats PgStatisticImpl::GetTableStatistics(common::ManagedPointer
     return optimizer::TableStats(db_oid_, table_oid, &col_stats_list);
 }
 
-std::unique_ptr<optimizer::ColumnStatsBase>
-PgStatisticImpl::CreateColumnStats(common::ManagedPointer<storage::ProjectedRow> all_cols_pr,
-                                   table_oid_t                                   table_oid,
-                                   col_oid_t                                     col_oid,
-                                   execution::sql::SqlTypeId                     type) {
+auto PgStatisticImpl::CreateColumnStats(common::ManagedPointer<storage::ProjectedRow> all_cols_pr,
+                                        table_oid_t                                   table_oid,
+                                        col_oid_t                                     col_oid,
+                                        execution::sql::SqlTypeId type) -> std::unique_ptr<optimizer::ColumnStatsBase> {
     auto        num_rows = *PgStatistic::STA_NUMROWS.Get(all_cols_pr, pg_statistic_all_cols_prm_);
     auto        non_null_rows = *PgStatistic::STA_NONNULLROWS.Get(all_cols_pr, pg_statistic_all_cols_prm_);
     auto        distinct_values = *PgStatistic::STA_DISTINCTROWS.Get(all_cols_pr, pg_statistic_all_cols_prm_);

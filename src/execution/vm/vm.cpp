@@ -28,7 +28,7 @@ public:
         (void) frame_size_;
     }
 
-    void *PtrToLocalAt(const LocalVar local) const {
+    auto PtrToLocalAt(const LocalVar local) const -> void * {
         EnsureInFrame(local);
         return frame_data_ + local.GetOffset();
     }
@@ -123,7 +123,7 @@ void VM::InvokeFunction(const Module *module, const FunctionId func_id, const ui
 namespace {
 
     template <typename T>
-    inline ALWAYS_INLINE T Read(const uint8_t **ip) {
+    inline ALWAYS_INLINE auto Read(const uint8_t **ip) -> T {
         static_assert(std::is_arithmetic_v<T>,
                       "Read() should only be used to read primitive arithmetic types "
                       "directly from the bytecode instruction stream");
@@ -133,7 +133,7 @@ namespace {
     }
 
     template <typename T>
-    inline ALWAYS_INLINE T Peek(const uint8_t **ip) {
+    inline ALWAYS_INLINE auto Peek(const uint8_t **ip) -> T {
         static_assert(std::is_integral_v<T>,
                       "Peek() should only be used to read primitive arithmetic types "
                       "directly from the bytecode instruction stream");
@@ -3065,7 +3065,7 @@ void VM::Interpret(const uint8_t *ip, Frame *frame) { // NOLINT
     UNREACHABLE("Impossible to reach end of interpreter loop. Bad code!");
 } // NOLINT(readability/fn_size)
 
-const uint8_t *VM::ExecuteCall(const uint8_t *ip, VM::Frame *caller) {
+auto VM::ExecuteCall(const uint8_t *ip, VM::Frame *caller) -> const uint8_t * {
     // Read the function ID and the argument count to the function first
     const uint16_t func_id = READ_FUNC_ID();  // NOLINT (something wrong with clang tidy)
     const uint16_t num_params = READ_UIMM2(); // NOLINT (something wrong with clang tidy)

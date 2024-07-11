@@ -16,12 +16,12 @@ BytecodeIterator::BytecodeIterator(const std::vector<uint8_t> &bytecode, std::si
 BytecodeIterator::BytecodeIterator(const std::vector<uint8_t> &bytecode)
     : BytecodeIterator(bytecode, 0, bytecode.size()) {}
 
-Bytecode BytecodeIterator::CurrentBytecode() const {
+auto BytecodeIterator::CurrentBytecode() const -> Bytecode {
     auto raw_code = *reinterpret_cast<const std::underlying_type_t<Bytecode> *>(&bytecodes_[curr_offset_]);
     return Bytecodes::FromByte(raw_code);
 }
 
-bool BytecodeIterator::Done() const {
+auto BytecodeIterator::Done() const -> bool {
     return curr_offset_ >= end_offset_;
 }
 
@@ -29,7 +29,7 @@ void BytecodeIterator::Advance() {
     curr_offset_ += CurrentBytecodeSize();
 }
 
-int64_t BytecodeIterator::GetImmediateIntegerOperand(uint32_t operand_index) const {
+auto BytecodeIterator::GetImmediateIntegerOperand(uint32_t operand_index) const -> int64_t {
     OperandType operand_type = Bytecodes::GetNthOperandType(CurrentBytecode(), operand_index);
     NOISEPAGE_ASSERT(OperandTypes::IsSignedIntegerImmediate(operand_type), "Operand type is not a signed immediate");
 
@@ -51,7 +51,7 @@ int64_t BytecodeIterator::GetImmediateIntegerOperand(uint32_t operand_index) con
     }
 }
 
-double BytecodeIterator::GetImmediateFloatOperand(uint32_t operand_index) const {
+auto BytecodeIterator::GetImmediateFloatOperand(uint32_t operand_index) const -> double {
     OperandType operand_type = Bytecodes::GetNthOperandType(CurrentBytecode(), operand_index);
     NOISEPAGE_ASSERT(OperandTypes::IsFloatImmediate(operand_type), "Operand type is not a float immediate");
 
@@ -68,7 +68,7 @@ double BytecodeIterator::GetImmediateFloatOperand(uint32_t operand_index) const 
     }
 }
 
-uint64_t BytecodeIterator::GetUnsignedImmediateIntegerOperand(uint32_t operand_index) const {
+auto BytecodeIterator::GetUnsignedImmediateIntegerOperand(uint32_t operand_index) const -> uint64_t {
     OperandType operand_type = Bytecodes::GetNthOperandType(CurrentBytecode(), operand_index);
     NOISEPAGE_ASSERT(OperandTypes::IsUnsignedIntegerImmediate(operand_type),
                      "Operand type is not an unsigned immediate");
@@ -87,7 +87,7 @@ uint64_t BytecodeIterator::GetUnsignedImmediateIntegerOperand(uint32_t operand_i
     }
 }
 
-int32_t BytecodeIterator::GetJumpOffsetOperand(uint32_t operand_index) const {
+auto BytecodeIterator::GetJumpOffsetOperand(uint32_t operand_index) const -> int32_t {
     NOISEPAGE_ASSERT(Bytecodes::GetNthOperandType(CurrentBytecode(), operand_index) == OperandType::JumpOffset,
                      "Operand isn't a jump offset");
     const uint8_t *operand_address
@@ -96,7 +96,7 @@ int32_t BytecodeIterator::GetJumpOffsetOperand(uint32_t operand_index) const {
     return *reinterpret_cast<const int32_t *>(operand_address);
 }
 
-LocalVar BytecodeIterator::GetLocalOperand(uint32_t operand_index) const {
+auto BytecodeIterator::GetLocalOperand(uint32_t operand_index) const -> LocalVar {
     NOISEPAGE_ASSERT(OperandTypes::IsLocal(Bytecodes::GetNthOperandType(CurrentBytecode(), operand_index)),
                      "Operand type is not a local variable reference");
 
@@ -106,7 +106,7 @@ LocalVar BytecodeIterator::GetLocalOperand(uint32_t operand_index) const {
     return LocalVar::Decode(encoded_val);
 }
 
-LocalVar BytecodeIterator::GetStaticLocalOperand(uint32_t operand_index) const {
+auto BytecodeIterator::GetStaticLocalOperand(uint32_t operand_index) const -> LocalVar {
     NOISEPAGE_ASSERT(OperandTypes::IsStaticLocal(Bytecodes::GetNthOperandType(CurrentBytecode(), operand_index)),
                      "Operand type is not a static local reference");
 
@@ -116,7 +116,7 @@ LocalVar BytecodeIterator::GetStaticLocalOperand(uint32_t operand_index) const {
     return LocalVar::Decode(encoded_val);
 }
 
-uint16_t BytecodeIterator::GetLocalCountOperand(uint32_t operand_index, std::vector<LocalVar> *locals) const {
+auto BytecodeIterator::GetLocalCountOperand(uint32_t operand_index, std::vector<LocalVar> *locals) const -> uint16_t {
     NOISEPAGE_ASSERT(OperandTypes::IsLocalCount(Bytecodes::GetNthOperandType(CurrentBytecode(), operand_index)),
                      "Operand type is not a local variable count");
 
@@ -137,7 +137,7 @@ uint16_t BytecodeIterator::GetLocalCountOperand(uint32_t operand_index, std::vec
     return num_locals;
 }
 
-uint16_t BytecodeIterator::GetFunctionIdOperand(uint32_t operand_index) const {
+auto BytecodeIterator::GetFunctionIdOperand(uint32_t operand_index) const -> uint16_t {
     NOISEPAGE_ASSERT(Bytecodes::GetNthOperandType(CurrentBytecode(), operand_index) == OperandType::FunctionId,
                      "Operand type is not a function");
 
@@ -147,7 +147,7 @@ uint16_t BytecodeIterator::GetFunctionIdOperand(uint32_t operand_index) const {
     return *reinterpret_cast<const uint16_t *>(operand_address);
 }
 
-uint32_t BytecodeIterator::CurrentBytecodeSize() const {
+auto BytecodeIterator::CurrentBytecodeSize() const -> uint32_t {
     Bytecode bytecode = CurrentBytecode();
     uint32_t size = sizeof(std::underlying_type_t<Bytecode>);
     for (uint32_t i = 0; i < Bytecodes::NumOperands(bytecode); i++) {

@@ -396,7 +396,7 @@ void AnalyzeTranslator::FillIndexPrKey(FunctionBuilder *function, ast::Identifie
     }
 }
 
-util::RegionVector<ast::FieldDecl *> AnalyzeTranslator::GetWorkerParams() const {
+auto AnalyzeTranslator::GetWorkerParams() const -> util::RegionVector<ast::FieldDecl *> {
     UNREACHABLE("Analyze is serial.");
 }
 
@@ -404,12 +404,13 @@ void AnalyzeTranslator::LaunchWork(FunctionBuilder *function, ast::Identifier wo
     UNREACHABLE("Analyze is serial.");
 }
 
-ast::Expr *AnalyzeTranslator::GetChildOutput(WorkContext *context, uint32_t child_idx, uint32_t attr_idx) const {
+auto AnalyzeTranslator::GetChildOutput(WorkContext *context, uint32_t child_idx, uint32_t attr_idx) const
+    -> ast::Expr * {
     NOISEPAGE_ASSERT(child_idx == 0, "Analyze plan can only have one child");
     return OperatorTranslator::GetChildOutput(context, child_idx, attr_idx);
 }
 
-ast::Expr *AnalyzeTranslator::GetTableColumn(catalog::col_oid_t col_oid) const {
+auto AnalyzeTranslator::GetTableColumn(catalog::col_oid_t col_oid) const -> ast::Expr * {
     UNREACHABLE("Analyze doesn't provide values");
 }
 

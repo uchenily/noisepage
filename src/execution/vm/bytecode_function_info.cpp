@@ -35,7 +35,7 @@ FunctionInfo::FunctionInfo(FunctionId id, std::string name, ast::FunctionType *f
     , num_params_(0)
     , num_temps_(0) {}
 
-LocalVar FunctionInfo::NewLocal(ast::Type *type, const std::string &name, LocalInfo::Kind kind) {
+auto FunctionInfo::NewLocal(ast::Type *type, const std::string &name, LocalInfo::Kind kind) -> LocalVar {
     NOISEPAGE_ASSERT(!name.empty(), "Local name cannot be empty");
 
     // Bump size to account for the alignment of the new local
@@ -51,14 +51,14 @@ LocalVar FunctionInfo::NewLocal(ast::Type *type, const std::string &name, LocalI
     return LocalVar(offset, LocalVar::AddressMode::Address);
 }
 
-LocalVar FunctionInfo::NewParameterLocal(ast::Type *type, const std::string &name) {
+auto FunctionInfo::NewParameterLocal(ast::Type *type, const std::string &name) -> LocalVar {
     const LocalVar local = NewLocal(type, name, LocalInfo::Kind::Parameter);
     num_params_++;
     params_size_ = GetFrameSize();
     return local;
 }
 
-LocalVar FunctionInfo::NewLocal(ast::Type *type, const std::string &name) {
+auto FunctionInfo::NewLocal(ast::Type *type, const std::string &name) -> LocalVar {
     if (name.empty()) {
         const auto tmp_name = "tmp" + std::to_string(++num_temps_);
         return NewLocal(type, tmp_name, LocalInfo::Kind::Var);
@@ -67,26 +67,26 @@ LocalVar FunctionInfo::NewLocal(ast::Type *type, const std::string &name) {
     return NewLocal(type, name, LocalInfo::Kind::Var);
 }
 
-LocalVar FunctionInfo::GetReturnValueLocal() const {
+auto FunctionInfo::GetReturnValueLocal() const -> LocalVar {
     // This invocation only makes sense if the function actually returns a value
     NOISEPAGE_ASSERT(!func_type_->GetReturnType()->IsNilType(),
                      "Cannot lookup local slot for function that does not have return value");
     return LocalVar(0u, LocalVar::AddressMode::Address);
 }
 
-const LocalInfo *FunctionInfo::LookupLocalInfoByName(const std::string &name) const {
+auto FunctionInfo::LookupLocalInfoByName(const std::string &name) const -> const LocalInfo * {
     const auto iter = std::find_if(locals_.begin(), locals_.end(), [&](const auto &info) {
         return info.GetName() == name;
     });
     return iter == locals_.end() ? nullptr : &*iter;
 }
 
-LocalVar FunctionInfo::LookupLocal(const std::string &name) const {
+auto FunctionInfo::LookupLocal(const std::string &name) const -> LocalVar {
     const LocalInfo *local_info = LookupLocalInfoByName(name);
     return local_info == nullptr ? LocalVar() : LocalVar(local_info->GetOffset(), LocalVar::AddressMode::Address);
 }
 
-const LocalInfo *FunctionInfo::LookupLocalInfoByOffset(uint32_t offset) const {
+auto FunctionInfo::LookupLocalInfoByOffset(uint32_t offset) const -> const LocalInfo * {
     for (const auto &local_info : GetLocals()) {
         if (local_info.GetOffset() == offset) {
             return &local_info;

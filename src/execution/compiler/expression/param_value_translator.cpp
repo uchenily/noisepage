@@ -13,7 +13,7 @@ ParamValueTranslator::ParamValueTranslator(const parser::ParameterValueExpressio
                                            CompilationContext                     *compilation_context)
     : ExpressionTranslator(expr, compilation_context) {}
 
-ast::Expr *ParamValueTranslator::DeriveValue(WorkContext *ctx, const ColumnValueProvider *provider) const {
+auto ParamValueTranslator::DeriveValue(WorkContext *ctx, const ColumnValueProvider *provider) const -> ast::Expr * {
     auto        *codegen = GetCodeGen();
     auto         param_val = GetExpressionAs<noisepage::parser::ParameterValueExpression>();
     auto         param_idx = param_val.GetValueIdx();

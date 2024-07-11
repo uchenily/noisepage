@@ -10,7 +10,7 @@
 
 namespace noisepage::planner {
 
-std::unique_ptr<CreateIndexPlanNode> CreateIndexPlanNode::Builder::Build() {
+auto CreateIndexPlanNode::Builder::Build() -> std::unique_ptr<CreateIndexPlanNode> {
     return std::unique_ptr<CreateIndexPlanNode>(new CreateIndexPlanNode(std::move(children_),
                                                                         std::move(output_schema_),
                                                                         namespace_oid_,
@@ -33,7 +33,7 @@ CreateIndexPlanNode::CreateIndexPlanNode(std::vector<std::unique_ptr<AbstractPla
     , index_name_(std::move(index_name))
     , schema_(std::move(schema)) {}
 
-common::hash_t CreateIndexPlanNode::Hash() const {
+auto CreateIndexPlanNode::Hash() const -> common::hash_t {
     common::hash_t hash = AbstractPlanNode::Hash();
 
     // Hash namespace oid
@@ -53,7 +53,7 @@ common::hash_t CreateIndexPlanNode::Hash() const {
     return hash;
 }
 
-bool CreateIndexPlanNode::operator==(const AbstractPlanNode &rhs) const {
+auto CreateIndexPlanNode::operator==(const AbstractPlanNode &rhs) const -> bool {
     if (!AbstractPlanNode::operator==(rhs)) {
         return false;
     }
@@ -91,7 +91,7 @@ bool CreateIndexPlanNode::operator==(const AbstractPlanNode &rhs) const {
     return true;
 }
 
-nlohmann::json CreateIndexPlanNode::ToJson() const {
+auto CreateIndexPlanNode::ToJson() const -> nlohmann::json {
     nlohmann::json j = AbstractPlanNode::ToJson();
     j["namespace_oid"] = namespace_oid_;
     j["table_oid"] = table_oid_;
@@ -99,7 +99,8 @@ nlohmann::json CreateIndexPlanNode::ToJson() const {
     return j;
 }
 
-std::vector<std::unique_ptr<parser::AbstractExpression>> CreateIndexPlanNode::FromJson(const nlohmann::json &j) {
+auto CreateIndexPlanNode::FromJson(const nlohmann::json &j)
+    -> std::vector<std::unique_ptr<parser::AbstractExpression>> {
     std::vector<std::unique_ptr<parser::AbstractExpression>> exprs;
     auto                                                     e1 = AbstractPlanNode::FromJson(j);
     exprs.insert(exprs.end(), std::make_move_iterator(e1.begin()), std::make_move_iterator(e1.end()));

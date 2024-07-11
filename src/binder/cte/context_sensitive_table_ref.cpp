@@ -26,21 +26,21 @@ ContextSensitiveTableRef::ContextSensitiveTableRef(common::ManagedPointer<parser
     NOISEPAGE_ASSERT(type == RefType::WRITE, "READ Table References Should Not Define a Scope");
 }
 
-const LexicalScope *ContextSensitiveTableRef::EnclosingScope() const {
+auto ContextSensitiveTableRef::EnclosingScope() const -> const LexicalScope * {
     return enclosing_scope_;
 }
 
-const LexicalScope *ContextSensitiveTableRef::Scope() const {
+auto ContextSensitiveTableRef::Scope() const -> const LexicalScope * {
     NOISEPAGE_ASSERT(type_ == RefType::WRITE, "READ references do not define a scope");
     return scope_;
 }
 
-bool ContextSensitiveTableRef::operator==(const ContextSensitiveTableRef &rhs) const {
+auto ContextSensitiveTableRef::operator==(const ContextSensitiveTableRef &rhs) const -> bool {
     return table_ == rhs.table_ && type_ == rhs.type_ && scope_ == rhs.scope_
            && enclosing_scope_ == rhs.enclosing_scope_;
 }
 
-bool ContextSensitiveTableRef::operator!=(const ContextSensitiveTableRef &rhs) const {
+auto ContextSensitiveTableRef::operator!=(const ContextSensitiveTableRef &rhs) const -> bool {
     return !(*this == rhs);
 }
 

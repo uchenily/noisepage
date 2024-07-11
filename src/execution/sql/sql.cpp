@@ -10,7 +10,7 @@
 namespace noisepage::execution::sql {
 
 // static
-SqlTypeId GetSqlTypeFromInternalType(TypeId type) {
+auto GetSqlTypeFromInternalType(TypeId type) -> SqlTypeId {
     switch (type) {
     case TypeId::Boolean:
         return SqlTypeId::Boolean;
@@ -39,7 +39,7 @@ SqlTypeId GetSqlTypeFromInternalType(TypeId type) {
 }
 
 // static
-std::size_t GetTypeIdSize(TypeId type) {
+auto GetTypeIdSize(TypeId type) -> std::size_t {
     switch (type) {
     case TypeId::Boolean:
         return sizeof(bool);
@@ -72,7 +72,7 @@ std::size_t GetTypeIdSize(TypeId type) {
         UNREACHABLE("Impossible type");
     }
 }
-uint16_t GetSqlTypeIdSize(SqlTypeId type) {
+auto GetSqlTypeIdSize(SqlTypeId type) -> uint16_t {
     switch (type) {
     case SqlTypeId::Boolean:
         return sizeof(bool);
@@ -103,7 +103,7 @@ uint16_t GetSqlTypeIdSize(SqlTypeId type) {
     }
 }
 
-std::size_t GetTypeIdAlignment(TypeId type) {
+auto GetTypeIdAlignment(TypeId type) -> std::size_t {
     switch (type) {
     case TypeId::Boolean:
         return alignof(bool);
@@ -136,7 +136,7 @@ std::size_t GetTypeIdAlignment(TypeId type) {
 }
 
 // static
-bool IsTypeFixedSize(TypeId type) {
+auto IsTypeFixedSize(TypeId type) -> bool {
     switch (type) {
     case TypeId::Boolean:
     case TypeId::TinyInt:
@@ -157,7 +157,7 @@ bool IsTypeFixedSize(TypeId type) {
     }
 }
 
-bool IsTypeIntegral(TypeId type) {
+auto IsTypeIntegral(TypeId type) -> bool {
     switch (type) {
     case TypeId::TinyInt:
     case TypeId::SmallInt:
@@ -179,7 +179,7 @@ bool IsTypeIntegral(TypeId type) {
     }
 }
 
-bool IsTypeFloatingPoint(TypeId type) {
+auto IsTypeFloatingPoint(TypeId type) -> bool {
     switch (type) {
     case TypeId::Float:
     case TypeId::Double:
@@ -202,7 +202,7 @@ bool IsTypeFloatingPoint(TypeId type) {
 }
 
 // static
-bool IsTypeNumeric(TypeId type) {
+auto IsTypeNumeric(TypeId type) -> bool {
     switch (type) {
     case TypeId::Boolean:
     case TypeId::TinyInt:
@@ -225,7 +225,7 @@ bool IsTypeNumeric(TypeId type) {
 }
 
 // static
-std::string TypeIdToString(TypeId type) {
+auto TypeIdToString(TypeId type) -> std::string {
     switch (type) {
     case TypeId::Boolean:
         return "Boolean";
@@ -260,7 +260,7 @@ std::string TypeIdToString(TypeId type) {
 }
 
 // static
-std::string SqlTypeIdToString(SqlTypeId type) {
+auto SqlTypeIdToString(SqlTypeId type) -> std::string {
     switch (type) {
     case SqlTypeId::Boolean:
         return "Boolean";
@@ -288,7 +288,7 @@ std::string SqlTypeIdToString(SqlTypeId type) {
     }
 }
 
-SqlTypeId SqlTypeIdFromString(const std::string &type_string) {
+auto SqlTypeIdFromString(const std::string &type_string) -> SqlTypeId {
     if (type_string == "Invalid") {
         return SqlTypeId::Invalid;
     }
@@ -328,7 +328,7 @@ SqlTypeId SqlTypeIdFromString(const std::string &type_string) {
     UNREACHABLE(("No type conversion for string value " + type_string).c_str());
 }
 
-TypeId GetTypeId(SqlTypeId frontend_type) {
+auto GetTypeId(SqlTypeId frontend_type) -> TypeId {
     execution::sql::TypeId execution_type_id;
 
     switch (frontend_type) {

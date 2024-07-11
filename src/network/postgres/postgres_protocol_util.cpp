@@ -6,7 +6,8 @@
 
 namespace noisepage::network {
 
-execution::sql::SqlTypeId PostgresProtocolUtil::PostgresValueTypeToInternalValueType(const PostgresValueType type) {
+auto PostgresProtocolUtil::PostgresValueTypeToInternalValueType(const PostgresValueType type)
+    -> execution::sql::SqlTypeId {
     switch (type) {
     case PostgresValueType::INVALID:
         return execution::sql::SqlTypeId::Invalid;
@@ -50,7 +51,8 @@ execution::sql::SqlTypeId PostgresProtocolUtil::PostgresValueTypeToInternalValue
     }
 }
 
-PostgresValueType PostgresProtocolUtil::InternalValueTypeToPostgresValueType(const execution::sql::SqlTypeId type) {
+auto PostgresProtocolUtil::InternalValueTypeToPostgresValueType(const execution::sql::SqlTypeId type)
+    -> PostgresValueType {
     switch (type) {
     case execution::sql::SqlTypeId::Invalid:
         return PostgresValueType::INVALID;

@@ -5,10 +5,10 @@
 
 namespace noisepage::optimizer {
 
-double TrivialCostModel::CalculateCost(transaction::TransactionContext *txn,
-                                       catalog::CatalogAccessor        *accessor,
-                                       Memo                            *memo,
-                                       GroupExpression                 *gexpr) {
+auto TrivialCostModel::CalculateCost(transaction::TransactionContext *txn,
+                                     catalog::CatalogAccessor        *accessor,
+                                     Memo                            *memo,
+                                     GroupExpression                 *gexpr) -> double {
     gexpr_ = gexpr;
     memo_ = memo;
     txn_ = txn;

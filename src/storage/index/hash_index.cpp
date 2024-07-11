@@ -11,7 +11,7 @@ namespace noisepage::storage::index {
 
 template <typename KeyType>
 struct HashIndex<KeyType>::TupleSlotHash {
-    std::size_t operator()(const TupleSlot &slot) const {
+    auto operator()(const TupleSlot &slot) const -> std::size_t {
         return XXH3_64bits(reinterpret_cast<const void *>(&slot), sizeof(TupleSlot));
     }
 };

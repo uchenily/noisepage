@@ -155,13 +155,14 @@ void InsertTranslator::GenInserterFree(noisepage::execution::compiler::FunctionB
     builder->Append(GetCodeGen()->MakeStmt(inserter_free));
 }
 
-ast::Expr *InsertTranslator::GetChildOutput(WorkContext *context, uint32_t child_idx, uint32_t attr_idx) const {
+auto InsertTranslator::GetChildOutput(WorkContext *context, uint32_t child_idx, uint32_t attr_idx) const
+    -> ast::Expr * {
     NOISEPAGE_ASSERT(child_idx == 0, "Insert plan can only have one child");
 
     return OperatorTranslator::GetChildOutput(context, child_idx, attr_idx);
 }
 
-ast::Expr *InsertTranslator::GetTableColumn(catalog::col_oid_t col_oid) const {
+auto InsertTranslator::GetTableColumn(catalog::col_oid_t col_oid) const -> ast::Expr * {
     auto column = table_schema_.GetColumn(col_oid);
     auto type = column.Type();
     auto nullable = column.Nullable();
@@ -275,7 +276,7 @@ void InsertTranslator::GenIndexInsert(WorkContext                *context,
     success.EndIf();
 }
 
-std::vector<catalog::col_oid_t> InsertTranslator::AllColOids(const catalog::Schema &table_schema) {
+auto InsertTranslator::AllColOids(const catalog::Schema &table_schema) -> std::vector<catalog::col_oid_t> {
     std::vector<catalog::col_oid_t> oids;
     for (const auto &col : table_schema.GetColumns()) {
         oids.emplace_back(col.Oid());

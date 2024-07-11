@@ -9,7 +9,7 @@
 #include "storage/storage_defs.h"
 
 namespace noisepage::transaction {
-TransactionContext *TransactionManager::BeginTransaction() {
+auto TransactionManager::BeginTransaction() -> TransactionContext * {
     timestamp_t         start_time;
     TransactionContext *result;
 
@@ -100,7 +100,7 @@ void TransactionManager::LogCommit(TransactionContext *const txn,
     txn->redo_buffer_.Finalize(true, txn->GetTransactionPolicy());
 }
 
-timestamp_t TransactionManager::UpdatingCommitCriticalSection(TransactionContext *const txn) {
+auto TransactionManager::UpdatingCommitCriticalSection(TransactionContext *const txn) -> timestamp_t {
     // WARNING: This operation has to happen appear atomic to new transactions:
     // transaction 1        transaction 2
     //   begin
@@ -125,8 +125,8 @@ timestamp_t TransactionManager::UpdatingCommitCriticalSection(TransactionContext
     return commit_time;
 }
 
-timestamp_t
-TransactionManager::Commit(TransactionContext *const txn, transaction::callback_fn callback, void *callback_arg) {
+auto TransactionManager::Commit(TransactionContext *const txn, transaction::callback_fn callback, void *callback_arg)
+    -> timestamp_t {
     timestamp_t result;
     const bool  txn_metrics_enabled
         = common::thread_context.metrics_store_ != nullptr
@@ -227,7 +227,7 @@ void TransactionManager::LogAbort(TransactionContext *const txn) {
     }
 }
 
-timestamp_t TransactionManager::Abort(TransactionContext *const txn) {
+auto TransactionManager::Abort(TransactionContext *const txn) -> timestamp_t {
     // Immediately clear the abort actions stack
     while (!txn->abort_actions_.empty()) {
         NOISEPAGE_ASSERT(deferred_action_manager_ != DISABLED, "No deferred action manager exists to process actions");
@@ -318,7 +318,7 @@ void TransactionManager::GCLastUpdateOnAbort(TransactionContext *const txn) {
     }
 }
 
-TransactionQueue TransactionManager::CompletedTransactionsForGC() {
+auto TransactionManager::CompletedTransactionsForGC() -> TransactionQueue {
     common::SpinLatch::ScopedSpinLatch guard(&timestamp_manager_->curr_running_txns_latch_);
     return std::move(completed_txns_);
 }

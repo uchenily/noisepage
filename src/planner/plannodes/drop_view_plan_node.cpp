@@ -10,7 +10,7 @@
 
 namespace noisepage::planner {
 
-std::unique_ptr<DropViewPlanNode> DropViewPlanNode::Builder::Build() {
+auto DropViewPlanNode::Builder::Build() -> std::unique_ptr<DropViewPlanNode> {
     return std::unique_ptr<DropViewPlanNode>(new DropViewPlanNode(std::move(children_),
                                                                   std::move(output_schema_),
                                                                   database_oid_,
@@ -30,7 +30,7 @@ DropViewPlanNode::DropViewPlanNode(std::vector<std::unique_ptr<AbstractPlanNode>
     , view_oid_(view_oid)
     , if_exists_(if_exists) {}
 
-common::hash_t DropViewPlanNode::Hash() const {
+auto DropViewPlanNode::Hash() const -> common::hash_t {
     common::hash_t hash = AbstractPlanNode::Hash();
 
     // Hash databse_oid
@@ -47,7 +47,7 @@ common::hash_t DropViewPlanNode::Hash() const {
     return hash;
 }
 
-bool DropViewPlanNode::operator==(const AbstractPlanNode &rhs) const {
+auto DropViewPlanNode::operator==(const AbstractPlanNode &rhs) const -> bool {
     if (!AbstractPlanNode::operator==(rhs)) {
         return false;
     }
@@ -72,7 +72,7 @@ bool DropViewPlanNode::operator==(const AbstractPlanNode &rhs) const {
     return true;
 }
 
-nlohmann::json DropViewPlanNode::ToJson() const {
+auto DropViewPlanNode::ToJson() const -> nlohmann::json {
     nlohmann::json j = AbstractPlanNode::ToJson();
     j["database_oid"] = database_oid_;
     j["view_oid"] = view_oid_;
@@ -80,7 +80,7 @@ nlohmann::json DropViewPlanNode::ToJson() const {
     return j;
 }
 
-std::vector<std::unique_ptr<parser::AbstractExpression>> DropViewPlanNode::FromJson(const nlohmann::json &j) {
+auto DropViewPlanNode::FromJson(const nlohmann::json &j) -> std::vector<std::unique_ptr<parser::AbstractExpression>> {
     std::vector<std::unique_ptr<parser::AbstractExpression>> exprs;
     auto                                                     e1 = AbstractPlanNode::FromJson(j);
     exprs.insert(exprs.end(), std::make_move_iterator(e1.begin()), std::make_move_iterator(e1.end()));

@@ -11,7 +11,7 @@
 
 namespace noisepage::planner {
 
-std::unique_ptr<AnalyzePlanNode> AnalyzePlanNode::Builder::Build() {
+auto AnalyzePlanNode::Builder::Build() -> std::unique_ptr<AnalyzePlanNode> {
     return std::unique_ptr<AnalyzePlanNode>(new AnalyzePlanNode(std::move(children_),
                                                                 std::move(output_schema_),
                                                                 database_oid_,
@@ -31,7 +31,7 @@ AnalyzePlanNode::AnalyzePlanNode(std::vector<std::unique_ptr<AbstractPlanNode>> 
     , table_oid_(table_oid)
     , column_oids_(std::move(column_oids)) {}
 
-common::hash_t AnalyzePlanNode::Hash() const {
+auto AnalyzePlanNode::Hash() const -> common::hash_t {
     common::hash_t hash = AbstractPlanNode::Hash();
 
     // Hash database_oid
@@ -46,7 +46,7 @@ common::hash_t AnalyzePlanNode::Hash() const {
     return hash;
 }
 
-bool AnalyzePlanNode::operator==(const AbstractPlanNode &rhs) const {
+auto AnalyzePlanNode::operator==(const AbstractPlanNode &rhs) const -> bool {
     if (!AbstractPlanNode::operator==(rhs)) {
         return false;
     }
@@ -71,7 +71,7 @@ bool AnalyzePlanNode::operator==(const AbstractPlanNode &rhs) const {
     return true;
 }
 
-nlohmann::json AnalyzePlanNode::ToJson() const {
+auto AnalyzePlanNode::ToJson() const -> nlohmann::json {
     nlohmann::json j = AbstractPlanNode::ToJson();
     j["database_oid"] = database_oid_;
     j["table_oid"] = table_oid_;
@@ -79,7 +79,7 @@ nlohmann::json AnalyzePlanNode::ToJson() const {
     return j;
 }
 
-std::vector<std::unique_ptr<parser::AbstractExpression>> AnalyzePlanNode::FromJson(const nlohmann::json &j) {
+auto AnalyzePlanNode::FromJson(const nlohmann::json &j) -> std::vector<std::unique_ptr<parser::AbstractExpression>> {
     std::vector<std::unique_ptr<parser::AbstractExpression>> exprs;
     auto                                                     e1 = AbstractPlanNode::FromJson(j);
     exprs.insert(exprs.end(), std::make_move_iterator(e1.begin()), std::make_move_iterator(e1.end()));

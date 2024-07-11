@@ -166,7 +166,7 @@ void VectorProjection::Hash(Vector *result) const {
     Hash(cols, result);
 }
 
-std::string VectorProjection::ToString() const {
+auto VectorProjection::ToString() const -> std::string {
     std::string result = "VectorProjection(#cols=" + std::to_string(columns_.size()) + "):\n";
     for (auto &col : columns_) {
         result += "- " + col->ToString() + "\n";

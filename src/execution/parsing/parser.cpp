@@ -18,7 +18,7 @@ Parser::Parser(Scanner *scanner, ast::Context *context)
     , node_factory_(context->GetNodeFactory())
     , error_reporter_(context->GetErrorReporter()) {}
 
-ast::AstNode *Parser::Parse() {
+auto Parser::Parse() -> ast::AstNode * {
     util::RegionVector<ast::Decl *> decls(Region());
 
     const SourcePosition &start_pos = scanner_->CurrentPosition();
@@ -42,7 +42,7 @@ void Parser::Sync(const std::unordered_set<Token::Type> &s) {
     }
 }
 
-ast::Expr *Parser::MakeExpr(ast::AstNode *node) {
+auto Parser::MakeExpr(ast::AstNode *node) -> ast::Expr * {
     if (node == nullptr) {
         return nullptr;
     }
@@ -56,7 +56,7 @@ ast::Expr *Parser::MakeExpr(ast::AstNode *node) {
     return nullptr;
 }
 
-ast::Decl *Parser::ParseDecl() {
+auto Parser::ParseDecl() -> ast::Decl * {
     // At the top-level, we only allow structs and functions
     switch (Peek()) {
     case Token::Type::STRUCT: {
@@ -76,7 +76,7 @@ ast::Decl *Parser::ParseDecl() {
     return nullptr;
 }
 
-ast::Decl *Parser::ParseFunctionDecl() {
+auto Parser::ParseFunctionDecl() -> ast::Decl * {
     Expect(Token::Type::FUN);
 
     const SourcePosition &position = scanner_->CurrentPosition();
@@ -95,7 +95,7 @@ ast::Decl *Parser::ParseFunctionDecl() {
     return decl;
 }
 
-ast::Decl *Parser::ParseStructDecl() {
+auto Parser::ParseStructDecl() -> ast::Decl * {
     Expect(Token::Type::STRUCT);
 
     const SourcePosition &position = scanner_->CurrentPosition();
@@ -114,7 +114,7 @@ ast::Decl *Parser::ParseStructDecl() {
     return decl;
 }
 
-ast::Decl *Parser::ParseVariableDecl() {
+auto Parser::ParseVariableDecl() -> ast::Decl * {
     // VariableDecl = 'var' Ident ':' Type [ '=' Expr ] ;
 
     Expect(Token::Type::VAR);
@@ -150,7 +150,7 @@ ast::Decl *Parser::ParseVariableDecl() {
     return decl;
 }
 
-ast::Stmt *Parser::ParseStmt() {
+auto Parser::ParseStmt() -> ast::Stmt * {
     // Statement = Block | ExpressionStmt | ForStmt | IfStmt | ReturnStmt |
     //             SimpleStmt | VariableDecl ;
 
@@ -177,7 +177,7 @@ ast::Stmt *Parser::ParseStmt() {
     }
 }
 
-ast::Stmt *Parser::ParseSimpleStmt() {
+auto Parser::ParseSimpleStmt() -> ast::Stmt * {
     // SimpleStmt = AssignmentStmt | ExpressionStmt ;
     ast::Expr *left = ParseExpr();
 
@@ -190,7 +190,7 @@ ast::Stmt *Parser::ParseSimpleStmt() {
     return node_factory_->NewExpressionStmt(left);
 }
 
-ast::Stmt *Parser::ParseBlockStmt() {
+auto Parser::ParseBlockStmt() -> ast::Stmt * {
     // BlockStmt = '{' { Stmt } '}' ;
 
     // Eat the left brace
@@ -217,34 +217,34 @@ ast::Stmt *Parser::ParseBlockStmt() {
 class Parser::ForHeader {
 public:
     // Header for infinite loops
-    static ForHeader Infinite() {
+    static auto Infinite() -> ForHeader {
         return ForHeader();
     }
 
     // Header for standard for-loops
-    static ForHeader Standard(ast::Stmt *init, ast::Expr *cond, ast::Stmt *next) {
+    static auto Standard(ast::Stmt *init, ast::Expr *cond, ast::Stmt *next) -> ForHeader {
         return ForHeader(init, cond, next, nullptr, nullptr);
     }
 
     // Header for for-in loops
-    static ForHeader ForIn(ast::Expr *target, ast::Expr *iter) {
+    static auto ForIn(ast::Expr *target, ast::Expr *iter) -> ForHeader {
         return ForHeader(nullptr, nullptr, nullptr, target, iter);
     }
 
-    bool IsForIn() const {
+    auto IsForIn() const -> bool {
         return target_ != nullptr && iter_ != nullptr;
     }
 
-    bool IsStandard() const {
+    auto IsStandard() const -> bool {
         return !IsForIn();
     }
 
-    std::tuple<ast::Stmt *, ast::Expr *, ast::Stmt *> GetForElements() const {
+    auto GetForElements() const -> std::tuple<ast::Stmt *, ast::Expr *, ast::Stmt *> {
         NOISEPAGE_ASSERT(IsStandard(), "Loop isn't a standard for-loop");
         return {init_, cond_, next_};
     }
 
-    std::tuple<ast::Expr *, ast::Expr *> GetForInElements() const {
+    auto GetForInElements() const -> std::tuple<ast::Expr *, ast::Expr *> {
         NOISEPAGE_ASSERT(IsForIn(), "Loop isn't a for-in");
         return {target_, iter_};
     }
@@ -269,7 +269,7 @@ private:
     ast::Expr *iter_;
 };
 
-Parser::ForHeader Parser::ParseForHeader() {
+auto Parser::ParseForHeader() -> Parser::ForHeader {
     // ForHeader = [ '(' ForWhile ')' | '(' ForReg ')' | '(' ForIn ')' ] .
     // ForWhile = Expr .
     // ForReg = [ Stmt ] ';' [ Expr ] ';' [ Stmt ] .
@@ -316,7 +316,7 @@ Parser::ForHeader Parser::ParseForHeader() {
     return ForHeader::Standard(init, MakeExpr(cond), next);
 }
 
-ast::Stmt *Parser::ParseForStmt() {
+auto Parser::ParseForStmt() -> ast::Stmt * {
     // ForStmt = 'for' ForHeader Block ;
     Expect(Token::Type::FOR);
 
@@ -338,7 +338,7 @@ ast::Stmt *Parser::ParseForStmt() {
     return node_factory_->NewForInStmt(position, target, iter, body);
 }
 
-ast::Stmt *Parser::ParseIfStmt() {
+auto Parser::ParseIfStmt() -> ast::Stmt * {
     // IfStmt = 'if' '(' Expr ')' Block [ 'else' ( IfStmt | Block ) ] ;
 
     Expect(Token::Type::IF);
@@ -366,7 +366,7 @@ ast::Stmt *Parser::ParseIfStmt() {
     return node_factory_->NewIfStmt(position, cond, then_stmt, else_stmt);
 }
 
-ast::Stmt *Parser::ParseReturnStmt() {
+auto Parser::ParseReturnStmt() -> ast::Stmt * {
     Expect(Token::Type::RETURN);
 
     const SourcePosition &position = scanner_->CurrentPosition();
@@ -379,11 +379,11 @@ ast::Stmt *Parser::ParseReturnStmt() {
     return node_factory_->NewReturnStmt(position, ret);
 }
 
-ast::Expr *Parser::ParseExpr() {
+auto Parser::ParseExpr() -> ast::Expr * {
     return ParseBinaryOpExpr(Token::LowestPrecedence() + 1);
 }
 
-ast::Expr *Parser::ParseBinaryOpExpr(uint32_t min_prec) {
+auto Parser::ParseBinaryOpExpr(uint32_t min_prec) -> ast::Expr * {
     NOISEPAGE_ASSERT(min_prec > 0, "The minimum precedence cannot be 0");
 
     ast::Expr *left = ParseUnaryOpExpr();
@@ -414,7 +414,7 @@ ast::Expr *Parser::ParseBinaryOpExpr(uint32_t min_prec) {
     return left;
 }
 
-ast::Expr *Parser::ParseUnaryOpExpr() {
+auto Parser::ParseUnaryOpExpr() -> ast::Expr * {
     // UnaryOpExpr = PrimaryExpr | unary_op UnaryOpExpr ;
     // unary_op = '&' | '!' | '~' | '^' | '-' | '*'
 
@@ -438,7 +438,7 @@ ast::Expr *Parser::ParseUnaryOpExpr() {
     return ParsePrimaryExpr();
 }
 
-ast::Expr *Parser::ParsePrimaryExpr() {
+auto Parser::ParsePrimaryExpr() -> ast::Expr * {
     // PrimaryExpr = Operand | CallExpr | MemberExpr | IndexExpr ;
     // CallExpr = PrimaryExpr '(' (Expr)* ') ;
     // MemberExpr = PrimaryExpr '.' Expr
@@ -488,7 +488,7 @@ ast::Expr *Parser::ParsePrimaryExpr() {
     return result;
 }
 
-ast::Expr *Parser::ParseOperand() {
+auto Parser::ParseOperand() -> ast::Expr * {
     // Operand = Literal | OperandName | '(' Expr ')'
     // Literal = int_lit | float_lit | 'nil' | 'true' | 'false' | FunctionLiteral
     // OperandName = identifier
@@ -562,7 +562,7 @@ ast::Expr *Parser::ParseOperand() {
     return node_factory_->NewBadExpr(scanner_->CurrentPosition());
 }
 
-ast::Expr *Parser::ParseFunctionLitExpr() {
+auto Parser::ParseFunctionLitExpr() -> ast::Expr * {
     // FunctionLiteral = Signature FunctionBody ;
     //
     // FunctionBody = Block ;
@@ -574,7 +574,7 @@ ast::Expr *Parser::ParseFunctionLitExpr() {
     return node_factory_->NewFunctionLitExpr(func_type, body);
 }
 
-ast::Expr *Parser::ParseType() {
+auto Parser::ParseType() -> ast::Expr * {
     switch (Peek()) {
     case Token::Type::NIL:
     case Token::Type::IDENTIFIER: {
@@ -608,7 +608,7 @@ ast::Expr *Parser::ParseType() {
     return nullptr;
 }
 
-ast::Expr *Parser::ParseFunctionType() {
+auto Parser::ParseFunctionType() -> ast::Expr * {
     // FuncType = '(' { ParameterList } ')' '->' Type ;
     // ParameterList = { Ident ':' } Type ;
 
@@ -653,7 +653,7 @@ ast::Expr *Parser::ParseFunctionType() {
     return node_factory_->NewFunctionType(position, std::move(params), ret);
 }
 
-ast::Expr *Parser::ParsePointerType() {
+auto Parser::ParsePointerType() -> ast::Expr * {
     // PointerTypeRepr = '*' Type ;
 
     const SourcePosition &position = scanner_->CurrentPosition();
@@ -665,7 +665,7 @@ ast::Expr *Parser::ParsePointerType() {
     return node_factory_->NewPointerType(position, base);
 }
 
-ast::Expr *Parser::ParseArrayType() {
+auto Parser::ParseArrayType() -> ast::Expr * {
     // ArrayTypeRepr = '[' Length ']' Type ;
     // Length = [ '*' | Expr ] ;
 
@@ -691,7 +691,7 @@ ast::Expr *Parser::ParseArrayType() {
     return node_factory_->NewArrayType(position, len, elem_type);
 }
 
-ast::Expr *Parser::ParseStructType() {
+auto Parser::ParseStructType() -> ast::Expr * {
     // StructType = '{' { Ident ':' Type } '}' ;
 
     const SourcePosition &position = scanner_->CurrentPosition();
@@ -723,7 +723,7 @@ ast::Expr *Parser::ParseStructType() {
     return node_factory_->NewStructType(position, std::move(fields));
 }
 
-ast::Expr *Parser::ParseMapType() {
+auto Parser::ParseMapType() -> ast::Expr * {
     // MapType = 'map' '[' Expr ']' Expr ;
 
     const SourcePosition &position = scanner_->CurrentPosition();

@@ -18,7 +18,7 @@ void PropertySet::AddProperty(Property *property) {
     properties_.insert(iter, property);
 }
 
-const Property *PropertySet::GetPropertyOfType(PropertyType type) const {
+auto PropertySet::GetPropertyOfType(PropertyType type) const -> const Property * {
     for (auto &prop : properties_) {
         if (prop->Type() == type) {
             return prop;
@@ -29,7 +29,7 @@ const Property *PropertySet::GetPropertyOfType(PropertyType type) const {
     return nullptr;
 }
 
-bool PropertySet::HasProperty(const Property &r_property) const {
+auto PropertySet::HasProperty(const Property &r_property) const -> bool {
     for (auto property : properties_) {
         if (*property >= r_property) {
             return true;
@@ -39,7 +39,7 @@ bool PropertySet::HasProperty(const Property &r_property) const {
     return false;
 }
 
-bool PropertySet::operator>=(const PropertySet &r) const {
+auto PropertySet::operator>=(const PropertySet &r) const -> bool {
     for (auto r_property : r.properties_) {
         if (!HasProperty(*r_property)) {
             return false;
@@ -48,11 +48,11 @@ bool PropertySet::operator>=(const PropertySet &r) const {
     return true;
 }
 
-bool PropertySet::operator==(const PropertySet &r) const {
+auto PropertySet::operator==(const PropertySet &r) const -> bool {
     return *this >= r && r >= *this;
 }
 
-common::hash_t PropertySet::Hash() const {
+auto PropertySet::Hash() const -> common::hash_t {
     size_t         prop_size = properties_.size();
     common::hash_t hash = common::HashUtil::Hash<size_t>(prop_size);
     for (auto &prop : properties_) {

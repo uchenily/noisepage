@@ -92,7 +92,7 @@ void ThreadStateContainer::Reset(const std::size_t                     state_siz
     ctx_ = ctx;
 }
 
-byte *ThreadStateContainer::AccessCurrentThreadState() {
+auto ThreadStateContainer::AccessCurrentThreadState() -> byte * {
     common::SpinLatch::ScopedSpinLatch guard(&impl_->states_latch_);
     auto                              &tls_handle = impl_->states_[std::this_thread::get_id()];
     if (!tls_handle) {
@@ -136,7 +136,7 @@ void ThreadStateContainer::IterateStatesParallel(void *const ctx, ThreadStateCon
                            }); // NOLINT
 }
 
-uint32_t ThreadStateContainer::GetThreadStateCount() const {
+auto ThreadStateContainer::GetThreadStateCount() const -> uint32_t {
     return impl_->states_.size();
 }
 

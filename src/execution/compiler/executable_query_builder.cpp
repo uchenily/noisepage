@@ -38,7 +38,7 @@ namespace {
             module_ = std::move(module);
         }
 
-        std::unique_ptr<vm::Module> ReleaseModule() {
+        auto ReleaseModule() -> std::unique_ptr<vm::Module> {
             return std::move(module_);
         }
 
@@ -48,8 +48,8 @@ namespace {
 
 } // namespace
 
-std::unique_ptr<ExecutableQuery::Fragment>
-ExecutableQueryFragmentBuilder::Compile(const execution::compiler::CompilerSettings &settings) {
+auto ExecutableQueryFragmentBuilder::Compile(const execution::compiler::CompilerSettings &settings)
+    -> std::unique_ptr<ExecutableQuery::Fragment> {
     // Build up the declaration list for the file.
     util::RegionVector<ast::Decl *> decls(ctx_->GetRegion());
     decls.reserve(structs_.size() + functions_.size());

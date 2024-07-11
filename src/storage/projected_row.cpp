@@ -11,7 +11,7 @@
 #include "storage/block_layout.h"
 
 namespace noisepage::storage {
-ProjectedRow *ProjectedRow::CopyProjectedRowLayout(void *head, const ProjectedRow &other) {
+auto ProjectedRow::CopyProjectedRowLayout(void *head, const ProjectedRow &other) -> ProjectedRow * {
     auto *result = reinterpret_cast<ProjectedRow *>(head);
     auto  header_size = reinterpret_cast<uintptr_t>(&other.Bitmap()) - reinterpret_cast<uintptr_t>(&other);
     std::memcpy(reinterpret_cast<void *>(result), &other, header_size);
@@ -52,7 +52,7 @@ ProjectedRowInitializer::ProjectedRowInitializer(const std::vector<uint16_t> &at
     }
 }
 
-ProjectedRow *ProjectedRowInitializer::InitializeRow(void *const head) const {
+auto ProjectedRowInitializer::InitializeRow(void *const head) const -> ProjectedRow * {
     NOISEPAGE_ASSERT(reinterpret_cast<uintptr_t>(head) % sizeof(uint64_t) == 0,
                      "start of ProjectedRow needs to be aligned to 8 bytes to"
                      "ensure correctness of alignment of its members");
@@ -69,7 +69,8 @@ ProjectedRow *ProjectedRowInitializer::InitializeRow(void *const head) const {
     return result;
 }
 
-ProjectedRowInitializer ProjectedRowInitializer::Create(const BlockLayout &layout, std::vector<col_id_t> col_ids) {
+auto ProjectedRowInitializer::Create(const BlockLayout &layout, std::vector<col_id_t> col_ids)
+    -> ProjectedRowInitializer {
     NOISEPAGE_ASSERT(col_ids.size() < layout.NumColumns(),
                      "ProjectedRow should have fewer columns than the table (can't read version vector)");
     // Sort the projection list for optimal space utilization and delta application performance
@@ -84,8 +85,8 @@ ProjectedRowInitializer ProjectedRowInitializer::Create(const BlockLayout &layou
     return ProjectedRowInitializer(attr_sizes, std::move(col_ids));
 }
 
-ProjectedRowInitializer ProjectedRowInitializer::Create(std::vector<uint16_t>        real_attr_sizes,
-                                                        const std::vector<uint16_t> &pr_offsets) {
+auto ProjectedRowInitializer::Create(std::vector<uint16_t> real_attr_sizes, const std::vector<uint16_t> &pr_offsets)
+    -> ProjectedRowInitializer {
     std::sort(real_attr_sizes.begin(), real_attr_sizes.end(), std::greater<>());
     std::vector<col_id_t> col_ids;
     col_ids.reserve(pr_offsets.size());
@@ -95,8 +96,8 @@ ProjectedRowInitializer ProjectedRowInitializer::Create(std::vector<uint16_t>   
     return ProjectedRowInitializer(real_attr_sizes, col_ids);
 }
 
-ProjectedRowInitializer ProjectedRowInitializer::Create(const std::vector<uint16_t> &real_attr_sizes,
-                                                        const std::vector<col_id_t> &col_ids) {
+auto ProjectedRowInitializer::Create(const std::vector<uint16_t> &real_attr_sizes, const std::vector<col_id_t> &col_ids)
+    -> ProjectedRowInitializer {
     return ProjectedRowInitializer(real_attr_sizes, col_ids);
 }
 

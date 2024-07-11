@@ -60,8 +60,8 @@
 
 namespace noisepage::selfdriving {
 
-size_t OperatingUnitRecorder::DeriveIndexBuildThreads(const catalog::IndexSchema &schema,
-                                                      catalog::table_oid_t        tbl_oid) {
+auto OperatingUnitRecorder::DeriveIndexBuildThreads(const catalog::IndexSchema &schema, catalog::table_oid_t tbl_oid)
+    -> size_t {
     size_t num_threads = 1;
     auto  &options = schema.GetIndexOptions().GetOptions();
     if (options.find(catalog::IndexOptions::Knob::BUILD_THREADS) != options.end()) {
@@ -76,7 +76,8 @@ size_t OperatingUnitRecorder::DeriveIndexBuildThreads(const catalog::IndexSchema
     return std::min(num_tasks, num_threads);
 }
 
-std::pair<size_t, size_t> OperatingUnitRecorder::DeriveIndexSpecificFeatures(const catalog::IndexSchema &schema) {
+auto OperatingUnitRecorder::DeriveIndexSpecificFeatures(const catalog::IndexSchema &schema)
+    -> std::pair<size_t, size_t> {
     if (schema.Type() != storage::index::IndexType::BPLUSTREE) {
         return std::make_pair(0, 0);
     }
@@ -151,10 +152,10 @@ void OperatingUnitRecorder::RecordIndexOperations(const std::vector<catalog::ind
     }
 }
 
-double OperatingUnitRecorder::ComputeMemoryScaleFactor(execution::ast::StructDecl *decl,
-                                                       size_t                      total_offset,
-                                                       size_t                      key_size,
-                                                       size_t                      ref_offset) {
+auto OperatingUnitRecorder::ComputeMemoryScaleFactor(execution::ast::StructDecl *decl,
+                                                     size_t                      total_offset,
+                                                     size_t                      key_size,
+                                                     size_t                      ref_offset) -> double {
     auto *struct_type = reinterpret_cast<execution::ast::StructTypeRepr *>(decl->TypeRepr());
     auto &fields = struct_type->Fields();
 
@@ -191,9 +192,8 @@ void OperatingUnitRecorder::AdjustKeyWithType(execution::sql::SqlTypeId type, si
     }
 }
 
-size_t
-OperatingUnitRecorder::ComputeKeySize(const std::vector<common::ManagedPointer<parser::AbstractExpression>> &exprs,
-                                      size_t                                                                *num_key) {
+auto OperatingUnitRecorder::ComputeKeySize(const std::vector<common::ManagedPointer<parser::AbstractExpression>> &exprs,
+                                           size_t *num_key) -> size_t {
     size_t key_size = 0;
     for (auto &expr : exprs) {
         AdjustKeyWithType(expr->GetReturnValueType(), &key_size, num_key);
@@ -205,7 +205,8 @@ OperatingUnitRecorder::ComputeKeySize(const std::vector<common::ManagedPointer<p
     return key_size;
 }
 
-size_t OperatingUnitRecorder::ComputeKeySizeOutputSchema(const planner::AbstractPlanNode *plan, size_t *num_key) {
+auto OperatingUnitRecorder::ComputeKeySizeOutputSchema(const planner::AbstractPlanNode *plan, size_t *num_key)
+    -> size_t {
     size_t key_size = 0;
     for (auto &col : plan->GetOutputSchema()->GetColumns()) {
         AdjustKeyWithType(col.GetType(), &key_size, num_key);
@@ -214,7 +215,7 @@ size_t OperatingUnitRecorder::ComputeKeySizeOutputSchema(const planner::Abstract
     return key_size;
 }
 
-size_t OperatingUnitRecorder::ComputeKeySize(catalog::table_oid_t tbl_oid, size_t *num_key) {
+auto OperatingUnitRecorder::ComputeKeySize(catalog::table_oid_t tbl_oid, size_t *num_key) -> size_t {
     size_t key_size = 0;
     auto  &schema = accessor_->GetSchema(tbl_oid);
     for (auto &col : schema.GetColumns()) {
@@ -227,9 +228,9 @@ size_t OperatingUnitRecorder::ComputeKeySize(catalog::table_oid_t tbl_oid, size_
     return key_size;
 }
 
-size_t OperatingUnitRecorder::ComputeKeySize(catalog::table_oid_t                   tbl_oid,
-                                             const std::vector<catalog::col_oid_t> &cols,
-                                             size_t                                *num_key) {
+auto OperatingUnitRecorder::ComputeKeySize(catalog::table_oid_t                   tbl_oid,
+                                           const std::vector<catalog::col_oid_t> &cols,
+                                           size_t                                *num_key) -> size_t {
     size_t key_size = 0;
     auto  &schema = accessor_->GetSchema(tbl_oid);
     for (auto &oid : cols) {
@@ -243,10 +244,10 @@ size_t OperatingUnitRecorder::ComputeKeySize(catalog::table_oid_t               
     return key_size;
 }
 
-size_t OperatingUnitRecorder::ComputeKeySize(common::ManagedPointer<const catalog::IndexSchema> schema,
-                                             bool                                               restrict_cols,
-                                             const std::vector<catalog::indexkeycol_oid_t>     &cols,
-                                             size_t                                            *num_key) {
+auto OperatingUnitRecorder::ComputeKeySize(common::ManagedPointer<const catalog::IndexSchema> schema,
+                                           bool                                               restrict_cols,
+                                           const std::vector<catalog::indexkeycol_oid_t>     &cols,
+                                           size_t                                            *num_key) -> size_t {
     std::unordered_set<catalog::indexkeycol_oid_t> kcols;
     for (auto &col : cols) {
         kcols.insert(col);
@@ -262,9 +263,9 @@ size_t OperatingUnitRecorder::ComputeKeySize(common::ManagedPointer<const catalo
     return key_size;
 }
 
-size_t OperatingUnitRecorder::ComputeKeySize(catalog::index_oid_t                           idx_oid,
-                                             const std::vector<catalog::indexkeycol_oid_t> &cols,
-                                             size_t                                        *num_key) {
+auto OperatingUnitRecorder::ComputeKeySize(catalog::index_oid_t                           idx_oid,
+                                           const std::vector<catalog::indexkeycol_oid_t> &cols,
+                                           size_t                                        *num_key) -> size_t {
     auto &schema = accessor_->GetIndexSchema(idx_oid);
     return ComputeKeySize(common::ManagedPointer(&schema), true, cols, num_key);
 }
@@ -969,8 +970,8 @@ void OperatingUnitRecorder::RecordAggregateTranslator(common::ManagedPointer<Tra
     }
 }
 
-ExecutionOperatingUnitFeatureVector
-OperatingUnitRecorder::RecordTranslators(const std::vector<execution::compiler::OperatorTranslator *> &translators) {
+auto OperatingUnitRecorder::RecordTranslators(const std::vector<execution::compiler::OperatorTranslator *> &translators)
+    -> ExecutionOperatingUnitFeatureVector {
     pipeline_features_ = {};
     for (const auto &translator : translators) {
         plan_feature_type_ = translator->GetFeatureType();

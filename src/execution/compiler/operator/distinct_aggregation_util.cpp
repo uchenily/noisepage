@@ -15,10 +15,10 @@ DistinctAggregationFilter::DistinctAggregationFilter(size_t                     
     ht_ = ctx->GetQueryState()->DeclareStateEntry(codegen, "hashTable" + std::to_string(agg_term_idx), ht_type);
 }
 
-ast::StructDecl *
-DistinctAggregationFilter::GenerateKeyStruct(CodeGen                                 *codegen,
-                                             const planner::AggregateTerm            &agg_term,
-                                             const std::vector<planner::GroupByTerm> &group_bys) const {
+auto DistinctAggregationFilter::GenerateKeyStruct(CodeGen                                 *codegen,
+                                                  const planner::AggregateTerm            &agg_term,
+                                                  const std::vector<planner::GroupByTerm> &group_bys) const
+    -> ast::StructDecl * {
     auto fields = codegen->MakeEmptyFieldList();
     fields.reserve(1 + group_bys.size());
 
@@ -38,9 +38,9 @@ DistinctAggregationFilter::GenerateKeyStruct(CodeGen                            
     return codegen->DeclareStruct(key_type_, std::move(fields));
 }
 
-ast::FunctionDecl *
-DistinctAggregationFilter::GenerateDistinctCheckFunction(CodeGen                                 *codegen,
-                                                         const std::vector<planner::GroupByTerm> &group_bys) const {
+auto DistinctAggregationFilter::GenerateDistinctCheckFunction(CodeGen                                 *codegen,
+                                                              const std::vector<planner::GroupByTerm> &group_bys) const
+    -> ast::FunctionDecl * {
     // Payload in the hash table
     auto payload = codegen->MakeIdentifier("payload");
 
@@ -114,18 +114,18 @@ void DistinctAggregationFilter::AggregateDistinct(CodeGen                       
     check_new_key.EndIf();
 }
 
-ast::Expr *DistinctAggregationFilter::GetAggregateValue(CodeGen *codegen, ast::Expr *row) const {
+auto DistinctAggregationFilter::GetAggregateValue(CodeGen *codegen, ast::Expr *row) const -> ast::Expr * {
     auto member = codegen->MakeIdentifier(AGG_VALUE_NAME);
     return codegen->AccessStructMember(row, member);
 }
 
-ast::Expr *DistinctAggregationFilter::GetGroupByValue(CodeGen *codegen, ast::Expr *row, uint32_t idx) const {
+auto DistinctAggregationFilter::GetGroupByValue(CodeGen *codegen, ast::Expr *row, uint32_t idx) const -> ast::Expr * {
     auto member = codegen->MakeIdentifier(GROUPBY_VALUE_NAME + std::to_string(idx));
     return codegen->AccessStructMember(row, member);
 }
 
-ast::Identifier
-DistinctAggregationFilter::ComputeHash(CodeGen *codegen, FunctionBuilder *function, ast::Identifier row) const {
+auto DistinctAggregationFilter::ComputeHash(CodeGen *codegen, FunctionBuilder *function, ast::Identifier row) const
+    -> ast::Identifier {
     std::vector<ast::Expr *> keys;
     // Hash the AGG value
     keys.push_back(GetAggregateValue(codegen, codegen->MakeExpr(row)));
@@ -140,10 +140,10 @@ DistinctAggregationFilter::ComputeHash(CodeGen *codegen, FunctionBuilder *functi
     return hash_val;
 }
 
-ast::Identifier DistinctAggregationFilter::FillLookupKey(CodeGen                        *codegen,
-                                                         FunctionBuilder                *function,
-                                                         ast::Expr                      *agg_val,
-                                                         const std::vector<ast::Expr *> &group_bys) const {
+auto DistinctAggregationFilter::FillLookupKey(CodeGen                        *codegen,
+                                              FunctionBuilder                *function,
+                                              ast::Expr                      *agg_val,
+                                              const std::vector<ast::Expr *> &group_bys) const -> ast::Identifier {
     auto lookup_key = codegen->MakeFreshIdentifier("lookupKey");
     function->Append(codegen->DeclareVarNoInit(lookup_key, codegen->MakeExpr(key_type_)));
 

@@ -114,7 +114,7 @@ void PrimaryReplicationManager::NotifyReplicasOfOAT(transaction::timestamp_t old
     }
 }
 
-record_batch_id_t PrimaryReplicationManager::GetNextBatchId() {
+auto PrimaryReplicationManager::GetNextBatchId() -> record_batch_id_t {
     record_batch_id_t next_batch_id = next_batch_id_++;
     if (next_batch_id_ == INVALID_RECORD_BATCH_ID) {
         next_batch_id_++;

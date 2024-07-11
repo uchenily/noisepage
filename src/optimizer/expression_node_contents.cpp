@@ -14,8 +14,8 @@
 
 namespace noisepage::optimizer {
 
-common::ManagedPointer<parser::AbstractExpression>
-ExpressionNodeContents::CopyWithChildren(std::vector<std::unique_ptr<parser::AbstractExpression>> children) {
+auto ExpressionNodeContents::CopyWithChildren(std::vector<std::unique_ptr<parser::AbstractExpression>> children)
+    -> common::ManagedPointer<parser::AbstractExpression> {
     common::ManagedPointer<parser::AbstractExpression> result;
     auto                                               type = GetExpType();
     switch (type) {

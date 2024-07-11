@@ -11,7 +11,7 @@
 
 namespace noisepage::selfdriving {
 
-std::pair<uint64_t, uint64_t> Forecaster::ComputeTimestampDataRange(uint64_t now, bool train) {
+auto Forecaster::ComputeTimestampDataRange(uint64_t now, bool train) -> std::pair<uint64_t, uint64_t> {
     // Evaluation length is sequence length + 2 horizons
     uint64_t eval_length = sequence_length_ + 2 * horizon_length_;
 
@@ -70,10 +70,11 @@ void Forecaster::PerformTraining() {
     }
 }
 
-std::pair<WorkloadMetadata, bool> Forecaster::RetrieveWorkloadMetadata(
+auto Forecaster::RetrieveWorkloadMetadata(
     std::pair<uint64_t, uint64_t>                                                                bounds,
     const std::unordered_map<execution::query_id_t, metrics::QueryTraceMetadata::QueryMetadata> &out_metadata,
-    const std::unordered_map<execution::query_id_t, std::vector<std::string>>                   &out_params) {
+    const std::unordered_map<execution::query_id_t, std::vector<std::string>>                   &out_params)
+    -> std::pair<WorkloadMetadata, bool> {
     // Initialize the workload metadata
     WorkloadMetadata metadata;
 
@@ -185,8 +186,8 @@ std::pair<WorkloadMetadata, bool> Forecaster::RetrieveWorkloadMetadata(
     return std::make_pair(std::move(metadata), result);
 }
 
-std::unordered_map<int64_t, std::vector<double>> Forecaster::GetSegmentInformation(std::pair<uint64_t, uint64_t> bounds,
-                                                                                   bool *success) {
+auto Forecaster::GetSegmentInformation(std::pair<uint64_t, uint64_t> bounds, bool *success)
+    -> std::unordered_map<int64_t, std::vector<double>> {
     NOISEPAGE_ASSERT(task_manager_, "GetSegmentInformation() requires task manager");
     uint64_t                                         low_timestamp = bounds.first;
     uint64_t                                         segment_number = 0;
@@ -251,7 +252,7 @@ void Forecaster::RecordWorkloadForecastPrediction(uint64_t                      
     util::SelfDrivingRecordingUtil::RecordForecastQueryFrequencies(timestamp, metadata, prediction, task_manager_);
 }
 
-std::unique_ptr<selfdriving::WorkloadForecast> Forecaster::LoadWorkloadForecast(WorkloadForecastInitMode mode) {
+auto Forecaster::LoadWorkloadForecast(WorkloadForecastInitMode mode) -> std::unique_ptr<selfdriving::WorkloadForecast> {
     // Metrics thread is suspended at this point
     bool infer_from_internal = mode == WorkloadForecastInitMode::INTERNAL_TABLES_WITH_INFERENCE;
     bool infer_from_disk = mode == WorkloadForecastInitMode::DISK_WITH_INFERENCE;

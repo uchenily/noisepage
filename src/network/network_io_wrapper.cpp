@@ -19,7 +19,7 @@ NetworkIoWrapper::NetworkIoWrapper(const int sock_fd)
     RestartState();
 }
 
-Transition NetworkIoWrapper::FlushAllWrites() {
+auto NetworkIoWrapper::FlushAllWrites() -> Transition {
     for (auto flush_head = out_->FlushHead(); flush_head != nullptr; out_->MarkHeadFlushed()) {
         const auto result = FlushWriteBuffer(flush_head);
         if (result != Transition::PROCEED) {
@@ -31,7 +31,7 @@ Transition NetworkIoWrapper::FlushAllWrites() {
     return Transition::PROCEED;
 }
 
-Transition NetworkIoWrapper::Close() {
+auto NetworkIoWrapper::Close() -> Transition {
     TerrierClose(sock_fd_);
     return Transition::PROCEED;
 }
@@ -40,7 +40,7 @@ void NetworkIoWrapper::Restart() {
     RestartState();
 }
 
-Transition NetworkIoWrapper::FillReadBuffer() {
+auto NetworkIoWrapper::FillReadBuffer() -> Transition {
     if (!in_->HasMore()) {
         in_->Reset();
     }
@@ -79,11 +79,11 @@ Transition NetworkIoWrapper::FillReadBuffer() {
     return result;
 }
 
-bool NetworkIoWrapper::ShouldFlush() {
+auto NetworkIoWrapper::ShouldFlush() -> bool {
     return out_->ShouldFlush();
 }
 
-Transition NetworkIoWrapper::FlushWriteBuffer(const common::ManagedPointer<WriteBuffer> wbuf) {
+auto NetworkIoWrapper::FlushWriteBuffer(const common::ManagedPointer<WriteBuffer> wbuf) -> Transition {
     while (wbuf->HasMore()) {
         auto bytes_written = wbuf->WriteOutTo(sock_fd_);
         if (bytes_written < 0) {

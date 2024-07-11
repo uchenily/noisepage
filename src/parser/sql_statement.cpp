@@ -5,7 +5,7 @@
 
 namespace noisepage::parser {
 
-nlohmann::json TableInfo::ToJson() const {
+auto TableInfo::ToJson() const -> nlohmann::json {
     nlohmann::json j;
     j["table_name"] = table_name_;
     j["namespace_name"] = namespace_name_;
@@ -13,7 +13,7 @@ nlohmann::json TableInfo::ToJson() const {
     return j;
 }
 
-std::vector<std::unique_ptr<AbstractExpression>> TableInfo::FromJson(const nlohmann::json &j) {
+auto TableInfo::FromJson(const nlohmann::json &j) -> std::vector<std::unique_ptr<AbstractExpression>> {
     std::vector<std::unique_ptr<AbstractExpression>> exprs;
     table_name_ = j.at("table_name").get<std::string>();
     namespace_name_ = j.at("namespace_name").get<std::string>();
@@ -21,13 +21,13 @@ std::vector<std::unique_ptr<AbstractExpression>> TableInfo::FromJson(const nlohm
     return exprs;
 }
 
-nlohmann::json SQLStatement::ToJson() const {
+auto SQLStatement::ToJson() const -> nlohmann::json {
     nlohmann::json j;
     j["stmt_type"] = stmt_type_;
     return j;
 }
 
-std::vector<std::unique_ptr<parser::AbstractExpression>> SQLStatement::FromJson(const nlohmann::json &j) {
+auto SQLStatement::FromJson(const nlohmann::json &j) -> std::vector<std::unique_ptr<parser::AbstractExpression>> {
     std::vector<std::unique_ptr<parser::AbstractExpression>> exprs;
     stmt_type_ = j.at("stmt_type").get<StatementType>();
     return exprs;

@@ -9,7 +9,7 @@
 
 namespace noisepage::planner {
 
-std::unique_ptr<AggregatePlanNode> AggregatePlanNode::Builder::Build() {
+auto AggregatePlanNode::Builder::Build() -> std::unique_ptr<AggregatePlanNode> {
     return std::unique_ptr<AggregatePlanNode>(new AggregatePlanNode(std::move(children_),
                                                                     std::move(output_schema_),
                                                                     std::move(groupby_terms_),
@@ -32,7 +32,7 @@ AggregatePlanNode::AggregatePlanNode(std::vector<std::unique_ptr<AbstractPlanNod
     , aggregate_terms_(std::move(aggregate_terms))
     , aggregate_strategy_(aggregate_strategy) {}
 
-common::hash_t AggregatePlanNode::Hash() const {
+auto AggregatePlanNode::Hash() const -> common::hash_t {
     common::hash_t hash = AbstractPlanNode::Hash();
 
     // Group By Terms
@@ -56,7 +56,7 @@ common::hash_t AggregatePlanNode::Hash() const {
     return hash;
 }
 
-bool AggregatePlanNode::operator==(const AbstractPlanNode &rhs) const {
+auto AggregatePlanNode::operator==(const AbstractPlanNode &rhs) const -> bool {
     if (!AbstractPlanNode::operator==(rhs)) {
         return false;
     }
@@ -106,7 +106,7 @@ bool AggregatePlanNode::operator==(const AbstractPlanNode &rhs) const {
     return aggregate_strategy_ == other.aggregate_strategy_;
 }
 
-nlohmann::json AggregatePlanNode::ToJson() const {
+auto AggregatePlanNode::ToJson() const -> nlohmann::json {
     nlohmann::json j = AbstractPlanNode::ToJson();
     if (having_clause_predicate_) {
         j["having_clause_predicate"] = having_clause_predicate_->ToJson();
@@ -118,7 +118,7 @@ nlohmann::json AggregatePlanNode::ToJson() const {
     return j;
 }
 
-std::vector<std::unique_ptr<parser::AbstractExpression>> AggregatePlanNode::FromJson(const nlohmann::json &j) {
+auto AggregatePlanNode::FromJson(const nlohmann::json &j) -> std::vector<std::unique_ptr<parser::AbstractExpression>> {
     std::vector<std::unique_ptr<parser::AbstractExpression>> exprs;
     auto                                                     e1 = AbstractPlanNode::FromJson(j);
     exprs.insert(exprs.end(), std::make_move_iterator(e1.begin()), std::make_move_iterator(e1.end()));
@@ -159,13 +159,13 @@ std::vector<std::unique_ptr<parser::AbstractExpression>> AggregatePlanNode::From
     return exprs;
 }
 
-bool AggregatePlanNode::RequiresCleanup() const {
+auto AggregatePlanNode::RequiresCleanup() const -> bool {
     return std::any_of(aggregate_terms_.begin(), aggregate_terms_.end(), [](auto agg_term) {
         return agg_term->RequiresCleanup();
     });
 }
 
-std::vector<size_t> AggregatePlanNode::GetMemoryAllocatingAggregatorIndexes() const {
+auto AggregatePlanNode::GetMemoryAllocatingAggregatorIndexes() const -> std::vector<size_t> {
     std::vector<size_t> memory_allocating_aggregator_indexes;
     for (size_t agg_term_idx = 0; agg_term_idx < aggregate_terms_.size(); agg_term_idx++) {
         if (aggregate_terms_[agg_term_idx]->RequiresCleanup()) {

@@ -56,11 +56,11 @@ struct StructTypeKeyInfo {
         explicit KeyTy(const StructType *struct_type)
             : elements_(struct_type->GetFieldsWithoutPadding()) {}
 
-        bool operator==(const KeyTy &that) const {
+        auto operator==(const KeyTy &that) const -> bool {
             return elements_ == that.elements_;
         }
 
-        bool operator!=(const KeyTy &that) const {
+        auto operator!=(const KeyTy &that) const -> bool {
             return !this->operator==(that);
         }
     };
@@ -119,11 +119,11 @@ struct FunctionTypeKeyInfo {
             : ret_type_(func_type->GetReturnType())
             , params_(func_type->GetParams()) {}
 
-        bool operator==(const KeyTy &that) const {
+        auto operator==(const KeyTy &that) const -> bool {
             return ret_type_ == that.ret_type_ && params_ == that.params_;
         }
 
-        bool operator!=(const KeyTy &that) const {
+        auto operator!=(const KeyTy &that) const -> bool {
             return !this->operator==(that);
         }
     };
@@ -231,7 +231,7 @@ Context::Context(util::Region *region, sema::ErrorReporter *error_reporter)
 
 Context::~Context() = default;
 
-Identifier Context::GetIdentifier(llvm::StringRef str) {
+auto Context::GetIdentifier(llvm::StringRef str) -> Identifier {
     if (str.empty()) {
         auto iter = Impl()->string_table_.insert(std::make_pair("", static_cast<char>(0))).first;
         return Identifier(iter->getKeyData());
@@ -241,12 +241,12 @@ Identifier Context::GetIdentifier(llvm::StringRef str) {
     return Identifier(iter->getKeyData());
 }
 
-Type *Context::LookupBuiltinType(Identifier name) const {
+auto Context::LookupBuiltinType(Identifier name) const -> Type * {
     auto iter = Impl()->builtin_types_.find(name);
     return (iter == Impl()->builtin_types_.end() ? nullptr : iter->second);
 }
 
-bool Context::IsBuiltinFunction(Identifier name, Builtin *builtin) const {
+auto Context::IsBuiltinFunction(Identifier name, Builtin *builtin) const -> bool {
     if (auto iter = Impl()->builtin_funcs_.find(name); iter != Impl()->builtin_funcs_.end()) {
         if (builtin != nullptr) {
             *builtin = iter->second;
@@ -257,30 +257,30 @@ bool Context::IsBuiltinFunction(Identifier name, Builtin *builtin) const {
     return false;
 }
 
-Identifier Context::GetBuiltinFunction(Builtin builtin) {
+auto Context::GetBuiltinFunction(Builtin builtin) -> Identifier {
     return GetIdentifier(Builtins::GetFunctionName(builtin));
 }
 
-Identifier Context::GetBuiltinType(BuiltinType::Kind kind) {
+auto Context::GetBuiltinType(BuiltinType::Kind kind) -> Identifier {
     return GetIdentifier(Impl()->builtin_types_list_[kind]->GetTplName());
 }
 
-PointerType *Type::PointerTo() {
+auto Type::PointerTo() -> PointerType * {
     return PointerType::Get(this);
 }
 
 // static
-BuiltinType *BuiltinType::Get(Context *ctx, BuiltinType::Kind kind) {
+auto BuiltinType::Get(Context *ctx, BuiltinType::Kind kind) -> BuiltinType * {
     return ctx->Impl()->builtin_types_list_[kind];
 }
 
 // static
-StringType *StringType::Get(Context *ctx) {
+auto StringType::Get(Context *ctx) -> StringType * {
     return ctx->Impl()->string_type_;
 }
 
 // static
-PointerType *PointerType::Get(Type *base) {
+auto PointerType::Get(Type *base) -> PointerType * {
     Context *ctx = base->GetContext();
 
     PointerType *&pointer_type = ctx->Impl()->pointer_types_[base];
@@ -293,7 +293,7 @@ PointerType *PointerType::Get(Type *base) {
 }
 
 // static
-ArrayType *ArrayType::Get(uint64_t length, Type *elem_type) {
+auto ArrayType::Get(uint64_t length, Type *elem_type) -> ArrayType * {
     Context *ctx = elem_type->GetContext();
 
     ArrayType *&array_type = ctx->Impl()->array_types_[{elem_type, length}];
@@ -306,7 +306,7 @@ ArrayType *ArrayType::Get(uint64_t length, Type *elem_type) {
 }
 
 // static
-MapType *MapType::Get(Type *key_type, Type *value_type) {
+auto MapType::Get(Type *key_type, Type *value_type) -> MapType * {
     Context *ctx = key_type->GetContext();
 
     MapType *&map_type = ctx->Impl()->map_types_[{key_type, value_type}];
@@ -320,7 +320,7 @@ MapType *MapType::Get(Type *key_type, Type *value_type) {
 
 namespace {
 
-    Field CreatePaddingElement(uint32_t id, uint32_t size, Context *ctx) {
+    auto CreatePaddingElement(uint32_t id, uint32_t size, Context *ctx) -> Field {
         Identifier name = ctx->GetIdentifier("__pad$" + std::to_string(id) + "$");
         auto      *pad_type = BuiltinType::Get(ctx, BuiltinType::Int8);
         return Field(name, ArrayType::Get(size, pad_type));
@@ -329,7 +329,7 @@ namespace {
 }; // namespace
 
 // static
-StructType *StructType::Get(Context *ctx, util::RegionVector<Field> &&fields) {
+auto StructType::Get(Context *ctx, util::RegionVector<Field> &&fields) -> StructType * {
     // Empty structs get an artificial element
     if (fields.empty()) {
         // Empty structs get an artificial byte field to ensure non-zero size
@@ -401,13 +401,13 @@ StructType *StructType::Get(Context *ctx, util::RegionVector<Field> &&fields) {
 }
 
 // static
-StructType *StructType::Get(util::RegionVector<Field> &&fields) {
+auto StructType::Get(util::RegionVector<Field> &&fields) -> StructType * {
     NOISEPAGE_ASSERT(!fields.empty(), "Cannot use StructType::Get(fields) with an empty list of fields");
     return StructType::Get(fields[0].type_->GetContext(), std::move(fields));
 }
 
 // static
-FunctionType *FunctionType::Get(util::RegionVector<Field> &&params, Type *ret) {
+auto FunctionType::Get(util::RegionVector<Field> &&params, Type *ret) -> FunctionType * {
     Context *ctx = ret->GetContext();
 
     const FunctionTypeKeyInfo::KeyTy key(ret, params);

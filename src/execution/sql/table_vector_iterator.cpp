@@ -28,20 +28,20 @@ TableVectorIterator::TableVectorIterator(exec::ExecutionContext *exec_ctx,
 
 TableVectorIterator::~TableVectorIterator() = default;
 
-bool TableVectorIterator::Init() {
+auto TableVectorIterator::Init() -> bool {
     return Init(0, storage::DataTable::GetMaxBlocks());
 }
 
-bool TableVectorIterator::Init(uint32_t block_start, uint32_t block_end) {
+auto TableVectorIterator::Init(uint32_t block_start, uint32_t block_end) -> bool {
     auto        table = exec_ctx_->GetAccessor()->GetTable(table_oid_);
     const auto &schema = exec_ctx_->GetAccessor()->GetSchema(table_oid_);
     return Init(table, schema, block_start, block_end);
 }
 
-bool TableVectorIterator::Init(common::ManagedPointer<storage::SqlTable> table,
+auto TableVectorIterator::Init(common::ManagedPointer<storage::SqlTable> table,
                                const catalog::Schema                    &schema,
                                uint32_t                                  block_start,
-                               uint32_t                                  block_end) {
+                               uint32_t                                  block_end) -> bool {
     // No-op if already initialized
     if (IsInitialized()) {
         return true;
@@ -80,12 +80,12 @@ bool TableVectorIterator::Init(common::ManagedPointer<storage::SqlTable> table,
     return true;
 }
 
-bool TableVectorIterator::InitTempTable(common::ManagedPointer<storage::SqlTable> cte_table,
-                                        const catalog::Schema                    &schema) {
+auto TableVectorIterator::InitTempTable(common::ManagedPointer<storage::SqlTable> cte_table,
+                                        const catalog::Schema                    &schema) -> bool {
     return Init(cte_table, schema, 0, storage::DataTable::GetMaxBlocks());
 }
 
-bool TableVectorIterator::Advance() {
+auto TableVectorIterator::Advance() -> bool {
     // Cannot advance if not initialized.
     if (!IsInitialized()) {
         return false;
@@ -148,14 +148,14 @@ namespace {
 
 } // namespace
 
-bool TableVectorIterator::ParallelScan(uint32_t                          table_oid,
+auto TableVectorIterator::ParallelScan(uint32_t                          table_oid,
                                        uint32_t                         *col_oids,
                                        uint32_t                          num_oids,
                                        void *const                       query_state,
                                        exec::ExecutionContext           *exec_ctx,
                                        uint32_t                          num_threads_override,
                                        const TableVectorIterator::ScanFn scan_fn,
-                                       const uint32_t                    min_grain_size) {
+                                       const uint32_t                    min_grain_size) -> bool {
     // Lookup table
     const auto table = exec_ctx->GetAccessor()->GetTable(catalog::table_oid_t{table_oid});
     if (table == nullptr) {

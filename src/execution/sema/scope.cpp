@@ -4,7 +4,7 @@
 
 namespace noisepage::execution::sema {
 
-bool Scope::Declare(ast::Identifier decl_name, ast::Type *type) {
+auto Scope::Declare(ast::Identifier decl_name, ast::Type *type) -> bool {
     ast::Type *curr_decl = Lookup(decl_name);
     if (curr_decl != nullptr) {
         return false;
@@ -13,7 +13,7 @@ bool Scope::Declare(ast::Identifier decl_name, ast::Type *type) {
     return true;
 }
 
-ast::Type *Scope::Lookup(ast::Identifier name) const {
+auto Scope::Lookup(ast::Identifier name) const -> ast::Type * {
     for (const Scope *scope = this; scope != nullptr; scope = scope->Outer()) {
         if (ast::Type *decl_type = scope->LookupLocal(name)) {
             return decl_type;
@@ -24,7 +24,7 @@ ast::Type *Scope::Lookup(ast::Identifier name) const {
     return nullptr;
 }
 
-ast::Type *Scope::LookupLocal(ast::Identifier name) const {
+auto Scope::LookupLocal(ast::Identifier name) const -> ast::Type * {
     auto iter = decls_.find(name);
     return (iter == decls_.end() ? nullptr : iter->second);
 }

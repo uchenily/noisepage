@@ -47,8 +47,8 @@ public:
      * @returns selectivity
      */
     template <typename T>
-    static double ComputeSelectivity(common::ManagedPointer<ColumnStats<T>> column_stats,
-                                     const ValueCondition                  &condition);
+    static auto ComputeSelectivity(common::ManagedPointer<ColumnStats<T>> column_stats, const ValueCondition &condition)
+        -> double;
 
     /**
      * Computes selectivity of the Less Than condition

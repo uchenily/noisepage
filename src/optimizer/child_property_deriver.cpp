@@ -16,11 +16,11 @@
 
 namespace noisepage::optimizer {
 
-std::vector<std::pair<PropertySet *, std::vector<PropertySet *>>>
-ChildPropertyDeriver::GetProperties(catalog::CatalogAccessor *accessor,
-                                    Memo                     *memo,
-                                    PropertySet              *requirements,
-                                    GroupExpression          *gexpr) {
+auto ChildPropertyDeriver::GetProperties(catalog::CatalogAccessor *accessor,
+                                         Memo                     *memo,
+                                         PropertySet              *requirements,
+                                         GroupExpression          *gexpr)
+    -> std::vector<std::pair<PropertySet *, std::vector<PropertySet *>>> {
     requirements_ = requirements;
     output_.clear();
     memo_ = memo;

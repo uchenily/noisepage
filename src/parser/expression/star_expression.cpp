@@ -5,7 +5,7 @@
 
 namespace noisepage::parser {
 
-std::unique_ptr<AbstractExpression> StarExpression::Copy() const {
+auto StarExpression::Copy() const -> std::unique_ptr<AbstractExpression> {
     auto expr = std::make_unique<StarExpression>();
     expr->SetMutableStateForCopy(*this);
     return expr;

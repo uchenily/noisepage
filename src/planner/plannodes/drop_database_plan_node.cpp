@@ -10,7 +10,7 @@
 
 namespace noisepage::planner {
 
-std::unique_ptr<DropDatabasePlanNode> DropDatabasePlanNode::Builder::Build() {
+auto DropDatabasePlanNode::Builder::Build() -> std::unique_ptr<DropDatabasePlanNode> {
     return std::unique_ptr<DropDatabasePlanNode>(
         new DropDatabasePlanNode(std::move(children_), std::move(output_schema_), database_oid_, plan_node_id_));
 }
@@ -22,7 +22,7 @@ DropDatabasePlanNode::DropDatabasePlanNode(std::vector<std::unique_ptr<AbstractP
     : AbstractPlanNode(std::move(children), std::move(output_schema), plan_node_id)
     , database_oid_(database_oid) {}
 
-common::hash_t DropDatabasePlanNode::Hash() const {
+auto DropDatabasePlanNode::Hash() const -> common::hash_t {
     common::hash_t hash = AbstractPlanNode::Hash();
 
     hash = common::HashUtil::CombineHashes(hash, common::HashUtil::Hash(database_oid_));
@@ -31,7 +31,7 @@ common::hash_t DropDatabasePlanNode::Hash() const {
     return hash;
 }
 
-bool DropDatabasePlanNode::operator==(const AbstractPlanNode &rhs) const {
+auto DropDatabasePlanNode::operator==(const AbstractPlanNode &rhs) const -> bool {
     if (!AbstractPlanNode::operator==(rhs)) {
         return false;
     }
@@ -41,13 +41,14 @@ bool DropDatabasePlanNode::operator==(const AbstractPlanNode &rhs) const {
     return database_oid_ == other.database_oid_;
 }
 
-nlohmann::json DropDatabasePlanNode::ToJson() const {
+auto DropDatabasePlanNode::ToJson() const -> nlohmann::json {
     nlohmann::json j = AbstractPlanNode::ToJson();
     j["database_oid"] = database_oid_;
     return j;
 }
 
-std::vector<std::unique_ptr<parser::AbstractExpression>> DropDatabasePlanNode::FromJson(const nlohmann::json &j) {
+auto DropDatabasePlanNode::FromJson(const nlohmann::json &j)
+    -> std::vector<std::unique_ptr<parser::AbstractExpression>> {
     std::vector<std::unique_ptr<parser::AbstractExpression>> exprs;
     auto                                                     e1 = AbstractPlanNode::FromJson(j);
     exprs.insert(exprs.end(), std::make_move_iterator(e1.begin()), std::make_move_iterator(e1.end()));

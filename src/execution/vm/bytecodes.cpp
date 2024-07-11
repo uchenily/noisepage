@@ -42,7 +42,7 @@ const char *Bytecodes::bytecode_handler_name[] = {
 };
 
 // static
-uint32_t Bytecodes::MaxBytecodeNameLength() {
+auto Bytecodes::MaxBytecodeNameLength() -> uint32_t {
     static constexpr const uint32_t max_inst_name_length = std::max({
 #define ENTRY(name, ...) sizeof(#name),
         BYTECODE_LIST(ENTRY)
@@ -51,7 +51,7 @@ uint32_t Bytecodes::MaxBytecodeNameLength() {
     return max_inst_name_length;
 }
 
-uint32_t Bytecodes::GetNthOperandOffset(Bytecode bytecode, uint32_t operand_index) {
+auto Bytecodes::GetNthOperandOffset(Bytecode bytecode, uint32_t operand_index) -> uint32_t {
     NOISEPAGE_ASSERT(operand_index < NumOperands(bytecode), "Invalid operand index");
     uint32_t offset = sizeof(std::underlying_type_t<Bytecode>);
     for (uint32_t i = 0; i < operand_index; i++) {

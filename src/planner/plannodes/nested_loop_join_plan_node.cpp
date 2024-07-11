@@ -9,7 +9,7 @@
 
 namespace noisepage::planner {
 
-std::unique_ptr<NestedLoopJoinPlanNode> NestedLoopJoinPlanNode::Builder::Build() {
+auto NestedLoopJoinPlanNode::Builder::Build() -> std::unique_ptr<NestedLoopJoinPlanNode> {
     return std::unique_ptr<NestedLoopJoinPlanNode>(new NestedLoopJoinPlanNode(std::move(children_),
                                                                               std::move(output_schema_),
                                                                               join_type_,
@@ -24,21 +24,22 @@ NestedLoopJoinPlanNode::NestedLoopJoinPlanNode(std::vector<std::unique_ptr<Abstr
                                                plan_node_id_t                                     plan_node_id)
     : AbstractJoinPlanNode(std::move(children), std::move(output_schema), join_type, predicate, plan_node_id) {}
 
-common::hash_t NestedLoopJoinPlanNode::Hash() const {
+auto NestedLoopJoinPlanNode::Hash() const -> common::hash_t {
     return AbstractJoinPlanNode::Hash();
 }
 
-bool NestedLoopJoinPlanNode::operator==(const AbstractPlanNode &rhs) const {
+auto NestedLoopJoinPlanNode::operator==(const AbstractPlanNode &rhs) const -> bool {
     // There is nothing else for us to do here! Go home! You're drunk!
     // Unfortunately, now there is something to do...
     return AbstractJoinPlanNode::operator==(rhs);
 }
 
-nlohmann::json NestedLoopJoinPlanNode::ToJson() const {
+auto NestedLoopJoinPlanNode::ToJson() const -> nlohmann::json {
     return AbstractJoinPlanNode::ToJson();
 }
 
-std::vector<std::unique_ptr<parser::AbstractExpression>> NestedLoopJoinPlanNode::FromJson(const nlohmann::json &j) {
+auto NestedLoopJoinPlanNode::FromJson(const nlohmann::json &j)
+    -> std::vector<std::unique_ptr<parser::AbstractExpression>> {
     std::vector<std::unique_ptr<parser::AbstractExpression>> exprs;
     auto                                                     e1 = AbstractJoinPlanNode::FromJson(j);
     exprs.insert(exprs.end(), std::make_move_iterator(e1.begin()), std::make_move_iterator(e1.end()));

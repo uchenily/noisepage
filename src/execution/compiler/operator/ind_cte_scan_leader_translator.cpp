@@ -142,7 +142,7 @@ void IndCteScanLeaderTranslator::InitializeQueryState(FunctionBuilder *function)
     DeclareIndCteScanIterator(function);
 }
 
-ast::Expr *IndCteScanLeaderTranslator::GetCteScanPtr(CodeGen *codegen) const {
+auto IndCteScanLeaderTranslator::GetCteScanPtr(CodeGen *codegen) const -> ast::Expr * {
     return cte_scan_ptr_entry_.Get(codegen);
 }
 

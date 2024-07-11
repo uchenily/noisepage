@@ -40,18 +40,18 @@ IndCteScanIterator::IndCteScanIterator(exec::ExecutionContext *exec_ctx,
     , written_{false}
     , is_recursive_{is_recursive} {}
 
-CteScanIterator *IndCteScanIterator::GetWriteCte() {
+auto IndCteScanIterator::GetWriteCte() -> CteScanIterator * {
     return cte_scan_write_;
 }
 
-CteScanIterator *IndCteScanIterator::GetReadCte() {
+auto IndCteScanIterator::GetReadCte() -> CteScanIterator * {
     exec_ctx_->GetAccessor()->RegisterTempTable(table_oid_,
                                                 common::ManagedPointer(cte_scan_read_->GetTable()),
                                                 common::ManagedPointer(&(cte_scan_read_->GetSchema())));
     return cte_scan_read_;
 }
 
-CteScanIterator *IndCteScanIterator::GetResultCTE() {
+auto IndCteScanIterator::GetResultCTE() -> CteScanIterator * {
     if (is_recursive_) {
         exec_ctx_->GetAccessor()->RegisterTempTable(table_oid_,
                                                     common::ManagedPointer(cte_scan_1_.GetTable()),
@@ -64,20 +64,20 @@ CteScanIterator *IndCteScanIterator::GetResultCTE() {
     return cte_scan_read_;
 }
 
-catalog::table_oid_t IndCteScanIterator::GetReadTableOid() {
+auto IndCteScanIterator::GetReadTableOid() -> catalog::table_oid_t {
     return cte_scan_read_->GetTableOid();
 }
 
-storage::ProjectedRow *IndCteScanIterator::GetInsertTempTablePR() {
+auto IndCteScanIterator::GetInsertTempTablePR() -> storage::ProjectedRow * {
     return cte_scan_write_->GetInsertTempTablePR();
 }
 
-storage::TupleSlot IndCteScanIterator::TableInsert() {
+auto IndCteScanIterator::TableInsert() -> storage::TupleSlot {
     written_ = true;
     return cte_scan_write_->TableInsert();
 }
 
-bool IndCteScanIterator::Accumulate() {
+auto IndCteScanIterator::Accumulate() -> bool {
     // Dump contents from read table into table_1, and then swap read and write
     if (is_recursive_) {
         // Dump read table into table_1

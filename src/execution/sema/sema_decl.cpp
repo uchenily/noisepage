@@ -67,7 +67,7 @@ namespace {
 
     // Return true if the given list of field declarations contains a duplicate name. If so, the 'dup'
     // output parameter is set to the offending field. Otherwise, return false;
-    bool HasDuplicatesNames(const util::RegionVector<ast::FieldDecl *> &fields, const ast::FieldDecl **dup) {
+    auto HasDuplicatesNames(const util::RegionVector<ast::FieldDecl *> &fields, const ast::FieldDecl **dup) -> bool {
         llvm::SmallDenseSet<ast::Identifier, 32> seen;
         for (const auto *field : fields) {
             // Attempt to insert into the set. If the insertion succeeds it's a unique

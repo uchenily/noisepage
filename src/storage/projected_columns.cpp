@@ -9,7 +9,7 @@
 #include "storage/block_layout.h"
 
 namespace noisepage::storage {
-uint32_t ProjectedColumns::AttrSizeForColumn(const uint16_t projection_col_index) {
+auto ProjectedColumns::AttrSizeForColumn(const uint16_t projection_col_index) -> uint32_t {
     NOISEPAGE_ASSERT(projection_col_index < num_cols_, "Cannot get size for out-of-bounds column");
     uint8_t shift;
     for (shift = 0; shift < NUM_ATTR_BOUNDARIES; shift++) {
@@ -83,7 +83,7 @@ ProjectedColumnsInitializer::ProjectedColumnsInitializer(const BlockLayout    &l
     }
 }
 
-ProjectedColumns *ProjectedColumnsInitializer::Initialize(void *const head) const {
+auto ProjectedColumnsInitializer::Initialize(void *const head) const -> ProjectedColumns * {
     NOISEPAGE_ASSERT(reinterpret_cast<uintptr_t>(head) % sizeof(uint64_t) == 0,
                      "start of ProjectedRow needs to be aligned to 8 bytes to"
                      "ensure correctness of alignment of its members");

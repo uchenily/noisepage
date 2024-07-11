@@ -10,7 +10,7 @@
 
 namespace noisepage::planner {
 
-std::unique_ptr<OrderByPlanNode> OrderByPlanNode::Builder::Build() {
+auto OrderByPlanNode::Builder::Build() -> std::unique_ptr<OrderByPlanNode> {
     return std::unique_ptr<OrderByPlanNode>(new OrderByPlanNode(std::move(children_),
                                                                 std::move(output_schema_),
                                                                 std::move(sort_keys_),
@@ -33,7 +33,7 @@ OrderByPlanNode::OrderByPlanNode(std::vector<std::unique_ptr<AbstractPlanNode>> 
     , limit_(limit)
     , offset_(offset) {}
 
-common::hash_t OrderByPlanNode::Hash() const {
+auto OrderByPlanNode::Hash() const -> common::hash_t {
     common::hash_t hash = AbstractPlanNode::Hash();
 
     // Sort Keys
@@ -54,7 +54,7 @@ common::hash_t OrderByPlanNode::Hash() const {
     return hash;
 }
 
-bool OrderByPlanNode::operator==(const AbstractPlanNode &rhs) const {
+auto OrderByPlanNode::operator==(const AbstractPlanNode &rhs) const -> bool {
     if (!AbstractPlanNode::operator==(rhs)) {
         return false;
     }
@@ -99,7 +99,7 @@ bool OrderByPlanNode::operator==(const AbstractPlanNode &rhs) const {
     return true;
 }
 
-nlohmann::json OrderByPlanNode::ToJson() const {
+auto OrderByPlanNode::ToJson() const -> nlohmann::json {
     nlohmann::json j = AbstractPlanNode::ToJson();
 
     std::vector<std::pair<nlohmann::json, optimizer::OrderByOrderingType>> sort_keys;
@@ -114,7 +114,7 @@ nlohmann::json OrderByPlanNode::ToJson() const {
     return j;
 }
 
-std::vector<std::unique_ptr<parser::AbstractExpression>> OrderByPlanNode::FromJson(const nlohmann::json &j) {
+auto OrderByPlanNode::FromJson(const nlohmann::json &j) -> std::vector<std::unique_ptr<parser::AbstractExpression>> {
     std::vector<std::unique_ptr<parser::AbstractExpression>> exprs;
     auto                                                     e1 = AbstractPlanNode::FromJson(j);
     exprs.insert(exprs.end(), std::make_move_iterator(e1.begin()), std::make_move_iterator(e1.end()));

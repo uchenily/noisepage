@@ -57,16 +57,16 @@ PlanGenerator::PlanGenerator(common::ManagedPointer<planner::PlanMetaData> plan_
     : plan_id_counter_(0)
     , plan_meta_data_(plan_meta_data) {}
 
-std::unique_ptr<planner::AbstractPlanNode>
-PlanGenerator::ConvertOpNode(transaction::TransactionContext                                       *txn,
-                             catalog::CatalogAccessor                                              *accessor,
-                             AbstractOptimizerNode                                                 *op,
-                             PropertySet                                                           *required_props,
-                             const std::vector<common::ManagedPointer<parser::AbstractExpression>> &required_cols,
-                             const std::vector<common::ManagedPointer<parser::AbstractExpression>> &output_cols,
-                             std::vector<std::unique_ptr<planner::AbstractPlanNode>>              &&children_plans,
-                             std::vector<ExprMap>                                                 &&children_expr_map,
-                             const planner::PlanMetaData::PlanNodeMetaData &plan_node_meta_data) {
+auto PlanGenerator::ConvertOpNode(transaction::TransactionContext                                       *txn,
+                                  catalog::CatalogAccessor                                              *accessor,
+                                  AbstractOptimizerNode                                                 *op,
+                                  PropertySet                                                           *required_props,
+                                  const std::vector<common::ManagedPointer<parser::AbstractExpression>> &required_cols,
+                                  const std::vector<common::ManagedPointer<parser::AbstractExpression>> &output_cols,
+                                  std::vector<std::unique_ptr<planner::AbstractPlanNode>>              &&children_plans,
+                                  std::vector<ExprMap>                         &&children_expr_map,
+                                  const planner::PlanMetaData::PlanNodeMetaData &plan_node_meta_data)
+    -> std::unique_ptr<planner::AbstractPlanNode> {
     required_props_ = required_props;
     required_cols_ = required_cols;
     output_cols_ = output_cols;
@@ -146,7 +146,8 @@ void PlanGenerator::Visit([[maybe_unused]] const TableFreeScan *op) {
 ///////////////////////////////////////////////////////////////////////////////
 
 // Generate columns for scan plan
-std::vector<catalog::col_oid_t> PlanGenerator::GenerateColumnsForScan(const parser::AbstractExpression *predicate) {
+auto PlanGenerator::GenerateColumnsForScan(const parser::AbstractExpression *predicate)
+    -> std::vector<catalog::col_oid_t> {
     std::unordered_set<catalog::col_oid_t> unique_oids;
     for (auto &output_expr : output_cols_) {
         NOISEPAGE_ASSERT(output_expr->GetExpressionType() == parser::ExpressionType::COLUMN_VALUE,
@@ -181,7 +182,7 @@ void PlanGenerator::GenerateColumnsFromExpression(std::unordered_set<catalog::co
     }
 }
 
-std::unique_ptr<planner::OutputSchema> PlanGenerator::GenerateScanOutputSchema(catalog::table_oid_t tbl_oid) {
+auto PlanGenerator::GenerateScanOutputSchema(catalog::table_oid_t tbl_oid) -> std::unique_ptr<planner::OutputSchema> {
     // Underlying tuple provided by the table's schema.
     std::vector<planner::OutputSchema::Column> columns;
     for (auto &output_expr : output_cols_) {
@@ -479,7 +480,7 @@ void PlanGenerator::Visit(const ExportExternalFile *op) {
 // Join Projection Helper
 ///////////////////////////////////////////////////////////////////////////////
 
-std::unique_ptr<planner::OutputSchema> PlanGenerator::GenerateProjectionForJoin() {
+auto PlanGenerator::GenerateProjectionForJoin() -> std::unique_ptr<planner::OutputSchema> {
     NOISEPAGE_ASSERT(children_expr_map_.size() == 2, "Join needs 2 children");
     NOISEPAGE_ASSERT(children_plans_.size() == 2, "Join needs 2 children");
     auto &l_child_expr_map = children_expr_map_[0];

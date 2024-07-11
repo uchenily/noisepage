@@ -6,7 +6,7 @@
 
 namespace noisepage::parser {
 
-std::unique_ptr<AbstractExpression> FunctionExpression::Copy() const {
+auto FunctionExpression::Copy() const -> std::unique_ptr<AbstractExpression> {
     std::vector<std::unique_ptr<AbstractExpression>> children;
     for (const auto &child : GetChildren()) {
         children.emplace_back(child->Copy());
@@ -14,8 +14,8 @@ std::unique_ptr<AbstractExpression> FunctionExpression::Copy() const {
     return CopyWithChildren(std::move(children));
 }
 
-std::unique_ptr<AbstractExpression>
-FunctionExpression::CopyWithChildren(std::vector<std::unique_ptr<AbstractExpression>> &&children) const {
+auto FunctionExpression::CopyWithChildren(std::vector<std::unique_ptr<AbstractExpression>> &&children) const
+    -> std::unique_ptr<AbstractExpression> {
     std::string func_name = GetFuncName();
     auto expr = std::make_unique<FunctionExpression>(std::move(func_name), GetReturnValueType(), std::move(children));
     expr->SetMutableStateForCopy(*this);
@@ -23,13 +23,13 @@ FunctionExpression::CopyWithChildren(std::vector<std::unique_ptr<AbstractExpress
     return expr;
 }
 
-nlohmann::json FunctionExpression::ToJson() const {
+auto FunctionExpression::ToJson() const -> nlohmann::json {
     nlohmann::json j = AbstractExpression::ToJson();
     j["func_name"] = func_name_;
     return j;
 }
 
-std::vector<std::unique_ptr<AbstractExpression>> FunctionExpression::FromJson(const nlohmann::json &j) {
+auto FunctionExpression::FromJson(const nlohmann::json &j) -> std::vector<std::unique_ptr<AbstractExpression>> {
     std::vector<std::unique_ptr<AbstractExpression>> exprs;
     auto                                             e1 = AbstractExpression::FromJson(j);
     exprs.insert(exprs.end(), std::make_move_iterator(e1.begin()), std::make_move_iterator(e1.end()));
@@ -41,7 +41,7 @@ void FunctionExpression::Accept(common::ManagedPointer<binder::SqlNodeVisitor> v
     v->Visit(common::ManagedPointer(this));
 }
 
-common::hash_t FunctionExpression::Hash() const {
+auto FunctionExpression::Hash() const -> common::hash_t {
     common::hash_t hash = AbstractExpression::Hash();
     hash = common::HashUtil::CombineHashes(hash, common::HashUtil::Hash(func_name_));
     return hash;

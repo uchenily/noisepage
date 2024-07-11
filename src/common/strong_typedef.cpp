@@ -15,7 +15,7 @@
 namespace noisepage::common {
 
 template <class Tag, typename IntType>
-nlohmann::json StrongTypeAlias<Tag, IntType>::ToJson() const {
+auto StrongTypeAlias<Tag, IntType>::ToJson() const -> nlohmann::json {
     nlohmann::json j = val_;
     return j;
 }

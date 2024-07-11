@@ -15,7 +15,7 @@ FunctionTranslator::FunctionTranslator(const parser::FunctionExpression &expr, C
     }
 }
 
-ast::Expr *FunctionTranslator::DeriveValue(WorkContext *ctx, const ColumnValueProvider *provider) const {
+auto FunctionTranslator::DeriveValue(WorkContext *ctx, const ColumnValueProvider *provider) const -> ast::Expr * {
     auto *codegen = GetCodeGen();
 
     const auto &func_expr = GetExpressionAs<parser::FunctionExpression>();

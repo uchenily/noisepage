@@ -76,7 +76,7 @@ void BlockCompactor::ProcessCompactionQueue(transaction::DeferredActionManager *
     }
 }
 
-bool BlockCompactor::EliminateGaps(CompactionGroup *cg) {
+auto BlockCompactor::EliminateGaps(CompactionGroup *cg) -> bool {
     const TupleAccessStrategy &accessor = cg->table_->accessor_;
     const BlockLayout         &layout = accessor.GetBlockLayout();
 
@@ -160,7 +160,7 @@ bool BlockCompactor::EliminateGaps(CompactionGroup *cg) {
 
 // TODO(Tianyu): Eventually this needs to be rewritten to use the insert and delete executors, so indexes are
 // handled correctly.
-bool BlockCompactor::MoveTuple(CompactionGroup *cg, TupleSlot from, TupleSlot to) {
+auto BlockCompactor::MoveTuple(CompactionGroup *cg, TupleSlot from, TupleSlot to) -> bool {
     const TupleAccessStrategy &accessor = cg->table_->accessor_;
     const BlockLayout         &layout = accessor.GetBlockLayout();
 
@@ -212,7 +212,7 @@ bool BlockCompactor::MoveTuple(CompactionGroup *cg, TupleSlot from, TupleSlot to
     return cg->table_->Delete(common::ManagedPointer(cg->txn_), from);
 }
 
-bool BlockCompactor::CheckForVersionsAndGaps(const TupleAccessStrategy &accessor, RawBlock *block) {
+auto BlockCompactor::CheckForVersionsAndGaps(const TupleAccessStrategy &accessor, RawBlock *block) -> bool {
     const BlockLayout &layout = accessor.GetBlockLayout();
 
     auto *allocation_bitmap = accessor.AllocationBitmap(block);

@@ -48,7 +48,7 @@ void TupleAccessStrategy::InitializeRawBlock(storage::DataTable *const data_tabl
     std::memset(ColumnStart(raw, VERSION_POINTER_COLUMN_ID), 0, sizeof(void *) * layout_.NumSlots());
 }
 
-bool TupleAccessStrategy::Allocate(RawBlock *const block, TupleSlot *const slot) const {
+auto TupleAccessStrategy::Allocate(RawBlock *const block, TupleSlot *const slot) const -> bool {
     common::RawConcurrentBitmap *bitmap = reinterpret_cast<Block *>(block)->SlotAllocationBitmap(layout_);
     const uint32_t               start = block->GetInsertHead();
 

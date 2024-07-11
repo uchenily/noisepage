@@ -4,7 +4,7 @@
 
 namespace noisepage::planner {
 
-std::string PlanNodeTypeToString(PlanNodeType type) {
+auto PlanNodeTypeToString(PlanNodeType type) -> std::string {
     switch (type) {
     case PlanNodeType::INVALID:
         return "Invalid";
@@ -82,7 +82,7 @@ std::string PlanNodeTypeToString(PlanNodeType type) {
     UNREACHABLE("Impossible to reach. All plan node types handled.");
 }
 
-std::string JoinTypeToString(LogicalJoinType type) {
+auto JoinTypeToString(LogicalJoinType type) -> std::string {
     switch (type) {
     case LogicalJoinType::INVALID:
         return "Invalid";

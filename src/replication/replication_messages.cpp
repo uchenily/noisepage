@@ -36,7 +36,7 @@ template void MessageWrapper::Put<msg_id_t>(const char *key, msg_id_t value);
 template void MessageWrapper::Put<transaction::timestamp_t>(const char *key, transaction::timestamp_t value);
 
 template <typename T>
-T MessageWrapper::Get(const char *key) const {
+auto MessageWrapper::Get(const char *key) const -> T {
     return underlying_message_->at(key).get<T>();
 }
 template std::string              MessageWrapper::Get<std::string>(const char *key) const;
@@ -46,12 +46,12 @@ template record_batch_id_t        MessageWrapper::Get<record_batch_id_t>(const c
 template msg_id_t                 MessageWrapper::Get<msg_id_t>(const char *key) const;
 template transaction::timestamp_t MessageWrapper::Get<transaction::timestamp_t>(const char *key) const;
 
-std::string MessageWrapper::Serialize() const {
+auto MessageWrapper::Serialize() const -> std::string {
     const auto msg_pack = common::json::to_msgpack(*underlying_message_);
     return std::string(reinterpret_cast<const char *>(msg_pack.data()), msg_pack.size());
 }
 
-common::json MessageWrapper::ToJson() const {
+auto MessageWrapper::ToJson() const -> common::json {
     return *underlying_message_;
 }
 
@@ -61,7 +61,7 @@ void MessageWrapper::FromJson(const common::json &j) {
 
 // ReplicationMessageMetadata
 
-MessageWrapper ReplicationMessageMetadata::ToMessageWrapper() const {
+auto ReplicationMessageMetadata::ToMessageWrapper() const -> MessageWrapper {
     MessageWrapper message;
     message.Put(key_message_id, msg_id_);
     return message;
@@ -75,7 +75,7 @@ ReplicationMessageMetadata::ReplicationMessageMetadata(msg_id_t msg_id)
 
 // BaseReplicationMessage
 
-MessageWrapper BaseReplicationMessage::ToMessageWrapper() const {
+auto BaseReplicationMessage::ToMessageWrapper() const -> MessageWrapper {
     MessageWrapper message;
     message.Put(key_message_type, ReplicationMessageTypeToString(type_));
     // Nested fields need to be the same type as underlying message format because MessageWrapper isn't automatically
@@ -84,7 +84,7 @@ MessageWrapper BaseReplicationMessage::ToMessageWrapper() const {
     return message;
 }
 
-std::string BaseReplicationMessage::Serialize() const {
+auto BaseReplicationMessage::Serialize() const -> std::string {
     return ToMessageWrapper().Serialize();
 }
 
@@ -100,7 +100,7 @@ DEFINE_JSON_BODY_DECLARATIONS(MessageWrapper);
 
 // NotifyOATMsg
 
-MessageWrapper NotifyOATMsg::ToMessageWrapper() const {
+auto NotifyOATMsg::ToMessageWrapper() const -> MessageWrapper {
     MessageWrapper message = BaseReplicationMessage::ToMessageWrapper();
     message.Put(key_batch_id, batch_id_);
     message.Put(key_oldest_active_txn, oldest_active_txn_);
@@ -121,7 +121,7 @@ NotifyOATMsg::NotifyOATMsg(ReplicationMessageMetadata metadata,
 
 // RecordsBatchMsg
 
-MessageWrapper RecordsBatchMsg::ToMessageWrapper() const {
+auto RecordsBatchMsg::ToMessageWrapper() const -> MessageWrapper {
     MessageWrapper message = BaseReplicationMessage::ToMessageWrapper();
     message.Put(key_batch_id, batch_id_);
     message.Put(key_contents, contents_);
@@ -142,7 +142,7 @@ RecordsBatchMsg::RecordsBatchMsg(ReplicationMessageMetadata  metadata,
 
 // TxnAppliedMsg
 
-MessageWrapper TxnAppliedMsg::ToMessageWrapper() const {
+auto TxnAppliedMsg::ToMessageWrapper() const -> MessageWrapper {
     MessageWrapper message = BaseReplicationMessage::ToMessageWrapper();
     message.Put(key_applied_txn_id, applied_txn_id_);
     return message;
@@ -156,7 +156,7 @@ TxnAppliedMsg::TxnAppliedMsg(ReplicationMessageMetadata metadata, transaction::t
     : BaseReplicationMessage(ReplicationMessageType::TXN_APPLIED, metadata)
     , applied_txn_id_(applied_txn_id) {}
 
-std::unique_ptr<BaseReplicationMessage> BaseReplicationMessage::ParseFromString(std::string_view str) {
+auto BaseReplicationMessage::ParseFromString(std::string_view str) -> std::unique_ptr<BaseReplicationMessage> {
     MessageWrapper message(str);
     // BaseReplicationMessage switches on the message's key_message_type to figure out what type of message to create.
     ReplicationMessageType msg_type = ReplicationMessageTypeFromString(message.Get<std::string>(key_message_type));

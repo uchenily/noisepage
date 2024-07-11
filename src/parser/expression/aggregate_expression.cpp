@@ -7,7 +7,7 @@
 
 namespace noisepage::parser {
 
-std::unique_ptr<AbstractExpression> AggregateExpression::Copy() const {
+auto AggregateExpression::Copy() const -> std::unique_ptr<AbstractExpression> {
     std::vector<std::unique_ptr<AbstractExpression>> children;
     for (const auto &child : GetChildren()) {
         children.emplace_back(child->Copy());
@@ -15,8 +15,8 @@ std::unique_ptr<AbstractExpression> AggregateExpression::Copy() const {
     return CopyWithChildren(std::move(children));
 }
 
-std::unique_ptr<AbstractExpression>
-AggregateExpression::CopyWithChildren(std::vector<std::unique_ptr<AbstractExpression>> &&children) const {
+auto AggregateExpression::CopyWithChildren(std::vector<std::unique_ptr<AbstractExpression>> &&children) const
+    -> std::unique_ptr<AbstractExpression> {
     auto expr = std::make_unique<AggregateExpression>(GetExpressionType(), std::move(children), IsDistinct());
     expr->SetMutableStateForCopy(*this);
     return expr;
@@ -48,13 +48,13 @@ void AggregateExpression::DeriveReturnValueType() {
     }
 }
 
-nlohmann::json AggregateExpression::ToJson() const {
+auto AggregateExpression::ToJson() const -> nlohmann::json {
     nlohmann::json j = AbstractExpression::ToJson();
     j["distinct"] = distinct_;
     return j;
 }
 
-std::vector<std::unique_ptr<AbstractExpression>> AggregateExpression::FromJson(const nlohmann::json &j) {
+auto AggregateExpression::FromJson(const nlohmann::json &j) -> std::vector<std::unique_ptr<AbstractExpression>> {
     std::vector<std::unique_ptr<AbstractExpression>> exprs;
     auto                                             e1 = AbstractExpression::FromJson(j);
     exprs.insert(exprs.end(), std::make_move_iterator(e1.begin()), std::make_move_iterator(e1.end()));
@@ -66,12 +66,12 @@ void AggregateExpression::Accept(common::ManagedPointer<binder::SqlNodeVisitor> 
     v->Visit(common::ManagedPointer(this));
 }
 
-common::hash_t AggregateExpression::Hash() const {
+auto AggregateExpression::Hash() const -> common::hash_t {
     common::hash_t hash = AbstractExpression::Hash();
     hash = common::HashUtil::CombineHashes(hash, common::HashUtil::Hash(distinct_));
     return hash;
 }
-bool AggregateExpression::RequiresCleanup() const {
+auto AggregateExpression::RequiresCleanup() const -> bool {
     auto expr_type = this->GetExpressionType();
     switch (expr_type) {
     case ExpressionType::AGGREGATE_COUNT:

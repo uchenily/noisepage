@@ -14,7 +14,7 @@
 
 namespace noisepage::execution::exec {
 
-OutputBuffer *ExecutionContext::OutputBufferNew() {
+auto ExecutionContext::OutputBufferNew() -> OutputBuffer * {
     if (schema_ == nullptr) {
         return nullptr;
     }
@@ -26,7 +26,7 @@ OutputBuffer *ExecutionContext::OutputBufferNew() {
     return buffer;
 }
 
-uint32_t ExecutionContext::ComputeTupleSize(const planner::OutputSchema *schema) {
+auto ExecutionContext::ComputeTupleSize(const planner::OutputSchema *schema) -> uint32_t {
     uint32_t tuple_size = 0;
     for (const auto &col : schema->GetColumns()) {
         auto alignment = sql::ValUtil::GetSqlAlignment(col.GetType());
@@ -38,7 +38,7 @@ uint32_t ExecutionContext::ComputeTupleSize(const planner::OutputSchema *schema)
     return tuple_size;
 }
 
-uint64_t ExecutionContext::ReplicationGetLastTransactionId() const {
+auto ExecutionContext::ReplicationGetLastTransactionId() const -> uint64_t {
     // Both ReplicationManager and RecoveryManager participate in replication, which defines the last transaction ID
     // sent from the primary and applied on the replicas respectively.
     if (replication_manager_ == DISABLED || recovery_manager_ == DISABLED) {
@@ -230,7 +230,7 @@ void ExecutionContext::InitializeParallelOUFeatureVector(selfdriving::ExecOUFeat
     }
 }
 
-const parser::ConstantValueExpression &ExecutionContext::GetParam(const uint32_t param_idx) const {
+auto ExecutionContext::GetParam(const uint32_t param_idx) const -> const parser::ConstantValueExpression & {
     return (*params_)[param_idx];
 }
 

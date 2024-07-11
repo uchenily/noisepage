@@ -28,7 +28,7 @@ namespace {
         }
 
     private:
-        llvm::raw_ostream &Os() {
+        auto Os() -> llvm::raw_ostream & {
             return out_;
         }
 
@@ -97,7 +97,7 @@ namespace {
 } // namespace
 
 // static
-std::string Type::ToString(const Type *type) {
+auto Type::ToString(const Type *type) -> std::string {
     llvm::SmallString<256>    buffer;
     llvm::raw_svector_ostream stream(buffer);
 

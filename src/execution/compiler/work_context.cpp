@@ -13,7 +13,8 @@ WorkContext::WorkContext(CompilationContext *compilation_context, const Pipeline
     , pipeline_end_(pipeline_.End())
     , cache_enabled_(true) {}
 
-ast::Expr *WorkContext::DeriveValue(const parser::AbstractExpression &expr, const ColumnValueProvider *provider) {
+auto WorkContext::DeriveValue(const parser::AbstractExpression &expr, const ColumnValueProvider *provider)
+    -> ast::Expr * {
     if (cache_enabled_) {
         if (auto iter = cache_.find(CacheKey_t{&expr, provider}); iter != cache_.end()) {
             return iter->second;
@@ -52,7 +53,7 @@ void WorkContext::SetSource(OperatorTranslator *op) {
     NOISEPAGE_ASSERT(false, "The operator given to WorkContext::SetSource is not in the pipeline");
 }
 
-bool WorkContext::IsParallel() const {
+auto WorkContext::IsParallel() const -> bool {
     return pipeline_.IsParallel();
 }
 

@@ -42,7 +42,7 @@ void FilterManager::Clause::AddTerm(FilterManager::MatchFn term) {
     terms_.emplace_back(std::make_unique<Term>(insertion_index, term));
 }
 
-bool FilterManager::Clause::ShouldReRank() {
+auto FilterManager::Clause::ShouldReRank() -> bool {
     return dist_(gen_) < sample_freq_;
 }
 
@@ -117,7 +117,7 @@ void FilterManager::Clause::RunFilter(exec::ExecutionContext *exec_ctx,
     sample_count_++;
 }
 
-std::vector<uint32_t> FilterManager::Clause::GetOptimalTermOrder() const {
+auto FilterManager::Clause::GetOptimalTermOrder() const -> std::vector<uint32_t> {
     std::vector<uint32_t> result(terms_.size());
     for (uint32_t i = 0; i < terms_.size(); i++) {
         result[i] = terms_[i]->insertion_index_;
@@ -211,7 +211,7 @@ void FilterManager::RunFilters(exec::ExecutionContext *exec_ctx, VectorProjectio
     input_batch->SetVectorProjection(vector_projection);
 }
 
-std::vector<const FilterManager::Clause *> FilterManager::GetOptimalClauseOrder() const {
+auto FilterManager::GetOptimalClauseOrder() const -> std::vector<const FilterManager::Clause *> {
     std::vector<const Clause *> opt(clauses_.size());
     for (uint32_t i = 0; i < clauses_.size(); i++) {
         opt[i] = clauses_[i].get();

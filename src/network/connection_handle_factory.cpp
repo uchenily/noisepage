@@ -4,9 +4,10 @@
 #include "network/protocol_interpreter.h"
 
 namespace noisepage::network {
-ConnectionHandle &ConnectionHandleFactory::NewConnectionHandle(int                                  conn_fd,
-                                                               std::unique_ptr<ProtocolInterpreter> interpreter,
-                                                               common::ManagedPointer<ConnectionHandlerTask> task) {
+auto ConnectionHandleFactory::NewConnectionHandle(int                                           conn_fd,
+                                                  std::unique_ptr<ProtocolInterpreter>          interpreter,
+                                                  common::ManagedPointer<ConnectionHandlerTask> task)
+    -> ConnectionHandle & {
     // Check if a mapping for the file descriptor already exists.
     std::unordered_map<int, ConnectionHandle>::iterator it;
     {

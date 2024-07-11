@@ -36,7 +36,7 @@ SqlTable::SqlTable(const common::ManagedPointer<BlockStore> store, const catalog
     table_ = {new DataTable(store, layout, layout_version_t(0)), layout, col_map};
 }
 
-std::vector<col_id_t> SqlTable::ColIdsForOids(const std::vector<catalog::col_oid_t> &col_oids) const {
+auto SqlTable::ColIdsForOids(const std::vector<catalog::col_oid_t> &col_oids) const -> std::vector<col_id_t> {
     NOISEPAGE_ASSERT(!col_oids.empty(), "Should be used to access at least one column.");
     std::vector<col_id_t> col_ids;
 
@@ -50,7 +50,7 @@ std::vector<col_id_t> SqlTable::ColIdsForOids(const std::vector<catalog::col_oid
     return col_ids;
 }
 
-ProjectionMap SqlTable::ProjectionMapForOids(const std::vector<catalog::col_oid_t> &col_oids) {
+auto SqlTable::ProjectionMapForOids(const std::vector<catalog::col_oid_t> &col_oids) -> ProjectionMap {
     // Resolve OIDs to storage IDs
     auto col_ids = ColIdsForOids(col_oids);
 
@@ -126,7 +126,7 @@ void SqlTable::CopyTable(const common::ManagedPointer<transaction::TransactionCo
     }
 }
 
-catalog::col_oid_t SqlTable::OidForColId(const col_id_t col_id) const {
+auto SqlTable::OidForColId(const col_id_t col_id) const -> catalog::col_oid_t {
     const auto oid_to_id
         = std::find_if(table_.column_map_.cbegin(), table_.column_map_.cend(), [&](const auto &oid_to_id) -> bool {
               return oid_to_id.second == col_id;

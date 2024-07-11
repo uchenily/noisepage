@@ -55,7 +55,8 @@ void PgProcImpl::Bootstrap(common::ManagedPointer<transaction::TransactionContex
     BootstrapProcs(txn, dbc);
 }
 
-std::function<void(void)> PgProcImpl::GetTearDownFn(common::ManagedPointer<transaction::TransactionContext> txn) {
+auto PgProcImpl::GetTearDownFn(common::ManagedPointer<transaction::TransactionContext> txn)
+    -> std::function<void(void)> {
     std::vector<execution::functions::FunctionContext *> func_contexts;
 
     const std::vector<col_oid_t> pg_proc_contexts{PgProc::PRO_CTX_PTR.oid_};
@@ -86,7 +87,7 @@ std::function<void(void)> PgProcImpl::GetTearDownFn(common::ManagedPointer<trans
     };
 }
 
-bool PgProcImpl::CreateProcedure(const common::ManagedPointer<transaction::TransactionContext> txn,
+auto PgProcImpl::CreateProcedure(const common::ManagedPointer<transaction::TransactionContext> txn,
                                  const proc_oid_t                                              oid,
                                  const std::string                                            &procname,
                                  const language_oid_t                                          language_oid,
@@ -98,7 +99,7 @@ bool PgProcImpl::CreateProcedure(const common::ManagedPointer<transaction::Trans
                                  const std::vector<PgProc::ArgModes>                          &arg_modes,
                                  const type_oid_t                                              rettype,
                                  const std::string                                            &src,
-                                 const bool                                                    is_aggregate) {
+                                 const bool                                                    is_aggregate) -> bool {
     NOISEPAGE_ASSERT(args.size() < UINT16_MAX, "Number of arguments must fit in a SMALLINT");
     NOISEPAGE_ASSERT(args.size() == arg_types.size(), "Every input arg needs a type.");
     NOISEPAGE_ASSERT(
@@ -209,7 +210,8 @@ bool PgProcImpl::CreateProcedure(const common::ManagedPointer<transaction::Trans
     return true;
 }
 
-bool PgProcImpl::DropProcedure(const common::ManagedPointer<transaction::TransactionContext> txn, proc_oid_t proc) {
+auto PgProcImpl::DropProcedure(const common::ManagedPointer<transaction::TransactionContext> txn, proc_oid_t proc)
+    -> bool {
     NOISEPAGE_ASSERT(proc != INVALID_PROC_OID, "Invalid oid passed");
 
     const auto &name_pri = procs_name_index_->GetProjectedRowInitializer();
@@ -279,9 +281,9 @@ bool PgProcImpl::DropProcedure(const common::ManagedPointer<transaction::Transac
     return true;
 }
 
-bool PgProcImpl::SetProcCtxPtr(common::ManagedPointer<transaction::TransactionContext> txn,
+auto PgProcImpl::SetProcCtxPtr(common::ManagedPointer<transaction::TransactionContext> txn,
                                const proc_oid_t                                        proc_oid,
-                               const execution::functions::FunctionContext            *func_context) {
+                               const execution::functions::FunctionContext            *func_context) -> bool {
     const auto &oid_pri = procs_oid_index_->GetProjectedRowInitializer();
     auto *const index_buffer = common::AllocationUtil::AllocateAligned(oid_pri.ProjectedRowSize());
 
@@ -308,8 +310,8 @@ bool PgProcImpl::SetProcCtxPtr(common::ManagedPointer<transaction::TransactionCo
     return procs_->Update(txn, update_redo);
 }
 
-common::ManagedPointer<execution::functions::FunctionContext>
-PgProcImpl::GetProcCtxPtr(common::ManagedPointer<transaction::TransactionContext> txn, proc_oid_t proc_oid) {
+auto PgProcImpl::GetProcCtxPtr(common::ManagedPointer<transaction::TransactionContext> txn, proc_oid_t proc_oid)
+    -> common::ManagedPointer<execution::functions::FunctionContext> {
     const auto &oid_pri = procs_oid_index_->GetProjectedRowInitializer();
     auto *const buffer = common::AllocationUtil::AllocateAligned(pg_proc_ptr_pri_.ProjectedRowSize());
 
@@ -340,11 +342,11 @@ PgProcImpl::GetProcCtxPtr(common::ManagedPointer<transaction::TransactionContext
     return common::ManagedPointer<execution::functions::FunctionContext>(ptr);
 }
 
-proc_oid_t PgProcImpl::GetProcOid(const common::ManagedPointer<transaction::TransactionContext> txn,
-                                  const common::ManagedPointer<DatabaseCatalog>                 dbc,
-                                  const namespace_oid_t                                         procns,
-                                  const std::string                                            &procname,
-                                  const std::vector<type_oid_t>                                &input_arg_types) {
+auto PgProcImpl::GetProcOid(const common::ManagedPointer<transaction::TransactionContext> txn,
+                            const common::ManagedPointer<DatabaseCatalog>                 dbc,
+                            const namespace_oid_t                                         procns,
+                            const std::string                                            &procname,
+                            const std::vector<type_oid_t> &input_arg_types) -> proc_oid_t {
     const auto &name_pri = procs_name_index_->GetProjectedRowInitializer();
     byte *const buffer = common::AllocationUtil::AllocateAligned(pg_proc_all_cols_pri_.ProjectedRowSize());
 

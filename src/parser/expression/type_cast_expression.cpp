@@ -5,7 +5,7 @@
 
 namespace noisepage::parser {
 
-std::unique_ptr<AbstractExpression> TypeCastExpression::Copy() const {
+auto TypeCastExpression::Copy() const -> std::unique_ptr<AbstractExpression> {
     std::vector<std::unique_ptr<AbstractExpression>> children;
     for (const auto &child : GetChildren()) {
         children.emplace_back(child->Copy());
@@ -13,8 +13,8 @@ std::unique_ptr<AbstractExpression> TypeCastExpression::Copy() const {
     return CopyWithChildren(std::move(children));
 }
 
-std::unique_ptr<AbstractExpression>
-TypeCastExpression::CopyWithChildren(std::vector<std::unique_ptr<AbstractExpression>> &&children) const {
+auto TypeCastExpression::CopyWithChildren(std::vector<std::unique_ptr<AbstractExpression>> &&children) const
+    -> std::unique_ptr<AbstractExpression> {
     auto expr = std::make_unique<TypeCastExpression>(GetReturnValueType(), std::move(children));
     expr->SetMutableStateForCopy(*this);
     return expr;

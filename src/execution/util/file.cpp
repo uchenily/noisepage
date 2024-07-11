@@ -178,7 +178,7 @@ void File::CreateTemp(bool delete_on_close) {
     error_ = Error::OK;
 }
 
-int32_t File::ReadFull(std::byte *data, size_t len) const {
+auto File::ReadFull(std::byte *data, size_t len) const -> int32_t {
     NOISEPAGE_ASSERT(IsOpen(), "File must be open before reading");
 
     std::size_t bytes_read = 0;
@@ -194,7 +194,7 @@ int32_t File::ReadFull(std::byte *data, size_t len) const {
     return bytes_read > 0 ? bytes_read : ret;
 }
 
-int32_t File::ReadFullFromPosition(std::size_t offset, std::byte *data, std::size_t len) const {
+auto File::ReadFullFromPosition(std::size_t offset, std::byte *data, std::size_t len) const -> int32_t {
     NOISEPAGE_ASSERT(IsOpen(), "File must be open before reading");
 
     std::size_t bytes_read = 0;
@@ -210,12 +210,12 @@ int32_t File::ReadFullFromPosition(std::size_t offset, std::byte *data, std::siz
     return bytes_read > 0 ? bytes_read : ret;
 }
 
-int32_t File::Read(std::byte *data, std::size_t len) const {
+auto File::Read(std::byte *data, std::size_t len) const -> int32_t {
     NOISEPAGE_ASSERT(IsOpen(), "File must be open before reading");
     return HANDLE_EINTR(read(fd_, data, len));
 }
 
-int32_t File::WriteFull(const std::byte *data, size_t len) const {
+auto File::WriteFull(const std::byte *data, size_t len) const -> int32_t {
     NOISEPAGE_ASSERT(IsOpen(), "File must be open before reading");
 
     std::size_t bytes_written = 0;
@@ -231,7 +231,7 @@ int32_t File::WriteFull(const std::byte *data, size_t len) const {
     return bytes_written > 0 ? bytes_written : ret;
 }
 
-int32_t File::WriteFullAtPosition(std::size_t offset, const std::byte *data, std::size_t len) const {
+auto File::WriteFullAtPosition(std::size_t offset, const std::byte *data, std::size_t len) const -> int32_t {
     NOISEPAGE_ASSERT(IsOpen(), "File must be open before reading");
 
     std::size_t bytes_written = 0;
@@ -247,17 +247,17 @@ int32_t File::WriteFullAtPosition(std::size_t offset, const std::byte *data, std
     return bytes_written > 0 ? bytes_written : ret;
 }
 
-int32_t File::Write(const std::byte *data, std::size_t len) const {
+auto File::Write(const std::byte *data, std::size_t len) const -> int32_t {
     NOISEPAGE_ASSERT(IsOpen(), "File must be open before reading");
     return HANDLE_EINTR(write(fd_, data, len));
 }
 
-int64_t File::Seek(File::Whence whence, int64_t offset) const {
+auto File::Seek(File::Whence whence, int64_t offset) const -> int64_t {
     static_assert(sizeof(int64_t) == sizeof(off_t), "off_t must be 64 bits");
     return lseek(fd_, static_cast<off_t>(offset), static_cast<int32_t>(whence));
 }
 
-bool File::Flush() const {
+auto File::Flush() const -> bool {
 #if defined(OS_LINUX)
     return HANDLE_EINTR(fdatasync(fd_)) == 0;
 #else
@@ -265,7 +265,7 @@ bool File::Flush() const {
 #endif
 }
 
-int64_t File::Length() {
+auto File::Length() -> int64_t {
     NOISEPAGE_ASSERT(IsOpen(), "File must be open before reading");
 
     // Save the current position
@@ -301,7 +301,7 @@ void File::Close() {
     }
 }
 
-std::string File::ErrorToString(File::Error error) {
+auto File::ErrorToString(File::Error error) -> std::string {
     switch (error) {
     case Error::ACCESS_DENIED:
         return "ACCESS DENIED";
@@ -329,7 +329,7 @@ std::string File::ErrorToString(File::Error error) {
     UNREACHABLE("Impossible");
 }
 
-File::Error File::OsErrorToFileError(int saved_errno) {
+auto File::OsErrorToFileError(int saved_errno) -> File::Error {
     switch (saved_errno) {
     case EACCES:
     case EISDIR:

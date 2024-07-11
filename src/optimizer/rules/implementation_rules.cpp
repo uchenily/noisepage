@@ -30,8 +30,8 @@ LogicalGetToPhysicalTableFreeScan::LogicalGetToPhysicalTableFreeScan() {
     match_pattern_ = new Pattern(OpType::LOGICALGET);
 }
 
-bool LogicalGetToPhysicalTableFreeScan::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                              OptimizationContext                          *context) const {
+auto LogicalGetToPhysicalTableFreeScan::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                              OptimizationContext                          *context) const -> bool {
     (void) context;
     const auto get = plan->Contents()->GetContentsAs<LogicalGet>();
     return get->GetTableOid() == catalog::INVALID_TABLE_OID;
@@ -56,8 +56,8 @@ LogicalGetToPhysicalSeqScan::LogicalGetToPhysicalSeqScan() {
     match_pattern_ = new Pattern(OpType::LOGICALGET);
 }
 
-bool LogicalGetToPhysicalSeqScan::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                        OptimizationContext                          *context) const {
+auto LogicalGetToPhysicalSeqScan::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                        OptimizationContext                          *context) const -> bool {
     (void) context;
     const auto get = plan->Contents()->GetContentsAs<LogicalGet>();
     return get->GetTableOid() != catalog::INVALID_TABLE_OID;
@@ -92,8 +92,8 @@ LogicalGetToPhysicalIndexScan::LogicalGetToPhysicalIndexScan() {
     match_pattern_ = new Pattern(OpType::LOGICALGET);
 }
 
-bool LogicalGetToPhysicalIndexScan::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                          OptimizationContext                          *context) const {
+auto LogicalGetToPhysicalIndexScan::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                          OptimizationContext                          *context) const -> bool {
     // If there is a index for the table, return true,
     // else return false
     (void) context;
@@ -204,8 +204,8 @@ LogicalQueryDerivedGetToPhysicalQueryDerivedScan::LogicalQueryDerivedGetToPhysic
     match_pattern_->AddChild(child);
 }
 
-bool LogicalQueryDerivedGetToPhysicalQueryDerivedScan::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                                             OptimizationContext *context) const {
+auto LogicalQueryDerivedGetToPhysicalQueryDerivedScan::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                                             OptimizationContext *context) const -> bool {
     (void) context;
     (void) plan;
     return true;
@@ -240,8 +240,8 @@ LogicalExternalFileGetToPhysicalExternalFileGet::LogicalExternalFileGetToPhysica
     match_pattern_ = new Pattern(OpType::LOGICALEXTERNALFILEGET);
 }
 
-bool LogicalExternalFileGetToPhysicalExternalFileGet::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                                            OptimizationContext *context) const {
+auto LogicalExternalFileGetToPhysicalExternalFileGet::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                                            OptimizationContext *context) const -> bool {
     (void) plan;
     (void) context;
     return true;
@@ -278,8 +278,8 @@ LogicalDeleteToPhysicalDelete::LogicalDeleteToPhysicalDelete() {
     match_pattern_->AddChild(child);
 }
 
-bool LogicalDeleteToPhysicalDelete::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                          OptimizationContext                          *context) const {
+auto LogicalDeleteToPhysicalDelete::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                          OptimizationContext                          *context) const -> bool {
     (void) plan;
     (void) context;
     return true;
@@ -313,8 +313,8 @@ LogicalUpdateToPhysicalUpdate::LogicalUpdateToPhysicalUpdate() {
     match_pattern_->AddChild(child);
 }
 
-bool LogicalUpdateToPhysicalUpdate::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                          OptimizationContext                          *context) const {
+auto LogicalUpdateToPhysicalUpdate::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                          OptimizationContext                          *context) const -> bool {
     (void) plan;
     (void) context;
     return true;
@@ -346,8 +346,8 @@ LogicalInsertToPhysicalInsert::LogicalInsertToPhysicalInsert() {
     match_pattern_ = new Pattern(OpType::LOGICALINSERT);
 }
 
-bool LogicalInsertToPhysicalInsert::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                          OptimizationContext                          *context) const {
+auto LogicalInsertToPhysicalInsert::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                          OptimizationContext                          *context) const -> bool {
     (void) plan;
     (void) context;
     return true;
@@ -381,8 +381,8 @@ LogicalInsertSelectToPhysicalInsertSelect::LogicalInsertSelectToPhysicalInsertSe
     match_pattern_->AddChild(child);
 }
 
-bool LogicalInsertSelectToPhysicalInsertSelect::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                                      OptimizationContext                          *context) const {
+auto LogicalInsertSelectToPhysicalInsertSelect::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                                      OptimizationContext *context) const -> bool {
     (void) plan;
     (void) context;
     return true;
@@ -418,8 +418,8 @@ LogicalGroupByToPhysicalHashGroupBy::LogicalGroupByToPhysicalHashGroupBy() {
     match_pattern_->AddChild(child);
 }
 
-bool LogicalGroupByToPhysicalHashGroupBy::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                                OptimizationContext                          *context) const {
+auto LogicalGroupByToPhysicalHashGroupBy::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                                OptimizationContext                          *context) const -> bool {
     (void) context;
     const auto agg_op = plan->Contents()->GetContentsAs<LogicalAggregateAndGroupBy>();
     return !agg_op->GetColumns().empty() || !agg_op->GetHaving().empty();
@@ -456,8 +456,8 @@ LogicalAggregateToPhysicalAggregate::LogicalAggregateToPhysicalAggregate() {
     match_pattern_->AddChild(child);
 }
 
-bool LogicalAggregateToPhysicalAggregate::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                                OptimizationContext                          *context) const {
+auto LogicalAggregateToPhysicalAggregate::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                                OptimizationContext                          *context) const -> bool {
     (void) context;
     const auto agg_op = plan->Contents()->GetContentsAs<LogicalAggregateAndGroupBy>();
     return agg_op->GetColumns().empty() && agg_op->GetHaving().empty();
@@ -496,8 +496,8 @@ LogicalInnerJoinToPhysicalInnerIndexJoin::LogicalInnerJoinToPhysicalInnerIndexJo
     match_pattern_->AddChild(right_child);
 }
 
-bool LogicalInnerJoinToPhysicalInnerIndexJoin::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                                     OptimizationContext                          *context) const {
+auto LogicalInnerJoinToPhysicalInnerIndexJoin::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                                     OptimizationContext *context) const -> bool {
     (void) context;
     (void) plan;
     [[maybe_unused]] const auto join = plan->Contents()->GetContentsAs<LogicalInnerJoin>();
@@ -587,8 +587,8 @@ LogicalInnerJoinToPhysicalInnerNLJoin::LogicalInnerJoinToPhysicalInnerNLJoin() {
     match_pattern_->AddChild(right_child);
 }
 
-bool LogicalInnerJoinToPhysicalInnerNLJoin::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                                  OptimizationContext                          *context) const {
+auto LogicalInnerJoinToPhysicalInnerNLJoin::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                                  OptimizationContext                          *context) const -> bool {
     (void) context;
     (void) plan;
     return true;
@@ -632,8 +632,8 @@ LogicalInnerJoinToPhysicalInnerHashJoin::LogicalInnerJoinToPhysicalInnerHashJoin
     match_pattern_->AddChild(right_child);
 }
 
-bool LogicalInnerJoinToPhysicalInnerHashJoin::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                                    OptimizationContext                          *context) const {
+auto LogicalInnerJoinToPhysicalInnerHashJoin::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                                    OptimizationContext *context) const -> bool {
     (void) context;
     (void) plan;
     return true;
@@ -689,8 +689,8 @@ LogicalSemiJoinToPhysicalSemiLeftHashJoin::LogicalSemiJoinToPhysicalSemiLeftHash
     match_pattern_->AddChild(right_child);
 }
 
-bool LogicalSemiJoinToPhysicalSemiLeftHashJoin::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                                      OptimizationContext                          *context) const {
+auto LogicalSemiJoinToPhysicalSemiLeftHashJoin::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                                      OptimizationContext *context) const -> bool {
     (void) context;
     (void) plan;
     return true;
@@ -748,8 +748,8 @@ LogicalLeftJoinToPhysicalLeftHashJoin::LogicalLeftJoinToPhysicalLeftHashJoin() {
     match_pattern_->AddChild(right_child);
 }
 
-bool LogicalLeftJoinToPhysicalLeftHashJoin::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                                  OptimizationContext                          *context) const {
+auto LogicalLeftJoinToPhysicalLeftHashJoin::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                                  OptimizationContext                          *context) const -> bool {
     (void) context;
     (void) plan;
     return true;
@@ -799,8 +799,8 @@ LogicalLimitToPhysicalLimit::LogicalLimitToPhysicalLimit() {
     match_pattern_->AddChild(new Pattern(OpType::LEAF));
 }
 
-bool LogicalLimitToPhysicalLimit::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                        OptimizationContext                          *context) const {
+auto LogicalLimitToPhysicalLimit::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                        OptimizationContext                          *context) const -> bool {
     (void) context;
     (void) plan;
     return true;
@@ -836,8 +836,8 @@ LogicalExportToPhysicalExport::LogicalExportToPhysicalExport() {
     match_pattern_->AddChild(new Pattern(OpType::LEAF));
 }
 
-bool LogicalExportToPhysicalExport::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                          OptimizationContext                          *context) const {
+auto LogicalExportToPhysicalExport::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                          OptimizationContext                          *context) const -> bool {
     return true;
 }
 
@@ -872,8 +872,8 @@ LogicalCreateDatabaseToPhysicalCreateDatabase::LogicalCreateDatabaseToPhysicalCr
     match_pattern_ = new Pattern(OpType::LOGICALCREATEDATABASE);
 }
 
-bool LogicalCreateDatabaseToPhysicalCreateDatabase::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                                          OptimizationContext                          *context) const {
+auto LogicalCreateDatabaseToPhysicalCreateDatabase::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                                          OptimizationContext *context) const -> bool {
     return true;
 }
 
@@ -896,8 +896,8 @@ LogicalCreateFunctionToPhysicalCreateFunction::LogicalCreateFunctionToPhysicalCr
     match_pattern_ = new Pattern(OpType::LOGICALCREATEFUNCTION);
 }
 
-bool LogicalCreateFunctionToPhysicalCreateFunction::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                                          OptimizationContext                          *context) const {
+auto LogicalCreateFunctionToPhysicalCreateFunction::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                                          OptimizationContext *context) const -> bool {
     return true;
 }
 
@@ -929,8 +929,8 @@ LogicalCreateIndexToPhysicalCreateIndex::LogicalCreateIndexToPhysicalCreateIndex
     match_pattern_ = new Pattern(OpType::LOGICALCREATEINDEX);
 }
 
-bool LogicalCreateIndexToPhysicalCreateIndex::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                                    OptimizationContext                          *context) const {
+auto LogicalCreateIndexToPhysicalCreateIndex::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                                    OptimizationContext *context) const -> bool {
     return true;
 }
 
@@ -1013,8 +1013,8 @@ LogicalCreateTableToPhysicalCreateTable::LogicalCreateTableToPhysicalCreateTable
     match_pattern_ = new Pattern(OpType::LOGICALCREATETABLE);
 }
 
-bool LogicalCreateTableToPhysicalCreateTable::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                                    OptimizationContext                          *context) const {
+auto LogicalCreateTableToPhysicalCreateTable::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                                    OptimizationContext *context) const -> bool {
     return true;
 }
 
@@ -1047,8 +1047,8 @@ LogicalCreateNamespaceToPhysicalCreateNamespace::LogicalCreateNamespaceToPhysica
     match_pattern_ = new Pattern(OpType::LOGICALCREATENAMESPACE);
 }
 
-bool LogicalCreateNamespaceToPhysicalCreateNamespace::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                                            OptimizationContext *context) const {
+auto LogicalCreateNamespaceToPhysicalCreateNamespace::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                                            OptimizationContext *context) const -> bool {
     return true;
 }
 
@@ -1072,8 +1072,8 @@ LogicalCreateTriggerToPhysicalCreateTrigger::LogicalCreateTriggerToPhysicalCreat
     match_pattern_ = new Pattern(OpType::LOGICALCREATETRIGGER);
 }
 
-bool LogicalCreateTriggerToPhysicalCreateTrigger::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                                        OptimizationContext                          *context) const {
+auto LogicalCreateTriggerToPhysicalCreateTrigger::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                                        OptimizationContext *context) const -> bool {
     return true;
 }
 
@@ -1105,8 +1105,8 @@ LogicalCreateViewToPhysicalCreateView::LogicalCreateViewToPhysicalCreateView() {
     match_pattern_ = new Pattern(OpType::LOGICALCREATEVIEW);
 }
 
-bool LogicalCreateViewToPhysicalCreateView::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                                  OptimizationContext                          *context) const {
+auto LogicalCreateViewToPhysicalCreateView::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                                  OptimizationContext                          *context) const -> bool {
     return true;
 }
 
@@ -1130,8 +1130,8 @@ LogicalDropDatabaseToPhysicalDropDatabase::LogicalDropDatabaseToPhysicalDropData
     match_pattern_ = new Pattern(OpType::LOGICALDROPDATABASE);
 }
 
-bool LogicalDropDatabaseToPhysicalDropDatabase::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                                      OptimizationContext                          *context) const {
+auto LogicalDropDatabaseToPhysicalDropDatabase::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                                      OptimizationContext *context) const -> bool {
     return true;
 }
 
@@ -1154,8 +1154,8 @@ LogicalDropTableToPhysicalDropTable::LogicalDropTableToPhysicalDropTable() {
     match_pattern_ = new Pattern(OpType::LOGICALDROPTABLE);
 }
 
-bool LogicalDropTableToPhysicalDropTable::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                                OptimizationContext                          *context) const {
+auto LogicalDropTableToPhysicalDropTable::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                                OptimizationContext                          *context) const -> bool {
     return true;
 }
 
@@ -1177,8 +1177,8 @@ LogicalDropIndexToPhysicalDropIndex::LogicalDropIndexToPhysicalDropIndex() {
     match_pattern_ = new Pattern(OpType::LOGICALDROPINDEX);
 }
 
-bool LogicalDropIndexToPhysicalDropIndex::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                                OptimizationContext                          *context) const {
+auto LogicalDropIndexToPhysicalDropIndex::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                                OptimizationContext                          *context) const -> bool {
     return true;
 }
 
@@ -1200,8 +1200,8 @@ LogicalDropTriggerToPhysicalDropTrigger::LogicalDropTriggerToPhysicalDropTrigger
     match_pattern_ = new Pattern(OpType::LOGICALDROPTRIGGER);
 }
 
-bool LogicalDropTriggerToPhysicalDropTrigger::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                                    OptimizationContext                          *context) const {
+auto LogicalDropTriggerToPhysicalDropTrigger::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                                    OptimizationContext *context) const -> bool {
     return true;
 }
 
@@ -1225,8 +1225,8 @@ LogicalDropNamespaceToPhysicalDropNamespace::LogicalDropNamespaceToPhysicalDropN
     match_pattern_ = new Pattern(OpType::LOGICALDROPNAMESPACE);
 }
 
-bool LogicalDropNamespaceToPhysicalDropNamespace::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                                        OptimizationContext                          *context) const {
+auto LogicalDropNamespaceToPhysicalDropNamespace::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                                        OptimizationContext *context) const -> bool {
     return true;
 }
 
@@ -1249,8 +1249,8 @@ LogicalDropViewToPhysicalDropView::LogicalDropViewToPhysicalDropView() {
     match_pattern_ = new Pattern(OpType::LOGICALDROPVIEW);
 }
 
-bool LogicalDropViewToPhysicalDropView::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                              OptimizationContext                          *context) const {
+auto LogicalDropViewToPhysicalDropView::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                              OptimizationContext                          *context) const -> bool {
     return true;
 }
 
@@ -1274,8 +1274,8 @@ LogicalAnalyzeToPhysicalAnalyze::LogicalAnalyzeToPhysicalAnalyze() {
     match_pattern_->AddChild(new Pattern(OpType::LEAF));
 }
 
-bool LogicalAnalyzeToPhysicalAnalyze::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                            OptimizationContext                          *context) const {
+auto LogicalAnalyzeToPhysicalAnalyze::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                            OptimizationContext                          *context) const -> bool {
     return true;
 }
 
@@ -1309,8 +1309,8 @@ LogicalCteScanToPhysicalCteScanIterative::LogicalCteScanToPhysicalCteScanIterati
     match_pattern_->AddChild(new Pattern(OpType::LEAF));
 }
 
-bool LogicalCteScanToPhysicalCteScanIterative::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                                     OptimizationContext                          *context) const {
+auto LogicalCteScanToPhysicalCteScanIterative::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                                     OptimizationContext *context) const -> bool {
     (void) context;
     (void) plan;
     return true;
@@ -1356,8 +1356,8 @@ LogicalCteScanToPhysicalCteScan::LogicalCteScanToPhysicalCteScan() {
     match_pattern_->AddChild(new Pattern(OpType::LEAF));
 }
 
-bool LogicalCteScanToPhysicalCteScan::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                            OptimizationContext                          *context) const {
+auto LogicalCteScanToPhysicalCteScan::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                            OptimizationContext                          *context) const -> bool {
     (void) context;
     (void) plan;
     return true;
@@ -1397,8 +1397,8 @@ LogicalCteScanToPhysicalEmptyCteScan::LogicalCteScanToPhysicalEmptyCteScan() {
     match_pattern_ = new Pattern(OpType::LOGICALCTESCAN);
 }
 
-bool LogicalCteScanToPhysicalEmptyCteScan::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                                 OptimizationContext                          *context) const {
+auto LogicalCteScanToPhysicalEmptyCteScan::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                                 OptimizationContext                          *context) const -> bool {
     (void) context;
     (void) plan;
     return true;

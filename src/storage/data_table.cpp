@@ -38,9 +38,9 @@ DataTable::~DataTable() {
     }
 }
 
-bool DataTable::Select(const common::ManagedPointer<transaction::TransactionContext> txn,
+auto DataTable::Select(const common::ManagedPointer<transaction::TransactionContext> txn,
                        TupleSlot                                                     slot,
-                       ProjectedRow                                                 *out_buffer) const {
+                       ProjectedRow                                                 *out_buffer) const -> bool {
     return SelectIntoBuffer(txn, slot, out_buffer);
 }
 
@@ -82,9 +82,9 @@ void DataTable::Scan(const common::ManagedPointer<transaction::TransactionContex
     out_buffer->Reset(filled);
 }
 
-bool DataTable::Update(const common::ManagedPointer<transaction::TransactionContext> txn,
+auto DataTable::Update(const common::ManagedPointer<transaction::TransactionContext> txn,
                        const TupleSlot                                               slot,
-                       const ProjectedRow                                           &redo) {
+                       const ProjectedRow                                           &redo) -> bool {
     NOISEPAGE_ASSERT(redo.NumColumns() <= accessor_.GetBlockLayout().NumColumns() - NUM_RESERVED_COLUMNS,
                      "The input buffer cannot change the reserved columns, so it should have fewer attributes.");
     NOISEPAGE_ASSERT(redo.NumColumns() > 0, "The input buffer should modify at least one attribute.");
@@ -125,8 +125,8 @@ bool DataTable::Update(const common::ManagedPointer<transaction::TransactionCont
     return true;
 }
 
-TupleSlot DataTable::Insert(const common::ManagedPointer<transaction::TransactionContext> txn,
-                            const ProjectedRow                                           &redo) {
+auto DataTable::Insert(const common::ManagedPointer<transaction::TransactionContext> txn, const ProjectedRow &redo)
+    -> TupleSlot {
     NOISEPAGE_ASSERT(redo.NumColumns() == accessor_.GetBlockLayout().NumColumns() - NUM_RESERVED_COLUMNS,
                      "The input buffer never changes the version pointer column, so it should have  exactly 1 fewer "
                      "attribute than the DataTable's layout.");
@@ -209,7 +209,8 @@ void DataTable::InsertInto(const common::ManagedPointer<transaction::Transaction
     }
 }
 
-bool DataTable::Delete(const common::ManagedPointer<transaction::TransactionContext> txn, const TupleSlot slot) {
+auto DataTable::Delete(const common::ManagedPointer<transaction::TransactionContext> txn, const TupleSlot slot)
+    -> bool {
     UndoRecord *const undo = txn->UndoRecordForDelete(this, slot);
     slot.GetBlock()->controller_.WaitUntilHot();
     UndoRecord *version_ptr;
@@ -310,7 +311,8 @@ template bool DataTable::SelectIntoBuffer<ProjectedColumns::RowView>(
     const TupleSlot                                               slot,
     ProjectedColumns::RowView *const                              out_buffer) const;
 
-UndoRecord *DataTable::AtomicallyReadVersionPtr(const TupleSlot slot, const TupleAccessStrategy &accessor) const {
+auto DataTable::AtomicallyReadVersionPtr(const TupleSlot slot, const TupleAccessStrategy &accessor) const
+    -> UndoRecord * {
     // Okay to ignore presence bit, because we use that for logical delete, not for validity of the version pointer
     // value
     byte *ptr_location = accessor.AccessWithoutNullCheck(slot, VERSION_POINTER_COLUMN_ID);
@@ -326,13 +328,13 @@ void DataTable::AtomicallyWriteVersionPtr(const TupleSlot            slot,
     reinterpret_cast<std::atomic<UndoRecord *> *>(ptr_location)->store(desired);
 }
 
-bool DataTable::Visible(const TupleSlot slot, const TupleAccessStrategy &accessor) const {
+auto DataTable::Visible(const TupleSlot slot, const TupleAccessStrategy &accessor) const -> bool {
     const bool present = accessor.Allocated(slot);
     const bool not_deleted = !accessor.IsNull(slot, VERSION_POINTER_COLUMN_ID);
     return present && not_deleted;
 }
 
-bool DataTable::HasConflict(const transaction::TransactionContext &txn, UndoRecord *const version_ptr) const {
+auto DataTable::HasConflict(const transaction::TransactionContext &txn, UndoRecord *const version_ptr) const -> bool {
     if (version_ptr == nullptr) {
         return false; // Nobody owns this tuple's write lock, no older version visible
     }
@@ -346,28 +348,28 @@ bool DataTable::HasConflict(const transaction::TransactionContext &txn, UndoReco
     return owned_by_other_txn || newer_committed_version;
 }
 
-bool DataTable::CompareAndSwapVersionPtr(const TupleSlot            slot,
+auto DataTable::CompareAndSwapVersionPtr(const TupleSlot            slot,
                                          const TupleAccessStrategy &accessor,
                                          UndoRecord                *expected,
-                                         UndoRecord *const          desired) {
+                                         UndoRecord *const          desired) -> bool {
     // Okay to ignore presence bit, because we use that for logical delete, not for validity of the version pointer
     // value
     byte *ptr_location = accessor.AccessWithoutNullCheck(slot, VERSION_POINTER_COLUMN_ID);
     return reinterpret_cast<std::atomic<UndoRecord *> *>(ptr_location)->compare_exchange_strong(expected, desired);
 }
 
-RawBlock *DataTable::NewBlock() {
+auto DataTable::NewBlock() -> RawBlock * {
     RawBlock *new_block = block_store_->Get();
     accessor_.InitializeRawBlock(this, new_block, layout_version_);
     return new_block;
 }
 
-bool DataTable::HasConflict(const transaction::TransactionContext &txn, const TupleSlot slot) const {
+auto DataTable::HasConflict(const transaction::TransactionContext &txn, const TupleSlot slot) const -> bool {
     UndoRecord *const version_ptr = AtomicallyReadVersionPtr(slot, accessor_);
     return HasConflict(txn, version_ptr);
 }
 
-bool DataTable::IsVisible(const transaction::TransactionContext &txn, const TupleSlot slot) const {
+auto DataTable::IsVisible(const transaction::TransactionContext &txn, const TupleSlot slot) const -> bool {
     UndoRecord *version_ptr;
     bool        visible;
     do {

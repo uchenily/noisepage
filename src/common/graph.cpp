@@ -21,11 +21,11 @@ void Graph::AddEdge(const std::size_t src_id, const std::size_t dst_id) {
     }
 }
 
-std::size_t Graph::Order() const {
+auto Graph::Order() const -> std::size_t {
     return graph_.size();
 }
 
-std::size_t Graph::Size() const {
+auto Graph::Size() const -> std::size_t {
     return std::transform_reduce(graph_.cbegin(),
                                  graph_.cend(),
                                  0UL,
@@ -35,7 +35,7 @@ std::size_t Graph::Size() const {
                                  });
 }
 
-std::vector<std::size_t> Graph::VertexSet() const {
+auto Graph::VertexSet() const -> std::vector<std::size_t> {
     std::vector<std::size_t> vertex_set{};
     vertex_set.reserve(graph_.size());
     for (const auto &[id, _] : graph_) {
@@ -44,7 +44,7 @@ std::vector<std::size_t> Graph::VertexSet() const {
     return vertex_set;
 }
 
-std::vector<std::pair<std::size_t, std::size_t>> Graph::EdgeSet() const {
+auto Graph::EdgeSet() const -> std::vector<std::pair<std::size_t, std::size_t>> {
     std::vector<std::pair<std::size_t, std::size_t>> edge_set{};
     for (const auto &[src, adjacencies] : graph_) {
         for (const auto &adjacent : adjacencies) {
@@ -54,20 +54,20 @@ std::vector<std::pair<std::size_t, std::size_t>> Graph::EdgeSet() const {
     return edge_set;
 }
 
-const std::unordered_set<std::size_t> &Graph::AdjacenciesFor(const std::size_t id) const {
+auto Graph::AdjacenciesFor(const std::size_t id) const -> const std::unordered_set<std::size_t> & {
     NOISEPAGE_ASSERT(graph_.find(id) != graph_.cend(), "Request for adjacencies of non-existent vertex");
     return graph_.at(id);
 }
 
-bool Graph::operator==(const Graph &rhs) const {
+auto Graph::operator==(const Graph &rhs) const -> bool {
     return graph::Isomorphic(*this, rhs);
 }
 
-bool Graph::operator!=(const Graph &rhs) const {
+auto Graph::operator!=(const Graph &rhs) const -> bool {
     return !graph::Isomorphic(*this, rhs);
 }
 
-Graph Graph::FromEdgeSet(const std::vector<std::pair<std::size_t, std::size_t>> &edge_set) {
+auto Graph::FromEdgeSet(const std::vector<std::pair<std::size_t, std::size_t>> &edge_set) -> Graph {
     Graph g{};
     for (const auto &[src, dst] : edge_set) {
         g.AddEdge(src, dst);

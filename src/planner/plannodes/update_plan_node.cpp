@@ -9,7 +9,7 @@
 
 namespace noisepage::planner {
 
-common::hash_t UpdatePlanNode::Hash() const {
+auto UpdatePlanNode::Hash() const -> common::hash_t {
     common::hash_t hash = AbstractPlanNode::Hash();
 
     // Hash database_oid
@@ -37,7 +37,7 @@ common::hash_t UpdatePlanNode::Hash() const {
     return hash;
 }
 
-bool UpdatePlanNode::operator==(const AbstractPlanNode &rhs) const {
+auto UpdatePlanNode::operator==(const AbstractPlanNode &rhs) const -> bool {
     if (!AbstractPlanNode::operator==(rhs)) {
         return false;
     }
@@ -87,7 +87,7 @@ bool UpdatePlanNode::operator==(const AbstractPlanNode &rhs) const {
     return true;
 }
 
-nlohmann::json UpdatePlanNode::ToJson() const {
+auto UpdatePlanNode::ToJson() const -> nlohmann::json {
     nlohmann::json j = AbstractPlanNode::ToJson();
     j["database_oid"] = database_oid_;
     j["table_oid"] = table_oid_;
@@ -103,7 +103,7 @@ nlohmann::json UpdatePlanNode::ToJson() const {
     return j;
 }
 
-std::vector<std::unique_ptr<parser::AbstractExpression>> UpdatePlanNode::FromJson(const nlohmann::json &j) {
+auto UpdatePlanNode::FromJson(const nlohmann::json &j) -> std::vector<std::unique_ptr<parser::AbstractExpression>> {
     std::vector<std::unique_ptr<parser::AbstractExpression>> exprs;
     auto                                                     e1 = AbstractPlanNode::FromJson(j);
     exprs.insert(exprs.end(), std::make_move_iterator(e1.begin()), std::make_move_iterator(e1.end()));

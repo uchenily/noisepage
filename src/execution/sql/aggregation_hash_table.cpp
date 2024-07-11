@@ -59,7 +59,7 @@ public:
     // Find the group associated to the input hash, but only if the predicate is
     // true. If no such value is found, return a nullptr.
     template <typename P>
-    uint16_t *Find(const hash_t hash, P p) {
+    auto Find(const hash_t hash, P p) -> uint16_t * {
         uint16_t candidate = entries_[hash & mask_];
         if (candidate == EMPTY) {
             return nullptr;
@@ -90,10 +90,10 @@ public:
     }
 
     // Iterators.
-    Entry *begin() {
+    auto begin() -> Entry * {
         return storage_.get();
     } // NOLINT to match C++ iterators
-    Entry *end() {
+    auto end() -> Entry * {
         return storage_.get() + storage_used_;
     } // NOLINT to match C++ iterators
 
@@ -233,7 +233,7 @@ void AggregationHashTable::Grow() {
     stats_.num_growths_++;
 }
 
-HashTableEntry *AggregationHashTable::AllocateEntryInternal(const hash_t hash) {
+auto AggregationHashTable::AllocateEntryInternal(const hash_t hash) -> HashTableEntry * {
     // Allocate an entry
     auto *entry = reinterpret_cast<HashTableEntry *>(entries_.Append());
     entry->hash_ = hash;
@@ -246,7 +246,7 @@ HashTableEntry *AggregationHashTable::AllocateEntryInternal(const hash_t hash) {
     return entry;
 }
 
-byte *AggregationHashTable::AllocInputTuple(const hash_t hash) {
+auto AggregationHashTable::AllocInputTuple(const hash_t hash) -> byte * {
     stats_.num_inserts_++;
 
     // Grow if need be
@@ -305,7 +305,7 @@ void AggregationHashTable::FlushToOverflowPartitions() {
     stats_.num_flushes_++;
 }
 
-byte *AggregationHashTable::AllocInputTuplePartitioned(hash_t hash) {
+auto AggregationHashTable::AllocInputTuplePartitioned(hash_t hash) -> byte * {
     byte *ret = AllocInputTuple(hash);
     if (NeedsToFlushToOverflowPartitions()) {
         FlushToOverflowPartitions();
@@ -616,8 +616,8 @@ void AggregationHashTable::TransferMemoryAndPartitions(ThreadStateContainer *thr
     exec_ctx_->InvokeHook(post_hook, tls, reinterpret_cast<void *>(tl_agg_ht.size()));
 }
 
-AggregationHashTable *AggregationHashTable::GetOrBuildTableOverPartition(void          *query_state,
-                                                                         const uint32_t partition_idx) {
+auto AggregationHashTable::GetOrBuildTableOverPartition(void *query_state, const uint32_t partition_idx)
+    -> AggregationHashTable * {
     NOISEPAGE_ASSERT(partition_idx < DEFAULT_NUM_PARTITIONS, "Out-of-bounds partition access");
     NOISEPAGE_ASSERT(partition_heads_[partition_idx] != nullptr,
                      "Should not build aggregation table over empty partition!");

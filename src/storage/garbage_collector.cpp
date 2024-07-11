@@ -32,7 +32,7 @@ GarbageCollector::GarbageCollector(
                      "The TransactionManager needs to be instantiated with gc_enabled true for GC to work!");
 }
 
-std::pair<uint32_t, uint32_t> GarbageCollector::PerformGarbageCollection() {
+auto GarbageCollector::PerformGarbageCollection() -> std::pair<uint32_t, uint32_t> {
     const bool gc_metrics_enabled
         = common::thread_context.metrics_store_ != nullptr
           && common::thread_context.metrics_store_->ComponentToRecord(metrics::MetricsComponent::GARBAGECOLLECTION);
@@ -75,7 +75,7 @@ std::pair<uint32_t, uint32_t> GarbageCollector::PerformGarbageCollection() {
     return std::make_pair(txns_deallocated, txns_unlinked);
 }
 
-uint32_t GarbageCollector::ProcessDeallocateQueue(transaction::timestamp_t oldest_txn) {
+auto GarbageCollector::ProcessDeallocateQueue(transaction::timestamp_t oldest_txn) -> uint32_t {
     uint32_t txns_processed = 0;
 
     if (transaction::TransactionUtil::NewerThan(oldest_txn, last_unlinked_)) {
@@ -92,7 +92,8 @@ uint32_t GarbageCollector::ProcessDeallocateQueue(transaction::timestamp_t oldes
     return txns_processed;
 }
 
-std::tuple<uint32_t, uint32_t, uint32_t> GarbageCollector::ProcessUnlinkQueue(transaction::timestamp_t oldest_txn) {
+auto GarbageCollector::ProcessUnlinkQueue(transaction::timestamp_t oldest_txn)
+    -> std::tuple<uint32_t, uint32_t, uint32_t> {
     transaction::TransactionContext *txn = nullptr;
 
     // Get the completed transactions from the TransactionManager

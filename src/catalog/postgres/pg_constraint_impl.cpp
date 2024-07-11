@@ -67,7 +67,8 @@ void PgConstraintImpl::Bootstrap(common::ManagedPointer<transaction::Transaction
                         constraints_foreigntable_index_);
 }
 
-std::function<void(void)> PgConstraintImpl::GetTearDownFn(common::ManagedPointer<transaction::TransactionContext> txn) {
+auto PgConstraintImpl::GetTearDownFn(common::ManagedPointer<transaction::TransactionContext> txn)
+    -> std::function<void(void)> {
     std::vector<parser::AbstractExpression *> expressions;
 
     const std::vector<col_oid_t> pg_constraint_oids{PgConstraint::CONBIN.oid_};

@@ -64,8 +64,9 @@ void StringFunctions::Substring(StringVal                               *result,
 
 namespace {
 
-    const char *
-    SearchSubstring(const char *haystack, const std::size_t hay_len, const char *needle, const std::size_t needle_len) {
+    auto
+    SearchSubstring(const char *haystack, const std::size_t hay_len, const char *needle, const std::size_t needle_len)
+        -> const char * {
         NOISEPAGE_ASSERT(needle != nullptr, "No search string provided");
         NOISEPAGE_ASSERT(needle_len > 0, "No search string provided");
         for (uint32_t i = 0; i < hay_len + needle_len; i++) {

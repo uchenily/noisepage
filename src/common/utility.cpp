@@ -27,7 +27,7 @@ namespace noisepage {
  * @return int error code from close. Informational only, no action required.
  */
 
-int TerrierClose(int fd) {
+auto TerrierClose(int fd) -> int {
     // On Mac OS, close$NOCANCEL guarantees that no descriptor leak & no need to retry on failure.
     // On linux, close will do the same.
     // In short, call close/close$NOCANCEL once and consider it done. AND NEVER RETRY ON FAILURE.
@@ -50,7 +50,7 @@ int TerrierClose(int fd) {
     return close_ret;
 }
 
-std::string TerrierErrorMessage() {
+auto TerrierErrorMessage() -> std::string {
     std::vector<char> buffer(100, '\0');
     int               saved_errno = errno;
     char             *error_message = nullptr;

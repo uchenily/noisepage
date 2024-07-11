@@ -63,7 +63,7 @@ void JoinManager::SetInputBatch(exec::ExecutionContext *exec_ctx, VectorProjecti
     first_join_ = true;
 }
 
-bool JoinManager::AdvanceInitial(const uint32_t idx) {
+auto JoinManager::AdvanceInitial(const uint32_t idx) -> bool {
     auto input_batch = curr_vpi_->GetVectorProjection();
 
     // The match list from the outer probe and this probe.
@@ -87,7 +87,7 @@ bool JoinManager::AdvanceInitial(const uint32_t idx) {
     return false;
 }
 
-bool JoinManager::Advance(const uint32_t idx) {
+auto JoinManager::Advance(const uint32_t idx) -> bool {
     auto input_batch = curr_vpi_->GetVectorProjection();
 
     // The match list from the outer probe and this probe.
@@ -109,7 +109,7 @@ bool JoinManager::Advance(const uint32_t idx) {
     }
 }
 
-bool JoinManager::Next() {
+auto JoinManager::Next() -> bool {
     NOISEPAGE_ASSERT(curr_vpi_ != nullptr, "No input batch! Did you forget to call SetInputBatch()?");
     // Reset the TID list for this round.
     auto input_batch = curr_vpi_->GetVectorProjection();

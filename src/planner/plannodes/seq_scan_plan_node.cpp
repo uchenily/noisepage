@@ -10,7 +10,7 @@
 
 namespace noisepage::planner {
 
-std::unique_ptr<SeqScanPlanNode> SeqScanPlanNode::Builder::Build() {
+auto SeqScanPlanNode::Builder::Build() -> std::unique_ptr<SeqScanPlanNode> {
     return std::unique_ptr<SeqScanPlanNode>(new SeqScanPlanNode(std::move(children_),
                                                                 std::move(output_schema_),
                                                                 scan_predicate_,
@@ -50,14 +50,14 @@ SeqScanPlanNode::SeqScanPlanNode(std::vector<std::unique_ptr<AbstractPlanNode>> 
     , column_oids_(std::move(column_oids))
     , table_oid_(table_oid) {}
 
-common::hash_t SeqScanPlanNode::Hash() const {
+auto SeqScanPlanNode::Hash() const -> common::hash_t {
     common::hash_t hash = AbstractScanPlanNode::Hash();
     hash = common::HashUtil::CombineHashes(hash, common::HashUtil::Hash(table_oid_));
     hash = common::HashUtil::CombineHashInRange(hash, column_oids_.begin(), column_oids_.end());
     return hash;
 }
 
-bool SeqScanPlanNode::operator==(const AbstractPlanNode &rhs) const {
+auto SeqScanPlanNode::operator==(const AbstractPlanNode &rhs) const -> bool {
     auto &other = static_cast<const SeqScanPlanNode &>(rhs);
     if (!AbstractScanPlanNode::operator==(rhs)) {
         return false;
@@ -68,14 +68,14 @@ bool SeqScanPlanNode::operator==(const AbstractPlanNode &rhs) const {
     return column_oids_ == other.column_oids_;
 }
 
-nlohmann::json SeqScanPlanNode::ToJson() const {
+auto SeqScanPlanNode::ToJson() const -> nlohmann::json {
     nlohmann::json j = AbstractScanPlanNode::ToJson();
     j["column_oids"] = column_oids_;
     j["table_oid"] = table_oid_;
     return j;
 }
 
-std::vector<std::unique_ptr<parser::AbstractExpression>> SeqScanPlanNode::FromJson(const nlohmann::json &j) {
+auto SeqScanPlanNode::FromJson(const nlohmann::json &j) -> std::vector<std::unique_ptr<parser::AbstractExpression>> {
     std::vector<std::unique_ptr<parser::AbstractExpression>> exprs;
     auto                                                     e1 = AbstractScanPlanNode::FromJson(j);
     exprs.insert(exprs.end(), std::make_move_iterator(e1.begin()), std::make_move_iterator(e1.end()));

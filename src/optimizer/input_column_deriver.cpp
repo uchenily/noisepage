@@ -27,11 +27,11 @@ using PT1 = std::vector<common::ManagedPointer<parser::AbstractExpression>>;
  */
 using PT2 = std::vector<std::vector<common::ManagedPointer<parser::AbstractExpression>>>;
 
-std::pair<PT1, PT2>
-InputColumnDeriver::DeriveInputColumns(GroupExpression                                                *gexpr,
-                                       PropertySet                                                    *properties,
-                                       std::vector<common::ManagedPointer<parser::AbstractExpression>> required_cols,
-                                       Memo                                                           *memo) {
+auto InputColumnDeriver::DeriveInputColumns(
+    GroupExpression                                                *gexpr,
+    PropertySet                                                    *properties,
+    std::vector<common::ManagedPointer<parser::AbstractExpression>> required_cols,
+    Memo                                                           *memo) -> std::pair<PT1, PT2> {
     properties_ = properties;
     gexpr_ = gexpr;
     required_cols_ = std::move(required_cols);

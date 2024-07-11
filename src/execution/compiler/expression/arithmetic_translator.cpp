@@ -17,7 +17,7 @@ ArithmeticTranslator::ArithmeticTranslator(const parser::OperatorExpression &exp
     compilation_context->Prepare(*expr.GetChild(1));
 }
 
-ast::Expr *ArithmeticTranslator::DeriveValue(WorkContext *ctx, const ColumnValueProvider *provider) const {
+auto ArithmeticTranslator::DeriveValue(WorkContext *ctx, const ColumnValueProvider *provider) const -> ast::Expr * {
     auto *codegen = GetCodeGen();
     auto  left_val = ctx->DeriveValue(*GetExpression().GetChild(0), provider);
     auto  right_val = ctx->DeriveValue(*GetExpression().GetChild(1), provider);

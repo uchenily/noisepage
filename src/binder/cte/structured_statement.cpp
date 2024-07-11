@@ -91,7 +91,7 @@ void StructuredStatement::BuildFromVisit(common::ManagedPointer<parser::TableRef
     }
 }
 
-bool StructuredStatement::InvariantsSatisfied(const LexicalScope &scope) {
+auto StructuredStatement::InvariantsSatisfied(const LexicalScope &scope) -> bool {
     // Ensure that there is a one-to-one mapping between WRITE
     // table references in this scope and enclosed scopes;
     // the WRITE table references are what define enclosed scopes!
@@ -108,7 +108,7 @@ bool StructuredStatement::InvariantsSatisfied(const LexicalScope &scope) {
 // Queries
 // ----------------------------------------------------------------------------
 
-std::size_t StructuredStatement::RefCount() const {
+auto StructuredStatement::RefCount() const -> std::size_t {
     return std::transform_reduce(flat_scopes_.cbegin(),
                                  flat_scopes_.cend(),
                                  0UL,
@@ -118,27 +118,27 @@ std::size_t StructuredStatement::RefCount() const {
                                  });
 }
 
-std::size_t StructuredStatement::RefCount(const RefDescriptor &ref) const {
+auto StructuredStatement::RefCount(const RefDescriptor &ref) const -> std::size_t {
     return ReadRefCount(ref) + WriteRefCount(ref);
 }
 
-std::size_t StructuredStatement::ReadRefCount() const {
+auto StructuredStatement::ReadRefCount() const -> std::size_t {
     return RefCountWithType(RefType::READ);
 }
 
-std::size_t StructuredStatement::ReadRefCount(const RefDescriptor &ref) const {
+auto StructuredStatement::ReadRefCount(const RefDescriptor &ref) const -> std::size_t {
     return RefCount(ref, RefType::READ);
 }
 
-std::size_t StructuredStatement::WriteRefCount() const {
+auto StructuredStatement::WriteRefCount() const -> std::size_t {
     return RefCountWithType(RefType::WRITE);
 }
 
-std::size_t StructuredStatement::WriteRefCount(const RefDescriptor &ref) const {
+auto StructuredStatement::WriteRefCount(const RefDescriptor &ref) const -> std::size_t {
     return RefCount(ref, RefType::WRITE);
 }
 
-std::size_t StructuredStatement::RefCountWithType(RefType type) const {
+auto StructuredStatement::RefCountWithType(RefType type) const -> std::size_t {
     std::size_t count = 0;
     for (const auto *scope : flat_scopes_) {
         count += std::count_if(scope->References().cbegin(),
@@ -150,23 +150,23 @@ std::size_t StructuredStatement::RefCountWithType(RefType type) const {
     return count;
 }
 
-std::size_t StructuredStatement::ScopeCount() const {
+auto StructuredStatement::ScopeCount() const -> std::size_t {
     return flat_scopes_.size();
 }
 
-bool StructuredStatement::HasReadRef(const StructuredStatement::RefDescriptor &ref) const {
+auto StructuredStatement::HasReadRef(const StructuredStatement::RefDescriptor &ref) const -> bool {
     return RefCount(ref, RefType::READ) > 0UL;
 }
 
-bool StructuredStatement::HasWriteRef(const StructuredStatement::RefDescriptor &ref) const {
+auto StructuredStatement::HasWriteRef(const StructuredStatement::RefDescriptor &ref) const -> bool {
     return RefCount(ref, RefType::WRITE) > 0UL;
 }
 
-bool StructuredStatement::HasRef(const StructuredStatement::RefDescriptor &ref) const {
+auto StructuredStatement::HasRef(const StructuredStatement::RefDescriptor &ref) const -> bool {
     return HasReadRef(ref) || HasWriteRef(ref);
 }
 
-std::size_t StructuredStatement::RefCount(const StructuredStatement::RefDescriptor &ref, RefType type) const {
+auto StructuredStatement::RefCount(const StructuredStatement::RefDescriptor &ref, RefType type) const -> std::size_t {
     const auto &alias = std::get<0>(ref);
     const auto &depth = std::get<1>(ref);
     const auto &position = std::get<2>(ref);
@@ -188,15 +188,15 @@ std::size_t StructuredStatement::RefCount(const StructuredStatement::RefDescript
     return count;
 }
 
-LexicalScope &StructuredStatement::RootScope() {
+auto StructuredStatement::RootScope() -> LexicalScope & {
     return *root_scope_;
 }
 
-const LexicalScope &StructuredStatement::RootScope() const {
+auto StructuredStatement::RootScope() const -> const LexicalScope & {
     return *root_scope_;
 }
 
-std::vector<ContextSensitiveTableRef *> StructuredStatement::MutableReferences() {
+auto StructuredStatement::MutableReferences() -> std::vector<ContextSensitiveTableRef *> {
     std::vector<ContextSensitiveTableRef *> references{};
     for (auto *scope : flat_scopes_) {
         std::transform(scope->References().begin(),
@@ -209,7 +209,7 @@ std::vector<ContextSensitiveTableRef *> StructuredStatement::MutableReferences()
     return references;
 }
 
-std::vector<const ContextSensitiveTableRef *> StructuredStatement::References() const {
+auto StructuredStatement::References() const -> std::vector<const ContextSensitiveTableRef *> {
     std::vector<const ContextSensitiveTableRef *> references{};
     for (const auto *scope : flat_scopes_) {
         std::transform(scope->References().cbegin(),

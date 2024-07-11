@@ -121,7 +121,7 @@ void IndexCreateTranslator::TearDownPipelineState(const Pipeline &pipeline, Func
     TearDownStorageInterface(function, local_storage_interface_.GetPtr(codegen_));
 }
 
-util::RegionVector<ast::FieldDecl *> IndexCreateTranslator::GetWorkerParams() const {
+auto IndexCreateTranslator::GetWorkerParams() const -> util::RegionVector<ast::FieldDecl *> {
     // Parameters for the scanner
     auto *codegen = GetCodeGen();
     auto *tvi_type = codegen->PointerType(ast::BuiltinType::TableVectorIterator);
@@ -235,7 +235,7 @@ void IndexCreateTranslator::DeclareTVI(FunctionBuilder *function) const {
     function->Append(table_iter_init);
 }
 
-std::vector<catalog::col_oid_t> IndexCreateTranslator::AllColOids(const catalog::Schema &table_schema) const {
+auto IndexCreateTranslator::AllColOids(const catalog::Schema &table_schema) const -> std::vector<catalog::col_oid_t> {
     std::vector<catalog::col_oid_t> oids;
     for (const auto &col : table_schema.GetColumns()) {
         oids.emplace_back(col.Oid());
@@ -322,7 +322,7 @@ void IndexCreateTranslator::IndexInsert(WorkContext *ctx, FunctionBuilder *funct
     success.EndIf();
 }
 
-ast::FunctionDecl *IndexCreateTranslator::GenerateEndHookFunction() const {
+auto IndexCreateTranslator::GenerateEndHookFunction() const -> ast::FunctionDecl * {
     auto *codegen = GetCodeGen();
     auto *pipeline = GetPipeline();
     auto  params = GetHookParams(*pipeline, nullptr, nullptr);

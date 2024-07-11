@@ -9,7 +9,7 @@
 
 namespace noisepage::planner {
 
-std::unique_ptr<IndexScanPlanNode> IndexScanPlanNode::Builder::Build() {
+auto IndexScanPlanNode::Builder::Build() -> std::unique_ptr<IndexScanPlanNode> {
     return std::unique_ptr<IndexScanPlanNode>(new IndexScanPlanNode(std::move(children_),
                                                                     std::move(output_schema_),
                                                                     scan_predicate_,
@@ -70,7 +70,7 @@ IndexScanPlanNode::IndexScanPlanNode(std::vector<std::unique_ptr<AbstractPlanNod
     , index_size_(index_size)
     , cover_all_columns_(cover_all_columns) {}
 
-common::hash_t IndexScanPlanNode::Hash() const {
+auto IndexScanPlanNode::Hash() const -> common::hash_t {
     common::hash_t hash = AbstractScanPlanNode::Hash();
 
     // Index Oid
@@ -83,7 +83,7 @@ common::hash_t IndexScanPlanNode::Hash() const {
     return hash;
 }
 
-bool IndexScanPlanNode::operator==(const AbstractPlanNode &rhs) const {
+auto IndexScanPlanNode::operator==(const AbstractPlanNode &rhs) const -> bool {
     if (!AbstractScanPlanNode::operator==(rhs)) {
         return false;
     }
@@ -102,7 +102,7 @@ bool IndexScanPlanNode::operator==(const AbstractPlanNode &rhs) const {
     return (index_oid_ == other.index_oid_);
 }
 
-nlohmann::json IndexScanPlanNode::ToJson() const {
+auto IndexScanPlanNode::ToJson() const -> nlohmann::json {
     nlohmann::json j = AbstractScanPlanNode::ToJson();
     j["index_oid"] = index_oid_;
     j["column_oids"] = column_oids_;
@@ -110,7 +110,7 @@ nlohmann::json IndexScanPlanNode::ToJson() const {
     return j;
 }
 
-std::vector<std::unique_ptr<parser::AbstractExpression>> IndexScanPlanNode::FromJson(const nlohmann::json &j) {
+auto IndexScanPlanNode::FromJson(const nlohmann::json &j) -> std::vector<std::unique_ptr<parser::AbstractExpression>> {
     std::vector<std::unique_ptr<parser::AbstractExpression>> exprs;
     auto                                                     e1 = AbstractScanPlanNode::FromJson(j);
     exprs.insert(exprs.end(), std::make_move_iterator(e1.begin()), std::make_move_iterator(e1.end()));

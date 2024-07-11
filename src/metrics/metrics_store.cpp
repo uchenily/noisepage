@@ -25,7 +25,7 @@ MetricsStore::MetricsStore(const common::ManagedPointer<metrics::MetricsManager>
     query_trace_metric_ = std::make_unique<QueryTraceMetric>();
 }
 
-std::array<std::unique_ptr<AbstractRawData>, NUM_COMPONENTS> MetricsStore::GetDataToAggregate() {
+auto MetricsStore::GetDataToAggregate() -> std::array<std::unique_ptr<AbstractRawData>, NUM_COMPONENTS> {
     std::array<std::unique_ptr<AbstractRawData>, NUM_COMPONENTS> result;
 
     for (uint8_t component = 0; component < NUM_COMPONENTS; component++) {

@@ -35,7 +35,7 @@ void GroupExpression::SetLocalHashTable(PropertySet                      *output
     }
 }
 
-common::hash_t GroupExpression::Hash() const {
+auto GroupExpression::Hash() const -> common::hash_t {
     common::hash_t hash = contents_->Hash();
 
     for (group_id_t child_group : child_groups_) {

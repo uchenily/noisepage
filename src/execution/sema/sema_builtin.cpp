@@ -7,21 +7,21 @@ namespace noisepage::execution::sema {
 
 namespace {
 
-    bool IsPointerToSpecificBuiltin(ast::Type *type, ast::BuiltinType::Kind kind) {
+    auto IsPointerToSpecificBuiltin(ast::Type *type, ast::BuiltinType::Kind kind) -> bool {
         if (auto *pointee_type = type->GetPointeeType()) {
             return pointee_type->IsSpecificBuiltin(kind);
         }
         return false;
     }
 
-    bool IsPointerToSQLValue(ast::Type *type) {
+    auto IsPointerToSQLValue(ast::Type *type) -> bool {
         if (auto *pointee_type = type->GetPointeeType()) {
             return pointee_type->IsSqlValueType();
         }
         return false;
     }
 
-    bool IsPointerToAggregatorValue(ast::Type *type) {
+    auto IsPointerToAggregatorValue(ast::Type *type) -> bool {
         if (auto *pointee_type = type->GetPointeeType()) {
             return pointee_type->IsSqlAggregatorType();
         }
@@ -29,7 +29,7 @@ namespace {
     }
 
     template <typename... ArgTypes>
-    bool AreAllFunctions(const ArgTypes... type) {
+    auto AreAllFunctions(const ArgTypes... type) -> bool {
         return (true && ... && type->IsFunctionType());
     }
 

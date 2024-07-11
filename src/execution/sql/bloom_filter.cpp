@@ -63,7 +63,7 @@ void BloomFilter::Add(hash_t hash) {
     num_additions_++;
 }
 
-bool BloomFilter::Contains(hash_t hash) const {
+auto BloomFilter::Contains(hash_t hash) const -> bool {
     auto block_idx = static_cast<uint32_t>(hash & block_mask_);
 
     auto block = util::simd::Vec8().Load(blocks_[block_idx]);
@@ -82,7 +82,7 @@ bool BloomFilter::Contains(hash_t hash) const {
     return block.AllBitsAtPositionsSet(masks);
 }
 
-uint64_t BloomFilter::GetTotalBitsSet() const {
+auto BloomFilter::GetTotalBitsSet() const -> uint64_t {
     uint64_t count = 0;
     for (uint32_t i = 0; i < GetNumBlocks(); i++) {
         // Note that we process 64-bits at a time, thus we only need four iterations
@@ -96,7 +96,7 @@ uint64_t BloomFilter::GetTotalBitsSet() const {
     return count;
 }
 
-std::string BloomFilter::DebugString() const {
+auto BloomFilter::DebugString() const -> std::string {
     auto bits_per_elem = static_cast<double>(GetSizeInBits()) / GetNumAdditions();
     auto bit_set_prob = static_cast<double>(GetTotalBitsSet()) / GetSizeInBits();
     return fmt::format("Filter: {} elements, {} bits, {} bits/element, {} bits set (p={:.2f})",

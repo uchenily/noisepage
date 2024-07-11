@@ -14,7 +14,7 @@ NullCheckTranslator::NullCheckTranslator(const parser::OperatorExpression &expr,
     compilation_context->Prepare(*expr.GetChild(0));
 }
 
-ast::Expr *NullCheckTranslator::DeriveValue(WorkContext *ctx, const ColumnValueProvider *provider) const {
+auto NullCheckTranslator::DeriveValue(WorkContext *ctx, const ColumnValueProvider *provider) const -> ast::Expr * {
     auto *codegen = GetCodeGen();
     auto  input = ctx->DeriveValue(*GetExpression().GetChild(0), provider);
     switch (auto type = GetExpression().GetExpressionType()) {

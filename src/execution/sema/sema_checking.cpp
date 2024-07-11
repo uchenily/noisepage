@@ -23,11 +23,11 @@ void Sema::ReportIncorrectCallArg(ast::CallExpr *call, uint32_t index, const cha
                                call->Arguments()[index]->GetType());
 }
 
-ast::Expr *Sema::ImplCastExprToType(ast::Expr *expr, ast::Type *target_type, ast::CastKind cast_kind) {
+auto Sema::ImplCastExprToType(ast::Expr *expr, ast::Type *target_type, ast::CastKind cast_kind) -> ast::Expr * {
     return GetContext()->GetNodeFactory()->NewImplicitCastExpr(expr->Position(), cast_kind, target_type, expr);
 }
 
-bool Sema::CheckArgCount(ast::CallExpr *call, uint32_t expected_arg_count) {
+auto Sema::CheckArgCount(ast::CallExpr *call, uint32_t expected_arg_count) -> bool {
     if (call->NumArgs() != expected_arg_count) {
         GetErrorReporter()->Report(call->Position(),
                                    ErrorMessages::kMismatchedCallArgs,
@@ -40,7 +40,7 @@ bool Sema::CheckArgCount(ast::CallExpr *call, uint32_t expected_arg_count) {
     return true;
 }
 
-bool Sema::CheckArgCountAtLeast(ast::CallExpr *call, uint32_t expected_arg_count) {
+auto Sema::CheckArgCountAtLeast(ast::CallExpr *call, uint32_t expected_arg_count) -> bool {
     if (call->NumArgs() < expected_arg_count) {
         GetErrorReporter()->Report(call->Position(),
                                    ErrorMessages::kMismatchedCallArgs,
@@ -53,7 +53,8 @@ bool Sema::CheckArgCountAtLeast(ast::CallExpr *call, uint32_t expected_arg_count
     return true;
 }
 
-bool Sema::CheckArgCountBetween(ast::CallExpr *call, uint32_t min_expected_arg_count, uint32_t max_expected_arg_count) {
+auto Sema::CheckArgCountBetween(ast::CallExpr *call, uint32_t min_expected_arg_count, uint32_t max_expected_arg_count)
+    -> bool {
     if (call->NumArgs() < min_expected_arg_count || call->NumArgs() > max_expected_arg_count) {
         GetErrorReporter()->Report(call->Position(),
                                    ErrorMessages::kMismatchedCallArgsBetween,
@@ -68,8 +69,8 @@ bool Sema::CheckArgCountBetween(ast::CallExpr *call, uint32_t min_expected_arg_c
 }
 
 // Logical ops: and, or
-Sema::CheckResult
-Sema::CheckLogicalOperands(parsing::Token::Type op, const SourcePosition &pos, ast::Expr *left, ast::Expr *right) {
+auto Sema::CheckLogicalOperands(parsing::Token::Type op, const SourcePosition &pos, ast::Expr *left, ast::Expr *right)
+    -> Sema::CheckResult {
     //
     // Both left and right types are either primitive booleans or SQL booleans. We
     // need both to be primitive booleans. Cast each expression as appropriate.
@@ -98,8 +99,10 @@ Sema::CheckLogicalOperands(parsing::Token::Type op, const SourcePosition &pos, a
 }
 
 // Arithmetic ops: +, -, *, etc.
-Sema::CheckResult
-Sema::CheckArithmeticOperands(parsing::Token::Type op, const SourcePosition &pos, ast::Expr *left, ast::Expr *right) {
+auto Sema::CheckArithmeticOperands(parsing::Token::Type  op,
+                                   const SourcePosition &pos,
+                                   ast::Expr            *left,
+                                   ast::Expr            *right) -> Sema::CheckResult {
     // If neither inputs are arithmetic, fail early
     if (!left->GetType()->IsArithmetic() || !right->GetType()->IsArithmetic()) {
         GetErrorReporter()->Report(pos, ErrorMessages::kIllegalTypesForBinary, op, left->GetType(), right->GetType());
@@ -164,10 +167,10 @@ Sema::CheckArithmeticOperands(parsing::Token::Type op, const SourcePosition &pos
     return {nullptr, left, right};
 }
 
-Sema::CheckResult Sema::CheckSqlComparisonOperands(parsing::Token::Type  op,
-                                                   const SourcePosition &pos,
-                                                   ast::Expr            *left,
-                                                   ast::Expr            *right) {
+auto Sema::CheckSqlComparisonOperands(parsing::Token::Type  op,
+                                      const SourcePosition &pos,
+                                      ast::Expr            *left,
+                                      ast::Expr            *right) -> Sema::CheckResult {
     NOISEPAGE_ASSERT(left->GetType()->IsSqlValueType() || right->GetType()->IsSqlValueType(),
                      "At least one input to comparison must be SQL value");
 
@@ -213,8 +216,10 @@ Sema::CheckResult Sema::CheckSqlComparisonOperands(parsing::Token::Type  op,
 }
 
 // Comparisons: <, <=, >, >=, ==, !=
-Sema::CheckResult
-Sema::CheckComparisonOperands(parsing::Token::Type op, const SourcePosition &pos, ast::Expr *left, ast::Expr *right) {
+auto Sema::CheckComparisonOperands(parsing::Token::Type  op,
+                                   const SourcePosition &pos,
+                                   ast::Expr            *left,
+                                   ast::Expr            *right) -> Sema::CheckResult {
     // Check for raw pointer comparison.
     if (left->GetType()->IsPointerType() || right->GetType()->IsPointerType()) {
         if (!parsing::Token::IsEqualityOp(op)) {
@@ -282,7 +287,7 @@ Sema::CheckComparisonOperands(parsing::Token::Type op, const SourcePosition &pos
     UNREACHABLE("Impossible");
 }
 
-bool Sema::CheckAssignmentConstraints(ast::Type *target_type, ast::Expr **expr) {
+auto Sema::CheckAssignmentConstraints(ast::Type *target_type, ast::Expr **expr) -> bool {
     // If the target and expression types are the same, nothing to do
     if ((*expr)->GetType() == target_type) {
         return true;

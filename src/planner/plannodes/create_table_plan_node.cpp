@@ -10,7 +10,7 @@
 
 namespace noisepage::planner {
 
-std::unique_ptr<CreateTablePlanNode> CreateTablePlanNode::Builder::Build() {
+auto CreateTablePlanNode::Builder::Build() -> std::unique_ptr<CreateTablePlanNode> {
     return std::unique_ptr<CreateTablePlanNode>(new CreateTablePlanNode(std::move(children_),
                                                                         std::move(output_schema_),
                                                                         namespace_oid_,
@@ -48,7 +48,7 @@ CreateTablePlanNode::CreateTablePlanNode(std::vector<std::unique_ptr<AbstractPla
     , con_uniques_(std::move(con_uniques))
     , con_checks_(std::move(con_checks)) {}
 
-nlohmann::json PrimaryKeyInfo::ToJson() const {
+auto PrimaryKeyInfo::ToJson() const -> nlohmann::json {
     nlohmann::json j;
     j["primary_key_cols"] = primary_key_cols_;
     j["constraint_name"] = constraint_name_;
@@ -60,7 +60,7 @@ void PrimaryKeyInfo::FromJson(const nlohmann::json &j) {
     constraint_name_ = j.at("constraint_name").get<std::string>();
 }
 
-nlohmann::json ForeignKeyInfo::ToJson() const {
+auto ForeignKeyInfo::ToJson() const -> nlohmann::json {
     nlohmann::json j;
     j["foreign_key_sources"] = foreign_key_sources_;
     j["foreign_key_sinks"] = foreign_key_sinks_;
@@ -80,7 +80,7 @@ void ForeignKeyInfo::FromJson(const nlohmann::json &j) {
     del_action_ = j.at("del_action").get<parser::FKConstrActionType>();
 }
 
-nlohmann::json UniqueInfo::ToJson() const {
+auto UniqueInfo::ToJson() const -> nlohmann::json {
     nlohmann::json j;
     j["unique_cols"] = unique_cols_;
     j["constraint_name"] = constraint_name_;
@@ -92,7 +92,7 @@ void UniqueInfo::FromJson(const nlohmann::json &j) {
     constraint_name_ = j.at("constraint_name").get<std::string>();
 }
 
-nlohmann::json CheckInfo::ToJson() const {
+auto CheckInfo::ToJson() const -> nlohmann::json {
     nlohmann::json j;
     j["check_cols"] = check_cols_;
     j["constraint_name"] = constraint_name_;
@@ -108,7 +108,7 @@ void CheckInfo::FromJson(const nlohmann::json &j) {
     expr_value_ = j.at("expr_value").get<parser::ConstantValueExpression>();
 }
 
-common::hash_t CreateTablePlanNode::Hash() const {
+auto CreateTablePlanNode::Hash() const -> common::hash_t {
     common::hash_t hash = AbstractPlanNode::Hash();
 
     // Namespace OI
@@ -148,7 +148,7 @@ common::hash_t CreateTablePlanNode::Hash() const {
     return hash;
 }
 
-bool CreateTablePlanNode::operator==(const AbstractPlanNode &rhs) const {
+auto CreateTablePlanNode::operator==(const AbstractPlanNode &rhs) const -> bool {
     if (!AbstractPlanNode::operator==(rhs)) {
         return false;
     }
@@ -206,7 +206,7 @@ bool CreateTablePlanNode::operator==(const AbstractPlanNode &rhs) const {
     return true;
 }
 
-nlohmann::json CreateTablePlanNode::ToJson() const {
+auto CreateTablePlanNode::ToJson() const -> nlohmann::json {
     nlohmann::json j = AbstractPlanNode::ToJson();
     j["namespace_oid"] = namespace_oid_;
     j["table_name"] = table_name_;
@@ -223,7 +223,8 @@ nlohmann::json CreateTablePlanNode::ToJson() const {
     return j;
 }
 
-std::vector<std::unique_ptr<parser::AbstractExpression>> CreateTablePlanNode::FromJson(const nlohmann::json &j) {
+auto CreateTablePlanNode::FromJson(const nlohmann::json &j)
+    -> std::vector<std::unique_ptr<parser::AbstractExpression>> {
     std::vector<std::unique_ptr<parser::AbstractExpression>> exprs;
     auto                                                     e1 = AbstractPlanNode::FromJson(j);
     exprs.insert(exprs.end(), std::make_move_iterator(e1.begin()), std::make_move_iterator(e1.end()));

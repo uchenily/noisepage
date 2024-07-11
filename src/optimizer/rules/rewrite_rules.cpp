@@ -34,8 +34,8 @@ RewritePushImplicitFilterThroughJoin::RewritePushImplicitFilterThroughJoin() {
     match_pattern_->AddChild(new Pattern(OpType::LEAF));
 }
 
-bool RewritePushImplicitFilterThroughJoin::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                                 OptimizationContext                          *context) const {
+auto RewritePushImplicitFilterThroughJoin::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                                 OptimizationContext                          *context) const -> bool {
     (void) plan;
     (void) context;
     return true;
@@ -139,8 +139,8 @@ RewritePushExplicitFilterThroughJoin::RewritePushExplicitFilterThroughJoin() {
     match_pattern_->AddChild(join_pattern);
 }
 
-bool RewritePushExplicitFilterThroughJoin::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                                 OptimizationContext                          *context) const {
+auto RewritePushExplicitFilterThroughJoin::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                                 OptimizationContext                          *context) const -> bool {
     (void) plan;
     (void) context;
     return true;
@@ -280,8 +280,8 @@ RewritePushFilterThroughAggregation::RewritePushFilterThroughAggregation() {
     match_pattern_->AddChild(child);
 }
 
-bool RewritePushFilterThroughAggregation::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                                OptimizationContext                          *context) const {
+auto RewritePushFilterThroughAggregation::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                                OptimizationContext                          *context) const -> bool {
     (void) plan;
     (void) context;
     return true;
@@ -358,8 +358,8 @@ RewriteCombineConsecutiveFilter::RewriteCombineConsecutiveFilter() {
     match_pattern_->AddChild(child);
 }
 
-bool RewriteCombineConsecutiveFilter::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                            OptimizationContext                          *context) const {
+auto RewriteCombineConsecutiveFilter::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                            OptimizationContext                          *context) const -> bool {
     (void) context;
     (void) plan;
     return true;
@@ -397,8 +397,8 @@ RewriteEmbedFilterIntoGet::RewriteEmbedFilterIntoGet() {
     match_pattern_->AddChild(child);
 }
 
-bool RewriteEmbedFilterIntoGet::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                      OptimizationContext                          *context) const {
+auto RewriteEmbedFilterIntoGet::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                      OptimizationContext                          *context) const -> bool {
     (void) context;
     (void) plan;
     return true;
@@ -431,8 +431,8 @@ RewriteEmbedFilterIntoChildlessCteScan::RewriteEmbedFilterIntoChildlessCteScan()
     match_pattern_->AddChild(child);
 }
 
-bool RewriteEmbedFilterIntoChildlessCteScan::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                                   OptimizationContext                          *context) const {
+auto RewriteEmbedFilterIntoChildlessCteScan::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                                   OptimizationContext *context) const -> bool {
     (void) context;
     (void) plan;
     return true;
@@ -471,8 +471,8 @@ RewriteEmbedFilterIntoCteScan::RewriteEmbedFilterIntoCteScan() {
     match_pattern_->AddChild(child);
 }
 
-bool RewriteEmbedFilterIntoCteScan::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                          OptimizationContext                          *context) const {
+auto RewriteEmbedFilterIntoCteScan::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                          OptimizationContext                          *context) const -> bool {
     (void) context;
     (void) plan;
     return true;
@@ -514,12 +514,12 @@ RewritePullFilterThroughMarkJoin::RewritePullFilterThroughMarkJoin() {
     match_pattern_->AddChild(filter);
 }
 
-RulePromise RewritePullFilterThroughMarkJoin::Promise(GroupExpression *group_expr) const {
+auto RewritePullFilterThroughMarkJoin::Promise(GroupExpression *group_expr) const -> RulePromise {
     return RulePromise::UNNEST_PROMISE_HIGH;
 }
 
-bool RewritePullFilterThroughMarkJoin::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                             OptimizationContext                          *context) const {
+auto RewritePullFilterThroughMarkJoin::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                             OptimizationContext                          *context) const -> bool {
     (void) context;
     (void) plan;
 
@@ -570,12 +570,12 @@ RewriteUnionWithRecursiveCTE::RewriteUnionWithRecursiveCTE() {
     match_pattern_->AddChild(derivedget);
 }
 
-RulePromise RewriteUnionWithRecursiveCTE::Promise(GroupExpression *group_expr) const {
+auto RewriteUnionWithRecursiveCTE::Promise(GroupExpression *group_expr) const -> RulePromise {
     return RulePromise::LOGICAL_PROMISE;
 }
 
-bool RewriteUnionWithRecursiveCTE::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                         OptimizationContext                          *context) const {
+auto RewriteUnionWithRecursiveCTE::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                         OptimizationContext                          *context) const -> bool {
     auto cte_scan = plan->Contents()->GetContentsAs<LogicalCteScan>();
     NOISEPAGE_ASSERT(cte_scan->GetIsInductive(), "should be inductive");
     return cte_scan->GetIsInductive();
@@ -628,12 +628,12 @@ RewritePullFilterThroughAggregation::RewritePullFilterThroughAggregation() {
     match_pattern_->AddChild(filter);
 }
 
-RulePromise RewritePullFilterThroughAggregation::Promise(GroupExpression *group_expr) const {
+auto RewritePullFilterThroughAggregation::Promise(GroupExpression *group_expr) const -> RulePromise {
     return RulePromise::UNNEST_PROMISE_HIGH;
 }
 
-bool RewritePullFilterThroughAggregation::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
-                                                OptimizationContext                          *context) const {
+auto RewritePullFilterThroughAggregation::Check(common::ManagedPointer<AbstractOptimizerNode> plan,
+                                                OptimizationContext                          *context) const -> bool {
     (void) context;
     (void) plan;
 

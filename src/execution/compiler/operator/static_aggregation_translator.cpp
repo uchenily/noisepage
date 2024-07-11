@@ -67,7 +67,7 @@ StaticAggregationTranslator::StaticAggregationTranslator(const planner::Aggregat
     num_agg_outputs_ = CounterDeclare("num_agg_outputs", pipeline);
 }
 
-ast::StructDecl *StaticAggregationTranslator::GeneratePayloadStruct() {
+auto StaticAggregationTranslator::GeneratePayloadStruct() -> ast::StructDecl * {
     auto *codegen = GetCodeGen();
     auto  fields = codegen->MakeEmptyFieldList();
     fields.reserve(GetAggPlan().GetAggregateTerms().size());
@@ -86,7 +86,7 @@ ast::StructDecl *StaticAggregationTranslator::GeneratePayloadStruct() {
     return struct_decl_;
 }
 
-ast::StructDecl *StaticAggregationTranslator::GenerateValuesStruct() {
+auto StaticAggregationTranslator::GenerateValuesStruct() -> ast::StructDecl * {
     auto *codegen = GetCodeGen();
     auto  fields = codegen->MakeEmptyFieldList();
     fields.reserve(GetAggPlan().GetAggregateTerms().size());
@@ -134,13 +134,13 @@ void StaticAggregationTranslator::DefineHelperFunctions(util::RegionVector<ast::
     }
 }
 
-ast::Expr *StaticAggregationTranslator::GetAggregateTerm(ast::Expr *agg_row, uint32_t attr_idx) const {
+auto StaticAggregationTranslator::GetAggregateTerm(ast::Expr *agg_row, uint32_t attr_idx) const -> ast::Expr * {
     auto *codegen = GetCodeGen();
     auto  member = codegen->MakeIdentifier(AGG_ATTR_PREFIX + std::to_string(attr_idx));
     return codegen->AccessStructMember(agg_row, member);
 }
 
-ast::Expr *StaticAggregationTranslator::GetAggregateTermPtr(ast::Expr *agg_row, uint32_t attr_idx) const {
+auto StaticAggregationTranslator::GetAggregateTermPtr(ast::Expr *agg_row, uint32_t attr_idx) const -> ast::Expr * {
     return GetCodeGen()->AddressOf(GetAggregateTerm(agg_row, attr_idx));
 }
 
@@ -307,9 +307,9 @@ void StaticAggregationTranslator::FinishPipelineWork(const Pipeline &pipeline, F
     }
 }
 
-ast::Expr *StaticAggregationTranslator::GetChildOutput(WorkContext              *context,
-                                                       [[maybe_unused]] uint32_t child_idx,
-                                                       uint32_t                  attr_idx) const {
+auto StaticAggregationTranslator::GetChildOutput(WorkContext              *context,
+                                                 [[maybe_unused]] uint32_t child_idx,
+                                                 uint32_t                  attr_idx) const -> ast::Expr * {
     if (IsProducePipeline(context->GetPipeline())) {
         auto *codegen = GetCodeGen();
         return codegen->AggregatorResult(GetExecutionContext(),

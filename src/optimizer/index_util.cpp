@@ -13,10 +13,10 @@
 
 namespace noisepage::optimizer {
 
-bool IndexUtil::SatisfiesSortWithIndex(catalog::CatalogAccessor *accessor,
+auto IndexUtil::SatisfiesSortWithIndex(catalog::CatalogAccessor *accessor,
                                        const PropertySort       *prop,
                                        catalog::table_oid_t      tbl_oid,
-                                       catalog::index_oid_t      idx_oid) {
+                                       catalog::index_oid_t      idx_oid) -> bool {
     auto &index_schema = accessor->GetIndexSchema(idx_oid);
     if (!SatisfiesBaseColumnRequirement(index_schema)) {
         return false;
@@ -54,7 +54,7 @@ bool IndexUtil::SatisfiesSortWithIndex(catalog::CatalogAccessor *accessor,
     return true;
 }
 
-std::pair<bool, bool> IndexUtil::SatisfiesPredicateWithIndex(
+auto IndexUtil::SatisfiesPredicateWithIndex(
     catalog::CatalogAccessor                                                              *accessor,
     catalog::table_oid_t                                                                   tbl_oid,
     const parser::AliasType                                                               &tbl_alias,
@@ -62,7 +62,8 @@ std::pair<bool, bool> IndexUtil::SatisfiesPredicateWithIndex(
     const std::vector<AnnotatedExpression>                                                &predicates,
     bool                                                                                   allow_cves,
     planner::IndexScanType                                                                *scan_type,
-    std::unordered_map<catalog::indexkeycol_oid_t, std::vector<planner::IndexExpression>> *bounds) {
+    std::unordered_map<catalog::indexkeycol_oid_t, std::vector<planner::IndexExpression>> *bounds)
+    -> std::pair<bool, bool> {
     auto &index_schema = accessor->GetIndexSchema(index_oid);
     if (!SatisfiesBaseColumnRequirement(index_schema)) {
         return std::make_pair(false, false);
@@ -92,7 +93,7 @@ std::pair<bool, bool> IndexUtil::SatisfiesPredicateWithIndex(
                            bounds);
 }
 
-std::pair<bool, bool> IndexUtil::CheckPredicates(
+auto IndexUtil::CheckPredicates(
     const catalog::IndexSchema                                                            &schema,
     catalog::table_oid_t                                                                   tbl_oid,
     const parser::AliasType                                                               &tbl_alias,
@@ -101,7 +102,8 @@ std::pair<bool, bool> IndexUtil::CheckPredicates(
     const std::vector<AnnotatedExpression>                                                &predicates,
     bool                                                                                   allow_cves,
     planner::IndexScanType                                                                *idx_scan_type,
-    std::unordered_map<catalog::indexkeycol_oid_t, std::vector<planner::IndexExpression>> *bounds) {
+    std::unordered_map<catalog::indexkeycol_oid_t, std::vector<planner::IndexExpression>> *bounds)
+    -> std::pair<bool, bool> {
     // TODO(wz2): Eventually consider supporting concatenating/shrinking ranges
     // Right now, this implementation only allows at most 1 range for an indexed column.
     // To concatenate/shrink ranges, we would need to be able to compare TransientValues.
@@ -269,11 +271,11 @@ std::pair<bool, bool> IndexUtil::CheckPredicates(
     return std::make_pair(!bounds->empty(), covered_all_columns);
 }
 
-bool IndexUtil::ConvertIndexKeyOidToColOid(catalog::CatalogAccessor                                           *accessor,
+auto IndexUtil::ConvertIndexKeyOidToColOid(catalog::CatalogAccessor                                           *accessor,
                                            catalog::table_oid_t                                                tbl_oid,
                                            const catalog::IndexSchema                                         &schema,
                                            std::unordered_map<catalog::col_oid_t, catalog::indexkeycol_oid_t> *key_map,
-                                           std::vector<catalog::col_oid_t> *col_oids) {
+                                           std::vector<catalog::col_oid_t> *col_oids) -> bool {
     NOISEPAGE_ASSERT(SatisfiesBaseColumnRequirement(schema), "GetIndexColOid() pre-cond not satisfied");
     auto &tbl_schema = accessor->GetSchema(tbl_oid);
     if (tbl_schema.GetColumns().size() < schema.GetColumns().size()) {

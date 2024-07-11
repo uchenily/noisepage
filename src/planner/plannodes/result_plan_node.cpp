@@ -8,7 +8,7 @@
 
 namespace noisepage::planner {
 
-common::hash_t ResultPlanNode::Hash() const {
+auto ResultPlanNode::Hash() const -> common::hash_t {
     common::hash_t hash = AbstractPlanNode::Hash();
 
     // Expression
@@ -17,7 +17,7 @@ common::hash_t ResultPlanNode::Hash() const {
     return hash;
 }
 
-bool ResultPlanNode::operator==(const AbstractPlanNode &rhs) const {
+auto ResultPlanNode::operator==(const AbstractPlanNode &rhs) const -> bool {
     if (!AbstractPlanNode::operator==(rhs)) {
         return false;
     }
@@ -35,13 +35,13 @@ bool ResultPlanNode::operator==(const AbstractPlanNode &rhs) const {
     return true;
 }
 
-nlohmann::json ResultPlanNode::ToJson() const {
+auto ResultPlanNode::ToJson() const -> nlohmann::json {
     nlohmann::json j = AbstractPlanNode::ToJson();
     j["expr"] = expr_ == nullptr ? nlohmann::json(nullptr) : expr_->ToJson();
     return j;
 }
 
-std::vector<std::unique_ptr<parser::AbstractExpression>> ResultPlanNode::FromJson(const nlohmann::json &j) {
+auto ResultPlanNode::FromJson(const nlohmann::json &j) -> std::vector<std::unique_ptr<parser::AbstractExpression>> {
     std::vector<std::unique_ptr<parser::AbstractExpression>> exprs;
     auto                                                     e1 = AbstractPlanNode::FromJson(j);
     exprs.insert(exprs.end(), std::make_move_iterator(e1.begin()), std::make_move_iterator(e1.end()));

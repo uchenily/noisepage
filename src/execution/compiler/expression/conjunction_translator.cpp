@@ -18,7 +18,7 @@ ConjunctionTranslator::ConjunctionTranslator(const parser::ConjunctionExpression
     }
 }
 
-ast::Expr *ConjunctionTranslator::DeriveValue(WorkContext *ctx, const ColumnValueProvider *provider) const {
+auto ConjunctionTranslator::DeriveValue(WorkContext *ctx, const ColumnValueProvider *provider) const -> ast::Expr * {
     auto *codegen = GetCodeGen();
     auto  left_val = ctx->DeriveValue(*GetExpression().GetChild(0), provider);
     auto  right_val = ctx->DeriveValue(*GetExpression().GetChild(1), provider);

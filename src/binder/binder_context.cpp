@@ -172,7 +172,7 @@ void BinderContext::AddCTETableAlias(const std::string &cte_table_name, const st
     }
 }
 
-bool BinderContext::ColumnInSchema(const catalog::Schema &schema, const std::string &col_name) {
+auto BinderContext::ColumnInSchema(const catalog::Schema &schema, const std::string &col_name) -> bool {
     try {
         const auto &column_object [[maybe_unused]] = schema.GetColumn(col_name);
     } catch (const std::out_of_range &oor) {
@@ -211,7 +211,7 @@ void BinderContext::SetTableName(common::ManagedPointer<parser::ColumnValueExpre
     }
 }
 
-bool BinderContext::SetColumnPosTuple(common::ManagedPointer<parser::ColumnValueExpression> expr) {
+auto BinderContext::SetColumnPosTuple(common::ManagedPointer<parser::ColumnValueExpression> expr) -> bool {
     auto col_name = expr->GetColumnName();
     auto alias_name = parser::AliasType(expr->GetColumnName());
     std::transform(col_name.begin(), col_name.end(), col_name.begin(), ::tolower);
@@ -270,10 +270,10 @@ bool BinderContext::SetColumnPosTuple(common::ManagedPointer<parser::ColumnValue
     return false;
 }
 
-bool BinderContext::GetRegularTableObj(
+auto BinderContext::GetRegularTableObj(
     const std::string                                                                           &alias,
     common::ManagedPointer<parser::ColumnValueExpression>                                        expr,
-    common::ManagedPointer<std::tuple<catalog::db_oid_t, catalog::table_oid_t, catalog::Schema>> tuple) {
+    common::ManagedPointer<std::tuple<catalog::db_oid_t, catalog::table_oid_t, catalog::Schema>> tuple) -> bool {
     auto current_context = common::ManagedPointer(this);
     while (current_context != nullptr) {
         auto iter = current_context->regular_table_alias_map_.find(alias);
@@ -287,9 +287,9 @@ bool BinderContext::GetRegularTableObj(
     return false;
 }
 
-bool BinderContext::CheckNestedTableColumn(const parser::AliasType                              &alias,
+auto BinderContext::CheckNestedTableColumn(const parser::AliasType                              &alias,
                                            const std::string                                    &col_name,
-                                           common::ManagedPointer<parser::ColumnValueExpression> expr) {
+                                           common::ManagedPointer<parser::ColumnValueExpression> expr) -> bool {
     auto current_context = common::ManagedPointer(this);
     while (current_context != nullptr) {
         auto iter = current_context->nested_table_alias_map_.find(alias.GetName());
@@ -388,7 +388,8 @@ void BinderContext::GenerateAllColumnExpressions(
     }
 }
 
-common::ManagedPointer<BinderContext::TableMetadata> BinderContext::GetTableMapping(const std::string &table_name) {
+auto BinderContext::GetTableMapping(const std::string &table_name)
+    -> common::ManagedPointer<BinderContext::TableMetadata> {
     if (regular_table_alias_map_.find(table_name) == regular_table_alias_map_.end()) {
         return nullptr;
     }
@@ -398,14 +399,14 @@ common::ManagedPointer<BinderContext::TableMetadata> BinderContext::GetTableMapp
 void BinderContext::AddTableAliasMapping(const std::string &alias_name, const parser::AliasType &alias_type) {
     table_alias_name_to_type_map_[alias_name] = alias_type;
 }
-bool BinderContext::HasTableAlias(const std::string &alias_name) {
+auto BinderContext::HasTableAlias(const std::string &alias_name) -> bool {
     return table_alias_name_to_type_map_.find(alias_name) != table_alias_name_to_type_map_.end();
 }
-parser::AliasType &BinderContext::GetTableAlias(const std::string &alias_name) {
+auto BinderContext::GetTableAlias(const std::string &alias_name) -> parser::AliasType & {
     return table_alias_name_to_type_map_[alias_name];
 }
 
-parser::AliasType BinderContext::GetOrCreateTableAlias(const std::string &alias_name) {
+auto BinderContext::GetOrCreateTableAlias(const std::string &alias_name) -> parser::AliasType {
     /*
      * When binding a SELECT statement we would have saved the table alias of a TableRef with it's unique serial number
      * so we return that. For other query types such as UPDATE and DELETE we do not have an alias saved so we just make
@@ -417,7 +418,7 @@ parser::AliasType BinderContext::GetOrCreateTableAlias(const std::string &alias_
     return parser::AliasType(alias_name);
 }
 
-parser::AliasType BinderContext::FindTableAlias(const std::string &alias_name) {
+auto BinderContext::FindTableAlias(const std::string &alias_name) -> parser::AliasType {
     /*
      * When binding a SELECT statement we would have saved the table alias of a TableRef with it's unique serial number
      * so we return that when we find it. For other query types such as UPDATE and DELETE we do not have an alias saved

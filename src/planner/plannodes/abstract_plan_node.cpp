@@ -54,7 +54,7 @@ AbstractPlanNode::AbstractPlanNode(std::vector<std::unique_ptr<AbstractPlanNode>
 
 AbstractPlanNode::~AbstractPlanNode() = default;
 
-nlohmann::json AbstractPlanNode::ToJson() const {
+auto AbstractPlanNode::ToJson() const -> nlohmann::json {
     nlohmann::json j;
     j["plan_node_type"] = GetPlanNodeType();
     std::vector<nlohmann::json> children;
@@ -66,7 +66,7 @@ nlohmann::json AbstractPlanNode::ToJson() const {
     return j;
 }
 
-std::vector<std::unique_ptr<parser::AbstractExpression>> AbstractPlanNode::FromJson(const nlohmann::json &j) {
+auto AbstractPlanNode::FromJson(const nlohmann::json &j) -> std::vector<std::unique_ptr<parser::AbstractExpression>> {
     std::vector<std::unique_ptr<parser::AbstractExpression>> exprs;
     NOISEPAGE_ASSERT(GetPlanNodeType() == j.at("plan_node_type").get<PlanNodeType>(), "Mismatching plan node types");
     // Deserialize output schema
@@ -89,7 +89,7 @@ std::vector<std::unique_ptr<parser::AbstractExpression>> AbstractPlanNode::FromJ
     return exprs;
 }
 
-common::hash_t AbstractPlanNode::Hash() const {
+auto AbstractPlanNode::Hash() const -> common::hash_t {
     // PlanNodeType
     common::hash_t hash = common::HashUtil::Hash(GetPlanNodeType());
 
@@ -105,7 +105,7 @@ common::hash_t AbstractPlanNode::Hash() const {
     return hash;
 }
 
-bool AbstractPlanNode::operator==(const AbstractPlanNode &rhs) const {
+auto AbstractPlanNode::operator==(const AbstractPlanNode &rhs) const -> bool {
     if (GetPlanNodeType() != rhs.GetPlanNodeType()) {
         return false;
     }
@@ -140,7 +140,7 @@ void AbstractPlanNode::MoveChildren(std::vector<std::unique_ptr<AbstractPlanNode
     children_.clear();
 }
 
-JSONDeserializeNodeIntermediate DeserializePlanNode(const nlohmann::json &json) {
+auto DeserializePlanNode(const nlohmann::json &json) -> JSONDeserializeNodeIntermediate {
     std::unique_ptr<AbstractPlanNode> plan_node;
 
     auto plan_type = json.at("plan_node_type").get<PlanNodeType>();

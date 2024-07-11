@@ -107,7 +107,7 @@ T ConstantValueExpression::Peek() const {
     UNREACHABLE("Invalid type for Peek.");
 }
 
-ConstantValueExpression &ConstantValueExpression::operator=(const ConstantValueExpression &other) {
+auto ConstantValueExpression::operator=(const ConstantValueExpression &other) -> ConstantValueExpression & {
     if (this != &other) { // self-assignment check expected
         // AbstractExpression fields we need copied over
         expression_type_ = other.expression_type_;
@@ -144,7 +144,7 @@ ConstantValueExpression::ConstantValueExpression(const ConstantValueExpression &
     Validate();
 }
 
-ConstantValueExpression &ConstantValueExpression::operator=(ConstantValueExpression &&other) noexcept {
+auto ConstantValueExpression::operator=(ConstantValueExpression &&other) noexcept -> ConstantValueExpression & {
     if (this != &other) { // self-assignment check expected
         // AbstractExpression fields we need moved over
         expression_type_ = other.expression_type_;
@@ -172,7 +172,7 @@ ConstantValueExpression::ConstantValueExpression(ConstantValueExpression &&other
     Validate();
 }
 
-common::hash_t ConstantValueExpression::Hash() const {
+auto ConstantValueExpression::Hash() const -> common::hash_t {
     const auto hash = common::HashUtil::CombineHashes(AbstractExpression::Hash(), common::HashUtil::Hash(IsNull()));
     if (IsNull()) {
         return hash;
@@ -207,7 +207,7 @@ common::hash_t ConstantValueExpression::Hash() const {
     }
 }
 
-bool ConstantValueExpression::operator==(const AbstractExpression &other) const {
+auto ConstantValueExpression::operator==(const AbstractExpression &other) const -> bool {
     if (!AbstractExpression::operator==(other)) {
         return false;
     }
@@ -248,7 +248,7 @@ bool ConstantValueExpression::operator==(const AbstractExpression &other) const 
     }
 }
 
-std::string ConstantValueExpression::ToString() const {
+auto ConstantValueExpression::ToString() const -> std::string {
     switch (GetReturnValueType()) {
     case execution::sql::SqlTypeId::Boolean: {
         return fmt::format("{}", GetBoolVal().val_);
@@ -277,7 +277,8 @@ std::string ConstantValueExpression::ToString() const {
     }
 }
 
-ConstantValueExpression ConstantValueExpression::FromString(const std::string &val, execution::sql::SqlTypeId type_id) {
+auto ConstantValueExpression::FromString(const std::string &val, execution::sql::SqlTypeId type_id)
+    -> ConstantValueExpression {
     if (val.empty()) {
         return ConstantValueExpression(type_id);
     }
@@ -311,7 +312,7 @@ ConstantValueExpression ConstantValueExpression::FromString(const std::string &v
     }
 }
 
-nlohmann::json ConstantValueExpression::ToJson() const {
+auto ConstantValueExpression::ToJson() const -> nlohmann::json {
     nlohmann::json j = AbstractExpression::ToJson();
 
     if (!IsNull()) {
@@ -352,7 +353,7 @@ nlohmann::json ConstantValueExpression::ToJson() const {
     return j;
 }
 
-std::vector<std::unique_ptr<AbstractExpression>> ConstantValueExpression::FromJson(const nlohmann::json &j) {
+auto ConstantValueExpression::FromJson(const nlohmann::json &j) -> std::vector<std::unique_ptr<AbstractExpression>> {
     std::vector<std::unique_ptr<AbstractExpression>> exprs;
     auto                                             e1 = AbstractExpression::FromJson(j);
     exprs.insert(exprs.end(), std::make_move_iterator(e1.begin()), std::make_move_iterator(e1.end()));

@@ -9,8 +9,8 @@
 
 namespace noisepage::optimizer {
 
-GroupExpression *
-PropertyEnforcer::EnforceProperty(GroupExpression *gexpr, Property *property, transaction::TransactionContext *txn) {
+auto PropertyEnforcer::EnforceProperty(GroupExpression *gexpr, Property *property, transaction::TransactionContext *txn)
+    -> GroupExpression * {
     input_gexpr_ = gexpr;
     txn_ = txn;
     property->Accept(this);

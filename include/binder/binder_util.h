@@ -58,7 +58,7 @@ public:
      * @return True if the value of @p int_val fits in the Output type, false otherwise.
      */
     template <typename Output, typename Input>
-    static bool IsRepresentable(Input int_val);
+    static auto IsRepresentable(Input int_val) -> bool;
 
     /**
      * @return Casted numeric type, or an exception if the cast fails.

@@ -6,7 +6,7 @@
 
 namespace noisepage::parser {
 
-std::unique_ptr<AbstractExpression> ColumnValueExpression::Copy() const {
+auto ColumnValueExpression::Copy() const -> std::unique_ptr<AbstractExpression> {
     auto expr = std::make_unique<ColumnValueExpression>(GetDatabaseOid(), GetTableOid(), GetColumnOid());
     expr->SetMutableStateForCopy(*this);
     expr->table_alias_ = this->table_alias_;
@@ -17,7 +17,7 @@ std::unique_ptr<AbstractExpression> ColumnValueExpression::Copy() const {
     return expr;
 }
 
-common::hash_t ColumnValueExpression::Hash() const {
+auto ColumnValueExpression::Hash() const -> common::hash_t {
     common::hash_t hash = common::HashUtil::Hash(GetExpressionType());
     hash = common::HashUtil::CombineHashes(hash, common::HashUtil::Hash(GetReturnValueType()));
     hash = common::HashUtil::CombineHashes(hash, std::hash<parser::AliasType>{}(table_alias_));
@@ -29,7 +29,7 @@ common::hash_t ColumnValueExpression::Hash() const {
     return hash;
 }
 
-bool ColumnValueExpression::operator==(const AbstractExpression &rhs) const {
+auto ColumnValueExpression::operator==(const AbstractExpression &rhs) const -> bool {
     if (GetExpressionType() != rhs.GetExpressionType()) {
         return false;
     }
@@ -68,7 +68,7 @@ void ColumnValueExpression::Accept(common::ManagedPointer<binder::SqlNodeVisitor
     v->Visit(common::ManagedPointer(this));
 }
 
-nlohmann::json ColumnValueExpression::ToJson() const {
+auto ColumnValueExpression::ToJson() const -> nlohmann::json {
     nlohmann::json j = AbstractExpression::ToJson();
     j["table_name"] = table_alias_.ToJson();
     j["column_name"] = column_name_;
@@ -78,7 +78,7 @@ nlohmann::json ColumnValueExpression::ToJson() const {
     return j;
 }
 
-std::vector<std::unique_ptr<AbstractExpression>> ColumnValueExpression::FromJson(const nlohmann::json &j) {
+auto ColumnValueExpression::FromJson(const nlohmann::json &j) -> std::vector<std::unique_ptr<AbstractExpression>> {
     std::vector<std::unique_ptr<AbstractExpression>> exprs;
     auto                                             e1 = AbstractExpression::FromJson(j);
     exprs.insert(exprs.end(), std::make_move_iterator(e1.begin()), std::make_move_iterator(e1.end()));

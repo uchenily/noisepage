@@ -4,7 +4,7 @@
 
 namespace noisepage::catalog {
 
-nlohmann::json IndexOptions::ToJson() const {
+auto IndexOptions::ToJson() const -> nlohmann::json {
     nlohmann::json                                             j;
     std::vector<std::pair<IndexOptions::Knob, nlohmann::json>> options;
     options.reserve(GetOptions().size());
@@ -24,7 +24,7 @@ void IndexOptions::FromJson(const nlohmann::json &j) {
     }
 }
 
-nlohmann::json IndexSchema::Column::ToJson() const {
+auto IndexSchema::Column::ToJson() const -> nlohmann::json {
     nlohmann::json j;
     j["name"] = name_;
     j["type"] = type_;
@@ -36,7 +36,8 @@ nlohmann::json IndexSchema::Column::ToJson() const {
     return j;
 }
 
-std::vector<std::unique_ptr<parser::AbstractExpression>> IndexSchema::Column::FromJson(const nlohmann::json &j) {
+auto IndexSchema::Column::FromJson(const nlohmann::json &j)
+    -> std::vector<std::unique_ptr<parser::AbstractExpression>> {
     name_ = j.at("name").get<std::string>();
     type_ = j.at("type").get<execution::sql::SqlTypeId>();
     attr_length_ = j.at("attr_length").get<uint16_t>();
@@ -48,7 +49,7 @@ std::vector<std::unique_ptr<parser::AbstractExpression>> IndexSchema::Column::Fr
     return std::move(deserialized.non_owned_exprs_);
 }
 
-nlohmann::json IndexSchema::ToJson() const {
+auto IndexSchema::ToJson() const -> nlohmann::json {
     // Only need to serialize columns_ because col_oid_to_offset is derived from columns_
     nlohmann::json j;
     j["columns"] = columns_;
@@ -65,7 +66,7 @@ void IndexSchema::FromJson(const nlohmann::json &j) {
     NOISEPAGE_ASSERT(false, "Schema::FromJson should never be invoked directly; use DeserializeSchema");
 }
 
-std::unique_ptr<IndexSchema> IndexSchema::DeserializeSchema(const nlohmann::json &j) {
+auto IndexSchema::DeserializeSchema(const nlohmann::json &j) -> std::unique_ptr<IndexSchema> {
     auto columns = j.at("columns").get<std::vector<IndexSchema::Column>>();
 
     auto unique = j.at("unique").get<bool>();

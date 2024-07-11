@@ -26,6 +26,7 @@ public:
         : module_(module) {}
 
     // Execute
+    // auto execute() override -> tbb::task* {
     tbb::task *execute() override {
         // This simply invokes Module::CompileToMachineCode() asynchronously.
         module_->CompileToMachineCode();
@@ -115,7 +116,7 @@ namespace {
         }
 
     private:
-        uint32_t ComputeRequiredStackSpace() const {
+        auto ComputeRequiredStackSpace() const -> uint32_t {
             // FunctionInfo tells us the amount of space we need for all input and
             // output arguments, so use that.
             uint32_t required_stack_space = func_.GetParamsSize();

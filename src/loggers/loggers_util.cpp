@@ -69,7 +69,7 @@ void LoggersUtil::ShutDown() {
 #endif
 }
 
-std::optional<spdlog::level::level_enum> LoggersUtil::GetLevel(const std::string_view &name) {
+auto LoggersUtil::GetLevel(const std::string_view &name) -> std::optional<spdlog::level::level_enum> {
     std::optional<spdlog::level::level_enum> level_val{std::nullopt};
     if (name == "off") {
         level_val = spdlog::level::off;
@@ -87,7 +87,7 @@ std::optional<spdlog::level::level_enum> LoggersUtil::GetLevel(const std::string
     return level_val;
 }
 
-common::SanctionedSharedPtr<spdlog::logger>::Ptr LoggersUtil::GetLogger(const std::string_view &name) {
+auto LoggersUtil::GetLogger(const std::string_view &name) -> common::SanctionedSharedPtr<spdlog::logger>::Ptr {
     common::SanctionedSharedPtr<spdlog::logger>::Ptr logger = nullptr;
 #ifdef NOISEPAGE_USE_LOGGING
     if (name == "binder") {

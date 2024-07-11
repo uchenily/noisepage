@@ -4,7 +4,7 @@
 
 namespace noisepage::planner {
 
-nlohmann::json OutputSchema::Column::ToJson() const {
+auto OutputSchema::Column::ToJson() const -> nlohmann::json {
     nlohmann::json j;
     j["name"] = name_;
     j["type"] = type_;
@@ -12,7 +12,8 @@ nlohmann::json OutputSchema::Column::ToJson() const {
     return j;
 }
 
-std::vector<std::unique_ptr<parser::AbstractExpression>> OutputSchema::Column::FromJson(const nlohmann::json &j) {
+auto OutputSchema::Column::FromJson(const nlohmann::json &j)
+    -> std::vector<std::unique_ptr<parser::AbstractExpression>> {
     name_ = j.at("name").get<std::string>();
     type_ = j.at("type").get<execution::sql::SqlTypeId>();
 
@@ -25,7 +26,7 @@ std::vector<std::unique_ptr<parser::AbstractExpression>> OutputSchema::Column::F
     return {};
 }
 
-nlohmann::json OutputSchema::ToJson() const {
+auto OutputSchema::ToJson() const -> nlohmann::json {
     nlohmann::json              j;
     std::vector<nlohmann::json> columns;
     for (const auto &col : columns_) {
@@ -35,7 +36,7 @@ nlohmann::json OutputSchema::ToJson() const {
     return j;
 }
 
-std::vector<std::unique_ptr<parser::AbstractExpression>> OutputSchema::FromJson(const nlohmann::json &j) {
+auto OutputSchema::FromJson(const nlohmann::json &j) -> std::vector<std::unique_ptr<parser::AbstractExpression>> {
     std::vector<std::unique_ptr<parser::AbstractExpression>> exprs;
 
     std::vector<nlohmann::json> columns_json = j.at("columns");

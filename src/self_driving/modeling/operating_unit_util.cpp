@@ -7,7 +7,7 @@
 
 namespace noisepage::selfdriving {
 
-bool OperatingUnitUtil::IsOperatingUnitTypeBlocking(ExecutionOperatingUnitType feature) {
+auto OperatingUnitUtil::IsOperatingUnitTypeBlocking(ExecutionOperatingUnitType feature) -> bool {
     switch (feature) {
     case ExecutionOperatingUnitType::HASHJOIN_BUILD:
     case ExecutionOperatingUnitType::SORT_BUILD:
@@ -24,7 +24,7 @@ bool OperatingUnitUtil::IsOperatingUnitTypeBlocking(ExecutionOperatingUnitType f
     }
 }
 
-ExecutionOperatingUnitType OperatingUnitUtil::GetNonParallelType(ExecutionOperatingUnitType feature) {
+auto OperatingUnitUtil::GetNonParallelType(ExecutionOperatingUnitType feature) -> ExecutionOperatingUnitType {
     switch (feature) {
     case ExecutionOperatingUnitType::PARALLEL_MERGE_HASHJOIN:
         return ExecutionOperatingUnitType::HASHJOIN_BUILD;
@@ -41,7 +41,7 @@ ExecutionOperatingUnitType OperatingUnitUtil::GetNonParallelType(ExecutionOperat
     }
 }
 
-std::string OperatingUnitUtil::ExecutionOperatingUnitTypeToString(ExecutionOperatingUnitType f) {
+auto OperatingUnitUtil::ExecutionOperatingUnitTypeToString(ExecutionOperatingUnitType f) -> std::string {
     // NOTE: Before adding any extra case to this switch statement,
     // please ensure that the output type is actually supported
     // by the mini-runner infrastructure.

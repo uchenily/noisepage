@@ -103,7 +103,7 @@ CompilationContext::CompilationContext(ExecutableQuery               *query,
     , counters_enabled_(settings.GetIsCountersEnabled())
     , pipeline_metrics_enabled_(settings.GetIsPipelineMetricsEnabled()) {}
 
-ast::FunctionDecl *CompilationContext::GenerateInitFunction() {
+auto CompilationContext::GenerateInitFunction() -> ast::FunctionDecl * {
     const auto      name = codegen_.MakeIdentifier(GetFunctionPrefix() + "_Init");
     FunctionBuilder builder(&codegen_, name, QueryParams(), codegen_.Nil());
     {
@@ -117,7 +117,7 @@ ast::FunctionDecl *CompilationContext::GenerateInitFunction() {
     return builder.Finish();
 }
 
-ast::FunctionDecl *CompilationContext::GenerateTearDownFunction() {
+auto CompilationContext::GenerateTearDownFunction() -> ast::FunctionDecl * {
     const auto      name = codegen_.MakeIdentifier(GetFunctionPrefix() + "_TearDown");
     FunctionBuilder builder(&codegen_, name, QueryParams(), codegen_.Nil());
     {
@@ -207,13 +207,13 @@ void CompilationContext::GeneratePlan(const planner::AbstractPlanNode           
 }
 
 // static
-std::unique_ptr<ExecutableQuery>
-CompilationContext::Compile(const planner::AbstractPlanNode              &plan,
-                            const exec::ExecutionSettings                &exec_settings,
-                            catalog::CatalogAccessor                     *accessor,
-                            const CompilationMode                         mode,
-                            std::optional<execution::query_id_t>          override_qid,
-                            common::ManagedPointer<planner::PlanMetaData> plan_meta_data) {
+auto CompilationContext::Compile(const planner::AbstractPlanNode              &plan,
+                                 const exec::ExecutionSettings                &exec_settings,
+                                 catalog::CatalogAccessor                     *accessor,
+                                 const CompilationMode                         mode,
+                                 std::optional<execution::query_id_t>          override_qid,
+                                 common::ManagedPointer<planner::PlanMetaData> plan_meta_data)
+    -> std::unique_ptr<ExecutableQuery> {
     // The query we're generating code for.
     auto query = std::make_unique<ExecutableQuery>(plan, exec_settings, accessor->GetTxn()->StartTime());
     if (override_qid.has_value()) {
@@ -228,7 +228,7 @@ CompilationContext::Compile(const planner::AbstractPlanNode              &plan,
     return query;
 }
 
-uint32_t CompilationContext::RegisterPipeline(Pipeline *pipeline) {
+auto CompilationContext::RegisterPipeline(Pipeline *pipeline) -> uint32_t {
     NOISEPAGE_ASSERT(std::find(pipelines_.begin(), pipelines_.end(), pipeline) == pipelines_.end(),
                      "Duplicate pipeline in context");
     pipelines_.push_back(pipeline);
@@ -434,31 +434,31 @@ void CompilationContext::Prepare(const parser::AbstractExpression &expression) {
     expressions_[&expression] = std::move(translator);
 }
 
-OperatorTranslator *CompilationContext::LookupTranslator(const planner::AbstractPlanNode &node) const {
+auto CompilationContext::LookupTranslator(const planner::AbstractPlanNode &node) const -> OperatorTranslator * {
     if (auto iter = ops_.find(&node); iter != ops_.end()) {
         return iter->second.get();
     }
     return nullptr;
 }
 
-ExpressionTranslator *CompilationContext::LookupTranslator(const parser::AbstractExpression &expr) const {
+auto CompilationContext::LookupTranslator(const parser::AbstractExpression &expr) const -> ExpressionTranslator * {
     if (auto iter = expressions_.find(&expr); iter != expressions_.end()) {
         return iter->second.get();
     }
     return nullptr;
 }
 
-std::string CompilationContext::GetFunctionPrefix() const {
+auto CompilationContext::GetFunctionPrefix() const -> std::string {
     return "Query" + std::to_string(unique_id_);
 }
 
-util::RegionVector<ast::FieldDecl *> CompilationContext::QueryParams() const {
+auto CompilationContext::QueryParams() const -> util::RegionVector<ast::FieldDecl *> {
     ast::Expr      *state_type = codegen_.PointerType(codegen_.MakeExpr(query_state_type_));
     ast::FieldDecl *field = codegen_.MakeField(query_state_var_, state_type);
     return codegen_.MakeFieldList({field});
 }
 
-ast::Expr *CompilationContext::GetExecutionContextPtrFromQueryState() {
+auto CompilationContext::GetExecutionContextPtrFromQueryState() -> ast::Expr * {
     return exec_ctx_.Get(&codegen_);
 }
 

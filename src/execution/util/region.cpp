@@ -22,7 +22,7 @@ Region::~Region() {
     FreeAll();
 } // NOLINT (bugprone-exception-escape)
 
-void *Region::Allocate(std::size_t size, std::size_t alignment) {
+auto Region::Allocate(std::size_t size, std::size_t alignment) -> void * {
     NOISEPAGE_ASSERT(alignment > 0, "Alignment must be greater than 0");
 
     std::size_t adjustment = common::MathUtil::AlignmentAdjustment(position_, alignment);
@@ -74,7 +74,7 @@ void Region::FreeAll() {
     end_ = 0;
 }
 
-uintptr_t Region::Expand(std::size_t requested) {
+auto Region::Expand(std::size_t requested) -> uintptr_t {
     static constexpr std::size_t chunk_overhead = sizeof(Chunk);
 
     //

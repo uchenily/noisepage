@@ -8,7 +8,7 @@
 
 namespace noisepage::parser {
 
-nlohmann::json OrderByDescription::ToJson() const {
+auto OrderByDescription::ToJson() const -> nlohmann::json {
     nlohmann::json j;
     j["types"] = types_;
     std::vector<nlohmann::json> exprs_json;
@@ -20,7 +20,7 @@ nlohmann::json OrderByDescription::ToJson() const {
     return j;
 }
 
-std::vector<std::unique_ptr<AbstractExpression>> OrderByDescription::FromJson(const nlohmann::json &j) {
+auto OrderByDescription::FromJson(const nlohmann::json &j) -> std::vector<std::unique_ptr<AbstractExpression>> {
     std::vector<std::unique_ptr<AbstractExpression>> result;
     // Deserialize types
     types_ = j.at("types").get<std::vector<OrderType>>();
@@ -40,14 +40,14 @@ std::vector<std::unique_ptr<AbstractExpression>> OrderByDescription::FromJson(co
 
 DEFINE_JSON_BODY_DECLARATIONS(OrderByDescription);
 
-nlohmann::json LimitDescription::ToJson() const {
+auto LimitDescription::ToJson() const -> nlohmann::json {
     nlohmann::json j;
     j["limit"] = limit_;
     j["offset"] = offset_;
     return j;
 }
 
-std::vector<std::unique_ptr<AbstractExpression>> LimitDescription::FromJson(const nlohmann::json &j) {
+auto LimitDescription::FromJson(const nlohmann::json &j) -> std::vector<std::unique_ptr<AbstractExpression>> {
     std::vector<std::unique_ptr<AbstractExpression>> exprs;
     limit_ = j.at("limit").get<int64_t>();
     offset_ = j.at("offset").get<int64_t>();
@@ -56,7 +56,7 @@ std::vector<std::unique_ptr<AbstractExpression>> LimitDescription::FromJson(cons
 
 DEFINE_JSON_BODY_DECLARATIONS(LimitDescription);
 
-nlohmann::json GroupByDescription::ToJson() const {
+auto GroupByDescription::ToJson() const -> nlohmann::json {
     nlohmann::json              j;
     std::vector<nlohmann::json> columns_json;
     columns_json.reserve(columns_.size());
@@ -68,7 +68,7 @@ nlohmann::json GroupByDescription::ToJson() const {
     return j;
 }
 
-std::vector<std::unique_ptr<AbstractExpression>> GroupByDescription::FromJson(const nlohmann::json &j) {
+auto GroupByDescription::FromJson(const nlohmann::json &j) -> std::vector<std::unique_ptr<AbstractExpression>> {
     std::vector<std::unique_ptr<AbstractExpression>> exprs;
     // Deserialize columns
     auto column_expressions = j.at("columns").get<std::vector<nlohmann::json>>();
@@ -95,7 +95,7 @@ std::vector<std::unique_ptr<AbstractExpression>> GroupByDescription::FromJson(co
 
 DEFINE_JSON_BODY_DECLARATIONS(GroupByDescription);
 
-nlohmann::json SelectStatement::ToJson() const {
+auto SelectStatement::ToJson() const -> nlohmann::json {
     nlohmann::json              j = SQLStatement::ToJson();
     std::vector<nlohmann::json> select_json;
     select_json.reserve(select_.size());
@@ -113,7 +113,7 @@ nlohmann::json SelectStatement::ToJson() const {
     return j;
 }
 
-std::vector<std::unique_ptr<AbstractExpression>> SelectStatement::FromJson(const nlohmann::json &j) {
+auto SelectStatement::FromJson(const nlohmann::json &j) -> std::vector<std::unique_ptr<AbstractExpression>> {
     std::vector<std::unique_ptr<AbstractExpression>> exprs;
 
     auto e1 = SQLStatement::FromJson(j);
@@ -182,7 +182,7 @@ std::vector<std::unique_ptr<AbstractExpression>> SelectStatement::FromJson(const
 
 DEFINE_JSON_BODY_DECLARATIONS(SelectStatement);
 
-std::unique_ptr<SelectStatement> SelectStatement::Copy() {
+auto SelectStatement::Copy() -> std::unique_ptr<SelectStatement> {
     std::vector<std::unique_ptr<TableRef>> new_with_tables;
     for (auto &ref : with_table_) {
         new_with_tables.push_back(ref->Copy());
@@ -214,7 +214,7 @@ std::unique_ptr<SelectStatement> SelectStatement::Copy() {
     return select;
 }
 
-common::hash_t SelectStatement::Hash() const {
+auto SelectStatement::Hash() const -> common::hash_t {
     common::hash_t hash = common::HashUtil::Hash(GetType());
     hash = common::HashUtil::CombineHashes(hash, common::HashUtil::Hash(select_distinct_));
     if (union_select_ != nullptr) {
@@ -241,7 +241,7 @@ common::hash_t SelectStatement::Hash() const {
     return hash;
 }
 
-bool SelectStatement::operator==(const SelectStatement &rhs) const {
+auto SelectStatement::operator==(const SelectStatement &rhs) const -> bool {
     if (this->GetType() != rhs.GetType()) {
         return false;
     }

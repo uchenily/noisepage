@@ -42,13 +42,13 @@ StorageInterface::~StorageInterface() {
     }
 }
 
-storage::ProjectedRow *StorageInterface::GetTablePR() {
+auto StorageInterface::GetTablePR() -> storage::ProjectedRow * {
     auto txn = exec_ctx_->GetTxn();
     table_redo_ = txn->StageWrite(exec_ctx_->DBOid(), table_oid_, pri_);
     return table_redo_->Delta();
 }
 
-storage::ProjectedRow *StorageInterface::GetIndexPR(catalog::index_oid_t index_oid) {
+auto StorageInterface::GetIndexPR(catalog::index_oid_t index_oid) -> storage::ProjectedRow * {
     curr_index_ = exec_ctx_->GetAccessor()->GetIndex(index_oid);
     // index is created after the initialization of storage interface
     if (curr_index_ != nullptr && !need_indexes_) {
@@ -60,36 +60,36 @@ storage::ProjectedRow *StorageInterface::GetIndexPR(catalog::index_oid_t index_o
     return index_pr_;
 }
 
-storage::TupleSlot StorageInterface::TableInsert() {
+auto StorageInterface::TableInsert() -> storage::TupleSlot {
     return table_->Insert(exec_ctx_->GetTxn(), table_redo_);
 }
 
-uint32_t StorageInterface::GetIndexHeapSize() {
+auto StorageInterface::GetIndexHeapSize() -> uint32_t {
     NOISEPAGE_ASSERT(curr_index_ != nullptr, "Index must have been loaded");
     return curr_index_->EstimateHeapUsage();
 }
 
-bool StorageInterface::TableDelete(storage::TupleSlot table_tuple_slot) {
+auto StorageInterface::TableDelete(storage::TupleSlot table_tuple_slot) -> bool {
     auto txn = exec_ctx_->GetTxn();
     txn->StageDelete(exec_ctx_->DBOid(), table_oid_, table_tuple_slot);
     return table_->Delete(exec_ctx_->GetTxn(), table_tuple_slot);
 }
 
-bool StorageInterface::TableUpdate(storage::TupleSlot table_tuple_slot) {
+auto StorageInterface::TableUpdate(storage::TupleSlot table_tuple_slot) -> bool {
     table_redo_->SetTupleSlot(table_tuple_slot);
     return table_->Update(exec_ctx_->GetTxn(), table_redo_);
 }
 
-uint64_t StorageInterface::IndexGetSize() const {
+auto StorageInterface::IndexGetSize() const -> uint64_t {
     return curr_index_->GetSize();
 }
 
-bool StorageInterface::IndexInsert() {
+auto StorageInterface::IndexInsert() -> bool {
     NOISEPAGE_ASSERT(need_indexes_, "Index PR not allocated!");
     return curr_index_->Insert(exec_ctx_->GetTxn(), *index_pr_, table_redo_->GetTupleSlot());
 }
 
-bool StorageInterface::IndexInsertUnique() {
+auto StorageInterface::IndexInsertUnique() -> bool {
     NOISEPAGE_ASSERT(need_indexes_, "Index PR not allocated!");
     return curr_index_->InsertUnique(exec_ctx_->GetTxn(), *index_pr_, table_redo_->GetTupleSlot());
 }
@@ -99,7 +99,7 @@ void StorageInterface::IndexDelete(storage::TupleSlot table_tuple_slot) {
     curr_index_->Delete(exec_ctx_->GetTxn(), *index_pr_, table_tuple_slot);
 }
 
-bool StorageInterface::IndexInsertWithTuple(storage::TupleSlot table_tuple_slot, bool unique) {
+auto StorageInterface::IndexInsertWithTuple(storage::TupleSlot table_tuple_slot, bool unique) -> bool {
     NOISEPAGE_ASSERT(need_indexes_, "Index PR not allocated!");
     if (unique) {
         return curr_index_->InsertUnique(exec_ctx_->GetTxn(), *index_pr_, table_tuple_slot);

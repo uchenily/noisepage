@@ -10,7 +10,7 @@
 
 namespace noisepage::planner {
 
-std::unique_ptr<DropTriggerPlanNode> DropTriggerPlanNode::Builder::Build() {
+auto DropTriggerPlanNode::Builder::Build() -> std::unique_ptr<DropTriggerPlanNode> {
     return std::unique_ptr<DropTriggerPlanNode>(new DropTriggerPlanNode(std::move(children_),
                                                                         std::move(output_schema_),
                                                                         database_oid_,
@@ -33,7 +33,7 @@ DropTriggerPlanNode::DropTriggerPlanNode(std::vector<std::unique_ptr<AbstractPla
     , trigger_oid_(trigger_oid)
     , if_exists_(if_exists) {}
 
-common::hash_t DropTriggerPlanNode::Hash() const {
+auto DropTriggerPlanNode::Hash() const -> common::hash_t {
     common::hash_t hash = AbstractPlanNode::Hash();
 
     // Hash database_oid
@@ -53,7 +53,7 @@ common::hash_t DropTriggerPlanNode::Hash() const {
     return hash;
 }
 
-bool DropTriggerPlanNode::operator==(const AbstractPlanNode &rhs) const {
+auto DropTriggerPlanNode::operator==(const AbstractPlanNode &rhs) const -> bool {
     if (!AbstractPlanNode::operator==(rhs)) {
         return false;
     }
@@ -83,7 +83,7 @@ bool DropTriggerPlanNode::operator==(const AbstractPlanNode &rhs) const {
     return true;
 }
 
-nlohmann::json DropTriggerPlanNode::ToJson() const {
+auto DropTriggerPlanNode::ToJson() const -> nlohmann::json {
     nlohmann::json j = AbstractPlanNode::ToJson();
     j["database_oid"] = database_oid_;
     j["namespace_oid"] = namespace_oid_;
@@ -92,7 +92,8 @@ nlohmann::json DropTriggerPlanNode::ToJson() const {
     return j;
 }
 
-std::vector<std::unique_ptr<parser::AbstractExpression>> DropTriggerPlanNode::FromJson(const nlohmann::json &j) {
+auto DropTriggerPlanNode::FromJson(const nlohmann::json &j)
+    -> std::vector<std::unique_ptr<parser::AbstractExpression>> {
     std::vector<std::unique_ptr<parser::AbstractExpression>> exprs;
     auto                                                     e1 = AbstractPlanNode::FromJson(j);
     exprs.insert(exprs.end(), std::make_move_iterator(e1.begin()), std::make_move_iterator(e1.end()));

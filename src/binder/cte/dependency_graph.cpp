@@ -18,43 +18,47 @@ namespace noisepage::binder::cte {
 // Construction
 // ----------------------------------------------------------------------------
 
-std::unique_ptr<DependencyGraph> Build(common::ManagedPointer<parser::SelectStatement> root) {
+auto Build(common::ManagedPointer<parser::SelectStatement> root) -> std::unique_ptr<DependencyGraph> {
     auto graph = std::make_unique<DependencyGraph>(std::make_unique<StructuredStatement>(root));
     graph->Validate();
     return graph;
 }
 
-std::unique_ptr<DependencyGraph> Build(common::ManagedPointer<parser::InsertStatement> root) {
+auto Build(common::ManagedPointer<parser::InsertStatement> root) -> std::unique_ptr<DependencyGraph> {
     auto graph = std::make_unique<DependencyGraph>(std::make_unique<StructuredStatement>(root));
     graph->Validate();
     return graph;
 }
 
-std::unique_ptr<DependencyGraph> Build(common::ManagedPointer<parser::UpdateStatement> root) {
+auto Build(common::ManagedPointer<parser::UpdateStatement> root) -> std::unique_ptr<DependencyGraph> {
     auto graph = std::make_unique<DependencyGraph>(std::make_unique<StructuredStatement>(root));
     graph->Validate();
     return graph;
 }
 
-std::unique_ptr<DependencyGraph> Build(common::ManagedPointer<parser::DeleteStatement> root) {
+auto Build(common::ManagedPointer<parser::DeleteStatement> root) -> std::unique_ptr<DependencyGraph> {
     auto graph = std::make_unique<DependencyGraph>(std::make_unique<StructuredStatement>(root));
     graph->Validate();
     return graph;
 }
 
-std::unique_ptr<DependencyGraph> DependencyGraph::BuildUnchecked(common::ManagedPointer<parser::SelectStatement> root) {
+auto DependencyGraph::BuildUnchecked(common::ManagedPointer<parser::SelectStatement> root)
+    -> std::unique_ptr<DependencyGraph> {
     return std::make_unique<DependencyGraph>(std::make_unique<StructuredStatement>(root));
 }
 
-std::unique_ptr<DependencyGraph> DependencyGraph::BuildUnchecked(common::ManagedPointer<parser::InsertStatement> root) {
+auto DependencyGraph::BuildUnchecked(common::ManagedPointer<parser::InsertStatement> root)
+    -> std::unique_ptr<DependencyGraph> {
     return std::make_unique<DependencyGraph>(std::make_unique<StructuredStatement>(root));
 }
 
-std::unique_ptr<DependencyGraph> DependencyGraph::BuildUnchecked(common::ManagedPointer<parser::UpdateStatement> root) {
+auto DependencyGraph::BuildUnchecked(common::ManagedPointer<parser::UpdateStatement> root)
+    -> std::unique_ptr<DependencyGraph> {
     return std::make_unique<DependencyGraph>(std::make_unique<StructuredStatement>(root));
 }
 
-std::unique_ptr<DependencyGraph> DependencyGraph::BuildUnchecked(common::ManagedPointer<parser::DeleteStatement> root) {
+auto DependencyGraph::BuildUnchecked(common::ManagedPointer<parser::DeleteStatement> root)
+    -> std::unique_ptr<DependencyGraph> {
     return std::make_unique<DependencyGraph>(std::make_unique<StructuredStatement>(root));
 }
 
@@ -84,7 +88,7 @@ void DependencyGraph::ValidateStructuredStatement(const StructuredStatement &sta
     }
 }
 
-bool DependencyGraph::ContainsAmbiguousReferences(const LexicalScope &scope) {
+auto DependencyGraph::ContainsAmbiguousReferences(const LexicalScope &scope) -> bool {
     std::unordered_set<std::string> read_aliases{};
     std::unordered_set<std::string> write_aliases{};
     for (const auto &table_ref : scope.References()) {
@@ -108,8 +112,8 @@ bool DependencyGraph::ContainsAmbiguousReferences(const LexicalScope &scope) {
 // Reference Resolution
 // ----------------------------------------------------------------------------
 
-std::unordered_set<const ContextSensitiveTableRef *>
-DependencyGraph::ResolveDependenciesFor(const ContextSensitiveTableRef &table_ref) {
+auto DependencyGraph::ResolveDependenciesFor(const ContextSensitiveTableRef &table_ref)
+    -> std::unordered_set<const ContextSensitiveTableRef *> {
     if (table_ref.Type() == RefType::READ) {
         // READ references cannot introduce a dependency
         return {};
@@ -131,7 +135,7 @@ DependencyGraph::ResolveDependenciesFor(const ContextSensitiveTableRef &table_re
     return dependencies;
 }
 
-const ContextSensitiveTableRef *DependencyGraph::ResolveReference(const ContextSensitiveTableRef &table_ref) {
+auto DependencyGraph::ResolveReference(const ContextSensitiveTableRef &table_ref) -> const ContextSensitiveTableRef * {
     NOISEPAGE_ASSERT(table_ref.Type() == RefType::READ, "Resolving WRITE reference dependencies is ambiguous");
 
     /**
@@ -196,8 +200,8 @@ const ContextSensitiveTableRef *DependencyGraph::ResolveReference(const ContextS
     throw BINDER_EXCEPTION("Table Not Found", common::ErrorCode::ERRCODE_UNDEFINED_TABLE);
 }
 
-const ContextSensitiveTableRef *DependencyGraph::FindWriteReferenceInScope(std::string_view    alias,
-                                                                           const LexicalScope &scope) {
+auto DependencyGraph::FindWriteReferenceInScope(std::string_view alias, const LexicalScope &scope)
+    -> const ContextSensitiveTableRef * {
     auto it = std::find_if(scope.References().cbegin(),
                            scope.References().cend(),
                            [&alias](const std::unique_ptr<ContextSensitiveTableRef> &r) {
@@ -206,8 +210,8 @@ const ContextSensitiveTableRef *DependencyGraph::FindWriteReferenceInScope(std::
     return (it == scope.References().cend()) ? NOT_FOUND : (*it).get();
 }
 
-const ContextSensitiveTableRef *DependencyGraph::FindWriteReferenceInAnyEnclosingScope(std::string_view    alias,
-                                                                                       const LexicalScope &scope) {
+auto DependencyGraph::FindWriteReferenceInAnyEnclosingScope(std::string_view alias, const LexicalScope &scope)
+    -> const ContextSensitiveTableRef * {
     auto *upward_scope = scope.EnclosingScope();
     while (upward_scope != LexicalScope::GLOBAL_SCOPE) {
         const auto *upward_ref = FindWriteReferenceInScope(alias, *upward_scope);
@@ -220,9 +224,10 @@ const ContextSensitiveTableRef *DependencyGraph::FindWriteReferenceInAnyEnclosin
     return NOT_FOUND;
 }
 
-const ContextSensitiveTableRef *DependencyGraph::FindForwardWriteReferenceInScope(std::string_view    alias,
-                                                                                  const LexicalScope &scope,
-                                                                                  const LexicalScope &partition_point) {
+auto DependencyGraph::FindForwardWriteReferenceInScope(std::string_view    alias,
+                                                       const LexicalScope &scope,
+                                                       const LexicalScope &partition_point)
+    -> const ContextSensitiveTableRef * {
     // Locate the partition point within the scope
     auto partition = std::find_if(scope.EnclosedScopes().cbegin(),
                                   scope.EnclosedScopes().cend(),
@@ -245,10 +250,10 @@ const ContextSensitiveTableRef *DependencyGraph::FindForwardWriteReferenceInScop
     return (it == scope.References().cend()) ? NOT_FOUND : (*it).get();
 }
 
-const ContextSensitiveTableRef *
-DependencyGraph::FindBackwardWriteReferenceInScope(std::string_view    alias,
-                                                   const LexicalScope &scope,
-                                                   const LexicalScope &partition_point) {
+auto DependencyGraph::FindBackwardWriteReferenceInScope(std::string_view    alias,
+                                                        const LexicalScope &scope,
+                                                        const LexicalScope &partition_point)
+    -> const ContextSensitiveTableRef * {
     // Locate the partition point within the scope
     auto partition = std::find_if(scope.EnclosedScopes().cbegin(),
                                   scope.EnclosedScopes().cend(),
@@ -274,17 +279,17 @@ DependencyGraph::FindBackwardWriteReferenceInScope(std::string_view    alias,
 // Graph Queries
 // ----------------------------------------------------------------------------
 
-std::size_t DependencyGraph::Order() const {
+auto DependencyGraph::Order() const -> std::size_t {
     return graph_.size();
 }
 
-std::size_t DependencyGraph::Size() const {
+auto DependencyGraph::Size() const -> std::size_t {
     return std::transform_reduce(graph_.cbegin(), graph_.cend(), 0UL, std::plus{}, [](const EntryType &entry) {
         return entry.second.size();
     });
 }
 
-bool DependencyGraph::HasVertex(const Vertex &vertex) const {
+auto DependencyGraph::HasVertex(const Vertex &vertex) const -> bool {
     // Map the vertex type to its corresponding reference type
     const auto ref_type = (vertex.Type() == VertexType::READ) ? RefType::READ : RefType::WRITE;
     for (const auto &[ref, _] : graph_) {
@@ -299,7 +304,7 @@ bool DependencyGraph::HasVertex(const Vertex &vertex) const {
     return false;
 }
 
-bool DependencyGraph::HasEdge(const Edge &edge) const {
+auto DependencyGraph::HasEdge(const Edge &edge) const -> bool {
     if (!HasVertex(edge.Source()) || !HasVertex(edge.Destination())) {
         return false;
     }
@@ -315,10 +320,10 @@ bool DependencyGraph::HasEdge(const Edge &edge) const {
     return (graph_.at(src_ref).count(dst_ref) > 0UL);
 }
 
-ContextSensitiveTableRef *DependencyGraph::FindRef(std::string_view  alias,
-                                                   RefType           type,
-                                                   const std::size_t depth,
-                                                   const std::size_t position) const {
+auto DependencyGraph::FindRef(std::string_view  alias,
+                              RefType           type,
+                              const std::size_t depth,
+                              const std::size_t position) const -> ContextSensitiveTableRef * {
     for (auto &[ref, _] : graph_) {
         if (ref->Type() == type && ref->Table()->GetAlias().GetName() == alias) {
             const auto &scope = *ref->EnclosingScope();
@@ -345,7 +350,7 @@ void DependencyGraph::Validate() const {
     }
 }
 
-bool DependencyGraph::ContainsInvalidForwardReference() const {
+auto DependencyGraph::ContainsInvalidForwardReference() const -> bool {
     /**
      * A forward reference in this context is a dependency between
      * the temporary tables produced by common table expressions
@@ -369,8 +374,8 @@ bool DependencyGraph::ContainsInvalidForwardReference() const {
     return false;
 }
 
-bool DependencyGraph::IsInvalidForwardReference(const ContextSensitiveTableRef &src,
-                                                const ContextSensitiveTableRef &dst) {
+auto DependencyGraph::IsInvalidForwardReference(const ContextSensitiveTableRef &src,
+                                                const ContextSensitiveTableRef &dst) -> bool {
     if (*src.EnclosingScope() != *dst.EnclosingScope()) {
         return false;
     }
@@ -380,7 +385,7 @@ bool DependencyGraph::IsInvalidForwardReference(const ContextSensitiveTableRef &
     return (dst_position > src_position) ? !src.Table()->IsSyntacticallyInductiveCte() : false;
 }
 
-bool DependencyGraph::ContainsInvalidMutualRecursion() const {
+auto DependencyGraph::ContainsInvalidMutualRecursion() const -> bool {
     /**
      * To check for mutual recursion among CTEs in the query,
      * we construct an abstract graph from the dependency

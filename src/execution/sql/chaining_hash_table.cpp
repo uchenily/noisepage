@@ -60,7 +60,7 @@ void ChainingHashTable<UseTags>::SetSize(uint64_t new_size, common::ManagedPoint
 }
 
 template <bool UseTags>
-std::tuple<uint64_t, uint64_t, float> ChainingHashTable<UseTags>::GetChainLengthStats() const {
+auto ChainingHashTable<UseTags>::GetChainLengthStats() const -> std::tuple<uint64_t, uint64_t, float> {
     uint64_t min = std::numeric_limits<uint64_t>::max(), max = 0, total = 0;
 
     for (uint64_t idx = 0; idx < capacity_; idx++) {

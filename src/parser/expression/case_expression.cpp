@@ -6,14 +6,14 @@
 
 namespace noisepage::parser {
 
-nlohmann::json CaseExpression::WhenClause::ToJson() const {
+auto CaseExpression::WhenClause::ToJson() const -> nlohmann::json {
     nlohmann::json j;
     j["condition"] = condition_->ToJson();
     j["then"] = then_->ToJson();
     return j;
 }
 
-std::vector<std::unique_ptr<AbstractExpression>> CaseExpression::WhenClause::FromJson(const nlohmann::json &j) {
+auto CaseExpression::WhenClause::FromJson(const nlohmann::json &j) -> std::vector<std::unique_ptr<AbstractExpression>> {
     std::vector<std::unique_ptr<AbstractExpression>> exprs;
     auto                                             deserialized_cond = DeserializeExpression(j.at("condition"));
     condition_ = std::move(deserialized_cond.result_);
@@ -28,14 +28,14 @@ std::vector<std::unique_ptr<AbstractExpression>> CaseExpression::WhenClause::Fro
     return exprs;
 }
 
-common::hash_t CaseExpression::WhenClause::Hash() const {
+auto CaseExpression::WhenClause::Hash() const -> common::hash_t {
     common::hash_t hash = condition_->Hash();
     hash = common::HashUtil::CombineHashes(hash, condition_->Hash());
     hash = common::HashUtil::CombineHashes(hash, then_->Hash());
     return hash;
 }
 
-common::hash_t CaseExpression::Hash() const {
+auto CaseExpression::Hash() const -> common::hash_t {
     common::hash_t hash = AbstractExpression::Hash();
     for (auto &clause : when_clauses_) {
         hash = common::HashUtil::CombineHashes(hash, clause.Hash());
@@ -46,7 +46,7 @@ common::hash_t CaseExpression::Hash() const {
     return hash;
 }
 
-bool CaseExpression::operator==(const AbstractExpression &rhs) const {
+auto CaseExpression::operator==(const AbstractExpression &rhs) const -> bool {
     if (!AbstractExpression::operator==(rhs)) {
         return false;
     }
@@ -73,7 +73,7 @@ bool CaseExpression::operator==(const AbstractExpression &rhs) const {
     return (*default_exp == *other_default_exp);
 }
 
-std::unique_ptr<AbstractExpression> CaseExpression::Copy() const {
+auto CaseExpression::Copy() const -> std::unique_ptr<AbstractExpression> {
     std::vector<WhenClause> clauses;
     for (const auto &clause : when_clauses_) {
         clauses.emplace_back(WhenClause{clause.condition_->Copy(), clause.then_->Copy()});
@@ -83,7 +83,7 @@ std::unique_ptr<AbstractExpression> CaseExpression::Copy() const {
     return expr;
 }
 
-nlohmann::json CaseExpression::ToJson() const {
+auto CaseExpression::ToJson() const -> nlohmann::json {
     nlohmann::json              j = AbstractExpression::ToJson();
     std::vector<nlohmann::json> when_clauses_json;
     for (const auto &when_clause : when_clauses_) {
@@ -94,7 +94,7 @@ nlohmann::json CaseExpression::ToJson() const {
     return j;
 }
 
-std::vector<std::unique_ptr<AbstractExpression>> CaseExpression::FromJson(const nlohmann::json &j) {
+auto CaseExpression::FromJson(const nlohmann::json &j) -> std::vector<std::unique_ptr<AbstractExpression>> {
     std::vector<std::unique_ptr<AbstractExpression>> exprs;
     auto                                             e1 = AbstractExpression::FromJson(j);
     exprs.insert(exprs.end(), std::make_move_iterator(e1.begin()), std::make_move_iterator(e1.end()));

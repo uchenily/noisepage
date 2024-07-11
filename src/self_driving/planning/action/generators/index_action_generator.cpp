@@ -122,11 +122,11 @@ void IndexActionGenerator::FindMissingIndex(const planner::AbstractPlanNode     
     }
 }
 
-bool IndexActionGenerator::GenerateIndexableColumns(
+auto IndexActionGenerator::GenerateIndexableColumns(
     catalog::table_oid_t                                                table_oid,
     common::ManagedPointer<parser::AbstractExpression>                  expr,
     std::vector<common::ManagedPointer<parser::ColumnValueExpression>> *equality_columns,
-    std::vector<common::ManagedPointer<parser::ColumnValueExpression>> *inequality_columns) {
+    std::vector<common::ManagedPointer<parser::ColumnValueExpression>> *inequality_columns) -> bool {
     NOISEPAGE_ASSERT(expr != nullptr, "Unexpected nullptr expression.");
 
     if (expr->GetExpressionType() == parser::ExpressionType::CONJUNCTION_AND) {

@@ -19,12 +19,12 @@ FunctionDecl::FunctionDecl(const SourcePosition &pos, Identifier name, FunctionL
 StructDecl::StructDecl(const SourcePosition &pos, Identifier name, StructTypeRepr *type_repr)
     : Decl(Kind::StructDecl, pos, name, type_repr) {}
 
-uint32_t StructDecl::NumFields() const {
+auto StructDecl::NumFields() const -> uint32_t {
     const auto &fields = TypeRepr()->As<ast::StructTypeRepr>()->Fields();
     return fields.size();
 }
 
-ast::FieldDecl *StructDecl::GetFieldAt(uint32_t field_idx) const {
+auto StructDecl::GetFieldAt(uint32_t field_idx) const -> ast::FieldDecl * {
     return TypeRepr()->As<ast::StructTypeRepr>()->GetFieldAt(field_idx);
 }
 
@@ -40,28 +40,28 @@ ExpressionStmt::ExpressionStmt(Expr *expr)
 // Expression
 // ---------------------------------------------------------
 
-bool Expr::IsNilLiteral() const {
+auto Expr::IsNilLiteral() const -> bool {
     if (auto *lit_expr = SafeAs<ast::LitExpr>()) {
         return lit_expr->GetLiteralKind() == ast::LitExpr::LitKind::Nil;
     }
     return false;
 }
 
-bool Expr::IsBoolLiteral() const {
+auto Expr::IsBoolLiteral() const -> bool {
     if (auto *lit_expr = SafeAs<ast::LitExpr>()) {
         return lit_expr->GetLiteralKind() == ast::LitExpr::LitKind::Boolean;
     }
     return false;
 }
 
-bool Expr::IsStringLiteral() const {
+auto Expr::IsStringLiteral() const -> bool {
     if (auto *lit_expr = SafeAs<ast::LitExpr>()) {
         return lit_expr->GetLiteralKind() == ast::LitExpr::LitKind::String;
     }
     return false;
 }
 
-bool Expr::IsIntegerLiteral() const {
+auto Expr::IsIntegerLiteral() const -> bool {
     if (auto *lit_expr = SafeAs<ast::LitExpr>()) {
         return lit_expr->GetLiteralKind() == ast::LitExpr::LitKind::Int;
     }
@@ -75,7 +75,7 @@ bool Expr::IsIntegerLiteral() const {
 namespace {
 
     // Catches: nil [ '==' | '!=' ] expr
-    bool MatchIsLiteralCompareNil(Expr *left, parsing::Token::Type op, Expr *right, Expr **result) {
+    auto MatchIsLiteralCompareNil(Expr *left, parsing::Token::Type op, Expr *right, Expr **result) -> bool {
         if (left->IsNilLiteral() && parsing::Token::IsCompareOp(op)) {
             *result = right;
             return true;
@@ -85,7 +85,7 @@ namespace {
 
 } // namespace
 
-bool ComparisonOpExpr::IsLiteralCompareNil(Expr **result) const {
+auto ComparisonOpExpr::IsLiteralCompareNil(Expr **result) const -> bool {
     return MatchIsLiteralCompareNil(left_, op_, right_, result) || MatchIsLiteralCompareNil(right_, op_, left_, result);
 }
 
@@ -102,7 +102,7 @@ FunctionLitExpr::FunctionLitExpr(FunctionTypeRepr *type_repr, BlockStmt *body)
 // Call Expression
 // ---------------------------------------------------------
 
-Identifier CallExpr::GetFuncName() const {
+auto CallExpr::GetFuncName() const -> Identifier {
     return func_->As<IdentifierExpr>()->Name();
 }
 
@@ -110,13 +110,13 @@ Identifier CallExpr::GetFuncName() const {
 // Index Expressions
 // ---------------------------------------------------------
 
-bool IndexExpr::IsArrayAccess() const {
+auto IndexExpr::IsArrayAccess() const -> bool {
     NOISEPAGE_ASSERT(Object() != nullptr, "Object cannot be NULL");
     NOISEPAGE_ASSERT(Object() != nullptr, "Cannot determine object type before type checking!");
     return Object()->GetType()->IsArrayType();
 }
 
-bool IndexExpr::IsMapAccess() const {
+auto IndexExpr::IsMapAccess() const -> bool {
     NOISEPAGE_ASSERT(Object() != nullptr, "Object cannot be NULL");
     NOISEPAGE_ASSERT(Object() != nullptr, "Cannot determine object type before type checking!");
     return Object()->GetType()->IsMapType();
@@ -126,7 +126,7 @@ bool IndexExpr::IsMapAccess() const {
 // Member expression
 // ---------------------------------------------------------
 
-bool MemberExpr::IsSugaredArrow() const {
+auto MemberExpr::IsSugaredArrow() const -> bool {
     NOISEPAGE_ASSERT(Object()->GetType() != nullptr, "Cannot determine sugared-arrow before type checking!");
     return Object()->GetType()->IsPointerType();
 }
@@ -135,7 +135,7 @@ bool MemberExpr::IsSugaredArrow() const {
 // Statement
 // ---------------------------------------------------------
 
-bool Stmt::IsTerminating(Stmt *stmt) {
+auto Stmt::IsTerminating(Stmt *stmt) -> bool {
     switch (stmt->GetKind()) {
     case AstNode::Kind::BlockStmt: {
         return IsTerminating(stmt->As<BlockStmt>()->Statements().back());
@@ -153,7 +153,7 @@ bool Stmt::IsTerminating(Stmt *stmt) {
     }
 }
 
-std::string CastKindToString(const CastKind cast_kind) {
+auto CastKindToString(const CastKind cast_kind) -> std::string {
     switch (cast_kind) {
     case CastKind::IntToSqlInt:
         return "IntToSqlInt";

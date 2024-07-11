@@ -9,7 +9,7 @@
 
 namespace noisepage::planner {
 
-std::unique_ptr<LimitPlanNode> LimitPlanNode::Builder::Build() {
+auto LimitPlanNode::Builder::Build() -> std::unique_ptr<LimitPlanNode> {
     return std::unique_ptr<LimitPlanNode>(
         new LimitPlanNode(std::move(children_), std::move(output_schema_), limit_, offset_, plan_node_id_));
 }
@@ -23,7 +23,7 @@ LimitPlanNode::LimitPlanNode(std::vector<std::unique_ptr<AbstractPlanNode>> &&ch
     , limit_(limit)
     , offset_(offset) {}
 
-common::hash_t LimitPlanNode::Hash() const {
+auto LimitPlanNode::Hash() const -> common::hash_t {
     common::hash_t hash = AbstractPlanNode::Hash();
 
     // Limit
@@ -35,7 +35,7 @@ common::hash_t LimitPlanNode::Hash() const {
     return hash;
 }
 
-bool LimitPlanNode::operator==(const AbstractPlanNode &rhs) const {
+auto LimitPlanNode::operator==(const AbstractPlanNode &rhs) const -> bool {
     if (!AbstractPlanNode::operator==(rhs)) {
         return false;
     }
@@ -55,14 +55,14 @@ bool LimitPlanNode::operator==(const AbstractPlanNode &rhs) const {
     return true;
 }
 
-nlohmann::json LimitPlanNode::ToJson() const {
+auto LimitPlanNode::ToJson() const -> nlohmann::json {
     nlohmann::json j = AbstractPlanNode::ToJson();
     j["limit"] = limit_;
     j["offset"] = offset_;
     return j;
 }
 
-std::vector<std::unique_ptr<parser::AbstractExpression>> LimitPlanNode::FromJson(const nlohmann::json &j) {
+auto LimitPlanNode::FromJson(const nlohmann::json &j) -> std::vector<std::unique_ptr<parser::AbstractExpression>> {
     std::vector<std::unique_ptr<parser::AbstractExpression>> exprs;
     auto                                                     e1 = AbstractPlanNode::FromJson(j);
     exprs.insert(exprs.end(), std::make_move_iterator(e1.begin()), std::make_move_iterator(e1.end()));

@@ -41,18 +41,18 @@ namespace {
     constexpr int64_t K_JULIAN_MAX_MONTH = 6;
 
     // Is the provided year a leap year?
-    bool IsLeapYear(int32_t year) {
+    auto IsLeapYear(int32_t year) -> bool {
         return year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
     }
 
     // Does the provided date fall into the Julian date range?
-    bool IsValidJulianDate(int32_t y, int32_t m, int32_t d) {
+    auto IsValidJulianDate(int32_t y, int32_t m, int32_t d) -> bool {
         return (y > K_JULIAN_MIN_YEAR || (y == K_JULIAN_MIN_YEAR && m >= K_JULIAN_MIN_MONTH))
                && (y < K_JULIAN_MAX_YEAR || (y == K_JULIAN_MAX_YEAR && m < K_JULIAN_MAX_MONTH));
     }
 
     // Is the provided date a valid calendar date?
-    bool IsValidCalendarDate(int32_t year, int32_t month, int32_t day) {
+    auto IsValidCalendarDate(int32_t year, int32_t month, int32_t day) -> bool {
         // There isn't a year 0. We represent 1 BC as year zero, 2 BC as -1, etc.
         if (year == 0) {
             return false;
@@ -73,7 +73,7 @@ namespace {
     }
 
     // Based on date2j().
-    uint32_t BuildJulianDate(uint32_t year, uint32_t month, uint32_t day) {
+    auto BuildJulianDate(uint32_t year, uint32_t month, uint32_t day) -> uint32_t {
         if (month > 2) {
             month += 1;
             year += 4800;
@@ -116,7 +116,7 @@ namespace {
     }
 
     // Given hour, minute, second, millisecond, and microsecond components, build a time in microseconds.
-    int64_t BuildTime(int32_t hour, int32_t min, int32_t sec, int32_t milli = 0, int32_t micro = 0) {
+    auto BuildTime(int32_t hour, int32_t min, int32_t sec, int32_t milli = 0, int32_t micro = 0) -> int64_t {
         return (((hour * K_MINUTES_PER_HOUR + min) * K_SECONDS_PER_MINUTE) * K_MICRO_SECONDS_PER_SECOND)
                + sec * K_MICRO_SECONDS_PER_SECOND + milli * K_MILLISECONDS_PER_SECOND + micro;
     }
@@ -137,7 +137,7 @@ namespace {
     }
 
     // Check if a string value ends with string ending
-    bool EndsWith(const char *str, std::size_t len, const char *suffix, std::size_t suffix_len) {
+    auto EndsWith(const char *str, std::size_t len, const char *suffix, std::size_t suffix_len) -> bool {
         if (suffix_len > len) {
             return false;
         }
@@ -152,31 +152,31 @@ namespace {
 //
 //===----------------------------------------------------------------------===//
 
-bool Date::IsValid() const {
+auto Date::IsValid() const -> bool {
     int32_t year, month, day;
     SplitJulianDate(value_, &year, &month, &day);
     return IsValidJulianDate(year, month, day);
 }
 
-std::string Date::ToString() const {
+auto Date::ToString() const -> std::string {
     int32_t year, month, day;
     SplitJulianDate(value_, &year, &month, &day);
     return fmt::format("{}-{:02}-{:02}", year, month, day);
 }
 
-int32_t Date::ExtractYear() const {
+auto Date::ExtractYear() const -> int32_t {
     int32_t year, month, day;
     SplitJulianDate(value_, &year, &month, &day);
     return year;
 }
 
-int32_t Date::ExtractMonth() const {
+auto Date::ExtractMonth() const -> int32_t {
     int32_t year, month, day;
     SplitJulianDate(value_, &year, &month, &day);
     return month;
 }
 
-int32_t Date::ExtractDay() const {
+auto Date::ExtractDay() const -> int32_t {
     int32_t year, month, day;
     SplitJulianDate(value_, &year, &month, &day);
     return day;
@@ -186,15 +186,15 @@ void Date::ExtractComponents(int32_t *year, int32_t *month, int32_t *day) {
     SplitJulianDate(value_, year, month, day);
 }
 
-Date::NativeType Date::ToNative() const {
+auto Date::ToNative() const -> Date::NativeType {
     return value_;
 }
 
-Date Date::FromNative(Date::NativeType val) {
+auto Date::FromNative(Date::NativeType val) -> Date {
     return Date{val};
 }
 
-Date Date::FromString(const char *str, std::size_t len) {
+auto Date::FromString(const char *str, std::size_t len) -> Date {
     const char *ptr = str, *limit = ptr + len;
 
     // Trim leading and trailing whitespace
@@ -253,7 +253,7 @@ Date Date::FromString(const char *str, std::size_t len) {
     return Date::FromYMD(year, month, day);
 }
 
-Date Date::FromYMD(int32_t year, int32_t month, int32_t day) {
+auto Date::FromYMD(int32_t year, int32_t month, int32_t day) -> Date {
     // Check calendar date.
     if (!IsValidCalendarDate(year, month, day)) {
         throw CONVERSION_EXCEPTION(fmt::format("{}-{}-{} is not a valid date", year, month, day));
@@ -267,7 +267,7 @@ Date Date::FromYMD(int32_t year, int32_t month, int32_t day) {
     return Date(BuildJulianDate(year, month, day));
 }
 
-bool Date::IsValidDate(int32_t year, int32_t month, int32_t day) {
+auto Date::IsValidDate(int32_t year, int32_t month, int32_t day) -> bool {
     return IsValidJulianDate(year, month, day);
 }
 
@@ -277,7 +277,7 @@ bool Date::IsValidDate(int32_t year, int32_t month, int32_t day) {
 //
 //===----------------------------------------------------------------------===//
 
-int32_t Timestamp::ExtractYear() const {
+auto Timestamp::ExtractYear() const -> int32_t {
     // Extract date component.
     int64_t date, time;
     StripTime(value_, &date, &time);
@@ -288,7 +288,7 @@ int32_t Timestamp::ExtractYear() const {
     return year;
 }
 
-int32_t Timestamp::ExtractMonth() const {
+auto Timestamp::ExtractMonth() const -> int32_t {
     // Extract date component.
     int64_t date, time;
     StripTime(value_, &date, &time);
@@ -299,7 +299,7 @@ int32_t Timestamp::ExtractMonth() const {
     return month;
 }
 
-int32_t Timestamp::ExtractDay() const {
+auto Timestamp::ExtractDay() const -> int32_t {
     // Extract date component.
     int64_t date, time;
     StripTime(value_, &date, &time);
@@ -310,7 +310,7 @@ int32_t Timestamp::ExtractDay() const {
     return day;
 }
 
-int32_t Timestamp::ExtractHour() const {
+auto Timestamp::ExtractHour() const -> int32_t {
     // Extract date component.
     int64_t date, time;
     StripTime(value_, &date, &time);
@@ -321,7 +321,7 @@ int32_t Timestamp::ExtractHour() const {
     return hour;
 }
 
-int32_t Timestamp::ExtractMinute() const {
+auto Timestamp::ExtractMinute() const -> int32_t {
     // Extract date component.
     int64_t date, time;
     StripTime(value_, &date, &time);
@@ -332,7 +332,7 @@ int32_t Timestamp::ExtractMinute() const {
     return min;
 }
 
-int32_t Timestamp::ExtractSecond() const {
+auto Timestamp::ExtractSecond() const -> int32_t {
     // Extract date component.
     int64_t date, time;
     StripTime(value_, &date, &time);
@@ -343,7 +343,7 @@ int32_t Timestamp::ExtractSecond() const {
     return sec;
 }
 
-int32_t Timestamp::ExtractMillis() const {
+auto Timestamp::ExtractMillis() const -> int32_t {
     // Extract date component.
     int64_t date, time;
     StripTime(value_, &date, &time);
@@ -354,7 +354,7 @@ int32_t Timestamp::ExtractMillis() const {
     return millisec;
 }
 
-int32_t Timestamp::ExtractMicros() const {
+auto Timestamp::ExtractMicros() const -> int32_t {
     // Extract date component.
     int64_t date, time;
     StripTime(value_, &date, &time);
@@ -365,7 +365,7 @@ int32_t Timestamp::ExtractMicros() const {
     return microsec;
 }
 
-int32_t Timestamp::ExtractDayOfWeek() const {
+auto Timestamp::ExtractDayOfWeek() const -> int32_t {
     int64_t date, time;
     StripTime(value_, &date, &time);
 
@@ -377,7 +377,7 @@ int32_t Timestamp::ExtractDayOfWeek() const {
     return date;
 }
 
-int32_t Timestamp::ExtractDayOfYear() const {
+auto Timestamp::ExtractDayOfYear() const -> int32_t {
     int64_t date, time;
     StripTime(value_, &date, &time);
 
@@ -404,15 +404,15 @@ void Timestamp::ExtractComponents(int32_t *year,
     SplitTime(time, hour, min, sec, millisec, microsec);
 }
 
-uint64_t Timestamp::ToNative() const {
+auto Timestamp::ToNative() const -> uint64_t {
     return value_;
 }
 
-Timestamp Timestamp::FromNative(Timestamp::NativeType val) {
+auto Timestamp::FromNative(Timestamp::NativeType val) -> Timestamp {
     return Timestamp{val};
 }
 
-std::string Timestamp::ToString() const {
+auto Timestamp::ToString() const -> std::string {
     int64_t date, time;
     StripTime(value_, &date, &time);
 
@@ -429,7 +429,7 @@ std::string Timestamp::ToString() const {
                        millisec * 1000 + microsec);
 }
 
-Timestamp Timestamp::FromString(const char *str, std::size_t len) {
+auto Timestamp::FromString(const char *str, std::size_t len) -> Timestamp {
     const char *ptr = str, *limit = ptr + len;
 
     // Trim leading and trailing whitespace
@@ -588,17 +588,17 @@ Timestamp Timestamp::FromString(const char *str, std::size_t len) {
     TS_ERROR;
 }
 
-Timestamp Timestamp::AdjustTimeZone(char        c,
-                                    int32_t     year,
-                                    int32_t     month,
-                                    int32_t     day,
-                                    int32_t     hour,
-                                    int32_t     min,
-                                    int32_t     sec,
-                                    int32_t     milli,
-                                    int32_t     micro,
-                                    const char *ptr,
-                                    const char *limit) {
+auto Timestamp::AdjustTimeZone(char        c,
+                               int32_t     year,
+                               int32_t     month,
+                               int32_t     day,
+                               int32_t     hour,
+                               int32_t     min,
+                               int32_t     sec,
+                               int32_t     milli,
+                               int32_t     micro,
+                               const char *ptr,
+                               const char *limit) -> Timestamp {
     bool sign = false;
     if (c == '+') {
         sign = true;
@@ -667,7 +667,8 @@ Timestamp Timestamp::AdjustTimeZone(char        c,
     return FromYMDHMSMU(year, month, day, hour, min, sec, milli, micro);
 }
 
-Timestamp Timestamp::FromYMDHMS(int32_t year, int32_t month, int32_t day, int32_t hour, int32_t min, int32_t sec) {
+auto Timestamp::FromYMDHMS(int32_t year, int32_t month, int32_t day, int32_t hour, int32_t min, int32_t sec)
+    -> Timestamp {
     // Check date component.
     if (!IsValidCalendarDate(year, month, day) || !IsValidJulianDate(year, month, day)) {
         throw CONVERSION_EXCEPTION(fmt::format("date field {}-{}-{} out of range", year, month, day));
@@ -695,14 +696,14 @@ Timestamp Timestamp::FromYMDHMS(int32_t year, int32_t month, int32_t day, int32_
     return Timestamp(result);
 }
 
-Timestamp Timestamp::FromYMDHMSMU(int32_t year,
-                                  int32_t month,
-                                  int32_t day,
-                                  int32_t hour,
-                                  int32_t min,
-                                  int32_t sec,
-                                  int32_t milli,
-                                  int32_t micro) {
+auto Timestamp::FromYMDHMSMU(int32_t year,
+                             int32_t month,
+                             int32_t day,
+                             int32_t hour,
+                             int32_t min,
+                             int32_t sec,
+                             int32_t milli,
+                             int32_t micro) -> Timestamp {
     // Check date component.
     if (!IsValidCalendarDate(year, month, day) || !IsValidJulianDate(year, month, day)) {
         throw CONVERSION_EXCEPTION(fmt::format("date field {}-{}-{} out of range", year, month, day));

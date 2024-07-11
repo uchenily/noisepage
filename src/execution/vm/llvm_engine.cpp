@@ -42,12 +42,12 @@ namespace noisepage::execution::vm {
 
 namespace {
 
-    bool FunctionHasIndirectReturn(const ast::FunctionType *func_type) {
+    auto FunctionHasIndirectReturn(const ast::FunctionType *func_type) -> bool {
         ast::Type *ret_type = func_type->GetReturnType();
         return (!ret_type->IsNilType() && ret_type->GetSize() > sizeof(int64_t));
     }
 
-    bool FunctionHasDirectReturn(const ast::FunctionType *func_type) {
+    auto FunctionHasDirectReturn(const ast::FunctionType *func_type) -> bool {
         ast::Type *ret_type = func_type->GetReturnType();
         return (!ret_type->IsNilType() && ret_type->GetSize() <= sizeof(int64_t));
     }
@@ -60,7 +60,7 @@ namespace {
 
 class LLVMEngine::TPLMemoryManager : public llvm::SectionMemoryManager {
 public:
-    llvm::JITSymbol findSymbol(const std::string &name) override {
+    auto findSymbol(const std::string &name) -> llvm::JITSymbol override {
         EXECUTION_LOG_TRACE("Resolving symbol '{}' ...", name);
 
         if (const auto iter = symbols_.find(name); iter != symbols_.end()) {
@@ -122,64 +122,64 @@ public:
     /** No copying or moving this class. */
     DISALLOW_COPY_AND_MOVE(TypeMap);
 
-    llvm::Type *VoidType() {
+    auto VoidType() -> llvm::Type * {
         return type_map_["nil"];
     }
-    llvm::Type *BoolType() {
+    auto BoolType() -> llvm::Type * {
         return type_map_["bool"];
     }
-    llvm::Type *Int8Type() {
+    auto Int8Type() -> llvm::Type * {
         return type_map_["int8"];
     }
-    llvm::Type *Int16Type() {
+    auto Int16Type() -> llvm::Type * {
         return type_map_["int16"];
     }
-    llvm::Type *Int32Type() {
+    auto Int32Type() -> llvm::Type * {
         return type_map_["int32"];
     }
-    llvm::Type *Int64Type() {
+    auto Int64Type() -> llvm::Type * {
         return type_map_["int64"];
     }
-    llvm::Type *UInt8Type() {
+    auto UInt8Type() -> llvm::Type * {
         return type_map_["uint8"];
     }
-    llvm::Type *UInt16Type() {
+    auto UInt16Type() -> llvm::Type * {
         return type_map_["uint16"];
     }
-    llvm::Type *UInt32Type() {
+    auto UInt32Type() -> llvm::Type * {
         return type_map_["uint32"];
     }
-    llvm::Type *UInt64Type() {
+    auto UInt64Type() -> llvm::Type * {
         return type_map_["uint64"];
     }
-    llvm::Type *Float32Type() {
+    auto Float32Type() -> llvm::Type * {
         return type_map_["float32"];
     }
-    llvm::Type *Float64Type() {
+    auto Float64Type() -> llvm::Type * {
         return type_map_["float64"];
     }
-    llvm::Type *StringType() {
+    auto StringType() -> llvm::Type * {
         return type_map_["string"];
     }
 
-    llvm::Type *GetLLVMType(const ast::Type *type);
+    auto GetLLVMType(const ast::Type *type) -> llvm::Type *;
 
 private:
     // Given a non-primitive builtin type, convert it to an LLVM type
-    llvm::Type *GetLLVMTypeForBuiltin(const ast::BuiltinType *builtin_type);
+    auto GetLLVMTypeForBuiltin(const ast::BuiltinType *builtin_type) -> llvm::Type *;
 
     // Given a struct type, convert it into an equivalent LLVM struct type
-    llvm::StructType *GetLLVMStructType(const ast::StructType *struct_type);
+    auto GetLLVMStructType(const ast::StructType *struct_type) -> llvm::StructType *;
 
     // Given a TPL function type, convert it into an equivalent LLVM function type
-    llvm::FunctionType *GetLLVMFunctionType(const ast::FunctionType *func_type);
+    auto GetLLVMFunctionType(const ast::FunctionType *func_type) -> llvm::FunctionType *;
 
 private:
     llvm::Module                                 *module_;
     std::unordered_map<std::string, llvm::Type *> type_map_;
 };
 
-llvm::Type *LLVMEngine::TypeMap::GetLLVMType(const ast::Type *type) {
+auto LLVMEngine::TypeMap::GetLLVMType(const ast::Type *type) -> llvm::Type * {
     //
     // First, lookup the type in the cache. We do the lookup by performing a
     // try_emplace() in order to save a second lookup in the case when the type
@@ -247,7 +247,7 @@ llvm::Type *LLVMEngine::TypeMap::GetLLVMType(const ast::Type *type) {
     return llvm_type;
 }
 
-llvm::Type *LLVMEngine::TypeMap::GetLLVMTypeForBuiltin(const ast::BuiltinType *builtin_type) {
+auto LLVMEngine::TypeMap::GetLLVMTypeForBuiltin(const ast::BuiltinType *builtin_type) -> llvm::Type * {
     NOISEPAGE_ASSERT(!builtin_type->IsPrimitive(), "Primitive types should be cached!");
 
     // For the builtins, we perform a lookup using the C++ name
@@ -267,7 +267,7 @@ llvm::Type *LLVMEngine::TypeMap::GetLLVMTypeForBuiltin(const ast::BuiltinType *b
     return nullptr;
 }
 
-llvm::StructType *LLVMEngine::TypeMap::GetLLVMStructType(const ast::StructType *struct_type) {
+auto LLVMEngine::TypeMap::GetLLVMStructType(const ast::StructType *struct_type) -> llvm::StructType * {
     // Collect the fields here
     llvm::SmallVector<llvm::Type *, 8> fields;
 
@@ -278,7 +278,7 @@ llvm::StructType *LLVMEngine::TypeMap::GetLLVMStructType(const ast::StructType *
     return llvm::StructType::create(fields);
 }
 
-llvm::FunctionType *LLVMEngine::TypeMap::GetLLVMFunctionType(const ast::FunctionType *func_type) {
+auto LLVMEngine::TypeMap::GetLLVMFunctionType(const ast::FunctionType *func_type) -> llvm::FunctionType * {
     // Collect parameter types here
     llvm::SmallVector<llvm::Type *, 8> param_types;
 
@@ -325,7 +325,7 @@ public:
 
     // Given a reference to a local variable in a function's local variable list,
     // return the corresponding LLVM value.
-    llvm::Value *GetArgumentById(LocalVar var);
+    auto GetArgumentById(LocalVar var) -> llvm::Value *;
 
 private:
     llvm::IRBuilder<>                      *ir_builder_;
@@ -365,7 +365,7 @@ LLVMEngine::FunctionLocalsMap::FunctionLocalsMap(const FunctionInfo &func_info,
     }
 }
 
-llvm::Value *LLVMEngine::FunctionLocalsMap::GetArgumentById(LocalVar var) {
+auto LLVMEngine::FunctionLocalsMap::GetArgumentById(LocalVar var) -> llvm::Value * {
     if (auto iter = params_.find(var.GetOffset()); iter != params_.end()) {
         return iter->second;
     }
@@ -421,10 +421,10 @@ public:
     std::unique_ptr<CompiledModule> Finalize();
 
     // Print the contents of the module to a string and return it
-    std::string DumpModuleIR();
+    auto DumpModuleIR() -> std::string;
 
     // Print the contents of the module's assembly to a string and return it
-    std::string DumpModuleAsm();
+    auto DumpModuleAsm() -> std::string;
 
 private:
     // Given a TPL function, build a simple CFG using 'blocks' as an output param
@@ -434,7 +434,7 @@ private:
     void DefineFunction(const FunctionInfo &func_info, llvm::IRBuilder<> *ir_builder);
 
     // Given a bytecode, lookup it's LLVM function handler in the module
-    llvm::Function *LookupBytecodeHandler(Bytecode bytecode) const;
+    auto LookupBytecodeHandler(Bytecode bytecode) const -> llvm::Function *;
 
     // Generate an in-memory shared object from this LLVM module. It iss assumed
     // that all functions have been generated and verified.
@@ -585,7 +585,7 @@ void LLVMEngine::CompiledModuleBuilder::DeclareFunctions() {
     }
 }
 
-llvm::Function *LLVMEngine::CompiledModuleBuilder::LookupBytecodeHandler(Bytecode bytecode) const {
+auto LLVMEngine::CompiledModuleBuilder::LookupBytecodeHandler(Bytecode bytecode) const -> llvm::Function * {
     const char     *handler_name = Bytecodes::GetBytecodeHandlerName(bytecode);
     llvm::Function *func = llvm_module_->getFunction(handler_name);
 #ifndef NDEBUG
@@ -1080,14 +1080,14 @@ void LLVMEngine::CompiledModuleBuilder::PersistObjectToFile(const llvm::MemoryBu
     dest.close();
 }
 
-std::string LLVMEngine::CompiledModuleBuilder::DumpModuleIR() {
+auto LLVMEngine::CompiledModuleBuilder::DumpModuleIR() -> std::string {
     std::string              result;
     llvm::raw_string_ostream ostream(result);
     llvm_module_->print(ostream, nullptr);
     return result;
 }
 
-std::string LLVMEngine::CompiledModuleBuilder::DumpModuleAsm() {
+auto LLVMEngine::CompiledModuleBuilder::DumpModuleAsm() -> std::string {
     llvm::SmallString<1024>   asm_str;
     llvm::raw_svector_ostream ostream(asm_str);
 
@@ -1116,7 +1116,7 @@ LLVMEngine::CompiledModule::~CompiledModule() {
     memory_manager_->deregisterEHFrames();
 }
 
-void *LLVMEngine::CompiledModule::GetFunctionPointer(const std::string &name) const {
+auto LLVMEngine::CompiledModule::GetFunctionPointer(const std::string &name) const -> void * {
     NOISEPAGE_ASSERT(IsLoaded(), "Compiled module isn't loaded!");
 
     if (auto iter = functions_.find(name); iter != functions_.end()) {
@@ -1239,7 +1239,7 @@ std::unique_ptr<LLVMEngine::CompiledModule> LLVMEngine::Compile(const BytecodeMo
     return compiled_module;
 }
 
-const LLVMEngine::Settings *LLVMEngine::GetEngineSettings() {
+auto LLVMEngine::GetEngineSettings() -> const LLVMEngine::Settings * {
     NOISEPAGE_ASSERT(static_cast<bool>(engine_settings), "LLVMEngine must be initialized before use");
     return engine_settings.get();
 }

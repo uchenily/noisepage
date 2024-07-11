@@ -324,8 +324,8 @@ void PostgresPacketWriter::WriteBinaryValNeedsToNative(const execution::sql::Val
         .AppendValue<native_type>(static_cast<native_type>(casted_val->val_.ToNative()));
 }
 
-uint32_t PostgresPacketWriter::WriteBinaryAttribute(const execution::sql::Val *const val,
-                                                    const execution::sql::SqlTypeId  type) {
+auto PostgresPacketWriter::WriteBinaryAttribute(const execution::sql::Val *const val,
+                                                const execution::sql::SqlTypeId  type) -> uint32_t {
     if (val->is_null_) {
         // write a -1 for the length of the column value and continue to the next value
         AppendValue<int32_t>(static_cast<int32_t>(-1));
@@ -375,8 +375,8 @@ uint32_t PostgresPacketWriter::WriteBinaryAttribute(const execution::sql::Val *c
     return execution::sql::ValUtil::GetSqlSize(type);
 }
 
-uint32_t PostgresPacketWriter::WriteTextAttribute(const execution::sql::Val *const val,
-                                                  const execution::sql::SqlTypeId  type) {
+auto PostgresPacketWriter::WriteTextAttribute(const execution::sql::Val *const val,
+                                              const execution::sql::SqlTypeId  type) -> uint32_t {
     if (val->is_null_) {
         // write a -1 for the length of the column value and continue to the next value
         AppendValue<int32_t>(static_cast<int32_t>(-1));

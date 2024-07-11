@@ -3,7 +3,7 @@
 #include <algorithm>
 namespace noisepage::storage {
 
-bool BufferedLogReader::Read(void *dest, uint32_t size) {
+auto BufferedLogReader::Read(void *dest, uint32_t size) -> bool {
     if (read_head_ + size <= filled_size_) {
         // bytes to read are already buffered.
         ReadFromBuffer(dest, size);

@@ -59,7 +59,7 @@ void ExecutableQuery::Fragment::Run(byte query_state[], vm::ExecutionMode mode) 
     }
 }
 
-const vm::ModuleMetadata &ExecutableQuery::Fragment::GetModuleMetadata() const {
+auto ExecutableQuery::Fragment::GetModuleMetadata() const -> const vm::ModuleMetadata & {
     return module_->GetMetadata();
 }
 
@@ -71,7 +71,7 @@ const vm::ModuleMetadata &ExecutableQuery::Fragment::GetModuleMetadata() const {
 
 // For mini_runners.cpp.
 namespace {
-    std::string GetFileName(const std::string &path) {
+    auto GetFileName(const std::string &path) -> std::string {
         std::size_t size = path.size();
         std::size_t found = path.find_last_of("/\\");
         return path.substr(found + 1, size - found - 5);

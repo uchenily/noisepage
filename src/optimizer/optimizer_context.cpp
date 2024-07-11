@@ -4,7 +4,7 @@
 
 namespace noisepage::optimizer {
 
-GroupExpression *OptimizerContext::MakeGroupExpression(common::ManagedPointer<AbstractOptimizerNode> node) {
+auto OptimizerContext::MakeGroupExpression(common::ManagedPointer<AbstractOptimizerNode> node) -> GroupExpression * {
     std::vector<group_id_t> child_groups;
     for (auto &child : node->GetChildren()) {
         if (child->Contents()->GetOpType() == OpType::LEAF) {

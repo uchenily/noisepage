@@ -22,12 +22,12 @@ Sema::Sema(ast::Context *ctx)
 }
 
 // Main entry point to semantic analysis and type checking an AST
-bool Sema::Run(ast::AstNode *root) {
+auto Sema::Run(ast::AstNode *root) -> bool {
     Visit(root);
     return GetErrorReporter()->HasErrors();
 }
 
-ast::Type *Sema::GetBuiltinType(const uint16_t builtin_kind) {
+auto Sema::GetBuiltinType(const uint16_t builtin_kind) -> ast::Type * {
     return ast::BuiltinType::Get(GetContext(), static_cast<ast::BuiltinType::Kind>(builtin_kind));
 }
 

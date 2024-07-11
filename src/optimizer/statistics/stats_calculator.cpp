@@ -212,10 +212,10 @@ void StatsCalculator::Visit(const LogicalCreateIndex *op) {
     }
 }
 
-size_t StatsCalculator::EstimateCardinalityForFilter(Group                                  *group,
-                                                     size_t                                  num_rows,
-                                                     const TableStats                       &predicate_stats,
-                                                     const std::vector<AnnotatedExpression> &predicates) {
+auto StatsCalculator::EstimateCardinalityForFilter(Group                                  *group,
+                                                   size_t                                  num_rows,
+                                                   const TableStats                       &predicate_stats,
+                                                   const std::vector<AnnotatedExpression> &predicates) -> size_t {
     double selectivity = 1.F;
     for (const auto &annotated_expr : predicates) {
         // Loop over conjunction exprs
@@ -228,9 +228,10 @@ size_t StatsCalculator::EstimateCardinalityForFilter(Group                      
 
 // Calculate the selectivity given the predicate and the stats of columns in the
 // predicate
-double StatsCalculator::CalculateSelectivityForPredicate(Group            *group,
-                                                         const TableStats &predicate_table_stats,
-                                                         common::ManagedPointer<parser::AbstractExpression> expr) {
+auto StatsCalculator::CalculateSelectivityForPredicate(Group            *group,
+                                                       const TableStats &predicate_table_stats,
+                                                       common::ManagedPointer<parser::AbstractExpression> expr)
+    -> double {
     double selectivity = 1.F;
     if (predicate_table_stats.GetColumnCount() == 0) {
         return selectivity;

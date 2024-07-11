@@ -31,7 +31,7 @@ BlockLayout::BlockLayout(std::vector<uint16_t> attr_sizes)
     }
 }
 
-uint32_t BlockLayout::ComputeTupleSize() const {
+auto BlockLayout::ComputeTupleSize() const -> uint32_t {
     uint32_t result = 0;
     // size in attr_sizes_ can be negative to denote varlens.
     for (auto size : attr_sizes_) {
@@ -40,7 +40,7 @@ uint32_t BlockLayout::ComputeTupleSize() const {
     return result;
 }
 
-uint32_t BlockLayout::ComputeStaticHeaderSize() const {
+auto BlockLayout::ComputeStaticHeaderSize() const -> uint32_t {
     auto unpadded_size = static_cast<uint32_t>(
         sizeof(uintptr_t) + sizeof(uint16_t) + sizeof(layout_version_t) + // datatable pointer, padding, layout_version
         sizeof(uint32_t)                                                  // insert_head
@@ -49,7 +49,7 @@ uint32_t BlockLayout::ComputeStaticHeaderSize() const {
     return StorageUtil::PadUpToSize(sizeof(uint64_t), unpadded_size);
 }
 
-uint32_t BlockLayout::ComputeNumSlots() const {
+auto BlockLayout::ComputeNumSlots() const -> uint32_t {
     uint32_t bytes_available = common::Constants::BLOCK_SIZE - static_header_size_;
     // account for paddings up to 64 bits-aligned. There is padding between every bitmap and value field.
     // Each column has a bitmap and a value buffer. The first column can have padding against header. The
@@ -60,7 +60,7 @@ uint32_t BlockLayout::ComputeNumSlots() const {
     return BYTE_SIZE * bytes_available / bits_per_tuple;
 }
 
-uint32_t BlockLayout::ComputeHeaderSize() const {
+auto BlockLayout::ComputeHeaderSize() const -> uint32_t {
     return StorageUtil::PadUpToSize(sizeof(uint64_t), static_header_size_ + common::RawBitmap::SizeInBytes(NumSlots()));
 }
 

@@ -5,7 +5,7 @@
 
 namespace noisepage::parser {
 
-std::unique_ptr<AbstractExpression> TableStarExpression::Copy() const {
+auto TableStarExpression::Copy() const -> std::unique_ptr<AbstractExpression> {
     auto expr = std::make_unique<TableStarExpression>();
     expr->SetMutableStateForCopy(*this);
     expr->target_table_specified_ = target_table_specified_;

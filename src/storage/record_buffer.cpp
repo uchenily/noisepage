@@ -3,7 +3,7 @@
 #include "storage/write_ahead_log/log_manager.h"
 
 namespace noisepage::storage {
-byte *UndoBuffer::NewEntry(const uint32_t size) {
+auto UndoBuffer::NewEntry(const uint32_t size) -> byte * {
     if (buffers_.empty() || !buffers_.back()->HasBytesLeft(size)) {
         // we are out of space in the buffer. Get a new buffer segment.
         RecordBufferSegment *new_segment = buffer_pool_->Get();
@@ -15,7 +15,7 @@ byte *UndoBuffer::NewEntry(const uint32_t size) {
     return last_record_;
 }
 
-byte *RedoBuffer::NewEntry(const uint32_t size, const transaction::TransactionPolicy &policy) {
+auto RedoBuffer::NewEntry(const uint32_t size, const transaction::TransactionPolicy &policy) -> byte * {
     if (buffer_seg_ == nullptr) {
         // this is the first write
         buffer_seg_ = buffer_pool_->Get();

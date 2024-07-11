@@ -14,7 +14,7 @@ namespace noisepage::optimizer {
  * @param r other property to compare against
  * @returns TRUE if this >= r
  */
-bool PropertySort::operator>=(const Property &r) const {
+auto PropertySort::operator>=(const Property &r) const -> bool {
     // check the type
     if (r.Type() != PropertyType::SORT) {
         return false;
@@ -46,7 +46,7 @@ bool PropertySort::operator>=(const Property &r) const {
  * Hashes this PropertySort
  * @returns Hash code
  */
-common::hash_t PropertySort::Hash() const {
+auto PropertySort::Hash() const -> common::hash_t {
     // hash the type
     common::hash_t hash = Property::Hash();
 

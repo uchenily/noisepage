@@ -9,7 +9,7 @@
 
 namespace noisepage::planner {
 
-std::unique_ptr<HashJoinPlanNode> HashJoinPlanNode::Builder::Build() {
+auto HashJoinPlanNode::Builder::Build() -> std::unique_ptr<HashJoinPlanNode> {
     return std::unique_ptr<HashJoinPlanNode>(new HashJoinPlanNode(std::move(children_),
                                                                   std::move(output_schema_),
                                                                   join_type_,
@@ -30,7 +30,7 @@ HashJoinPlanNode::HashJoinPlanNode(std::vector<std::unique_ptr<AbstractPlanNode>
     , left_hash_keys_(std::move(left_hash_keys))
     , right_hash_keys_(std::move(right_hash_keys)) {}
 
-common::hash_t HashJoinPlanNode::Hash() const {
+auto HashJoinPlanNode::Hash() const -> common::hash_t {
     common::hash_t hash = AbstractJoinPlanNode::Hash();
 
     // Hash left keys
@@ -46,7 +46,7 @@ common::hash_t HashJoinPlanNode::Hash() const {
     return hash;
 }
 
-bool HashJoinPlanNode::operator==(const AbstractPlanNode &rhs) const {
+auto HashJoinPlanNode::operator==(const AbstractPlanNode &rhs) const -> bool {
     if (!AbstractJoinPlanNode::operator==(rhs)) {
         return false;
     }
@@ -76,14 +76,14 @@ bool HashJoinPlanNode::operator==(const AbstractPlanNode &rhs) const {
     return true;
 }
 
-nlohmann::json HashJoinPlanNode::ToJson() const {
+auto HashJoinPlanNode::ToJson() const -> nlohmann::json {
     nlohmann::json j = AbstractJoinPlanNode::ToJson();
     j["left_hash_keys"] = left_hash_keys_;
     j["right_hash_keys"] = right_hash_keys_;
     return j;
 }
 
-std::vector<std::unique_ptr<parser::AbstractExpression>> HashJoinPlanNode::FromJson(const nlohmann::json &j) {
+auto HashJoinPlanNode::FromJson(const nlohmann::json &j) -> std::vector<std::unique_ptr<parser::AbstractExpression>> {
     std::vector<std::unique_ptr<parser::AbstractExpression>> exprs;
     auto                                                     e1 = AbstractJoinPlanNode::FromJson(j);
     exprs.insert(exprs.end(), std::make_move_iterator(e1.begin()), std::make_move_iterator(e1.end()));

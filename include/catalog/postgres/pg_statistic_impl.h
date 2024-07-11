@@ -180,14 +180,14 @@ private:
      * @return                    Column statistics
      */
     template <typename T>
-    std::unique_ptr<optimizer::ColumnStatsBase> CreateColumnStats(table_oid_t                 table_oid,
-                                                                  col_oid_t                   col_oid,
-                                                                  size_t                      num_rows,
-                                                                  size_t                      non_null_rows,
-                                                                  size_t                      distinct_values,
-                                                                  const storage::VarlenEntry *top_k_str,
-                                                                  const storage::VarlenEntry *histogram_str,
-                                                                  execution::sql::SqlTypeId   type);
+    auto CreateColumnStats(table_oid_t                 table_oid,
+                           col_oid_t                   col_oid,
+                           size_t                      num_rows,
+                           size_t                      non_null_rows,
+                           size_t                      distinct_values,
+                           const storage::VarlenEntry *top_k_str,
+                           const storage::VarlenEntry *histogram_str,
+                           execution::sql::SqlTypeId   type) -> std::unique_ptr<optimizer::ColumnStatsBase>;
 
     const db_oid_t db_oid_;
     /**

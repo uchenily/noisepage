@@ -57,7 +57,7 @@ TreeNode::TreeNode(common::ManagedPointer<TreeNode> parent,
     (void) memory_;
 }
 
-common::ManagedPointer<TreeNode> TreeNode::BestSubtree() {
+auto TreeNode::BestSubtree() -> common::ManagedPointer<TreeNode> {
     NOISEPAGE_ASSERT(!is_leaf_, "Trying to return best action on a leaf node");
     // Get child of least cost
     NOISEPAGE_ASSERT(!children_.empty(), "Trying to return best action for unexpanded nodes");
@@ -75,7 +75,7 @@ common::ManagedPointer<TreeNode> TreeNode::BestSubtree() {
     return best_child;
 }
 
-std::vector<common::ManagedPointer<TreeNode>> TreeNode::BestSubtreeOrdering() {
+auto TreeNode::BestSubtreeOrdering() -> std::vector<common::ManagedPointer<TreeNode>> {
     NOISEPAGE_ASSERT(!is_leaf_, "Trying to return best action on a leaf node");
     // Get child of least cost
     NOISEPAGE_ASSERT(!children_.empty(), "Trying to return best action for unexpanded nodes");
@@ -87,7 +87,7 @@ std::vector<common::ManagedPointer<TreeNode>> TreeNode::BestSubtreeOrdering() {
     }
 
     struct {
-        bool operator()(common::ManagedPointer<TreeNode> a, common::ManagedPointer<TreeNode> b) {
+        auto operator()(common::ManagedPointer<TreeNode> a, common::ManagedPointer<TreeNode> b) -> bool {
             return a->cost_ < b->cost_;
         }
     } cmp;
@@ -114,7 +114,7 @@ void TreeNode::UpdateCostAndVisits(uint64_t num_expansion, double leaf_cost, dou
     number_of_visits_ = new_num_visits;
 }
 
-common::ManagedPointer<TreeNode> TreeNode::SampleChild() {
+auto TreeNode::SampleChild() -> common::ManagedPointer<TreeNode> {
     // compute max of children's cost
     double highest = 0;
     for (auto &child : children_) {
@@ -137,12 +137,11 @@ common::ManagedPointer<TreeNode> TreeNode::SampleChild() {
     return common::ManagedPointer(children_.at(children_dist(device)));
 }
 
-common::ManagedPointer<TreeNode>
-TreeNode::Selection(common::ManagedPointer<TreeNode>                              root,
-                    const PlanningContext                                        &planning_context,
-                    const std::map<action_id_t, std::unique_ptr<AbstractAction>> &action_map,
-                    std::unordered_set<action_id_t>                              *candidate_actions,
-                    uint64_t                                                      end_segment_index) {
+auto TreeNode::Selection(common::ManagedPointer<TreeNode>                              root,
+                         const PlanningContext                                        &planning_context,
+                         const std::map<action_id_t, std::unique_ptr<AbstractAction>> &action_map,
+                         std::unordered_set<action_id_t>                              *candidate_actions,
+                         uint64_t end_segment_index) -> common::ManagedPointer<TreeNode> {
     common::ManagedPointer<TreeNode> curr;
     std::vector<action_id_t>         actions_on_path;
     do {
@@ -352,10 +351,10 @@ void TreeNode::ChildrenRollout(
     }
 }
 
-double TreeNode::ComputeCostWithAction(PlanningContext                         *planning_context,
-                                       common::ManagedPointer<WorkloadForecast> forecast,
-                                       uint64_t                                 tree_end_segment_index,
-                                       AbstractAction                          *action) {
+auto TreeNode::ComputeCostWithAction(PlanningContext                         *planning_context,
+                                     common::ManagedPointer<WorkloadForecast> forecast,
+                                     uint64_t                                 tree_end_segment_index,
+                                     AbstractAction                          *action) -> double {
     // How many segments does it take for this action to finish
     uint64_t action_segments = 0;
     double   estimated_elapsed = action->GetEstimatedElapsedUs();

@@ -12,9 +12,9 @@ namespace noisepage::optimizer {
  * large tables are filling up the cache when we only need some of the columns, we may want to revisit this so we only
  * cache the columns we use.
  */
-LatchedTableStatsReference StatsStorage::GetTableStats(const catalog::db_oid_t    database_id,
-                                                       const catalog::table_oid_t table_id,
-                                                       catalog::CatalogAccessor  *accessor) {
+auto StatsStorage::GetTableStats(const catalog::db_oid_t    database_id,
+                                 const catalog::table_oid_t table_id,
+                                 catalog::CatalogAccessor  *accessor) -> LatchedTableStatsReference {
     if (!ContainsTableStats(database_id, table_id)) {
         InsertTableStats(database_id, table_id, accessor);
     }
@@ -53,7 +53,7 @@ void StatsStorage::MarkStatsStale(catalog::db_oid_t                      databas
     }
 }
 
-bool StatsStorage::ContainsTableStats(catalog::db_oid_t database_id, catalog::table_oid_t table_id) {
+auto StatsStorage::ContainsTableStats(catalog::db_oid_t database_id, catalog::table_oid_t table_id) -> bool {
     common::SharedLatch::ScopedSharedLatch shared_stats_storage_latch{&stats_storage_latch_};
     TableStatsKey                          table_stats_key{database_id, table_id};
     return table_stats_storage_.count(table_stats_key) > 0;

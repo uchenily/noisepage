@@ -10,7 +10,7 @@
 
 namespace noisepage::planner {
 
-std::unique_ptr<DropNamespacePlanNode> DropNamespacePlanNode::Builder::Build() {
+auto DropNamespacePlanNode::Builder::Build() -> std::unique_ptr<DropNamespacePlanNode> {
     return std::unique_ptr<DropNamespacePlanNode>(
         new DropNamespacePlanNode(std::move(children_), std::move(output_schema_), namespace_oid_, plan_node_id_));
 }
@@ -22,7 +22,7 @@ DropNamespacePlanNode::DropNamespacePlanNode(std::vector<std::unique_ptr<Abstrac
     : AbstractPlanNode(std::move(children), std::move(output_schema), plan_node_id)
     , namespace_oid_(namespace_oid) {}
 
-common::hash_t DropNamespacePlanNode::Hash() const {
+auto DropNamespacePlanNode::Hash() const -> common::hash_t {
     common::hash_t hash = AbstractPlanNode::Hash();
 
     hash = common::HashUtil::CombineHashes(hash, common::HashUtil::Hash(namespace_oid_));
@@ -30,7 +30,7 @@ common::hash_t DropNamespacePlanNode::Hash() const {
     return hash;
 }
 
-bool DropNamespacePlanNode::operator==(const AbstractPlanNode &rhs) const {
+auto DropNamespacePlanNode::operator==(const AbstractPlanNode &rhs) const -> bool {
     if (!AbstractPlanNode::operator==(rhs)) {
         return false;
     }
@@ -40,13 +40,14 @@ bool DropNamespacePlanNode::operator==(const AbstractPlanNode &rhs) const {
     return namespace_oid_ == other.namespace_oid_;
 }
 
-nlohmann::json DropNamespacePlanNode::ToJson() const {
+auto DropNamespacePlanNode::ToJson() const -> nlohmann::json {
     nlohmann::json j = AbstractPlanNode::ToJson();
     j["namespace_oid"] = namespace_oid_;
     return j;
 }
 
-std::vector<std::unique_ptr<parser::AbstractExpression>> DropNamespacePlanNode::FromJson(const nlohmann::json &j) {
+auto DropNamespacePlanNode::FromJson(const nlohmann::json &j)
+    -> std::vector<std::unique_ptr<parser::AbstractExpression>> {
     std::vector<std::unique_ptr<parser::AbstractExpression>> exprs;
     auto                                                     e1 = AbstractPlanNode::FromJson(j);
     exprs.insert(exprs.end(), std::make_move_iterator(e1.begin()), std::make_move_iterator(e1.end()));

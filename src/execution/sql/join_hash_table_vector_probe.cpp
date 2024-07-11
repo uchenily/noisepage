@@ -89,7 +89,7 @@ void JoinHashTableVectorProbe::FollowNext() {
     });
 }
 
-bool JoinHashTableVectorProbe::NextInnerJoin(VectorProjection *input) {
+auto JoinHashTableVectorProbe::NextInnerJoin(VectorProjection *input) -> bool {
     const auto *input_filter = input->GetFilteredTupleIdList();
 
     if (input_filter != nullptr) {
@@ -123,7 +123,7 @@ bool JoinHashTableVectorProbe::NextInnerJoin(VectorProjection *input) {
 }
 
 template <bool Match>
-bool JoinHashTableVectorProbe::NextSemiOrAntiJoin(VectorProjection *input) {
+auto JoinHashTableVectorProbe::NextSemiOrAntiJoin(VectorProjection *input) -> bool {
     // SEMI and ANTI joins are different that INNER joins since there can only be
     // at most ONE match for each input tuple. Thus, we handle the entire chunk in
     // one call to Next(). For every pointer, we chase bucket chain pointers doing
@@ -170,19 +170,19 @@ bool JoinHashTableVectorProbe::NextSemiOrAntiJoin(VectorProjection *input) {
     return !key_matches_.IsEmpty();
 }
 
-bool JoinHashTableVectorProbe::NextSemiJoin(VectorProjection *input) {
+auto JoinHashTableVectorProbe::NextSemiJoin(VectorProjection *input) -> bool {
     return NextSemiOrAntiJoin<true>(input);
 }
 
-bool JoinHashTableVectorProbe::NextAntiJoin(VectorProjection *input) {
+auto JoinHashTableVectorProbe::NextAntiJoin(VectorProjection *input) -> bool {
     return NextSemiOrAntiJoin<false>(input);
 }
 
-bool JoinHashTableVectorProbe::NextRightJoin(VectorProjection *input) {
+auto JoinHashTableVectorProbe::NextRightJoin(VectorProjection *input) -> bool {
     throw NOT_IMPLEMENTED_EXCEPTION("Vectorized right outer joins");
 }
 
-bool JoinHashTableVectorProbe::Next(VectorProjection *input) {
+auto JoinHashTableVectorProbe::Next(VectorProjection *input) -> bool {
     bool has_next;
     switch (join_type_) {
     case planner::LogicalJoinType::INNER:

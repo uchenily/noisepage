@@ -36,7 +36,7 @@ ReplicationManager::ReplicationManager(
 
 ReplicationManager::~ReplicationManager() = default;
 
-msg_id_t ReplicationManager::GetNextMessageId() {
+auto ReplicationManager::GetNextMessageId() -> msg_id_t {
     msg_id_t next_msg_id = next_msg_id_++;
     if (next_msg_id == INVALID_MSG_ID) {
         next_msg_id = next_msg_id_++;
@@ -50,16 +50,16 @@ void ReplicationManager::NodeConnect(const std::string &node_name, const std::st
     NOISEPAGE_ASSERT(result.second, "Failed to connect to a replica?");
 }
 
-messenger::connection_id_t ReplicationManager::GetNodeConnection(const std::string &replica_name) {
+auto ReplicationManager::GetNodeConnection(const std::string &replica_name) -> messenger::connection_id_t {
     return replicas_.at(replica_name).GetConnectionId();
 }
 
-common::ManagedPointer<PrimaryReplicationManager> ReplicationManager::GetAsPrimary() {
+auto ReplicationManager::GetAsPrimary() -> common::ManagedPointer<PrimaryReplicationManager> {
     NOISEPAGE_ASSERT(IsPrimary(), "This should only be called from the primary node!");
     return common::ManagedPointer(this).CastTo<PrimaryReplicationManager>();
 }
 
-common::ManagedPointer<ReplicaReplicationManager> ReplicationManager::GetAsReplica() {
+auto ReplicationManager::GetAsReplica() -> common::ManagedPointer<ReplicaReplicationManager> {
     NOISEPAGE_ASSERT(IsReplica(), "This should only be called from a replica node!");
     return common::ManagedPointer(this).CastTo<ReplicaReplicationManager>();
 }

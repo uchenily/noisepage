@@ -29,7 +29,7 @@ AbstractScanPlanNode::AbstractScanPlanNode(std::vector<std::unique_ptr<AbstractP
     , scan_offset_(scan_offset)
     , scan_has_offset_(scan_has_offset) {}
 
-common::hash_t AbstractScanPlanNode::Hash() const {
+auto AbstractScanPlanNode::Hash() const -> common::hash_t {
     common::hash_t hash = AbstractPlanNode::Hash();
 
     // Database oid
@@ -46,7 +46,7 @@ common::hash_t AbstractScanPlanNode::Hash() const {
     return hash;
 }
 
-bool AbstractScanPlanNode::operator==(const AbstractPlanNode &rhs) const {
+auto AbstractScanPlanNode::operator==(const AbstractPlanNode &rhs) const -> bool {
     if (!AbstractPlanNode::operator==(rhs)) {
         return false;
     }
@@ -75,7 +75,7 @@ bool AbstractScanPlanNode::operator==(const AbstractPlanNode &rhs) const {
     return true;
 }
 
-nlohmann::json AbstractScanPlanNode::ToJson() const {
+auto AbstractScanPlanNode::ToJson() const -> nlohmann::json {
     nlohmann::json j = AbstractPlanNode::ToJson();
     j["scan_predicate"] = scan_predicate_ == nullptr ? nlohmann::json(nullptr) : scan_predicate_->ToJson();
     j["is_for_update"] = is_for_update_;
@@ -83,7 +83,8 @@ nlohmann::json AbstractScanPlanNode::ToJson() const {
     return j;
 }
 
-std::vector<std::unique_ptr<parser::AbstractExpression>> AbstractScanPlanNode::FromJson(const nlohmann::json &j) {
+auto AbstractScanPlanNode::FromJson(const nlohmann::json &j)
+    -> std::vector<std::unique_ptr<parser::AbstractExpression>> {
     std::vector<std::unique_ptr<parser::AbstractExpression>> exprs;
     auto                                                     e1 = AbstractPlanNode::FromJson(j);
     exprs.insert(exprs.end(), std::make_move_iterator(e1.begin()), std::make_move_iterator(e1.end()));

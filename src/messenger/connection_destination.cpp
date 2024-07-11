@@ -4,15 +4,16 @@
 
 namespace noisepage::messenger {
 
-ConnectionDestination ConnectionDestination::MakeTCP(std::string target_name, std::string_view hostname, int port) {
+auto ConnectionDestination::MakeTCP(std::string target_name, std::string_view hostname, int port)
+    -> ConnectionDestination {
     return ConnectionDestination(std::move(target_name), fmt::format("tcp://{}:{}", hostname, port));
 }
 
-ConnectionDestination ConnectionDestination::MakeIPC(std::string target_name, std::string_view pathname) {
+auto ConnectionDestination::MakeIPC(std::string target_name, std::string_view pathname) -> ConnectionDestination {
     return ConnectionDestination(std::move(target_name), fmt::format("ipc://{}", pathname));
 }
 
-ConnectionDestination ConnectionDestination::MakeInProc(std::string target_name, std::string_view endpoint) {
+auto ConnectionDestination::MakeInProc(std::string target_name, std::string_view endpoint) -> ConnectionDestination {
     return ConnectionDestination(std::move(target_name), fmt::format("inproc://{}", endpoint));
 }
 

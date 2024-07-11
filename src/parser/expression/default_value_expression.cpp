@@ -5,7 +5,7 @@
 
 namespace noisepage::parser {
 
-std::unique_ptr<AbstractExpression> DefaultValueExpression::Copy() const {
+auto DefaultValueExpression::Copy() const -> std::unique_ptr<AbstractExpression> {
     auto expr = std::make_unique<DefaultValueExpression>();
     expr->SetMutableStateForCopy(*this);
     return expr;

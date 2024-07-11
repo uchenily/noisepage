@@ -378,9 +378,9 @@ private:
     // A templatized version for select, so that we can use the same code for both row and column access.
     // the method is explicitly instantiated for ProjectedRow and ProjectedColumns::RowView
     template <class RowType>
-    bool SelectIntoBuffer(common::ManagedPointer<transaction::TransactionContext> txn,
+    auto SelectIntoBuffer(common::ManagedPointer<transaction::TransactionContext> txn,
                           TupleSlot                                               slot,
-                          RowType                                                *out_buffer) const;
+                          RowType                                                *out_buffer) const -> bool;
 
     void
     InsertInto(common::ManagedPointer<transaction::TransactionContext> txn, const ProjectedRow &redo, TupleSlot dest);

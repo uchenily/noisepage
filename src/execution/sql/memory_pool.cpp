@@ -20,7 +20,7 @@ MemoryPool::MemoryPool(common::ManagedPointer<sql::MemoryTracker> tracker)
     (void) tracker_;
 }
 
-void *MemoryPool::AllocateAligned(const std::size_t size, const std::size_t alignment, const bool clear) {
+auto MemoryPool::AllocateAligned(const std::size_t size, const std::size_t alignment, const bool clear) -> void * {
     void *buf = nullptr;
 
     if (size >= mmap_threshold.load(std::memory_order_relaxed)) {

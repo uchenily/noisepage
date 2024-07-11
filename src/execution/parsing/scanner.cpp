@@ -33,7 +33,7 @@ Scanner::Scanner(const char *source, uint64_t source_len)
     Scan();
 }
 
-Token::Type Scanner::Next() {
+auto Scanner::Next() -> Token::Type {
     curr_ = next_;
     Scan();
     return curr_.type_;
@@ -274,7 +274,7 @@ void Scanner::SkipBlockComment() {
     }
 }
 
-Token::Type Scanner::ScanIdentifierOrKeyword() {
+auto Scanner::ScanIdentifierOrKeyword() -> Token::Type {
     // First collect identifier
     int32_t identifier_char0 = c0_;
     while (IsIdentifierChar(c0_) && c0_ != K_END_OF_INPUT) {
@@ -322,7 +322,7 @@ Token::Type Scanner::ScanIdentifierOrKeyword() {
   GROUP_ELEM("var", Token::Type::VAR)
 // clang-format on
 
-Token::Type Scanner::CheckIdentifierOrKeyword(const char *input, uint32_t input_len) {
+auto Scanner::CheckIdentifierOrKeyword(const char *input, uint32_t input_len) -> Token::Type {
     static constexpr uint32_t k_min_keyword_len = 2;
     static constexpr uint32_t k_max_keyword_len = 6;
 
@@ -363,7 +363,7 @@ Token::Type Scanner::CheckIdentifierOrKeyword(const char *input, uint32_t input_
 #undef GROUP_START
 #undef KEYWORDS
 
-Token::Type Scanner::ScanNumber() {
+auto Scanner::ScanNumber() -> Token::Type {
     Token::Type type = Token::Type::INTEGER;
 
     while (IsDigit(c0_)) {
@@ -387,7 +387,7 @@ Token::Type Scanner::ScanNumber() {
     return type;
 }
 
-Token::Type Scanner::ScanString() {
+auto Scanner::ScanString() -> Token::Type {
     // Single-line string. The lookahead character points to the start of the
     // string literal
 

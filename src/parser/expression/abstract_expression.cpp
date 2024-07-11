@@ -24,7 +24,7 @@
 
 namespace noisepage::parser {
 
-nlohmann::json AliasType::ToJson() const {
+auto AliasType::ToJson() const -> nlohmann::json {
     nlohmann::json j;
     j["name"] = name_;
     j["serial_valid"] = serial_valid_;
@@ -50,7 +50,7 @@ void AbstractExpression::SetMutableStateForCopy(const AbstractExpression &copy_e
     alias_ = copy_expr.alias_;
 }
 
-common::hash_t AbstractExpression::Hash() const {
+auto AbstractExpression::Hash() const -> common::hash_t {
     common::hash_t hash = common::HashUtil::Hash(expression_type_);
     for (const auto &child : children_) {
         hash = common::HashUtil::CombineHashes(hash, child->Hash());
@@ -64,7 +64,7 @@ common::hash_t AbstractExpression::Hash() const {
     return hash;
 }
 
-bool AbstractExpression::operator==(const AbstractExpression &rhs) const {
+auto AbstractExpression::operator==(const AbstractExpression &rhs) const -> bool {
     if (expression_type_ != rhs.expression_type_) {
         return false;
     }
@@ -93,7 +93,7 @@ bool AbstractExpression::operator==(const AbstractExpression &rhs) const {
     return return_value_type_ == rhs.return_value_type_;
 }
 
-std::vector<common::ManagedPointer<AbstractExpression>> AbstractExpression::GetChildren() const {
+auto AbstractExpression::GetChildren() const -> std::vector<common::ManagedPointer<AbstractExpression>> {
     std::vector<common::ManagedPointer<AbstractExpression>> children;
     children.reserve(children_.size());
     for (const auto &child : children_) {
@@ -110,7 +110,7 @@ void AbstractExpression::SetChild(int index, common::ManagedPointer<AbstractExpr
     children_[index] = std::move(new_child);
 }
 
-nlohmann::json AbstractExpression::ToJson() const {
+auto AbstractExpression::ToJson() const -> nlohmann::json {
     nlohmann::json j;
     j["expression_type"] = ExpressionTypeToString(expression_type_);
     j["expression_name"] = expression_name_;
@@ -127,7 +127,7 @@ nlohmann::json AbstractExpression::ToJson() const {
     return j;
 }
 
-std::vector<std::unique_ptr<AbstractExpression>> AbstractExpression::FromJson(const nlohmann::json &j) {
+auto AbstractExpression::FromJson(const nlohmann::json &j) -> std::vector<std::unique_ptr<AbstractExpression>> {
     std::vector<std::unique_ptr<AbstractExpression>> result_exprs;
 
     expression_type_ = ExpressionTypeFromString(j.at("expression_type").get<std::string>());
@@ -154,7 +154,7 @@ std::vector<std::unique_ptr<AbstractExpression>> AbstractExpression::FromJson(co
     return result_exprs;
 }
 
-JSONDeserializeExprIntermediate DeserializeExpression(const nlohmann::json &j) {
+auto DeserializeExpression(const nlohmann::json &j) -> JSONDeserializeExprIntermediate {
     std::unique_ptr<AbstractExpression> expr;
 
     auto expression_type = ExpressionTypeFromString(j.at("expression_type").get<std::string>());
@@ -266,7 +266,7 @@ JSONDeserializeExprIntermediate DeserializeExpression(const nlohmann::json &j) {
     return JSONDeserializeExprIntermediate{std::move(expr), std::move(non_owned_exprs)};
 }
 
-bool AbstractExpression::DeriveSubqueryFlag() {
+auto AbstractExpression::DeriveSubqueryFlag() -> bool {
     if (expression_type_ == ExpressionType::ROW_SUBQUERY) {
         has_subquery_ = true;
     } else {
@@ -280,7 +280,7 @@ bool AbstractExpression::DeriveSubqueryFlag() {
     return has_subquery_;
 }
 
-int AbstractExpression::DeriveDepth() {
+auto AbstractExpression::DeriveDepth() -> int {
     if (depth_ < 0) {
         for (auto &child : children_) {
             auto child_depth = child->DeriveDepth();

@@ -38,7 +38,7 @@ namespace {
 
 } // namespace
 
-int CpuInfo::GetCpuId() {
+auto CpuInfo::GetCpuId() -> int {
 #ifdef __APPLE__
     uint32_t cpuinfo[4];
     __cpuid_count(1, 0, cpuinfo[0], cpuinfo[1], cpuinfo[2], cpuinfo[3]);
@@ -185,7 +185,7 @@ void CpuInfo::InitCacheInfo() {
 #endif
 }
 
-std::string CpuInfo::PrettyPrintInfo() const {
+auto CpuInfo::PrettyPrintInfo() const -> std::string {
     std::stringstream ss;
 
     // clang-format off

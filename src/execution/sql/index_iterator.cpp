@@ -63,7 +63,7 @@ void IndexIterator::ScanLimitDescending(uint32_t limit) {
     index_->ScanLimitDescending(*exec_ctx_->GetTxn(), *index_pr_, *hi_index_pr_, &tuples_, limit);
 }
 
-bool IndexIterator::Advance() {
+auto IndexIterator::Advance() -> bool {
     if (curr_index_ < tuples_.size()) {
         ++curr_index_;
         return true;
@@ -71,7 +71,7 @@ bool IndexIterator::Advance() {
     return false;
 }
 
-storage::ProjectedRow *IndexIterator::TablePR() {
+auto IndexIterator::TablePR() -> storage::ProjectedRow * {
     table_->Select(exec_ctx_->GetTxn(), tuples_[curr_index_ - 1], table_pr_);
     return table_pr_;
 }

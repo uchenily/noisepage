@@ -10,11 +10,11 @@ ExpressionTranslator::ExpressionTranslator(const parser::AbstractExpression &exp
     : expr_(expr)
     , compilation_context_(compilation_context) {}
 
-CodeGen *ExpressionTranslator::GetCodeGen() const {
+auto ExpressionTranslator::GetCodeGen() const -> CodeGen * {
     return compilation_context_->GetCodeGen();
 }
 
-ast::Expr *ExpressionTranslator::GetExecutionContextPtr() const {
+auto ExpressionTranslator::GetExecutionContextPtr() const -> ast::Expr * {
     return compilation_context_->GetExecutionContextPtrFromQueryState();
 }
 

@@ -8,7 +8,7 @@
 
 namespace noisepage::optimizer {
 
-bool TableStats::AddColumnStats(std::unique_ptr<ColumnStatsBase> col_stats) {
+auto TableStats::AddColumnStats(std::unique_ptr<ColumnStatsBase> col_stats) -> bool {
     auto it = column_stats_.find(col_stats->GetColumnID());
     if (it != column_stats_.end()) {
         OPTIMIZER_LOG_TRACE("There already exists a ColumnStats object with the same oid.");
@@ -18,17 +18,17 @@ bool TableStats::AddColumnStats(std::unique_ptr<ColumnStatsBase> col_stats) {
     return true;
 }
 
-bool TableStats::HasColumnStats(catalog::col_oid_t column_id) const {
+auto TableStats::HasColumnStats(catalog::col_oid_t column_id) const -> bool {
     return (column_stats_.find(column_id) != column_stats_.end());
 }
 
-common::ManagedPointer<ColumnStatsBase> TableStats::GetColumnStats(catalog::col_oid_t column_id) const {
+auto TableStats::GetColumnStats(catalog::col_oid_t column_id) const -> common::ManagedPointer<ColumnStatsBase> {
     auto col_it = column_stats_.find(column_id);
     NOISEPAGE_ASSERT(col_it != column_stats_.end(), "Every valid column should have an associated column stats");
     return common::ManagedPointer<ColumnStatsBase>(col_it->second);
 }
 
-std::vector<common::ManagedPointer<ColumnStatsBase>> TableStats::GetColumnStats() const {
+auto TableStats::GetColumnStats() const -> std::vector<common::ManagedPointer<ColumnStatsBase>> {
     std::vector<common::ManagedPointer<ColumnStatsBase>> column_stats;
     for (const auto &[_, column_stat] : column_stats_) {
         column_stats.emplace_back(common::ManagedPointer(column_stat));
@@ -42,7 +42,7 @@ void TableStats::RemoveColumnStats(catalog::col_oid_t column_id) {
     column_stats_.erase(col_it);
 }
 
-nlohmann::json TableStats::ToJson() const {
+auto TableStats::ToJson() const -> nlohmann::json {
     nlohmann::json j;
     j["database_id"] = database_id_;
     j["table_id"] = table_id_;

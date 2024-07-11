@@ -238,7 +238,7 @@ public:
      * do not destroy this CVE before the std::string_view
      */
     template <typename T>
-    T Peek() const;
+    auto Peek() const -> T;
 
     void Accept(common::ManagedPointer<binder::SqlNodeVisitor> v) override;
 

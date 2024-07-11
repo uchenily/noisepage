@@ -5,8 +5,8 @@
 
 namespace noisepage::execution::sql {
 
-std::pair<StringVal, std::unique_ptr<byte[]>>
-ValueUtil::CreateStringVal(const common::ManagedPointer<const char> string, const uint32_t length) {
+auto ValueUtil::CreateStringVal(const common::ManagedPointer<const char> string, const uint32_t length)
+    -> std::pair<StringVal, std::unique_ptr<byte[]>> {
     if (length <= StringVal::InlineThreshold()) {
         return {StringVal(string.Get(), length), nullptr};
     }
@@ -16,15 +16,15 @@ ValueUtil::CreateStringVal(const common::ManagedPointer<const char> string, cons
     return {StringVal(reinterpret_cast<const char *>(buffer.get()), length), std::move(buffer)};
 }
 
-std::pair<StringVal, std::unique_ptr<byte[]>> ValueUtil::CreateStringVal(const std::string &string) {
+auto ValueUtil::CreateStringVal(const std::string &string) -> std::pair<StringVal, std::unique_ptr<byte[]>> {
     return CreateStringVal(common::ManagedPointer(string.data()), string.length());
 }
 
-std::pair<StringVal, std::unique_ptr<byte[]>> ValueUtil::CreateStringVal(const std::string_view string) {
+auto ValueUtil::CreateStringVal(const std::string_view string) -> std::pair<StringVal, std::unique_ptr<byte[]>> {
     return CreateStringVal(common::ManagedPointer(string.data()), string.length());
 }
 
-std::pair<StringVal, std::unique_ptr<byte[]>> ValueUtil::CreateStringVal(const StringVal string) {
+auto ValueUtil::CreateStringVal(const StringVal string) -> std::pair<StringVal, std::unique_ptr<byte[]>> {
     return CreateStringVal(common::ManagedPointer(string.GetContent()), string.GetLength());
 }
 

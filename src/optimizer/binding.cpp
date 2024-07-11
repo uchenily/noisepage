@@ -11,7 +11,7 @@
 
 namespace noisepage::optimizer {
 
-bool GroupBindingIterator::HasNext() {
+auto GroupBindingIterator::HasNext() -> bool {
     if (pattern_->Type() == OpType::LEAF) {
         return current_item_index_ == 0;
     }
@@ -42,7 +42,7 @@ bool GroupBindingIterator::HasNext() {
     return current_iterator_ != nullptr;
 }
 
-std::unique_ptr<AbstractOptimizerNode> GroupBindingIterator::Next() {
+auto GroupBindingIterator::Next() -> std::unique_ptr<AbstractOptimizerNode> {
     if (pattern_->Type() == OpType::LEAF) {
         current_item_index_ = num_group_items_;
         std::vector<std::unique_ptr<AbstractOptimizerNode>> c;
@@ -111,7 +111,7 @@ GroupExprBindingIterator::GroupExprBindingIterator(const Memo                   
     current_binding_ = std::make_unique<OperatorNode>(gexpr->Contents(), std::move(children), txn_);
 }
 
-bool GroupExprBindingIterator::HasNext() {
+auto GroupExprBindingIterator::HasNext() -> bool {
     if (has_next_ && first_) {
         first_ = false;
         return true;
