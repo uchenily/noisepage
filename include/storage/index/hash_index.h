@@ -14,7 +14,7 @@
 
 namespace noisepage::transaction {
 class TransactionContext;
-}
+} // namespace noisepage::transaction
 
 template <class Key, class T, class Hash, class KeyEqual, class Allocator, std::size_t SLOT_PER_BUCKET>
 class cuckoohash_map;

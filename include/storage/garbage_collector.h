@@ -24,7 +24,7 @@ class UndoRecord;
 
 namespace index {
     class Index;
-}
+} // namespace index
 
 /**
  * The garbage collector is responsible for processing a queue of completed transactions from the transaction manager.

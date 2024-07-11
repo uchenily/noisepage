@@ -22,7 +22,7 @@ namespace postgres {
 
 namespace noisepage::execution::sql {
 class StorageInterface;
-}
+} // namespace noisepage::execution::sql
 
 namespace noisepage::storage {
 // TODO(Tianyu): To be consistent with other places, maybe move val_offset fields in front of col_ids

@@ -11,7 +11,7 @@
 
 namespace noisepage::transaction {
 class TransactionContext;
-}
+} // namespace noisepage::transaction
 
 namespace third_party::bwtree { // NOLINT: check censored doesn't like this namespace name
 template <typename KeyType,
@@ -22,7 +22,7 @@ template <typename KeyType,
           typename ValueEqualityChecker,
           typename ValueHashFunc>
 class BwTree;
-}
+} // namespace third_party::bwtree
 
 namespace noisepage::storage::index {
 template <uint8_t KeySize>
