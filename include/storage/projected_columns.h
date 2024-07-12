@@ -10,11 +10,11 @@
 namespace noisepage::storage {
 /**
  * ProjectedColumns represents partial images of a collection of tuples, where columns from different
- * tuples are laid out continuously. This can be considered a collection of ProjectedRows, but optimized
- * for continuous column access like PAX. However, a ProjectedRow is almost always externally coupled to a known
- * tuple slot, so it is more compact in layout than MaterializedColumns, which has to also store the
+ * tuples are laid out continuously(来自不同元组的列被连续排列). This can be considered a collection of ProjectedRows,
+ * but optimized for continuous column access like PAX. However, a ProjectedRow is almost always externally coupled to a
+ * known tuple slot, so it is more compact(紧凑) in layout than MaterializedColumns, which has to also store the
  * TupleSlot information for each tuple. The inner class RowView provides access to the underlying logical
- * projected rows with the same interface as a real ProjectedRow.
+ * projected rows(底层逻辑映射行) with the same interface as a real ProjectedRow.
  * -------------------------------------------------------------------------------------
  * | size | max_tuples | num_tuples | num_cols | attr_end[4] | col_id1 | col_id2 | ... |
  * -------------------------------------------------------------------------------------
@@ -26,6 +26,17 @@ namespace noisepage::storage {
  * -------------------------------------------------------------------------------------
  * |                                       ...                                         |
  * -------------------------------------------------------------------------------------
+ *
+ * - size: 整个数据结构的大小(以字节为单位)
+ * - max_tuples: 该结构可以容纳的最大元组数量
+ * - num_tuples: 当前存储的元组数量
+ * - num_cols: 列的数量
+ * - attr_end[4]: 可能是一个数组, 表示某些属性的结束位置?
+ * - col_id1, col_id2, ...: 列的标识符(column IDs), 表示列的顺序
+ * - val1_offset, val2_offset, ...: 每个值的偏移量, 表示值在内存中的位置
+ * - TupleSlot_1, TupleSlot_2, ...: 元组槽, 表示每个元组在内存中的位置
+ * - null-bitmap, col_id1: 每个列的 null 位图, 表示该列的哪些值是 null
+ * - val1, col_id1, val2, col_id1, ...: 每个列的实际值
  */
 // PACKED for the same reason as ProjectedRow
 class PACKED ProjectedColumns {
@@ -41,21 +52,21 @@ public:
         /**
          * @return number of columns stored in the ProjectedColumns
          */
-        uint16_t NumColumns() const {
+        auto NumColumns() const -> uint16_t {
             return underlying_->NumColumns();
         }
 
         /**
          * @return pointer to the start of the array of column ids
          */
-        col_id_t *ColumnIds() {
+        auto ColumnIds() -> col_id_t * {
             return underlying_->ColumnIds();
         }
 
         /**
          * @return const pointer to the start of the array of column ids
          */
-        const col_id_t *ColumnIds() const {
+        auto ColumnIds() const -> const col_id_t * {
             return underlying_->ColumnIds();
         }
 
@@ -82,7 +93,7 @@ public:
          * @param projection_list_index The 0-indexed element to access in this RowView
          * @return true if null, false otherwise
          */
-        bool IsNull(const uint16_t projection_list_index) const {
+        auto IsNull(const uint16_t projection_list_index) const -> bool {
             NOISEPAGE_ASSERT(projection_list_index < underlying_->NumColumns(), "Column offset out of bounds.");
             return !underlying_->ColumnNullBitmap(projection_list_index)->Test(row_offset_);
         }
@@ -93,10 +104,11 @@ public:
          * @return byte pointer to the attribute. reinterpret_cast and dereference to access the value. if attribute is
          * nullable and set to null, then return value is nullptr
          */
-        byte *AccessWithNullCheck(const uint16_t projection_list_index) {
+        auto AccessWithNullCheck(const uint16_t projection_list_index) -> byte * {
             NOISEPAGE_ASSERT(projection_list_index < underlying_->NumColumns(), "Column offset out of bounds.");
-            if (IsNull(projection_list_index))
+            if (IsNull(projection_list_index)) {
                 return nullptr;
+            }
             return underlying_->ColumnStart(projection_list_index)
                    + underlying_->AttrSizeForColumn(projection_list_index) * row_offset_;
         }
@@ -107,10 +119,11 @@ public:
          * @return byte pointer to the attribute. reinterpret_cast and dereference to access the value. if attribute is
          * nullable and set to null, then return value is nullptr
          */
-        const byte *AccessWithNullCheck(const uint16_t projection_list_index) const {
+        auto AccessWithNullCheck(const uint16_t projection_list_index) const -> const byte * {
             NOISEPAGE_ASSERT(projection_list_index < underlying_->NumColumns(), "Column offset out of bounds.");
-            if (IsNull(projection_list_index))
+            if (IsNull(projection_list_index)) {
                 return nullptr;
+            }
             return underlying_->ColumnStart(projection_list_index)
                    + underlying_->AttrSizeForColumn(projection_list_index) * row_offset_;
         }
@@ -120,10 +133,11 @@ public:
          * @param projection_list_index The 0-indexed element to access in this RowView
          * @return byte pointer to the attribute. reinterpret_cast and dereference to access the value
          */
-        byte *AccessForceNotNull(const uint16_t projection_list_index) {
+        auto AccessForceNotNull(const uint16_t projection_list_index) -> byte * {
             NOISEPAGE_ASSERT(projection_list_index < underlying_->NumColumns(), "Column offset out of bounds.");
-            if (IsNull(projection_list_index))
+            if (IsNull(projection_list_index)) {
                 SetNotNull(projection_list_index);
+            }
             return underlying_->ColumnStart(projection_list_index)
                    + underlying_->AttrSizeForColumn(projection_list_index) * row_offset_;
         }
@@ -142,14 +156,14 @@ public:
     /**
      * @return size of this ProjectedColumns in memory, in bytes
      */
-    uint32_t Size() const {
+    auto Size() const -> uint32_t {
         return size_;
     }
 
     /**
      * @return the maximum number of tuples this ProjectedColumns can hold.
      */
-    uint32_t MaxTuples() const {
+    auto MaxTuples() const -> uint32_t {
         return max_tuples_;
     }
 
@@ -172,7 +186,7 @@ public:
     /**
      * @return number of columns stored in the ProjectedColumns
      */
-    uint16_t NumColumns() const {
+    auto NumColumns() const -> uint16_t {
         return num_cols_;
     }
 
@@ -180,7 +194,7 @@ public:
      * @warning don't use these above the storage layer, they have no meaning
      * @return pointer to the start of the array of column ids
      */
-    col_id_t *ColumnIds() {
+    auto ColumnIds() -> col_id_t * {
         return reinterpret_cast<col_id_t *>(varlen_contents_);
     }
 
@@ -188,14 +202,14 @@ public:
      * @warning don't use these above the storage layer, they have no meaning
      * @return pointer to the start of the array of column ids
      */
-    const col_id_t *ColumnIds() const {
+    auto ColumnIds() const -> const col_id_t * {
         return reinterpret_cast<const col_id_t *>(varlen_contents_);
     }
 
     /**
      * @return Head of the array that holds the tuple slots of the tuples currently materialized in the ProjectedColumns
      */
-    storage::TupleSlot *TupleSlots() {
+    auto TupleSlots() -> storage::TupleSlot * {
         return StorageUtil::AlignedPtr<storage::TupleSlot>(AttrValueOffsets() + num_cols_);
     }
 
@@ -203,7 +217,7 @@ public:
      * @param projection_list_index index of the desired column in the projection list
      * @return pointer to the column presence bitmap for the given projection list column
      */
-    common::RawBitmap *ColumnNullBitmap(uint16_t projection_list_index) {
+    auto ColumnNullBitmap(uint16_t projection_list_index) -> common::RawBitmap * {
         byte *column_start = reinterpret_cast<byte *>(this) + AttrValueOffsets()[projection_list_index];
         return reinterpret_cast<common::RawBitmap *>(column_start);
     }
@@ -214,7 +228,7 @@ public:
      * @param row_offset the row offset within the ProjectedColumns to look at
      * @return a view into the desired row within the ProjectedColumns
      */
-    RowView InterpretAsRow(uint32_t row_offset) {
+    auto InterpretAsRow(uint32_t row_offset) -> RowView {
         return {this, row_offset};
     }
 
@@ -222,7 +236,7 @@ public:
      * @param projection_list_index index of the desired column in the projection list
      * @return pointer to the column value array for the given projection list column
      */
-    byte *ColumnStart(uint16_t projection_list_index) {
+    auto ColumnStart(uint16_t projection_list_index) -> byte * {
         // TODO(Tianyu): Just pad up to 8 bytes because we do not want to store block layout?
         // We should probably be consistent with what we do in blocks, which probably means modifying blocks
         // since I don't think replicating the block layout here sounds right.
@@ -236,7 +250,7 @@ public:
      * @param projection_col_index the column ID within the projection we want the size for
      * @return the size (in bytes) of the attributes in this column
      */
-    uint32_t AttrSizeForColumn(uint16_t projection_col_index);
+    auto AttrSizeForColumn(uint16_t projection_col_index) -> uint32_t;
 
 private:
     friend class ProjectedColumnsInitializer;
@@ -247,10 +261,10 @@ private:
     uint16_t attr_ends_[NUM_ATTR_BOUNDARIES];
     byte     varlen_contents_[0];
 
-    uint32_t *AttrValueOffsets() {
+    auto AttrValueOffsets() -> uint32_t * {
         return StorageUtil::AlignedPtr<uint32_t>(ColumnIds() + num_cols_);
     }
-    const uint32_t *AttrValueOffsets() const {
+    auto AttrValueOffsets() const -> const uint32_t * {
         return StorageUtil::AlignedPtr<const uint32_t>(ColumnIds() + num_cols_);
     }
 };
@@ -278,33 +292,33 @@ public:
      * @param head pointer to the byte buffer to initialize as a ProjectionListColumns
      * @return pointer to the initialized ProjectedColumns
      */
-    ProjectedColumns *Initialize(void *head) const;
+    auto Initialize(void *head) const -> ProjectedColumns *;
 
     /**
      * @return size of the ProjectedColumns in memory, in bytes, that this initializer constructs.
      */
-    uint32_t ProjectedColumnsSize() const {
+    auto ProjectedColumnsSize() const -> uint32_t {
         return size_;
     }
 
     /**
      * @return the maximum number of tuples this ProjectedColumns can hold.
      */
-    uint32_t MaxTuples() const {
+    auto MaxTuples() const -> uint32_t {
         return max_tuples_;
     }
 
     /**
      * @return number of columns in the projection list
      */
-    uint16_t NumColumns() const {
+    auto NumColumns() const -> uint16_t {
         return static_cast<uint16_t>(col_ids_.size());
     }
 
     /**
      * @return column ids at the given offset in the projection list
      */
-    col_id_t ColId(uint16_t i) const {
+    auto ColId(uint16_t i) const -> col_id_t {
         return col_ids_.at(i);
     }
 
