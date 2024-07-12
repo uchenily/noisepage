@@ -59,8 +59,9 @@ public:
      * pointed to by a DataTable.
      */
     ~TransactionContext() {
-        for (const byte *ptr : loose_ptrs_)
+        for (const byte *ptr : loose_ptrs_) {
             delete[] ptr;
+        }
     }
 
     /**
@@ -68,7 +69,7 @@ public:
      * @return whether this transaction has been aborted. Note that this is different from being "uncommitted". Some one
      *         needs to have called Abort() explicitly on this transaction for this function to return true.
      */
-    bool Aborted() const {
+    auto Aborted() const -> bool {
         return aborted_;
     }
 
@@ -76,7 +77,7 @@ public:
      * @return start time of this transaction. Can be used as a unique identifier of this object in the current MVCC
      * semantics because it is both constant and unique within the system
      */
-    timestamp_t StartTime() const {
+    auto StartTime() const -> timestamp_t {
         return start_time_;
     }
 
@@ -86,7 +87,7 @@ public:
      * TransactionManager (i.e. in tests) may not reflect this. Should NOT be used as a unique identifier of this object
      * because its value changes at txn completion in the current MVCC semantics.
      */
-    timestamp_t FinishTime() const {
+    auto FinishTime() const -> timestamp_t {
         return finish_time_.load();
     }
 
@@ -97,9 +98,9 @@ public:
      * @param redo the content of the update
      * @return a persistent pointer to the head of a memory chunk large enough to hold the undo record
      */
-    storage::UndoRecord *UndoRecordForUpdate(storage::DataTable *const    table,
-                                             const storage::TupleSlot     slot,
-                                             const storage::ProjectedRow &redo) {
+    auto UndoRecordForUpdate(storage::DataTable *const    table,
+                             const storage::TupleSlot     slot,
+                             const storage::ProjectedRow &redo) -> storage::UndoRecord * {
         const uint32_t size = storage::UndoRecord::Size(redo);
         return storage::UndoRecord::InitializeUpdate(undo_buffer_.NewEntry(size),
                                                      finish_time_.load(),
@@ -114,7 +115,7 @@ public:
      * @param slot the TupleSlot inserted
      * @return a persistent pointer to the head of a memory chunk large enough to hold the undo record
      */
-    storage::UndoRecord *UndoRecordForInsert(storage::DataTable *const table, const storage::TupleSlot slot) {
+    auto UndoRecordForInsert(storage::DataTable *const table, const storage::TupleSlot slot) -> storage::UndoRecord * {
         byte *const result = undo_buffer_.NewEntry(sizeof(storage::UndoRecord));
         return storage::UndoRecord::InitializeInsert(result, finish_time_.load(), slot, table);
     }
@@ -125,27 +126,28 @@ public:
      * @param slot the TupleSlot being deleted
      * @return a persistent pointer to the head of a memory chunk large enough to hold the undo record
      */
-    storage::UndoRecord *UndoRecordForDelete(storage::DataTable *const table, const storage::TupleSlot slot) {
+    auto UndoRecordForDelete(storage::DataTable *const table, const storage::TupleSlot slot) -> storage::UndoRecord * {
         byte *const result = undo_buffer_.NewEntry(sizeof(storage::UndoRecord));
         return storage::UndoRecord::InitializeDelete(result, finish_time_.load(), slot, table);
     }
 
     /**
-     * Expose a record that can hold a change, described by the initializer given, that will be logged out to disk.
-     * The change must be written in this space and then used to change the SqlTable.
+     * 暴露(expose)一条记录(record), 这条记录包含了由initializer描述的更改, 这些更改将会被记录(logged)到磁盘上.
+     * 更改必须先陷入这个空间, 然后再用于更改SqlTable.
+     *
      * @param db_oid the database oid that this record changes
      * @param table_oid the table oid that this record changes
      * @param initializer the initializer to use for the underlying record
      * @return pointer to the initialized redo record.
-     * @warning RedoRecords returned by StageWrite are not guaranteed to remain valid forever. If you call StageWrite
-     * again, the previous RedoRecord's buffer may be swapped out, written to disk, and handed back out to another
-     * transaction.
-     * @warning If you call StageWrite, the operation WILL be logged to disk. If you StageWrite anything that you didn't
-     * succeed in writing into the table or decide you don't want to use, the transaction MUST abort.
+     * @warning StageWrite返回的RedoRecords不保证永远有效. 如果再调用一次StageWrite,
+     * 之前的RedoRecord缓冲区可能会被交换出去(swapped out), 写入磁盘, 然后再分发给另一个事务(handed back out to another
+     * transaction)
+     * @warning 如果调用StageWrite, 操作将被记录到磁盘上. 如果您StageWrite任何您没有成功写入表或决定不想使用的内容,
+     * 则事务必须(MUST)中止(abort).
      */
-    storage::RedoRecord *StageWrite(const catalog::db_oid_t                 db_oid,
-                                    const catalog::table_oid_t              table_oid,
-                                    const storage::ProjectedRowInitializer &initializer) {
+    auto StageWrite(const catalog::db_oid_t                 db_oid,
+                    const catalog::table_oid_t              table_oid,
+                    const storage::ProjectedRowInitializer &initializer) -> storage::RedoRecord * {
         const uint32_t size = storage::RedoRecord::Size(initializer);
         auto *const    log_record = storage::RedoRecord::Initialize(redo_buffer_.NewEntry(size, GetTransactionPolicy()),
                                                                  start_time_,
@@ -177,7 +179,7 @@ public:
     /**
      * @return whether the transaction is read-only
      */
-    bool IsReadOnly() const {
+    auto IsReadOnly() const -> bool {
         return undo_buffer_.Empty() && loose_ptrs_.empty();
     }
 
@@ -226,7 +228,7 @@ public:
      * and run again to see why.
      * @return true if txn must abort, false otherwise
      */
-    bool MustAbort() {
+    auto MustAbort() const -> bool {
         return must_abort_;
     }
 
@@ -244,7 +246,7 @@ public:
     }
 
     /** @return The durability policy of the entire transaction. */
-    DurabilityPolicy GetDurabilityPolicy() const {
+    auto GetDurabilityPolicy() const -> DurabilityPolicy {
         return durability_policy_;
     }
 
@@ -257,12 +259,12 @@ public:
     }
 
     /** @return The replication policy of the entire transaction. */
-    ReplicationPolicy GetReplicationPolicy() const {
+    auto GetReplicationPolicy() const -> ReplicationPolicy {
         return replication_policy_;
     }
 
     /** @return The transaction-wide policies for this transaction. */
-    TransactionPolicy GetTransactionPolicy() const {
+    auto GetTransactionPolicy() const -> TransactionPolicy {
         return {durability_policy_, replication_policy_};
     }
 
@@ -309,7 +311,7 @@ private:
      * @warning If you call StageRecoveryWrite, the operation WILL be logged to disk. If you StageRecoveryWrite anything
      * that you didn't succeed in writing into the table or decide you don't want to use, the transaction MUST abort.
      */
-    storage::RedoRecord *StageRecoveryWrite(storage::LogRecord *record) {
+    auto StageRecoveryWrite(storage::LogRecord *record) -> storage::RedoRecord * {
         auto record_location = redo_buffer_.NewEntry(record->Size(), GetTransactionPolicy());
         memcpy(record_location, record, record->Size());
         // Overwrite the txn_begin timestamp

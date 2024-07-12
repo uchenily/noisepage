@@ -553,6 +553,7 @@ auto PgCoreImpl::CreateTableEntry(const common::ManagedPointer<transaction::Tran
     }
 
     // Insert into pg_class.
+    // 插入 RedoRecord 记录, 返回分配的slot
     const auto tuple_slot = classes_->Insert(txn, insert_redo);
 
     // Insert into indexes.
@@ -622,6 +623,7 @@ auto PgCoreImpl::CreateTableEntry(const common::ManagedPointer<transaction::Tran
 
         update_redo->SetTupleSlot(tuple_slot);
         update_pr->Set<Schema *, false>(0, new_schema, false);
+        // 更新 RedoRecord 记录
         [[maybe_unused]] auto res = classes_->Update(txn, update_redo);
         NOISEPAGE_ASSERT(res, "Updating an uncommitted insert should not fail");
     }
@@ -1451,10 +1453,10 @@ auto PgCoreImpl::GetClassNameKind(common::ManagedPointer<transaction::Transactio
 }
 
 template <typename Column, typename ClassOid, typename ColOid>
-bool PgCoreImpl::CreateColumn(const common::ManagedPointer<transaction::TransactionContext> txn,
+auto PgCoreImpl::CreateColumn(const common::ManagedPointer<transaction::TransactionContext> txn,
                               const ClassOid                                                class_oid,
                               const ColOid                                                  col_oid,
-                              const Column                                                 &col) {
+                              const Column                                                 &col) -> bool {
     static_assert(std::is_same_v<ClassOid, table_oid_t> || std::is_same_v<ClassOid, index_oid_t>, "Invalid ClassOid.");
     static_assert(std::is_same_v<ColOid, col_oid_t> || std::is_same_v<ColOid, indexkeycol_oid_t>, "Invalid ColOid.");
 
@@ -1517,8 +1519,8 @@ bool PgCoreImpl::CreateColumn(const common::ManagedPointer<transaction::Transact
 }
 
 template <typename Column, typename ClassOid, typename ColOid>
-std::vector<Column> PgCoreImpl::GetColumns(const common::ManagedPointer<transaction::TransactionContext> txn,
-                                           ClassOid                                                      class_oid) {
+auto PgCoreImpl::GetColumns(const common::ManagedPointer<transaction::TransactionContext> txn, ClassOid class_oid)
+    -> std::vector<Column> {
     const auto &oid_pri = columns_oid_index_->GetProjectedRowInitializer();
     const auto &oid_prm = columns_oid_index_->GetKeyOidToOffsetMap();
 
@@ -1571,8 +1573,8 @@ std::vector<Column> PgCoreImpl::GetColumns(const common::ManagedPointer<transact
 // TODO(Matt): we need a DeleteColumn()
 
 template <typename Column, typename ClassOid>
-bool PgCoreImpl::DeleteColumns(const common::ManagedPointer<transaction::TransactionContext> txn,
-                               const ClassOid                                                class_oid) {
+auto PgCoreImpl::DeleteColumns(const common::ManagedPointer<transaction::TransactionContext> txn,
+                               const ClassOid                                                class_oid) -> bool {
     const auto &oid_pri = columns_oid_index_->GetProjectedRowInitializer();
     const auto &name_pri = columns_name_index_->GetProjectedRowInitializer();
     const auto &oid_prm = columns_oid_index_->GetKeyOidToOffsetMap();
@@ -1656,7 +1658,7 @@ bool PgCoreImpl::DeleteColumns(const common::ManagedPointer<transaction::Transac
 }
 
 template <typename Column, typename ColOid>
-Column PgCoreImpl::MakeColumn(storage::ProjectedRow *const pr, const storage::ProjectionMap &pr_map) {
+auto PgCoreImpl::MakeColumn(storage::ProjectedRow *const pr, const storage::ProjectionMap &pr_map) -> Column {
     auto              delta = common::ManagedPointer(pr);
     const auto        col_oid = *PgAttribute::ATTNUM.Get(delta, pr_map);
     const auto        col_name = PgAttribute::ATTNAME.Get(delta, pr_map);

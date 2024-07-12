@@ -378,10 +378,10 @@ private:
      * Cleaned up by: DatabaseCatalog::TearDown, where the scans from pg_class and pg_index pick these up.
      */
     ///@{
-    common::ManagedPointer<storage::SqlTable>     classes_;
-    common::ManagedPointer<storage::index::Index> classes_oid_index_;
-    common::ManagedPointer<storage::index::Index> classes_name_index_; // indexed on namespace OID and name
-    common::ManagedPointer<storage::index::Index> classes_namespace_index_;
+    common::ManagedPointer<storage::SqlTable>     classes_;                 // pg_class
+    common::ManagedPointer<storage::index::Index> classes_oid_index_;       // pg_class_oid_index
+    common::ManagedPointer<storage::index::Index> classes_name_index_;      // pg_class_name_index
+    common::ManagedPointer<storage::index::Index> classes_namespace_index_; // pg_class_namespace_index
     storage::ProjectedRowInitializer              pg_class_all_cols_pri_;
     storage::ProjectionMap                        pg_class_all_cols_prm_;
     storage::ProjectedRowInitializer              get_class_oid_kind_pri_;

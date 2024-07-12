@@ -18,19 +18,19 @@ public:
     /**
      * @return type of this LogRecord
      */
-    LogRecordType RecordType() const {
+    auto RecordType() const -> LogRecordType {
         return type_;
     }
     /**
      * @return size of the whole record (header + body)
      */
-    uint32_t Size() const {
+    auto Size() const -> uint32_t {
         return size_;
     }
     /**
      * @return begin timestamp of the transaction that generated this log record
      */
-    transaction::timestamp_t TxnBegin() const {
+    auto TxnBegin() const -> transaction::timestamp_t {
         return txn_begin_;
     }
 
@@ -41,7 +41,7 @@ public:
      * @return pointer to the underlying record body
      */
     template <class UnderlyingType>
-    UnderlyingType *GetUnderlyingRecordBodyAs() {
+    auto GetUnderlyingRecordBodyAs() -> UnderlyingType * {
         NOISEPAGE_ASSERT(UnderlyingType::RecordType() == type_, "Attempting to access incompatible log record types");
         return reinterpret_cast<UnderlyingType *>(varlen_contents_);
     }
@@ -53,7 +53,7 @@ public:
      * @return const pointer to the underlying record body
      */
     template <class UnderlyingType>
-    const UnderlyingType *GetUnderlyingRecordBodyAs() const {
+    auto GetUnderlyingRecordBodyAs() const -> const UnderlyingType * {
         NOISEPAGE_ASSERT(UnderlyingType::RecordType() == type_, "Attempting to access incompatible log record types");
         return reinterpret_cast<const UnderlyingType *>(varlen_contents_);
     }
@@ -66,10 +66,10 @@ public:
      * @param txn_begin begin timestamp of the transaction that generated this log record
      * @return pointer to the start of the initialized record header
      */
-    static LogRecord *InitializeHeader(byte *const                    head,
-                                       const LogRecordType            type,
-                                       const uint32_t                 size,
-                                       const transaction::timestamp_t txn_begin) {
+    static auto InitializeHeader(byte *const                    head,
+                                 const LogRecordType            type,
+                                 const uint32_t                 size,
+                                 const transaction::timestamp_t txn_begin) -> LogRecord * {
         auto *result = reinterpret_cast<LogRecord *>(head);
         result->type_ = type;
         result->size_ = size;
@@ -102,21 +102,21 @@ public:
     /**
      * @return the tuple slot changed by this redo record
      */
-    TupleSlot GetTupleSlot() const {
+    auto GetTupleSlot() const -> TupleSlot {
         return tuple_slot_;
     }
 
     /**
      * @return database oid for this redo record
      */
-    catalog::db_oid_t GetDatabaseOid() const {
+    auto GetDatabaseOid() const -> catalog::db_oid_t {
         return db_oid_;
     }
 
     /**
      * @return table oid for this redo record
      */
-    catalog::table_oid_t GetTableOid() const {
+    auto GetTableOid() const -> catalog::table_oid_t {
         return table_oid_;
     }
 
@@ -130,21 +130,21 @@ public:
     /**
      * @return inlined delta that (was/is to be) applied to the tuple in the table
      */
-    ProjectedRow *Delta() {
+    auto Delta() -> ProjectedRow * {
         return reinterpret_cast<ProjectedRow *>(varlen_contents_);
     }
 
     /**
      * @return const inlined delta that (was/is to be) applied to the tuple in the table
      */
-    const ProjectedRow *Delta() const {
+    auto Delta() const -> const ProjectedRow * {
         return reinterpret_cast<const ProjectedRow *>(varlen_contents_);
     }
 
     /**
      * @return type of record this type of body holds
      */
-    static constexpr LogRecordType RecordType() {
+    static constexpr auto RecordType() -> LogRecordType {
         return LogRecordType::REDO;
     }
 
@@ -152,7 +152,7 @@ public:
      * @return Size of the entire record of this type, in bytes, in memory, if the underlying Delta is to have the same
      * structure as described by the given initializer.
      */
-    static uint32_t Size(const ProjectedRowInitializer &initializer) {
+    static auto Size(const ProjectedRowInitializer &initializer) -> uint32_t {
         return static_cast<uint32_t>(sizeof(LogRecord) + sizeof(RedoRecord) + initializer.ProjectedRowSize());
     }
 
@@ -165,11 +165,11 @@ public:
      * @param initializer the initializer to use for the underlying
      * @return pointer to the initialized log record, always equal in value to the given head
      */
-    static LogRecord *Initialize(byte *const                    head,
-                                 const transaction::timestamp_t txn_begin,
-                                 const catalog::db_oid_t        db_oid,
-                                 const catalog::table_oid_t     table_oid,
-                                 const ProjectedRowInitializer &initializer) {
+    static auto Initialize(byte *const                    head,
+                           const transaction::timestamp_t txn_begin,
+                           const catalog::db_oid_t        db_oid,
+                           const catalog::table_oid_t     table_oid,
+                           const ProjectedRowInitializer &initializer) -> LogRecord * {
         LogRecord *result = LogRecord::InitializeHeader(head, LogRecordType::REDO, Size(initializer), txn_begin);
         auto      *body = result->GetUnderlyingRecordBodyAs<RedoRecord>();
         body->db_oid_ = db_oid;
@@ -192,12 +192,12 @@ public:
      * @param tuple_slot
      * @return
      */
-    static LogRecord *PartialInitialize(byte *const                    head,
-                                        const uint32_t                 size,
-                                        const transaction::timestamp_t txn_begin,
-                                        const catalog::db_oid_t        db_oid,
-                                        const catalog::table_oid_t     table_oid,
-                                        const TupleSlot                tuple_slot) {
+    static auto PartialInitialize(byte *const                    head,
+                                  const uint32_t                 size,
+                                  const transaction::timestamp_t txn_begin,
+                                  const catalog::db_oid_t        db_oid,
+                                  const catalog::table_oid_t     table_oid,
+                                  const TupleSlot                tuple_slot) -> LogRecord * {
         LogRecord *result = LogRecord::InitializeHeader(head, LogRecordType::REDO, size, txn_begin);
         auto      *body = result->GetUnderlyingRecordBodyAs<RedoRecord>();
         body->db_oid_ = db_oid;
@@ -232,14 +232,14 @@ public:
     /**
      * @return type of record this type of body holds
      */
-    static constexpr LogRecordType RecordType() {
+    static constexpr auto RecordType() -> LogRecordType {
         return LogRecordType::DELETE;
     }
 
     /**
      * @return Size of the entire record of this type, in bytes, in memory.
      */
-    static uint32_t Size() {
+    static auto Size() -> uint32_t {
         return static_cast<uint32_t>(sizeof(LogRecord) + sizeof(DeleteRecord));
     }
 
@@ -254,11 +254,11 @@ public:
      * @param slot the tuple slot this delete applies to
      * @return pointer to the initialized log record, always equal in value to the given head
      */
-    static LogRecord *Initialize(byte *const                    head,
-                                 const transaction::timestamp_t txn_begin,
-                                 const catalog::db_oid_t        db_oid,
-                                 const catalog::table_oid_t     table_oid,
-                                 const TupleSlot                slot) {
+    static auto Initialize(byte *const                    head,
+                           const transaction::timestamp_t txn_begin,
+                           const catalog::db_oid_t        db_oid,
+                           const catalog::table_oid_t     table_oid,
+                           const TupleSlot                slot) -> LogRecord * {
         auto *result = LogRecord::InitializeHeader(head, LogRecordType::DELETE, Size(), txn_begin);
         auto *body = result->GetUnderlyingRecordBodyAs<DeleteRecord>();
         body->db_oid_ = db_oid;
@@ -270,21 +270,21 @@ public:
     /**
      * @return the tuple slot changed by this delete record
      */
-    TupleSlot GetTupleSlot() const {
+    auto GetTupleSlot() const -> TupleSlot {
         return tuple_slot_;
     }
 
     /**
      * @return database oid for this delete record
      */
-    catalog::db_oid_t GetDatabaseOid() const {
+    auto GetDatabaseOid() const -> catalog::db_oid_t {
         return db_oid_;
     }
 
     /**
      * @return table oid for this delete record
      */
-    catalog::table_oid_t GetTableOid() const {
+    auto GetTableOid() const -> catalog::table_oid_t {
         return table_oid_;
     }
 
@@ -305,14 +305,14 @@ public:
     /**
      * @return type of record this type of body holds
      */
-    static constexpr LogRecordType RecordType() {
+    static constexpr auto RecordType() -> LogRecordType {
         return LogRecordType::COMMIT;
     }
 
     /**
      * @return Size of the entire record of this type, in bytes, in memory.
      */
-    static uint32_t Size() {
+    static auto Size() -> uint32_t {
         return static_cast<uint32_t>(sizeof(LogRecord) + sizeof(CommitRecord));
     }
 
@@ -334,15 +334,15 @@ public:
      */
     // TODO(Tianyu): txn should contain a lot of the information here. Maybe we can simplify the function.
     // Note that however when reading log records back in we will not have a proper transaction.
-    static LogRecord *Initialize(byte *const                            head,
-                                 const transaction::timestamp_t         txn_begin,
-                                 const transaction::timestamp_t         txn_commit,
-                                 transaction::callback_fn               commit_callback,
-                                 void                                  *commit_callback_arg,
-                                 const transaction::timestamp_t         oldest_active_txn,
-                                 const bool                             is_read_only,
-                                 transaction::TransactionContext *const txn,
-                                 transaction::TimestampManager *const   timestamp_manager) {
+    static auto Initialize(byte *const                            head,
+                           const transaction::timestamp_t         txn_begin,
+                           const transaction::timestamp_t         txn_commit,
+                           transaction::callback_fn               commit_callback,
+                           void                                  *commit_callback_arg,
+                           const transaction::timestamp_t         oldest_active_txn,
+                           const bool                             is_read_only,
+                           transaction::TransactionContext *const txn,
+                           transaction::TimestampManager *const   timestamp_manager) -> LogRecord * {
         auto *result = LogRecord::InitializeHeader(head, LogRecordType::COMMIT, Size(), txn_begin);
         auto *body = result->GetUnderlyingRecordBodyAs<CommitRecord>();
         body->txn_commit_ = txn_commit;
@@ -358,49 +358,49 @@ public:
     /**
      * @return the commit time of the transaction that generated this log record
      */
-    transaction::timestamp_t CommitTime() const {
+    auto CommitTime() const -> transaction::timestamp_t {
         return txn_commit_;
     }
 
     /**
      * @return the start time of the oldest active transaction at the time that this txn committed
      */
-    transaction::timestamp_t OldestActiveTxn() const {
+    auto OldestActiveTxn() const -> transaction::timestamp_t {
         return oldest_active_txn_;
     }
 
     /**
      * @return function pointer of the transaction commit callback. Not necessarily populated if read back in from disk.
      */
-    transaction::callback_fn CommitCallback() const {
+    auto CommitCallback() const -> transaction::callback_fn {
         return commit_callback_;
     }
 
     /**
      * @return pointer to timestamp manager who manages committing txn
      */
-    transaction::TimestampManager *TimestampManager() const {
+    auto TimestampManager() const -> transaction::TimestampManager * {
         return timestamp_manager_;
     }
 
     /**
      * @return pointer to the committing transaction.
      */
-    transaction::TransactionContext *Txn() const {
+    auto Txn() const -> transaction::TransactionContext * {
         return txn_;
     }
 
     /**
      * @return argument to the transaction callback
      */
-    void *CommitCallbackArg() const {
+    auto CommitCallbackArg() const -> void * {
         return commit_callback_arg_;
     }
 
     /**
      * @return true if and only if the transaction generating this commit record was read-only
      */
-    bool IsReadOnly() const {
+    auto IsReadOnly() const -> bool {
         return is_read_only_;
     }
 
@@ -428,14 +428,14 @@ public:
     /**
      * @return type of record this type of body holds
      */
-    static constexpr LogRecordType RecordType() {
+    static constexpr auto RecordType() -> LogRecordType {
         return LogRecordType::ABORT;
     }
 
     /**
      * @return Size of the entire record of this type, in bytes, in memory.
      */
-    static uint32_t Size() {
+    static auto Size() -> uint32_t {
         return static_cast<uint32_t>(sizeof(LogRecord) + sizeof(AbortRecord));
     }
 
@@ -450,10 +450,10 @@ public:
      * serialization
      * @return pointer to the initialized log record, always equal in value to the given head
      */
-    static LogRecord *Initialize(byte *const                          head,
-                                 const transaction::timestamp_t       txn_begin,
-                                 transaction::TransactionContext     *txn,
-                                 transaction::TimestampManager *const timestamp_manager) {
+    static auto Initialize(byte *const                          head,
+                           const transaction::timestamp_t       txn_begin,
+                           transaction::TransactionContext     *txn,
+                           transaction::TimestampManager *const timestamp_manager) -> LogRecord * {
         auto *result = LogRecord::InitializeHeader(head, LogRecordType::ABORT, Size(), txn_begin);
         auto *body = result->GetUnderlyingRecordBodyAs<AbortRecord>();
         body->timestamp_manager_ = timestamp_manager;
@@ -464,14 +464,14 @@ public:
     /**
      * @return pointer to the aborting transaction.
      */
-    transaction::TransactionContext *Txn() const {
+    auto Txn() const -> transaction::TransactionContext * {
         return txn_;
     }
 
     /**
      * @return pointer to timestamp manager who manages aborting txn
      */
-    transaction::TimestampManager *TimestampManager() const {
+    auto TimestampManager() const -> transaction::TimestampManager * {
         return timestamp_manager_;
     }
 

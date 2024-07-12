@@ -68,7 +68,7 @@ public:
     /**
      * @return number of blocks
      */
-    size_t GetNumBlocks() {
+    auto GetNumBlocks() const -> size_t {
         return table_.data_table_->GetNumBlocks();
     }
 
@@ -81,22 +81,23 @@ public:
      * ProjectedRow.
      * @return true if tuple is visible to this txn and ProjectedRow has been populated, false otherwise
      */
-    bool Select(const common::ManagedPointer<transaction::TransactionContext> txn,
+    auto Select(const common::ManagedPointer<transaction::TransactionContext> txn,
                 const TupleSlot                                               slot,
-                ProjectedRow *const                                           out_buffer) const {
+                ProjectedRow *const                                           out_buffer) const -> bool {
         return table_.data_table_->Select(txn, slot, out_buffer);
     }
 
     /**
-     * Update the tuple according to the redo buffer given. StageWrite must have been called as well in order for the
-     * operation to be logged.
+     * 根据给定的redo buffer更新元组(tuple).
+     * 为了记录操作, StageWrite必须被调用(must have been called)
      *
      * @param txn the calling transaction
      * @param redo the desired change to be applied. This should be the after-image of the attributes of interest. The
      * TupleSlot in this RedoRecord must be set to the intended tuple.
      * @return true if successful, false otherwise
      */
-    bool Update(const common::ManagedPointer<transaction::TransactionContext> txn, RedoRecord *const redo) const {
+    auto Update(const common::ManagedPointer<transaction::TransactionContext> txn, RedoRecord *const redo) const
+        -> bool {
         NOISEPAGE_ASSERT(redo->GetTupleSlot() != TupleSlot(nullptr, 0), "TupleSlot was never set in this RedoRecord.");
         NOISEPAGE_ASSERT(redo
                              == reinterpret_cast<LogRecord *>(txn->redo_buffer_.LastRecord())
@@ -113,14 +114,15 @@ public:
     }
 
     /**
-     * Inserts a tuple, as given in the redo, and return the slot allocated for the tuple. StageWrite must have been
-     * called as well in order for the operation to be logged.
+     * 插入redo中元组(tuple), 并返回为该元组分配的槽位(slot)
+     * 为了记录操作(the operation to be logged), StageWrite必须已经被调用(must have been called)
      *
      * @param txn the calling transaction
      * @param redo after-image of the inserted tuple.
      * @return TupleSlot for the inserted tuple
      */
-    TupleSlot Insert(const common::ManagedPointer<transaction::TransactionContext> txn, RedoRecord *const redo) const {
+    auto Insert(const common::ManagedPointer<transaction::TransactionContext> txn, RedoRecord *const redo) const
+        -> TupleSlot {
         NOISEPAGE_ASSERT(redo->GetTupleSlot() == TupleSlot(nullptr, 0), "TupleSlot was set in this RedoRecord.");
         NOISEPAGE_ASSERT(redo
                              == reinterpret_cast<LogRecord *>(txn->redo_buffer_.LastRecord())
@@ -138,7 +140,7 @@ public:
      * @param slot the slot of the tuple to delete
      * @return true if successful, false otherwise
      */
-    bool Delete(const common::ManagedPointer<transaction::TransactionContext> txn, const TupleSlot slot) {
+    auto Delete(const common::ManagedPointer<transaction::TransactionContext> txn, const TupleSlot slot) const -> bool {
         NOISEPAGE_ASSERT(txn->redo_buffer_.LastRecord() != nullptr,
                          "The RedoBuffer is empty even though StageDelete should have been called.");
         NOISEPAGE_ASSERT(reinterpret_cast<LogRecord *>(txn->redo_buffer_.LastRecord())
@@ -195,19 +197,19 @@ public:
     /**
      * @return the first tuple slot contained in the underlying DataTable
      */
-    DataTable::SlotIterator begin() const {
+    auto begin() const -> DataTable::SlotIterator {
         return table_.data_table_->begin();
     } // NOLINT for STL name compability
 
     /** @return A blocked slot iterator over the [start, end) blocks. */
-    DataTable::SlotIterator GetBlockedSlotIterator(uint32_t start_block, uint32_t end_block) const {
+    auto GetBlockedSlotIterator(uint32_t start_block, uint32_t end_block) const -> DataTable::SlotIterator {
         return table_.data_table_->GetBlockedSlotIterator(start_block, end_block);
     }
 
     /**
      * @return one past the last tuple slot contained in the underlying DataTable
      */
-    DataTable::SlotIterator end() const {
+    auto end() const -> DataTable::SlotIterator {
         return table_.data_table_->end();
     } // NOLINT for STL name compability
 
@@ -220,14 +222,14 @@ public:
      * @return initializer to create ProjectedColumns
      * @warning col_oids must be a set (no repeats)
      */
-    ProjectedColumnsInitializer InitializerForProjectedColumns(const std::vector<catalog::col_oid_t> &col_oids,
-                                                               const uint32_t max_tuples) const {
+    auto InitializerForProjectedColumns(const std::vector<catalog::col_oid_t> &col_oids,
+                                        const uint32_t max_tuples) const -> ProjectedColumnsInitializer {
         NOISEPAGE_ASSERT((std::set<catalog::col_oid_t>(col_oids.cbegin(), col_oids.cend())).size() == col_oids.size(),
                          "There should not be any duplicated in the col_ids!");
         auto col_ids = ColIdsForOids(col_oids);
         NOISEPAGE_ASSERT(col_ids.size() == col_oids.size(),
                          "Projection should be the same number of columns as requested col_oids.");
-        return ProjectedColumnsInitializer(table_.layout_, col_ids, max_tuples);
+        return {table_.layout_, col_ids, max_tuples};
     }
 
     /**
@@ -238,7 +240,7 @@ public:
      * @return initializer to create ProjectedRow
      * @warning col_oids must be a set (no repeats)
      */
-    ProjectedRowInitializer InitializerForProjectedRow(const std::vector<catalog::col_oid_t> &col_oids) const {
+    auto InitializerForProjectedRow(const std::vector<catalog::col_oid_t> &col_oids) const -> ProjectedRowInitializer {
         NOISEPAGE_ASSERT((std::set<catalog::col_oid_t>(col_oids.cbegin(), col_oids.cend())).size() == col_oids.size(),
                          "There should not be any duplicates in the col_ids!");
         auto col_ids = ColIdsForOids(col_oids);
@@ -252,19 +254,19 @@ public:
      * @param col_oids oids that will be scanned.
      * @return the projection map
      */
-    ProjectionMap ProjectionMapForOids(const std::vector<catalog::col_oid_t> &col_oids);
+    auto ProjectionMapForOids(const std::vector<catalog::col_oid_t> &col_oids) -> ProjectionMap;
 
     /**
      * @return a coarse estimation on the number of tuples in this table
      */
-    uint64_t GetNumTuple() const {
+    auto GetNumTuple() const -> uint64_t {
         return table_.data_table_->GetNumTuple();
     }
 
     /**
      * @return Approximate heap usage of the table
      */
-    size_t EstimateHeapUsage() const {
+    auto EstimateHeapUsage() const -> size_t {
         return table_.data_table_->EstimateHeapUsage();
     }
 
@@ -293,7 +295,7 @@ private:
     // Eventually we'll support adding more tables when schema changes. For now we'll always access the one DataTable.
     DataTableVersion table_;
 
-    const ColumnMap &GetColumnMap() const {
+    auto GetColumnMap() const -> const ColumnMap & {
         return table_.column_map_;
     }
 
@@ -302,7 +304,7 @@ private:
      * @param col_oids set of col_oids, they must be in the table's ColumnMap
      * @return vector of col_ids for these col_oids
      */
-    std::vector<col_id_t> ColIdsForOids(const std::vector<catalog::col_oid_t> &col_oids) const;
+    auto ColIdsForOids(const std::vector<catalog::col_oid_t> &col_oids) const -> std::vector<col_id_t>;
 
     /**
      * TODO(WAN): currently only used by RecoveryManager::GetOidsForRedoRecord in a O(n^2) way. Refactor + remove?
@@ -311,7 +313,7 @@ private:
      * @param col_id given col id
      * @return col oid for the provided col id
      */
-    catalog::col_oid_t OidForColId(col_id_t col_id) const;
+    auto OidForColId(col_id_t col_id) const -> catalog::col_oid_t;
 
     /**
      * Clears the contents of this table and reinitializes it
