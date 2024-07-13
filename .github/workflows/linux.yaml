@@ -42,6 +42,10 @@ jobs:
         run: |
           cmake --build build
 
+      - name: Check TPL
+        run: |
+          cmake --build build --target check-tpl
+
       # - name: CMake Test
       #   run: |
       #     # ctest --test-dir build -j2 --output-on-failure || true
