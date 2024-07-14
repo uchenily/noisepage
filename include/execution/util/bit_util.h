@@ -31,7 +31,7 @@ public:
      */
     template <typename T>
     static constexpr uint64_t CountLeadingZeros(T val) {
-        return CountLeadingZeros(val);
+        return llvm::countLeadingZeros(val);
     }
 
     /**
@@ -40,7 +40,7 @@ public:
      */
     template <typename T>
     static constexpr uint64_t CountTrailingZeros(T val) {
-        return CountTrailingZeros(val);
+        return llvm::countTrailingZeros(val);
     }
 
     /**
@@ -48,7 +48,7 @@ public:
      */
     template <typename T>
     static constexpr uint32_t CountPopulation(T val) {
-        return CountPopulation(val);
+        return llvm::countPopulation(val);
     }
 
     /**

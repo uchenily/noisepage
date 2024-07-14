@@ -8,7 +8,7 @@
 
 namespace noisepage::parser {
 class AbstractExpression;
-} // namespace noisepage::parser
+}
 
 namespace noisepage::storage::index {
 

@@ -1091,7 +1091,7 @@ auto SortGroupBy::Make(std::vector<common::ManagedPointer<parser::AbstractExpres
                        std::vector<AnnotatedExpression>                                &&having) -> Operator {
     auto *agg = new SortGroupBy();
     agg->columns_ = std::move(columns);
-    agg->having_ = std::move(having);
+    agg->having_ = move(having);
     return Operator(common::ManagedPointer<BaseOperatorNodeContents>(agg));
 }
 

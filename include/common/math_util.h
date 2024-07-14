@@ -55,7 +55,7 @@ public:
      * @return The last power of two less than or equal to the provided input value.
      */
     static uint64_t PowerOf2Floor(uint64_t val) {
-        return PowerOf2Floor(val);
+        return llvm::PowerOf2Floor(val);
     }
 
     /**

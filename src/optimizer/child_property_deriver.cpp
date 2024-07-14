@@ -27,7 +27,7 @@ auto ChildPropertyDeriver::GetProperties(catalog::CatalogAccessor *accessor,
     gexpr_ = gexpr;
     accessor_ = accessor;
     gexpr->Contents()->Accept(common::ManagedPointer<OperatorVisitor>(this));
-    return std::move(output_);
+    return move(output_);
 }
 
 void ChildPropertyDeriver::Visit([[maybe_unused]] const SeqScan *op) {

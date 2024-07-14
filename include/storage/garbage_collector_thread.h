@@ -8,7 +8,7 @@
 
 namespace noisepage::metrics {
 class MetricsManager;
-} // namespace noisepage::metrics
+}
 
 namespace noisepage::storage {
 
