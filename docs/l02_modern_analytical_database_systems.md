@@ -1,3 +1,7 @@
+## Modern Anayltical Database Systems
+
+### 课程大纲
+
 high-level 概述
 
 Storage
@@ -17,10 +21,17 @@ Query Optimization
 Network Interfaces
 
 
+### 今日日程
+
+- Query Execution
+- Distributed System Architectures
+- OLAP Commoditization
+
 
 ### 数据分类
 
 持久数据
+
 中间数据 (一般会保存到内存)
 
 怎样开始执行, 有两种策略:
@@ -33,6 +44,7 @@ Network Interfaces
 ### 系统架构
 
 选择一: 不共享
+
 选择二: 共享磁盘 (重点)
 - scale compute layer independently from the storage layer
 - easy to shutdown idle compute layer resources
@@ -56,15 +68,20 @@ DBMS检索块的头以确定需要检索的字节范围(如果有的话)。
 ### 其他主题
 
 文件格式
+
 表分区
+
 数据摄取/更新/发现
+
 调度/适应性
 
 
 ### Observation
 
 Snowflake是一个完全由内部构建的组件组成的整体系统。
+
 本学期我们将介绍的大多数非学术性dbms都具有类似的总体体系结构。
+
 但这意味着多个组织正在编写相同的DBMS软件.
 
 
@@ -109,18 +126,20 @@ DBMS跟踪其目录中的数据库模式(表、列)和数据文件
 - 库提供了一个迭代器接口来检索(批处理)文件中的列
 
 通用格式:
-Apache Parquet(2013):来自Cloudera/Twitter的压缩列式存储
-Apache Iceberg(2017):灵活的数据格式，支持来自Netflix的模式演变。
-Apache ORC(2013):来自Apache Hive的压缩列式存储。
-Apache CarbonData(2013):使用华为索引的压缩列式存储。
-DHF5(1998):科学工作负载的多维阵列。
-Apache Arrow(2016):内存压缩列式存储，来自Pandas/??
+
+- Apache Parquet(2013):来自Cloudera/Twitter的压缩列式存储
+- Apache Iceberg(2017):灵活的数据格式，支持来自Netflix的模式演变。
+- Apache ORC(2013):来自Apache Hive的压缩列式存储。
+- Apache CarbonData(2013):使用华为索引的压缩列式存储。
+- DHF5(1998):科学工作负载的多维阵列。
+- Apache Arrow(2016):内存压缩列式存储，来自Pandas/??
 
 
 #### Execution Engines
 用于在列数据上执行向量化查询操作符的独立库。
 - 输入是物理操作符(physical operators)的DAG。
 - 需要外部调度和编排(orchestration)。
+
 著名的实现:
 - Velox
 - DataFusion

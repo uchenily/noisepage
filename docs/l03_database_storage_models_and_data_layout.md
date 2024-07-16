@@ -1,6 +1,7 @@
 ## Storage Models & Data Layout
 
 今天的讲座是关于数据库中数据的最低物理表示。
+
 数据的“外观”几乎决定了DBMS的整个系统架构。
 
 - 加工模型
@@ -11,11 +12,14 @@
 - 查询优化
 
 ### Storage Models
+
 DBMS的存储模型指定了它如何在磁盘和内存中物理地组织元组。
 
 选择#1:n元存储模型(NSM)
+
 选择#2:分解存储模型(DSM)
-选择3:混合存储模型(PAX)
+
+选择#3:混合存储模型(PAX)
 
 #### N-ary Storage Model (NSM)
 
@@ -39,6 +43,7 @@ NSM数据库页面大小通常是**4KB**硬件页面的常数倍。
 - 快速插入、更新和删除
 - 适用于需要整个元组(OLTP)的查询
 - 可以使用面向索引的物理存储进行集群
+
 劣势:
 - 不适合扫描表的大部分和/或属性的子集
 - 访问模式中糟糕的内存局部性
@@ -46,6 +51,7 @@ NSM数据库页面大小通常是**4KB**硬件页面的常数倍。
 
 
 ### Decomposition Storage Model (DSM) -> 其实就是列式存储
+
 dbms在数据块中连续存储所有元组的单个属性。
 
 理想的OLAP工作负载，其中只读查询对表的属性子集执行大量扫描。
@@ -55,6 +61,7 @@ dbms在数据块中连续存储所有元组的单个属性。
 
 
 #### DSM: Physical Organization
+
 存储属性和元数据(例如:空值)在**固定长度**值的单独数组中。
 - 大多数系统使用这些数组的偏移量识别唯一的物理元组。
 - 需要处理可变长度的值…
@@ -87,11 +94,12 @@ dbms在数据块中连续存储所有元组的单个属性。
 - 下周将详细介绍
 
 #### DSM: system history
-1970s: Cantor DBMS
-1980s: DSM Proposal
-1990s: SybaseIQ(in-memory only)
-2000s: Vertica, Vectorwise, MonetDB
-2010s: Everyone
+
+- 1970s: Cantor DBMS
+- 1980s: DSM Proposal
+- 1990s: SybaseIQ(in-memory only)
+- 2000s: Vertica, Vectorwise, MonetDB
+- 2010s: Everyone
 
 
 优势:
@@ -103,6 +111,7 @@ dbms在数据块中连续存储所有元组的单个属性。
 - 由于元组分割/拼接/重组，点查询、插入、更新和删除速度较慢
 
 #### Observation
+
 OLAP查询几乎从不单独访问表中的单个列。
 - 在查询执行过程中的某个时刻，dbms必须获得其他列并将原始元组拼接在一起。
 
@@ -112,6 +121,7 @@ OLAP查询几乎从不单独访问表中的单个列。
 
 
 ### PAX Storage Model
+
 跨分区属性(PAX)是一种混合存储模型，它垂直划分数据库页面中的属性。
 - This is what Parquet and Orc use.
 
@@ -136,6 +146,7 @@ OLAP查询几乎从不单独访问表中的单个列。
 
 
 ### Memory Pages
+
 OLAP dmbs使用我们在介绍课程中讨论过的缓冲池管理器方法。
 
 操作系统将物理页面映射到虚拟内存页面。
@@ -148,6 +159,7 @@ cpu的MMU维护一个包含虚拟内存页的物理地址的TLB。
 
 
 #### Transparent Huge Pages (THP)
+
 Linux支持创建更大的页(2MB到1GB)，而不是总是按4KB页分配内存。
 - 每个页面必须是一个连续的内存块
 - 大大减少TLB表项的数量
@@ -165,6 +177,7 @@ Linux支持创建更大的页(2MB到1GB)，而不是总是按4KB页分配内存�
 - Sapnner的吞吐量提高6.5%
 
 #### Observation
+
 当数据进入数据库时，它是“热的”
 - 新插入的元组更有可能在不久的将来再次更新。
 
@@ -172,6 +185,7 @@ Linux支持创建更大的页(2MB到1GB)，而不是总是按4KB页分配内存�
 - 在某些情况下，元组只能在只读查询中与其他元组一起访问
 
 ### Hybrid Storage Model
+
 使用针对NSM或DSM数据库进行优化的单独执行引擎。
 - 将新数据存储在NSM中，实现快速OLTP
 - 将数据迁移到DSM，以实现更高效的OLAP
@@ -179,15 +193,18 @@ Linux支持创建更大的页(2MB到1GB)，而不是总是按4KB页分配内存�
 
 Choice #1: Fractured Mirrors
 - Examples: Oracle, IMB DB2 Blu, Microsoft SQL Server
+
 Choice #2: Delta Store
 - Examples: SPA HAHA, Vertica, SingleStore, Databrick, Google Napa
 
 #### Fractured Mirrors
+
 在自动更新的DSM布局中存储数据库的第二个副本
 - 所有更新首先在NSM中输入，然后最终复制到DSM镜像
 - 如果DBMS支持更新，则必须使DSM镜像中的元组失效
 
 #### Delta Store
+
 在NSM表中对数据库进行状态更新。
 后台线程从增量存储中迁移更新并将其应用于DSM数据。
 - 批量处理大块，然后将它们作为PAX文件写出来。
@@ -215,6 +232,7 @@ dbms可以对数据库进行物理分区(不共享)或逻辑分区(共享磁盘)
 - 谓词
 
 #### Parting Thoughts
+
 每个现代OLAP系统都在使用PAX存储的某种变体。关键思想是所有数据必须是**固定长度**的。
 
 现实世界中的表主要包含数字属性(int/float)，但它们占用的存储主要由字符串数据组成。
