@@ -225,3 +225,238 @@ SELECT DISTINCT name FROM users WHERE name LIKE 'And%';
 
 - 比哈希表慢，占用更多内存
 - 可以支持范围和前缀查询
+
+
+### Dictionary: Array
+
+首先对值排序，然后按顺序将它们存储在字节数组中。
+
+- 如果它们是可变长度的，还需要存储值的大小
+
+将原始数据替换为字典代码，这些代码是此数组中的(字节)偏移量。
+
+
+```
+# original data
+| name | Andrea | Wan   | Andy   | Matt   |
+
+==>
+| len  | 6      | 4     | 4      | 3      |
+| val  | Andrea | Andy  | Matt   | Wan    |
+
+# compressed data
+| name | 0      | 17    | 7      | 12     |
+```
+
+
+### Dictionary: Shared-leaves B+Tree
+
+```
+encode index  (original value)
+
+| value | aab | aae | aaf | aaz |   <== sorted shared leaf
+| code  | 10  | 20  | 30  | 40  |       incremental encoding
+
+decode index (encoded value)
+```
+
+
+### Exposing Dictionary to DBMS
+
+Parquet / ORC没有提供直接访问文件压缩字典的API。
+
+这意味着DBMS不能执行谓词下推，不能在解压缩数据之前直接对压缩数据进行操作。
+
+谷歌为Procella开发的Artus专有格式支持这一点。
+
+
+### Bitmap Encoding
+
+如果列的基数(cardinality)较低，使用位图表示列可以减少其存储大小。
+
+```
+# original data
+| id | 1 | 2 | 3 | 4 | 6 | 7 | 8 | 9 |
+| lit| Y | Y | Y | N | Y | N | Y | Y |
+```
+
+
+### Bitmap Index: Compression
+
+方法1:通用压缩
+
+- 使用标准的压缩算法(例如:snappy, zstd)
+- 在DBMS可以使用它来处理查询之前，必须解压缩整个数据块
+
+方法#2:字节对齐的位图码
+
+- 结构化的run-length编码压缩
+
+方法3:Roaring位图
+
+- run-length编码和值列表(value lists)的混合
+
+
+### Oracle byte-aligned bitmap codes
+
+将位图划分为包含不同类别字节的块:
+
+- 间隙字节:所有位都为0
+- 尾字节:部分位为1
+
+对每个由间隙字节和尾部字节组成的块(chunk)进行编码
+
+- 间隙字节使用RLE压缩
+- 尾字节不压缩存储，除非它只有1字节或只有一个非零比特
+
+```
+bitmap
+00000000 00000000 00010000 
+00000000 00000000 00000000 
+00000000 00000000 00000000 
+00000000 00000000 00000000 
+00000000 00000000 00000000 
+00000000 01000000 00100010 
+
+
+
+chunk #1(1-3字节)
+
+报头字节:
+-间隙字节数(1-3位): 010
+-tail特别吗?(4位): 1
+-verbatim字节数(如果bit 4 = 0)
+-尾字节中1位的索引(如果bit 4 = 1): 0100
+
+没有间隙长度字节，因为间隙长度< 7
+没有verbatim字节，因为tail是特殊的
+
+
+# chunk #2(4-18字节)
+
+报头字节:
+- 13个间隙字节，两个尾字节
+- # of gaps > 7，所以必须使用额外的字节
+
+(111) 是一个特殊flag, 表示长度需要去看尾部
+一个gap长度字节给出的gap length= 13: 00001101
+两个尾部字节: 一字不差地拷贝
+
+compressed bitmap
+#1 (010)(1)(0100)
+    1-3  4  5-7
+#2 (111)(0)(0010)00001101
+   01000000 00100010
+
+orignal: 18bytes
+BBC compressed: 5bytes
+```
+
+### Observation
+
+Oracle的BBC格式已经过时(obsolete)了。
+
+- 虽然它提供了良好的压缩，但由于过多的分支，它比最近的替代方案慢。
+- 字对齐混合(WAH)编码是BBC的专利变体，提供更好的性能。
+
+这些都不支持随机访问。
+
+- 如果要检查给定值是否存在，必须从头开始并解压缩整个内容。
+
+
+### Roaring Bitmaps
+
+将32位整数存储在紧凑的两级索引数据结构中。
+
+- 使用位图存储dense chunks(密集块)
+
+- - sparse chunks(稀疏块)使用16位整数的打包数组
+
+Used in Lucene, Hive, Spark, Pinot.
+
+
+```
+chunk partitions
+0 --> [xxx]
+1 --> [yyy]
+2 --> ..
+3
+
+For each value k, assign it to a chunk based on k/2^16
+- Store k in the chunk's container
+
+If # of values in container is less than 4096, store as array.
+Otherwise, store as Bitmap.
+```
+
+### Delta Encoding
+
+记录同一列中相邻值之间的差异
+
+- 将基值内联存储或存储在单独的查询表中
+- 与RLE结合以获得更好的压缩比
+
+```
+original data
+| time | 12:00 | 12:01 | 12:02 | 12:03 | 12:04 |
+| temp | 99.5  | 99.4  | 99.5  | 99.6  | 99.4  |
+5 * 32bits = 160bits
+
+compressed data
+| time | 12:00 | +1    | +1    | +1    | +1    |
+| temp | 99.5  | -1    | +1    | +1    | -2    |
+32-bits + (4 * 16-bits) = 96bits
+
+==>
+compressed data
+| time | 12:00 |(+1, 4)|
+| temp | 99.5  | -1    | +1    | +1    | -2     |
+32-bits + (2 * 16-bits) = 64bits
+```
+
+
+### Bit Packing
+
+如果整数属性的值小于其给定数据类型大小的范围，则减少表示每个值的位数。
+
+使用位移位技巧对单个单词中的多个值进行操作。
+
+- 像在BitWeaving/Vertical
+
+### Mostly Encoding
+
+位打包的一种变体，用于当属性的值“大多数”小于最大大小时，使用较小的数据类型存储它们。
+
+- 其余不能压缩的值以原始形式保存。
+
+```
+original data
+| int32 | 13 | 191 | 99999999 | 92 | 81 |
+
+compressed data
+| mostly8 | 13 | 191 | xxx | 92 | 81 |
+
+| offset | 3        |
+| value  | 99999999 |
+```
+
+### Intermediate results (中间结果)
+
+在对压缩数据求值谓词(evaluating a predicate)之后，DBMS将在从扫描operator移动到下一个operator时对其进行解压缩。
+> 即数据进入到operator时必须是解压缩状态, 这从软件工程角度上会更容易一些
+
+- 示例:对使用不同压缩方案的两个表执行哈希连接
+
+DBMS(通常)不会在查询执行期间重新压缩数据。否则，系统需要在整个执行引擎中嵌入解压缩逻辑。
+
+
+### Parting Thoughts
+
+字典编码并不总是最有效的压缩方案，但它是**最常用的**。
+
+DBMS可以结合不同的方法来实现更好的压缩。
+
+
+### Next Class
+
+Query Execution!
